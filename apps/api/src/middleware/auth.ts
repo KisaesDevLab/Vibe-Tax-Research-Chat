@@ -3,13 +3,18 @@ import type { Request, Response, NextFunction } from 'express';
 import { verifyAccess } from '../lib/jwt.js';
 import type { Role } from '@vibe/shared';
 
-declare module 'express-serve-static-core' {
-  interface Request {
-    auth?: {
-      user_id: string;
-      email: string;
-      role: Role;
-    };
+// Augment Express Request with auth context. Global form works with
+// @types/express 4 + 5 alike.
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      auth?: {
+        user_id: string;
+        email: string;
+        role: Role;
+      };
+    }
   }
 }
 

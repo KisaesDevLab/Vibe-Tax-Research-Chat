@@ -48,6 +48,49 @@ scripts/        # Backup, restore, ops helpers (Phase 27)
 - Login rate limit: 5 attempts / 15 min / IP (Redis sliding window).
 - Refresh-token rotation: every refresh issues a new token and revokes the prior row.
 
+## Operational gotchas
+
+### Local dev port collisions
+Default Postgres / Redis / Vite ports often clash with other Docker projects on the same
+host. The dev stack is pinned to non-default ports to avoid this:
+
+- Postgres → host **5439** (container 5432)
+- Redis → host **6389** (container 6379)
+- Vite dev server → host **5179** (container 5173)
+- API → host **4000**
+
+`docker-compose.prod.yml` keeps the standard 80 for nginx and uses internal-only Postgres
+and Redis (no host port published).
+
+### Drizzle-kit and ESM `.js` imports
+drizzle-kit's CJS loader cannot resolve TypeScript-style `.js` extensions in source imports.
+Workaround: `pnpm db:generate` first runs `tsc -p tsconfig.json`, then drizzle-kit reads from
+`dist/schema/index.js`. Don't point drizzle-kit at the `src/` files directly.
+
+### BullMQ queue names
+BullMQ ≥5 forbids `:` in queue names and job IDs. Use `-` as the separator
+(`skills-sync`, `chat-title`, `cron-skills-sync-nightly`).
+
+### Anthropic SDK 0.40.1 surface
+- Use `client.beta.messages.stream(body)` for chat streaming. The SDK doesn't yet type
+  `container.skills[]` or the new tool shapes (`code_execution_20250825`,
+  `web_fetch_20250828`, `web_search_20250828`); the body is cast through `as unknown as
+  MessageCreateParams` at the seam in `lib/anthropic/chat.ts`.
+- Use `client.post('/v1/skills', { body, headers: { 'anthropic-beta': 'skills-2025-10-02' } })`
+  for skill upload — there is no typed `client.beta.skills.create` yet.
+- `tool_use` block input streams as `input_json_delta` chunks; assemble per-block-index
+  until `content_block_stop`, then emit the complete tool_use event.
+
+### dotenv lookup
+Both the api package (`src/config/env.ts`) and the db package (`src/migrate.ts`,
+`src/seed.ts`) explicitly load the workspace-root `.env` via
+`dotenv.config({ path: path.resolve(__dirname, '../../../.env') })`. Don't rely on the
+default cwd-relative lookup — pnpm's per-package cwd would miss it.
+
+### Pino transports
+`pino-pretty` is opt-in (`PRETTY_LOGS=1`) so the default startup doesn't crash if the
+transport package is missing. JSON logs are the production default.
+
 ## Open architectural decisions
 
 See `QUESTIONS.md` for ambiguities resolved with applied defaults during the autonomous build.

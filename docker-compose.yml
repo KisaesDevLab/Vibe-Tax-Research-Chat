@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: vibe
       POSTGRES_DB: vibe_tax
     ports:
-      - '5432:5432'
+      - '5439:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,7 +22,7 @@ services:
     restart: unless-stopped
     command: ['redis-server', '--appendonly', 'yes']
     ports:
-      - '6379:6379'
+      - '6389:6379'
     volumes:
       - redis_data:/data
     healthcheck:
@@ -62,7 +62,7 @@ services:
     environment:
       VITE_API_BASE_URL: http://localhost:4000
     ports:
-      - '5173:5173'
+      - '5179:5173'
     volumes:
       - ./apps/web:/app/apps/web
       - /app/node_modules

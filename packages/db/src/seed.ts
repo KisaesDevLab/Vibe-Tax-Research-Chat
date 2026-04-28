@@ -1,5 +1,5 @@
 // Phase 2 — seed: bootstrap admin + model registry from §6 manifest.
-import 'dotenv/config';
+import { config as loadEnv } from 'dotenv';
 import bcrypt from 'bcrypt';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -10,6 +10,7 @@ import { sql } from 'drizzle-orm';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+loadEnv({ path: path.resolve(__dirname, '../../../.env') });
 
 interface SeedModel {
   model_id: string;
@@ -113,7 +114,11 @@ async function main() {
   for (const [key, value] of defaults) {
     await db
       .insert(settings)
-      .values({ key, value: value as object, is_encrypted: false })
+      .values({
+        key,
+        value: value as Record<string, unknown> | string | number | boolean | null,
+        is_encrypted: false,
+      })
       .onConflictDoNothing({ target: settings.key });
   }
   // eslint-disable-next-line no-console

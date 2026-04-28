@@ -48,8 +48,8 @@ const RULES: RoutingRule[] = [
   { match: /\bform\s+709\b/i, skill: 'form-709-gift', weight: 7 },
   { match: /\bform\s+(8275|8275-R|8886)\b/i, skill: 'compliance-disclosure-forms', weight: 8 },
 
-  // IRS notices / letters
-  { match: /\b(CP|LT)[- ]?\d{2,3}\b/i, skill: 'irs-notice-decoder', weight: 8 },
+  // IRS notices / letters (CP-2000 has 4 digits; CP-14, CP-503 etc are shorter)
+  { match: /\b(CP|LT)[- ]?\d{2,4}\b/i, skill: 'irs-notice-decoder', weight: 8 },
   { match: /\bnotice\s+\d{4}-\d{1,3}\b/i, skill: 'irs-notice-decoder', weight: 8 },
 
   // Predict / qualify / classify keywords

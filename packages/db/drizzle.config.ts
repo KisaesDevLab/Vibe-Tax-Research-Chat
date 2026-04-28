@@ -1,7 +1,9 @@
 import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
-  schema: './src/schema/index.ts',
+  // drizzle-kit's CJS loader cannot resolve TS-style `.js` imports.
+  // Workaround: point at the compiled dist/ output (run `pnpm --filter @vibe/db build` first).
+  schema: './dist/schema/index.js',
   out: './drizzle',
   dialect: 'postgresql',
   dbCredentials: {

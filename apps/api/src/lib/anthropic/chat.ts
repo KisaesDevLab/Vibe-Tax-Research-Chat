@@ -2,24 +2,22 @@
 //
 // Always sets:
 //   betas: ["code-execution-2025-08-25", "skills-2025-10-02"]
-//   tools includes code_execution_20250825 and (per-model) web_fetch + web_search
+//   tools: code_execution_20250825 + (per-model) web_fetch_20250828 + web_search_20250828
 //   container.skills[]: up to 8 skill_ids resolved by the routing layer
 //
-// Returns an async iterable of normalized events:
-//   - 'text_delta'   : streaming output
-//   - 'tool_use'     : Claude is invoking a tool (for audit)
-//   - 'tool_result'  : tool result (for audit)
-//   - 'usage'        : usage block update
-//   - 'message_stop' : final stop_reason
+// Returns a normalized async iterable. The Anthropic SDK 0.40.1 doesn't yet
+// type the `container` field nor the new tool shapes — those land in a later
+// SDK release. We extend the typed body with `as unknown` only for those
+// still-untyped fields. Everything else uses the typed surface.
 
+import type Anthropic from '@anthropic-ai/sdk';
 import { getAnthropic } from './client.js';
-import type { ParsedSkill } from '@vibe/shared';
 import { WEB_ALLOWLIST_DOMAINS, DEFAULT_WEB_BUDGET } from '@vibe/shared';
 
 export type ChatEvent =
   | { type: 'text_delta'; delta: string }
   | { type: 'tool_use'; tool_name: string; input: unknown; id: string }
-  | { type: 'tool_result'; tool_use_id: string; result: unknown; status?: string }
+  | { type: 'tool_result'; tool_use_id: string; result: unknown; status?: 'ok' | 'error' }
   | { type: 'usage'; usage: Partial<UsageSnapshot> }
   | { type: 'message_stop'; stop_reason: string; usage: UsageSnapshot };
 
@@ -44,7 +42,13 @@ export interface StreamChatOpts {
   history: Array<{ role: 'user' | 'assistant'; content: string }>;
 }
 
-const BETAS = ['code-execution-2025-08-25', 'skills-2025-10-02'];
+const BETAS = ['code-execution-2025-08-25', 'skills-2025-10-02'] as const;
+
+interface AssemblingToolUse {
+  id: string;
+  name: string;
+  input_json: string;
+}
 
 export async function* streamChat(opts: StreamChatOpts): AsyncIterable<ChatEvent> {
   const { client } = await getAnthropic();
@@ -75,82 +79,98 @@ export async function* streamChat(opts: StreamChatOpts): AsyncIterable<ChatEvent
     });
   }
 
-  // Cast to unknown — the SDK shape for skills + container is still on the
-  // beta-only path; the cast is the seam to update once the SDK ships stable.
-  const stream = (client as unknown as {
-    beta: {
-      messages: {
-        stream: (args: unknown) => AsyncIterable<{ type: string; [k: string]: unknown }>;
-      };
-    };
-  }).beta.messages.stream({
+  // Body uses the typed SDK shape, then casts to add untyped fields
+  // (`container`, untyped tool shapes). When SDK ships these in a stable
+  // release, drop the cast.
+  const body = {
     model: opts.model_id,
     max_tokens: 8192,
     system: [
       {
-        type: 'text',
+        type: 'text' as const,
         text: opts.system_prompt,
-        cache_control: { type: 'ephemeral' },
+        cache_control: { type: 'ephemeral' as const },
       },
     ],
     messages: [
       ...opts.history.map((h) => ({ role: h.role, content: h.content })),
-      { role: 'user', content: opts.user_message },
+      { role: 'user' as const, content: opts.user_message },
     ],
-    tools,
-    container: {
-      skills: opts.attached_skill_ids.map((id) => ({ id })),
-    },
-    betas: BETAS,
-  });
+    tools: tools as unknown as Anthropic.Beta.Messages.BetaToolUnion[],
+    betas: [...BETAS],
+    ...(opts.attached_skill_ids.length
+      ? { container: { skills: opts.attached_skill_ids.map((id) => ({ id })) } }
+      : {}),
+  } as unknown as Anthropic.Beta.Messages.MessageCreateParams;
+
+  const stream = client.beta.messages.stream(body);
+
+  // tool_use blocks stream their JSON input as input_json_delta chunks; we
+  // assemble per-block-index until content_block_stop, then emit the complete
+  // tool_use event so the audit shim has a fully-formed input.
+  const assembling = new Map<number, AssemblingToolUse>();
 
   for await (const ev of stream) {
     switch (ev.type) {
       case 'content_block_start': {
-        const block = (ev as { content_block?: { type?: string; name?: string; id?: string; input?: unknown } }).content_block;
-        if (block?.type === 'tool_use' && block.name && block.id) {
+        const block = ev.content_block;
+        if (block.type === 'tool_use') {
+          assembling.set(ev.index, { id: block.id, name: block.name, input_json: '' });
           if (block.name === 'web_fetch') usage.web_fetch_calls++;
-          if (block.name === 'web_search') usage.web_search_calls++;
-          yield { type: 'tool_use', tool_name: block.name, input: block.input ?? null, id: block.id };
+          else if (block.name === 'web_search') usage.web_search_calls++;
         }
         break;
       }
       case 'content_block_delta': {
-        const delta = (ev as { delta?: { type?: string; text?: string } }).delta;
-        if (delta?.type === 'text_delta' && delta.text) {
+        const delta = ev.delta;
+        if (delta.type === 'text_delta') {
           yield { type: 'text_delta', delta: delta.text };
+        } else if (delta.type === 'input_json_delta') {
+          const tu = assembling.get(ev.index);
+          if (tu) tu.input_json += delta.partial_json;
         }
         break;
       }
-      case 'tool_result': {
-        const r = ev as { tool_use_id?: string; content?: unknown; is_error?: boolean };
-        if (r.tool_use_id) {
-          yield {
-            type: 'tool_result',
-            tool_use_id: r.tool_use_id,
-            result: r.content ?? null,
-            status: r.is_error ? 'error' : 'ok',
-          };
+      case 'content_block_stop': {
+        const tu = assembling.get(ev.index);
+        if (tu) {
+          assembling.delete(ev.index);
+          let input: unknown = {};
+          if (tu.input_json) {
+            try {
+              input = JSON.parse(tu.input_json);
+            } catch {
+              input = { _raw: tu.input_json };
+            }
+          }
+          yield { type: 'tool_use', id: tu.id, tool_name: tu.name, input };
         }
         break;
       }
       case 'message_delta': {
-        const u = (ev as { usage?: Partial<UsageSnapshot> }).usage;
+        const u = ev.usage;
         if (u) {
-          usage.input_tokens = u.input_tokens ?? usage.input_tokens;
+          // ev.usage on message_delta only carries output_tokens reliably
+          // pre-stop; we accumulate from the final message snapshot below.
           usage.output_tokens = u.output_tokens ?? usage.output_tokens;
-          usage.cache_creation_input_tokens =
-            u.cache_creation_input_tokens ?? usage.cache_creation_input_tokens;
-          usage.cache_read_input_tokens =
-            u.cache_read_input_tokens ?? usage.cache_read_input_tokens;
-          yield { type: 'usage', usage: u };
+          yield { type: 'usage', usage: u as Partial<UsageSnapshot> };
         }
         break;
       }
       case 'message_stop': {
-        const stop_reason =
-          (ev as { stop_reason?: string }).stop_reason ?? 'unknown';
-        yield { type: 'message_stop', stop_reason, usage };
+        // Pull the assembled message from the SDK; its `usage` block holds the
+        // final input/output/cache counts.
+        const finalMsg = await stream.finalMessage();
+        const fu = finalMsg.usage;
+        usage.input_tokens = fu.input_tokens ?? usage.input_tokens;
+        usage.output_tokens = fu.output_tokens ?? usage.output_tokens;
+        usage.cache_creation_input_tokens = fu.cache_creation_input_tokens ?? 0;
+        usage.cache_read_input_tokens = fu.cache_read_input_tokens ?? 0;
+        yield {
+          type: 'message_stop',
+          stop_reason: finalMsg.stop_reason ?? 'unknown',
+          usage,
+        };
         return;
       }
       default:
@@ -176,6 +196,14 @@ Citation discipline:
   - If a fetch fails, emit "[CITATION NEEDED — search: <query>]" rather than paraphrasing
     from memory.
 
+Sidecar JSON:
+  - At the end of every research answer, emit a fenced JSON block tagged "authorities"
+    listing the authorities you cited. Each entry: { "cite", "type", "weight", "source",
+    "verified_this_turn" }. Set verified_this_turn=true only if you actually fetched the
+    source URL during this turn.
+  - When the compliance-ssts-circular230 skill is attached, also emit a fenced JSON block
+    tagged "compliance" with the SSTS / Circular 230 checklist.
+
 PII handling:
   - Treat client identifiers (SSN, EIN, DOB, account numbers) as confidential.
   - Mask leading digits of SSN/EIN in any verbatim quote unless the user has asked you not to.
@@ -187,4 +215,4 @@ Format:
 `;
 }
 
-export const ANTHROPIC_BETAS = BETAS;
+export const ANTHROPIC_BETAS = [...BETAS];

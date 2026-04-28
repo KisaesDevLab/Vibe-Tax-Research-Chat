@@ -16,8 +16,7 @@
     @apply font-display tracking-tight;
   }
   code,
-  pre,
-  .font-mono {
+  pre {
     @apply font-mono;
   }
 }

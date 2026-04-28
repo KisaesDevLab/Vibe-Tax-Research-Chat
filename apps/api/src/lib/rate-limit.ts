@@ -1,6 +1,6 @@
 // Phase 3 — login brute-force limiter. Redis sliding window: 5 attempts / 15 min / IP.
 import rateLimit from 'express-rate-limit';
-import { RedisStore } from 'rate-limit-redis';
+import { RedisStore, type RedisReply } from 'rate-limit-redis';
 import { getRedis } from './redis.js';
 
 export const loginLimiter = rateLimit({
@@ -9,7 +9,14 @@ export const loginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   store: new RedisStore({
-    sendCommand: (...args: string[]) => getRedis().call(args[0], ...args.slice(1)) as Promise<unknown>,
+    sendCommand: async (...args: string[]): Promise<RedisReply> => {
+      const [cmd, ...rest] = args;
+      if (!cmd) throw new Error('rate-limit-redis: empty command');
+      // ioredis `call` accepts (command, ...args) and returns whatever the
+      // command returns — RedisReply (string|number|Buffer|null|array).
+      const result = await getRedis().call(cmd, ...rest);
+      return result as RedisReply;
+    },
     prefix: 'rl:login:',
   }),
   message: { error: 'too_many_login_attempts', retry_after_seconds: 900 },

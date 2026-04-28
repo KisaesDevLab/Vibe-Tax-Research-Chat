@@ -11,7 +11,8 @@ import { audit } from '../lib/audit.js';
 export const setupRouter = Router();
 
 setupRouter.get('/status', async (_req, res) => {
-  const [{ value }] = await getDb().select({ value: count() }).from(users).where(eq(users.role, 'admin'));
+  const rows = await getDb().select({ value: count() }).from(users).where(eq(users.role, 'admin'));
+  const value = rows[0]?.value ?? 0;
   res.json({ admin_exists: Number(value) > 0 });
 });
 
@@ -22,7 +23,8 @@ const bootstrapSchema = z.object({
 });
 
 setupRouter.post('/bootstrap', async (req, res) => {
-  const [{ value }] = await getDb().select({ value: count() }).from(users).where(eq(users.role, 'admin'));
+  const rows = await getDb().select({ value: count() }).from(users).where(eq(users.role, 'admin'));
+  const value = rows[0]?.value ?? 0;
   if (Number(value) > 0) {
     res.status(409).json({ error: 'admin_already_exists' });
     return;

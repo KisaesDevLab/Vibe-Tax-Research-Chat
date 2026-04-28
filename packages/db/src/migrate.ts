@@ -1,5 +1,5 @@
 // Phase 2 — migration runner. Run via `pnpm db:migrate`.
-import 'dotenv/config';
+import { config as loadEnv } from 'dotenv';
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
@@ -8,6 +8,9 @@ import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Look for .env at the workspace root (two levels up from packages/db/src).
+loadEnv({ path: path.resolve(__dirname, '../../../.env') });
 
 async function main() {
   const url = process.env.DATABASE_URL;

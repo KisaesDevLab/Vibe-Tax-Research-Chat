@@ -48,7 +48,7 @@ describe('selectSkills', () => {
   it('caps at 8 skills', () => {
     const r = selectSkills({
       message:
-        'IRC § 199A and § 174 and § 163(j) and § 280E and § 1031, with form 1040, 1120-S, 1065, in California and New York and Texas',
+        'IRC § 199A interacts with IRC § 174 and IRC § 163(j) and IRC § 280E and IRC § 1031 — please show how to handle this for form 1040, form 1120-S, and form 1065 clients in California, New York, and Texas.',
       available: SAMPLE_AVAILABLE,
     });
     expect(r.slugs.length).toBeLessThanOrEqual(8);

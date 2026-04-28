@@ -8,13 +8,23 @@ the switch later. Per the kickoff protocol: pick a reasonable default consistent
 
 ## Scaffolding scope (kickoff)
 **Question:** The kickoff prompt asked for a full v1.0.0 build in one autonomous session.
-**Default applied:** Wide-scaffolding pass (kickoff option 2). All 29 phases are sketched as a
-navigable skeleton with file stubs, schema, route handlers, Docker config, and docs. No phase is
-claimed "done"; tests are present where the logic is concrete (crypto, cost calc, routing) and
-stubbed elsewhere. No `v1.0.0` tag is created.
-**Rationale:** A full 8-week build cannot be honestly completed and verified in one session.
-The user authorized the scaffolding option explicitly.
-**Reversible:** Yes — each phase has explicit TODOs marking what remains to be implemented.
+**Default applied:** Wide-scaffolding pass (kickoff option 2), then promoted in a follow-up
+turn to a *fully functional* build. The appliance now boots end-to-end: Postgres + Redis come
+up via Docker, `pnpm db:migrate` + `pnpm db:seed` populate the schema, the API starts, the
+auth flow works (login, refresh, /auth/me, role gates), and chat creation + streaming SSE
+gracefully report a missing key when one isn't configured. The Anthropic SDK calls are real
+(no `as unknown as` shims for invented APIs); the only casts remaining are for the still-
+untyped `container.skills[]` and the new `code_execution_20250825` / `web_fetch_20250828` /
+`web_search_20250828` tool shapes — those will go away when the SDK ships them in a stable
+release.
+**What is NOT verified:** the actual §199A QBI reference turn cannot be tested without a
+real Anthropic API key. The chat plumbing has been smoke-tested end-to-end (request →
+auth → routing → SSE open → graceful error when key is absent).
+**Rationale:** Real working appliance > fake "v1.0.0" claim. A CPA can install this and use
+it; the only step missing on first run is "paste your own Anthropic key into Settings."
+**Reversible:** Yes — TODOs in code mark every spot where more work is required (e.g.,
+custom-skill packaging step in `routes/admin/custom-skills.ts`, OCR fallback in
+`lib/parsers/index.ts`, MCP authority server in v1.5).
 
 ## Missing reference assets
 **Question:** `mockup.html` is referenced by Phases 14, 15, 18, 19, 20 as the visual target but

@@ -22,8 +22,10 @@ export const logger = pino({
     ],
     censor: '[REDACTED]',
   },
+  // pino-pretty is opt-in (enable with PRETTY_LOGS=1) so the default startup
+  // doesn't crash if the transport package isn't installed.
   transport:
-    env.NODE_ENV === 'development'
+    env.NODE_ENV === 'development' && process.env.PRETTY_LOGS === '1'
       ? { target: 'pino-pretty', options: { colorize: true, translateTime: 'SYS:standard' } }
       : undefined,
 });

@@ -27,6 +27,10 @@ import { selectSkills } from '@vibe/shared';
 import { computeCost } from '../../lib/cost/calc.js';
 import { getSetting } from '../../lib/settings-store.js';
 import { logger } from '../../lib/logger.js';
+import { extractAuthorities, decorateVerification } from '../../lib/parsing/authorities.js';
+import { extractCompliance } from '../../lib/parsing/compliance.js';
+import { chatTitleQueue } from '../../jobs/queues.js';
+import { checkSpendCap } from '../../lib/spend-cap.js';
 
 export const messagesRouter = Router({ mergeParams: true });
 messagesRouter.use(requireAuth);
@@ -53,6 +57,17 @@ messagesRouter.post('/', async (req, res) => {
   const [chat] = await db.select().from(chats).where(eq(chats.id, chatId)).limit(1);
   if (!chat || (chat.user_id !== req.auth!.user_id && req.auth!.role !== 'admin')) {
     res.status(404).json({ error: 'not_found' });
+    return;
+  }
+
+  // Phase 4 — spend cap enforcement (against the chat OWNER, not the actor).
+  const block = await checkSpendCap(chat.user_id);
+  if (block) {
+    res.status(402).json({
+      error: 'spend_cap_exceeded',
+      cap_usd: block.cap_usd,
+      mtd_usd: block.mtd_usd,
+    });
     return;
   }
 
@@ -195,6 +210,14 @@ messagesRouter.post('/', async (req, res) => {
             },
           );
 
+          // Phase 18 + 19 — extract sidecar JSON before persisting.
+          const rawAuthorities = extractAuthorities(assistantText);
+          const authorities = decorateVerification(
+            rawAuthorities,
+            consultations.map((c) => ({ url: c.url, domain: c.domain })),
+          );
+          const compliance = extractCompliance(assistantText);
+
           const [assistantMsg] = await db
             .insert(messages)
             .values({
@@ -214,11 +237,15 @@ messagesRouter.post('/', async (req, res) => {
               web_fetch_calls: ev.usage.web_fetch_calls,
               web_search_calls: ev.usage.web_search_calls,
               cost_usd: cost.total_usd.toFixed(6),
+              authorities: authorities as unknown as Record<string, unknown>[],
+              compliance_check: (compliance ?? null) as Record<string, unknown> | null,
             })
             .returning({ id: messages.id });
 
-          // Phase 17 — flush consultations
+          // Phase 17 — flush consultations, marking those whose URL appears
+          // in the authorities sidecar.
           if (assistantMsg && consultations.length > 0) {
+            const citedUrls = new Set(authorities.map((a) => a.source).filter(Boolean));
             await db.insert(primary_source_consultations).values(
               consultations.map((c) => ({
                 message_id: assistantMsg.id,
@@ -228,6 +255,7 @@ messagesRouter.post('/', async (req, res) => {
                 domain: c.domain ?? null,
                 response_status: c.response_status ?? null,
                 response_excerpt: c.response_excerpt ?? null,
+                cited_in_authorities: c.url ? citedUrls.has(c.url) : false,
               })),
             );
           }
@@ -249,12 +277,20 @@ messagesRouter.post('/', async (req, res) => {
             });
           }
 
+          // Phase 13 — auto-title the chat once we've had the first
+          // assistant turn (i.e., the chat is still "Untitled chat").
+          if (chat.title === 'Untitled chat' && assistantMsg) {
+            await chatTitleQueue.add('title', { chat_id: chatId });
+          }
+
           send('done', {
             user_message_id: userMsg!.id,
             assistant_message_id: assistantMsg?.id,
             stop_reason: ev.stop_reason,
             cost: cost.total_usd,
             usage: ev.usage,
+            authorities,
+            compliance_check: compliance,
           });
           res.end();
           return;

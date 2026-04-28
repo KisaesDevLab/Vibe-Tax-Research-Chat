@@ -1,9 +1,12 @@
 // Phase 5 — settings KV (with encryption flag).
 import { pgTable, text, jsonb, boolean, timestamp, uuid } from 'drizzle-orm/pg-core';
 
+// JSONB stores any JSON-serializable value (including null for "explicitly unset").
+export type SettingValue = Record<string, unknown> | string | number | boolean | null;
+
 export const settings = pgTable('settings', {
   key: text('key').primaryKey(),
-  value: jsonb('value').notNull().$type<Record<string, unknown> | string | number | boolean>(),
+  value: jsonb('value').$type<SettingValue>(),
   is_encrypted: boolean('is_encrypted').notNull().default(false),
   updated_by: uuid('updated_by'),
   updated_at: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

@@ -1,6 +1,13 @@
 // Phase 1 — env loader. Validates required vars at startup.
-import 'dotenv/config';
+import { config as dotenvConfig } from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
+
+// Load .env from the workspace root (apps/api/src/config -> 4 levels up).
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenvConfig({ path: path.resolve(__dirname, '../../../../.env') });
 
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),

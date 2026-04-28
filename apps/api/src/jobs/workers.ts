@@ -1,5 +1,6 @@
 // Phase 25 — BullMQ workers + cron schedules.
 import { Worker } from 'bullmq';
+import { eq, asc, sql } from 'drizzle-orm';
 import { getRedis } from '../lib/redis.js';
 import { logger } from '../lib/logger.js';
 import { runDryRun } from '../lib/skills/sync.js';
@@ -8,56 +9,166 @@ import {
   usageRollupQueue,
 } from './queues.js';
 import { env } from '../config/env.js';
+import { getDb } from '@vibe/db';
+import { chats, messages, chat_attachments, usage_events, usage_daily } from '@vibe/db/schema';
+import { getAnthropic } from '../lib/anthropic/client.js';
 
 const connection = getRedis();
 
 export function startWorkers(): void {
-  // ── skills:sync — dry-run only by default
+  // ── skills-sync — dry-run only by default
   new Worker(
-    'skills:sync',
+    'skills-sync',
     async (job) => {
       logger.info({ id: job.id, name: job.name }, 'skills:sync job start');
-      try {
-        await runDryRun({
-          triggered_by: typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'cron',
-          pin_type: env.SKILLS_REPO_PIN_TYPE as 'tag' | 'branch' | 'sha',
-          pin_value: env.SKILLS_REPO_PIN_VALUE,
-        });
-      } catch (err) {
-        logger.error({ err }, 'skills:sync failed');
-        throw err;
-      }
+      await runDryRun({
+        triggered_by: typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'cron',
+        pin_type: env.SKILLS_REPO_PIN_TYPE as 'tag' | 'branch' | 'sha',
+        pin_value: env.SKILLS_REPO_PIN_VALUE,
+      });
     },
     { connection },
   );
 
-  // ── usage:rollup — hourly, materializes usage_daily.
+  // ── chat-title — Haiku 4.5 auto-titler after the first assistant turn.
   new Worker(
-    'usage:rollup',
-    async () => {
-      // TODO Phase 24: implement INSERT … ON CONFLICT … rollup query.
-      logger.info('usage:rollup tick');
+    'chat-title',
+    async (job) => {
+      const chat_id = job.data?.chat_id as string | undefined;
+      if (!chat_id) return;
+      await titleChat(chat_id);
     },
     { connection },
   );
 
-  // ── attachment:summarize, chat:title, notifications:email — TODO Phase 23/24/25.
+  // ── attachment-summarize — async Haiku 4.5 summary on PDF/DOCX upload.
+  new Worker(
+    'attachment-summarize',
+    async (job) => {
+      const attachment_id = job.data?.attachment_id as string | undefined;
+      if (!attachment_id) return;
+      await summarizeAttachment(attachment_id);
+    },
+    { connection },
+  );
 
-  // Cron schedules
+  // ── usage-rollup — UPSERT usage_daily from the last 48h of usage_events.
+  new Worker(
+    'usage-rollup',
+    async () => {
+      await rollupUsageDaily();
+    },
+    { connection },
+  );
+
   void scheduleCrons();
 }
 
+async function titleChat(chat_id: string): Promise<void> {
+  const db = getDb();
+  const recent = await db
+    .select({ role: messages.role, content: messages.content })
+    .from(messages)
+    .where(eq(messages.chat_id, chat_id))
+    .orderBy(asc(messages.created_at))
+    .limit(4);
+  if (recent.length === 0) return;
+  const transcript = recent
+    .map((r) => `${r.role.toUpperCase()}: ${r.content.slice(0, 800)}`)
+    .join('\n\n');
+  let title = 'Untitled chat';
+  try {
+    const { client } = await getAnthropic();
+    const r = await client.messages.create({
+      model: 'claude-haiku-4-5',
+      max_tokens: 32,
+      messages: [
+        {
+          role: 'user',
+          content:
+            'Generate a 3–6 word descriptive title for the following tax research chat. Return only the title text, no quotes, no period.\n\n' +
+            transcript,
+        },
+      ],
+    });
+    const block = r.content.find((c) => c.type === 'text');
+    if (block && block.type === 'text') title = block.text.trim().slice(0, 80);
+  } catch (err) {
+    logger.warn({ err, chat_id }, 'chat:title generation failed');
+    return;
+  }
+  await db.update(chats).set({ title, updated_at: new Date() }).where(eq(chats.id, chat_id));
+  logger.info({ chat_id, title }, 'chat titled');
+}
+
+async function summarizeAttachment(attachment_id: string): Promise<void> {
+  const db = getDb();
+  const [att] = await db
+    .select()
+    .from(chat_attachments)
+    .where(eq(chat_attachments.id, attachment_id))
+    .limit(1);
+  if (!att || !att.full_text) return;
+  const text = att.full_text.slice(0, 80_000);
+  let summary = '';
+  try {
+    const { client } = await getAnthropic();
+    const r = await client.messages.create({
+      model: 'claude-haiku-4-5',
+      max_tokens: 600,
+      messages: [
+        {
+          role: 'user',
+          content:
+            `Summarize the following document in 5–8 sentences for a CPA. Focus on: client identifiers, ` +
+            `tax years, dollar amounts, dates, and any flags requiring follow-up. Document name: ` +
+            `${att.filename}\n\n---\n\n${text}`,
+        },
+      ],
+    });
+    const block = r.content.find((c) => c.type === 'text');
+    if (block && block.type === 'text') summary = block.text.trim();
+  } catch (err) {
+    logger.warn({ err, attachment_id }, 'attachment:summarize failed');
+    return;
+  }
+  if (summary) {
+    await db.update(chat_attachments).set({ summary }).where(eq(chat_attachments.id, attachment_id));
+  }
+}
+
+async function rollupUsageDaily(): Promise<void> {
+  await getDb().execute(sql`
+    INSERT INTO usage_daily (day, user_id, model_id, message_count, total_tokens, total_cost_usd)
+    SELECT
+      date_trunc('day', occurred_at)::date AS day,
+      user_id,
+      model_id,
+      COUNT(*) AS message_count,
+      SUM(input_tokens + output_tokens + cache_creation_input_tokens + cache_read_input_tokens) AS total_tokens,
+      SUM(cost_usd) AS total_cost_usd
+    FROM usage_events
+    WHERE occurred_at >= NOW() - INTERVAL '2 days'
+    GROUP BY 1, 2, 3
+    ON CONFLICT (day, user_id, model_id) DO UPDATE SET
+      message_count = EXCLUDED.message_count,
+      total_tokens = EXCLUDED.total_tokens,
+      total_cost_usd = EXCLUDED.total_cost_usd
+  `);
+  logger.info('usage:rollup done');
+  void usage_events;
+  void usage_daily;
+}
+
 async function scheduleCrons() {
-  // Nightly skills sync at 03:00 local
   await skillsSyncQueue.add(
     'nightly-dry-run',
     { triggered_by: 'cron' },
-    { repeat: { pattern: '0 3 * * *' }, jobId: 'cron:skills:sync:nightly' },
+    { repeat: { pattern: '0 3 * * *' }, jobId: 'cron-skills-sync-nightly' },
   );
-  // Hourly usage rollup
   await usageRollupQueue.add(
     'hourly',
     {},
-    { repeat: { pattern: '5 * * * *' }, jobId: 'cron:usage:rollup:hourly' },
+    { repeat: { pattern: '5 * * * *' }, jobId: 'cron-usage-rollup-hourly' },
   );
 }
