@@ -50,15 +50,25 @@ export async function uploadSkillToAnthropic(opts: {
     throw new Error(`skill ${opts.local_slug} has no files to upload`);
   }
 
+  // Anthropic requires every uploaded skill to sit under a single
+  // top-level folder named for the skill, with SKILL.md at the root of
+  // that folder (and references/, scripts/, etc. as siblings). If we
+  // upload `SKILL.md` directly the API rejects with "SKILL.md file must
+  // be exactly in the top-level folder." Prefix every path with the
+  // slug so the multipart entries look like:
+  //   compliance-ssts-circular230/SKILL.md
+  //   compliance-ssts-circular230/references/foo.md
+  const folder = opts.local_slug;
+
   const fd = new FormData();
   fd.append('display_name', opts.display_name);
   fd.append('description', opts.description);
   for (const f of files) {
     // Use a Blob with octet-stream — Anthropic infers nothing from MIME.
     // The third FormData.append arg sets the multipart filename header,
-    // which is how we preserve `references/foo.md` style paths.
+    // which is how the server sees the relative path.
     const blob = new Blob([new Uint8Array(f.bytes)], { type: 'application/octet-stream' });
-    fd.append('files[]', blob, f.rel_path);
+    fd.append('files[]', blob, `${folder}/${f.rel_path}`);
   }
 
   let res: Response;
