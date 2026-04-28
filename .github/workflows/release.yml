@@ -25,6 +25,14 @@ on:
     tags: ['v*']
   workflow_dispatch: {}
 
+# Opt every JavaScript-runtime action in this workflow into Node.js 24.
+# GitHub deprecated Node 20 actions on 2025-09-19; the runner default
+# flips on 2026-06-02 and Node 20 is removed on 2026-09-16. Setting
+# this now silences the deprecation annotation and makes the flip a
+# no-op on our side.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
   publish-images:
     name: publish images (ghcr.io)
