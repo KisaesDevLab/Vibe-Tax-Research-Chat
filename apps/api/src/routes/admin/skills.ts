@@ -1,7 +1,7 @@
 // Phase 8 + 10 — admin skill sync endpoints.
 import { Router } from 'express';
 import { z } from 'zod';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, or } from 'drizzle-orm';
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import { getDb } from '@vibe/db';
@@ -197,13 +197,20 @@ async function walk(
 }
 
 adminSkillsRouter.get('/:skill_id/content', async (req, res) => {
+  const requestedId = req.params.skill_id;
+  // Look up by skill_id OR local_slug. Anthropic-issued skill_ids only
+  // exist after a successful upload; if the appliance is in a state where
+  // a skill is registered but never made it to Anthropic (sync that aborted
+  // mid-flight, key missing the first time round, etc.) the row may carry
+  // a placeholder. Falling back to local_slug also lets a future SPA call
+  // the human-readable slug directly without breaking existing callers.
   const [row] = await getDb()
     .select()
     .from(skills)
-    .where(eq(skills.skill_id, req.params.skill_id))
+    .where(or(eq(skills.skill_id, requestedId), eq(skills.local_slug, requestedId)))
     .limit(1);
   if (!row) {
-    res.status(404).json({ error: 'not_found' });
+    res.status(404).json({ error: 'not_found', requested_id: requestedId });
     return;
   }
   if (!row.github_path) {

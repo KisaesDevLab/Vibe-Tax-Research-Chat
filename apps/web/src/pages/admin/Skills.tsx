@@ -71,11 +71,16 @@ export function AdminSkillsPage() {
   const [viewBusy, setViewBusy] = useState<string | null>(null);
   const [viewError, setViewError] = useState<string | null>(null);
 
-  async function openView(skill_id: string) {
-    setViewBusy(skill_id);
+  async function openView(row: SkillRow) {
+    // Use local_slug — it's the stable, human-readable identifier. The
+    // backend lookup accepts either skill_id or local_slug, but slug avoids
+    // any URL-encoding edge case if Anthropic ever ships ids with awkward
+    // characters and is much easier to recognize in network logs.
+    const lookupId = row.local_slug ?? row.skill_id;
+    setViewBusy(lookupId);
     setViewError(null);
     try {
-      const r = await api<SkillContentResponse>(`/api/admin/skills/${skill_id}/content`);
+      const r = await api<SkillContentResponse>(`/api/admin/skills/${lookupId}/content`);
       setViewing(r);
     } catch (e) {
       if (e instanceof ApiError && e.message === 'workspace_missing') {
@@ -85,6 +90,14 @@ export function AdminSkillsPage() {
       } else if (e instanceof ApiError && e.message === 'no_github_path') {
         setViewError(
           'This skill has no on-disk source. (Custom skills authored in the appliance are visible under Admin → Custom skills.)',
+        );
+      } else if (e instanceof ApiError && e.message === 'not_found') {
+        const requested =
+          typeof e.body === 'object' && e.body !== null && 'requested_id' in e.body
+            ? String((e.body as Record<string, unknown>).requested_id)
+            : lookupId;
+        setViewError(
+          `Couldn't find a skill matching "${requested}" in the database. The list may be stale — try refreshing the page.`,
         );
       } else {
         setViewError((e as Error).message);
@@ -274,11 +287,11 @@ export function AdminSkillsPage() {
               <td>{s.is_active ? 'yes' : 'no'}</td>
               <td className="text-right">
                 <button
-                  onClick={() => void openView(s.skill_id)}
-                  disabled={viewBusy === s.skill_id}
+                  onClick={() => void openView(s)}
+                  disabled={viewBusy === (s.local_slug ?? s.skill_id)}
                   className="text-xs underline disabled:opacity-50"
                 >
-                  {viewBusy === s.skill_id ? 'loading…' : 'view'}
+                  {viewBusy === (s.local_slug ?? s.skill_id) ? 'loading…' : 'view'}
                 </button>
               </td>
             </tr>
