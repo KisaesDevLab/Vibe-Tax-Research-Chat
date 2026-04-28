@@ -2,8 +2,17 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { api } from '../lib/api';
+import { tokenStore } from '../lib/token-store';
+import type { AuthUser } from '@vibe/shared';
 
 type Step = 'admin' | 'key' | 'model' | 'done';
+
+interface BootstrapResponse {
+  ok: true;
+  access_token: string;
+  refresh_token: string;
+  user: AuthUser;
+}
 
 export function SetupPage() {
   const [step, setStep] = useState<Step>('admin');
@@ -12,18 +21,23 @@ export function SetupPage() {
   const [apiKey, setApiKey] = useState('');
   const [defaultModel, setDefaultModel] = useState('claude-sonnet-4-6');
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   if (step === 'done') return <Navigate to="/chat" replace />;
 
   async function next() {
     setError(null);
+    setBusy(true);
     try {
       if (step === 'admin') {
-        // TODO Phase 28: POST /api/setup/bootstrap to create the first admin (auth-free, only when zero users exist).
-        await api('/api/setup/bootstrap', {
+        // Bootstraps the first admin AND issues access+refresh tokens we can
+        // use for the next two steps without a separate login.
+        const r = await api<BootstrapResponse>('/api/setup/bootstrap', {
           method: 'POST',
           body: JSON.stringify({ email: adminEmail, password: adminPassword }),
-        }).catch(() => {});
+          skipRefresh: true,
+        });
+        tokenStore.set(r.access_token, r.refresh_token);
         setStep('key');
       } else if (step === 'key') {
         await api('/api/admin/settings/anthropic-key', {
@@ -36,11 +50,20 @@ export function SetupPage() {
           method: 'POST',
           body: JSON.stringify({ model_id: defaultModel }),
         });
-        await api('/api/admin/skills/sync', { method: 'POST' });
+        // Skills sync is best-effort here — it's a long-running job and the
+        // wizard should not block on it. If the sync queue isn't ready yet,
+        // surface the message rather than silently swallowing.
+        try {
+          await api('/api/admin/skills/sync', { method: 'POST' });
+        } catch (err) {
+          console.warn('initial skills sync deferred:', (err as Error).message);
+        }
         setStep('done');
       }
     } catch (e) {
       setError((e as Error).message);
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -57,6 +80,7 @@ export function SetupPage() {
               value={adminEmail}
               onChange={(e) => setAdminEmail(e.target.value)}
               className="w-full px-3 py-2 border border-ink/20 rounded font-mono text-sm"
+              autoComplete="email"
             />
             <input
               type="password"
@@ -64,25 +88,33 @@ export function SetupPage() {
               value={adminPassword}
               onChange={(e) => setAdminPassword(e.target.value)}
               className="w-full px-3 py-2 border border-ink/20 rounded font-mono text-sm"
+              autoComplete="new-password"
             />
           </div>
         )}
         {step === 'key' && (
           <div>
-            <label className="block text-xs uppercase tracking-wider text-ink/50 mb-1">Anthropic API key</label>
+            <label className="block text-xs uppercase tracking-wider text-ink/50 mb-1">
+              Anthropic API key
+            </label>
             <input
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="sk-ant-…"
               className="w-full px-3 py-2 border border-ink/20 rounded font-mono text-sm"
+              autoComplete="off"
             />
-            <p className="text-xs text-ink/50 mt-1">Validated with a 1-token Haiku call. Stored AES-256-GCM.</p>
+            <p className="text-xs text-ink/50 mt-1">
+              Validated with a 1-token Haiku call. Stored AES-256-GCM.
+            </p>
           </div>
         )}
         {step === 'model' && (
           <div>
-            <label className="block text-xs uppercase tracking-wider text-ink/50 mb-1">Default model</label>
+            <label className="block text-xs uppercase tracking-wider text-ink/50 mb-1">
+              Default model
+            </label>
             <select
               value={defaultModel}
               onChange={(e) => setDefaultModel(e.target.value)}
@@ -93,13 +125,19 @@ export function SetupPage() {
               <option value="claude-opus-4-6">Claude Opus 4.6</option>
               <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
             </select>
-            <p className="text-xs text-ink/50 mt-1">Skills sync will run after you finish this step.</p>
+            <p className="text-xs text-ink/50 mt-1">
+              Skills sync will run after you finish this step.
+            </p>
           </div>
         )}
 
         {error && <div className="text-oxblood text-sm mt-3">{error}</div>}
-        <button onClick={next} className="mt-6 w-full bg-ink text-paper py-2 rounded font-display tracking-wide">
-          {step === 'model' ? 'Finish' : 'Next'}
+        <button
+          onClick={next}
+          disabled={busy}
+          className="mt-6 w-full bg-ink text-paper py-2 rounded font-display tracking-wide disabled:opacity-50"
+        >
+          {busy ? 'Working…' : step === 'model' ? 'Finish' : 'Next'}
         </button>
       </div>
     </div>

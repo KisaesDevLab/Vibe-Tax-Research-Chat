@@ -57,7 +57,6 @@ async function main() {
       })
       .onConflictDoNothing({ target: models.model_id });
   }
-  // eslint-disable-next-line no-console
   console.log(`Seeded ${manifest.models.length} models.`);
 
   // 2. Default model setting
@@ -85,10 +84,8 @@ async function main() {
         is_active: true,
       })
       .onConflictDoNothing({ target: users.email });
-    // eslint-disable-next-line no-console
     console.log(`Seeded admin user ${email}.`);
   } else {
-    // eslint-disable-next-line no-console
     console.warn('SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD not set — skipping admin seed.');
   }
 
@@ -103,7 +100,9 @@ async function main() {
     [
       SETTING_KEYS.SKILLS_REPO_REF,
       {
-        repo: process.env.SKILLS_REPO_URL ?? 'https://github.com/KisaesDevLab/Vibe-Claude-Tax-Research-Skills',
+        repo:
+          process.env.SKILLS_REPO_URL ??
+          'https://github.com/KisaesDevLab/Vibe-Claude-Tax-Research-Skills',
         pin_type: process.env.SKILLS_REPO_PIN_TYPE ?? 'tag',
         pin_value: process.env.SKILLS_REPO_PIN_VALUE ?? 'v1.0.0-beta',
         last_synced_sha: null,
@@ -121,7 +120,6 @@ async function main() {
       })
       .onConflictDoNothing({ target: settings.key });
   }
-  // eslint-disable-next-line no-console
   console.log(`Seeded ${defaults.length} default settings.`);
 
   // touch updated_at to silence linter
@@ -131,7 +129,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error('Seed failed:', err);
   process.exit(1);
 });

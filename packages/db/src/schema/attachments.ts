@@ -10,9 +10,11 @@ export const chat_attachments = pgTable(
     chat_id: uuid('chat_id')
       .notNull()
       .references(() => chats.id, { onDelete: 'cascade' }),
-    uploaded_by: uuid('uploaded_by')
-      .notNull()
-      .references(() => users.id, { onDelete: 'set null' }),
+    // Nullable so the FK's ON DELETE SET NULL can fire if a user is hard-
+    // deleted (the normal flow is soft-delete via users.deleted_at, but the
+    // schema must remain self-consistent — a NOT NULL column with SET NULL
+    // would crash at runtime on hard delete).
+    uploaded_by: uuid('uploaded_by').references(() => users.id, { onDelete: 'set null' }),
     filename: text('filename').notNull(),
     mime_type: text('mime_type').notNull(),
     size_bytes: integer('size_bytes').notNull(),

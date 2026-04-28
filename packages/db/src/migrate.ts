@@ -19,10 +19,8 @@ async function main() {
   const sql = postgres(url, { max: 1 });
   const db = drizzle(sql);
 
-  // eslint-disable-next-line no-console
   console.log('Running migrations…');
   await migrate(db, { migrationsFolder: path.resolve(__dirname, '../drizzle') });
-  // eslint-disable-next-line no-console
   console.log('Migrations complete.');
 
   await sql.end();
@@ -30,7 +28,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error('Migration failed:', err);
   process.exit(1);
 });

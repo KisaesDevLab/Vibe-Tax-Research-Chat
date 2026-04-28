@@ -30,13 +30,18 @@
     "@typescript-eslint/parser": "^8.20.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
+    "globals": "^17.5.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.4.1",
     "prettier": "^3.4.2",
     "typescript": "^5.7.3"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": ["prettier --write"],
-    "*.{json,md,yaml,yml}": ["prettier --write"]
+    "*.{ts,tsx,js,jsx}": [
+      "prettier --write"
+    ],
+    "*.{json,md,yaml,yml}": [
+      "prettier --write"
+    ]
   }
 }

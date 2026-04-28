@@ -29,14 +29,20 @@ const schema = z.object({
   SEED_ADMIN_EMAIL: z.string().email().optional(),
   SEED_ADMIN_PASSWORD: z.string().min(8).optional(),
 
-  SKILLS_REPO_URL: z.string().url().default('https://github.com/KisaesDevLab/Vibe-Claude-Tax-Research-Skills'),
+  SKILLS_REPO_URL: z
+    .string()
+    .url()
+    .default('https://github.com/KisaesDevLab/Vibe-Claude-Tax-Research-Skills'),
   SKILLS_REPO_PIN_TYPE: z.enum(['tag', 'branch', 'sha']).default('tag'),
   SKILLS_REPO_PIN_VALUE: z.string().default('v1.0.0-beta'),
   SKILLS_WORKSPACE_DIR: z.string().default('./workspaces/skills'),
   GITHUB_WEBHOOK_SECRET: z.string().optional(),
 
   ANTHROPIC_API_KEY: z.string().optional(),
-  MODELS_MANIFEST_URL: z.string().url().default('https://vibemb.com/manifests/anthropic-models.json'),
+  MODELS_MANIFEST_URL: z
+    .string()
+    .url()
+    .default('https://vibemb.com/manifests/anthropic-models.json'),
 
   BACKUP_DIR: z.string().default('./backups'),
   BACKUP_RETENTION_DAYS: z.coerce.number().int().default(30),
@@ -51,7 +57,6 @@ export function loadEnv(): Env {
   if (cached) return cached;
   const parsed = schema.safeParse(process.env);
   if (!parsed.success) {
-    // eslint-disable-next-line no-console
     console.error('Invalid environment:', parsed.error.flatten().fieldErrors);
     throw new Error('Environment validation failed');
   }

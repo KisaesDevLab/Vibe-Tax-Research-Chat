@@ -5,6 +5,7 @@ import { eq, and, desc, asc } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import { chats, messages } from '@vibe/db/schema';
 import { requireAuth } from '../../middleware/auth.js';
+import { audit } from '../../lib/audit.js';
 import { messagesRouter } from './messages.js';
 import { attachmentsRouter } from './attachments.js';
 
@@ -35,7 +36,8 @@ chatsRouter.post('/', async (req, res) => {
 
 chatsRouter.get('/', async (req, res) => {
   const isAdmin = req.auth!.role === 'admin';
-  const targetUserId = isAdmin && typeof req.query.user_id === 'string' ? req.query.user_id : req.auth!.user_id;
+  const targetUserId =
+    isAdmin && typeof req.query.user_id === 'string' ? req.query.user_id : req.auth!.user_id;
   const rows = await getDb()
     .select()
     .from(chats)
@@ -45,18 +47,32 @@ chatsRouter.get('/', async (req, res) => {
   res.json({ chats: rows });
 });
 
+// ── Authorization helper ─────────────────────────────────────────────────
+// All single-chat operations are owner-scoped, EXCEPT admins who can act on
+// any chat. messages.ts already follows this rule, so the chat-CRUD endpoints
+// follow it too — no UI affordance reads or edits a chat the actor cannot see.
+function ownerOrAdminFilter(chatId: string, userId: string, isAdmin: boolean) {
+  if (isAdmin) return eq(chats.id, chatId);
+  return and(eq(chats.id, chatId), eq(chats.user_id, userId));
+}
+
 chatsRouter.get('/:id', async (req, res) => {
   const db = getDb();
+  const isAdmin = req.auth!.role === 'admin';
   const [chat] = await db
     .select()
     .from(chats)
-    .where(and(eq(chats.id, req.params.id), eq(chats.user_id, req.auth!.user_id)))
+    .where(ownerOrAdminFilter(req.params.id, req.auth!.user_id, isAdmin))
     .limit(1);
   if (!chat) {
     res.status(404).json({ error: 'not_found' });
     return;
   }
-  const msgs = await db.select().from(messages).where(eq(messages.chat_id, chat.id)).orderBy(asc(messages.created_at));
+  const msgs = await db
+    .select()
+    .from(messages)
+    .where(eq(messages.chat_id, chat.id))
+    .orderBy(asc(messages.created_at));
   res.json({ chat, messages: msgs });
 });
 
@@ -74,6 +90,7 @@ chatsRouter.patch('/:id', async (req, res) => {
     res.status(400).json({ error: 'bad_request' });
     return;
   }
+  const isAdmin = req.auth!.role === 'admin';
   const update: Record<string, unknown> = { updated_at: new Date() };
   if (parsed.data.title !== undefined) update.title = parsed.data.title;
   if (parsed.data.archived !== undefined)
@@ -84,17 +101,36 @@ chatsRouter.patch('/:id', async (req, res) => {
     update.default_model_id = parsed.data.default_model_id;
   if (parsed.data.pii_disclosure_acknowledged !== undefined)
     update.pii_disclosure_acknowledged = parsed.data.pii_disclosure_acknowledged;
-  await getDb()
-    .update(chats)
-    .set(update)
-    .where(and(eq(chats.id, req.params.id), eq(chats.user_id, req.auth!.user_id)));
+
+  const where = isAdmin
+    ? eq(chats.id, req.params.id)
+    : and(eq(chats.id, req.params.id), eq(chats.user_id, req.auth!.user_id));
+  const updated = await getDb().update(chats).set(update).where(where).returning({ id: chats.id });
+  if (updated.length === 0) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
   res.status(204).end();
 });
 
 chatsRouter.delete('/:id', async (req, res) => {
-  await getDb()
-    .delete(chats)
-    .where(and(eq(chats.id, req.params.id), eq(chats.user_id, req.auth!.user_id)));
+  const isAdmin = req.auth!.role === 'admin';
+  const where = isAdmin
+    ? eq(chats.id, req.params.id)
+    : and(eq(chats.id, req.params.id), eq(chats.user_id, req.auth!.user_id));
+  const deleted = await getDb().delete(chats).where(where).returning({ id: chats.id });
+  if (deleted.length === 0) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'chat.delete',
+    target_type: 'chat',
+    target_id: req.params.id,
+    metadata: { acted_as_admin: isAdmin },
+    ip: req.ip,
+  });
   res.status(204).end();
 });
 

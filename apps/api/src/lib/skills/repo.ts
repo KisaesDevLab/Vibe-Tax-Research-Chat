@@ -25,6 +25,15 @@ export async function ensureRepo(opts?: {
   let git: SimpleGit;
   if (await exists(path.join(dir, '.git'))) {
     git = simpleGit(dir);
+    // Drop any local edits left by a prior partially-failed checkout. The
+    // skills workspace is treated as a read-only mirror of upstream — we
+    // never want a stale dirty state to block a sync.
+    try {
+      await git.reset(['--hard']);
+      await git.clean('f', ['-d']);
+    } catch (err) {
+      logger.warn({ err, dir }, 'pre-fetch reset failed; continuing');
+    }
     await git.fetch(['--tags', '--prune']);
   } else {
     await fs.mkdir(dir, { recursive: true });
@@ -34,7 +43,11 @@ export async function ensureRepo(opts?: {
   }
 
   const ref =
-    pin_type === 'tag' ? `tags/${pin_value}` : pin_type === 'branch' ? `origin/${pin_value}` : pin_value;
+    pin_type === 'tag'
+      ? `tags/${pin_value}`
+      : pin_type === 'branch'
+        ? `origin/${pin_value}`
+        : pin_value;
   await git.checkout(ref);
   const sha = (await git.revparse(['HEAD'])).trim();
   return { repo_dir: dir, resolved_sha: sha };

@@ -1,0 +1,1 @@
+ALTER TABLE "chat_attachments" ALTER COLUMN "uploaded_by" DROP NOT NULL;

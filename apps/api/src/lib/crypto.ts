@@ -68,9 +68,12 @@ export function open(sealed: SealedValue, expectedPurpose: string): string {
   return pt.toString('utf8');
 }
 
-// For UI display only. Last 4 chars of the key, prefixed with the standard
-// `sk-ant-` prefix and ellipsis. Never returns enough material to be useful.
+// For UI display only. Reveals only the final 4 characters of the key —
+// enough to disambiguate two saved keys at a glance, not enough to be useful
+// to anyone who scrapes a screenshot or log line. Anthropic keys all start
+// with `sk-ant-` so the prefix is not secret; we still hide it to keep the
+// fingerprint short and uniform across providers.
 export function fingerprint(key: string): string {
-  if (key.length < 8) return '***';
-  return `${key.slice(0, 8)}…${key.slice(-4)}`;
+  if (key.length < 4) return '***';
+  return `…${key.slice(-4)}`;
 }

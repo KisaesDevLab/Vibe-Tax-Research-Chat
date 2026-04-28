@@ -38,9 +38,18 @@ describe('crypto', () => {
     expect(a.ciphertext).not.toBe(b.ciphertext);
   });
 
-  it('fingerprint shows only first 8 + last 4 chars', async () => {
+  it('fingerprint exposes only the last 4 chars', async () => {
     const { fingerprint } = await import('./crypto.js');
     const key = 'sk-ant-api03-AAAABBBBCCCCDDDDEEEEFFFF1234';
-    expect(fingerprint(key)).toBe('sk-ant-a…1234');
+    expect(fingerprint(key)).toBe('…1234');
+    // Defense: should never include any leading characters from the secret.
+    expect(fingerprint(key)).not.toContain('sk-ant');
+    expect(fingerprint(key)).not.toContain('AAAA');
+  });
+
+  it('fingerprint short-circuits on truncated input', async () => {
+    const { fingerprint } = await import('./crypto.js');
+    expect(fingerprint('abc')).toBe('***');
+    expect(fingerprint('')).toBe('***');
   });
 });

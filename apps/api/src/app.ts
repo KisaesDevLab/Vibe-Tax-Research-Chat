@@ -37,6 +37,12 @@ export function createApp(): Express {
     }),
   );
   app.use(compression());
+  // Webhooks need the raw body for HMAC verification — mount BEFORE express.json()
+  // so the JSON parser doesn't consume + reformat the bytes (GitHub signs the
+  // exact request body; round-tripping JSON.parse → JSON.stringify will not
+  // reproduce identical bytes).
+  app.use('/api/webhooks', express.raw({ type: '*/*', limit: '5mb' }), webhooksRouter);
+
   app.use(express.json({ limit: '5mb' }));
   app.use(express.urlencoded({ extended: true, limit: '5mb' }));
   app.use(pinoHttp({ logger }));
@@ -52,7 +58,6 @@ export function createApp(): Express {
   app.use('/api/admin/custom-skills', adminCustomSkillsRouter);
   app.use('/api/admin/usage', adminUsageRouter);
   app.use('/api/chats', chatsRouter);
-  app.use('/api/webhooks', webhooksRouter);
 
   // 404
   app.use((req, res) => {
@@ -64,7 +69,7 @@ export function createApp(): Express {
     const status = (err as { status?: number }).status ?? 500;
     logger.error({ err, path: req.path, method: req.method }, 'request failed');
     res.status(status).json({
-      error: status === 500 ? 'internal_error' : err.message ?? 'error',
+      error: status === 500 ? 'internal_error' : (err.message ?? 'error'),
       ...(env.NODE_ENV === 'development' && status === 500 ? { detail: String(err) } : {}),
     });
   };

@@ -1,8 +1,9 @@
 // Phase 4 — admin user CRUD + spend cap.
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
+import crypto from 'node:crypto';
 import { z } from 'zod';
-import { eq, ilike, or, isNull, and } from 'drizzle-orm';
+import { eq, ilike, or, isNull, and, ne, count } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import { users } from '@vibe/db/schema';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
@@ -11,6 +12,8 @@ import { audit } from '../../lib/audit.js';
 export const adminUsersRouter = Router();
 
 adminUsersRouter.use(requireAuth, requireRole('admin'));
+
+const uuidSchema = z.string().uuid();
 
 const listSchema = z.object({
   q: z.string().optional(),
@@ -97,12 +100,69 @@ const patchSchema = z.object({
   can_override_model: z.boolean().optional(),
 });
 
+// Count of active admins NOT including the supplied user-id. Used to guard
+// against demoting / disabling / deleting the last remaining admin which
+// would lock the appliance out of its own admin surface.
+async function otherActiveAdminCount(excludeId: string): Promise<number> {
+  const db = getDb();
+  const rows = await db
+    .select({ value: count() })
+    .from(users)
+    .where(
+      and(
+        eq(users.role, 'admin'),
+        eq(users.is_active, true),
+        isNull(users.deleted_at),
+        ne(users.id, excludeId),
+      ),
+    );
+  return Number(rows[0]?.value ?? 0);
+}
+
 adminUsersRouter.patch('/:id', async (req, res) => {
+  if (!uuidSchema.safeParse(req.params.id).success) {
+    res.status(400).json({ error: 'bad_request', detail: 'invalid id' });
+    return;
+  }
   const parsed = patchSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: 'bad_request' });
     return;
   }
+  const db = getDb();
+  const [target] = await db.select().from(users).where(eq(users.id, req.params.id)).limit(1);
+  if (!target || target.deleted_at) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+
+  // Self-protection: never let the actor demote, disable, or change their own role
+  // to a non-admin / disable themselves. Admin can update display_name / cap etc.
+  const isSelf = target.id === req.auth!.user_id;
+  if (isSelf) {
+    if (parsed.data.role !== undefined && parsed.data.role !== 'admin') {
+      res.status(409).json({ error: 'cannot_demote_self' });
+      return;
+    }
+    if (parsed.data.is_active === false) {
+      res.status(409).json({ error: 'cannot_disable_self' });
+      return;
+    }
+  }
+
+  // Last-admin protection: any change that removes admin powers from `target`
+  // must leave at least one other active admin standing.
+  const removesAdminPower =
+    (parsed.data.role !== undefined && parsed.data.role !== 'admin' && target.role === 'admin') ||
+    (parsed.data.is_active === false && target.role === 'admin' && target.is_active);
+  if (removesAdminPower) {
+    const others = await otherActiveAdminCount(target.id);
+    if (others === 0) {
+      res.status(409).json({ error: 'last_admin_protected' });
+      return;
+    }
+  }
+
   const update: Record<string, unknown> = { updated_at: new Date() };
   if (parsed.data.display_name !== undefined) update.display_name = parsed.data.display_name;
   if (parsed.data.role !== undefined) update.role = parsed.data.role;
@@ -112,7 +172,7 @@ adminUsersRouter.patch('/:id', async (req, res) => {
   if (parsed.data.can_override_model !== undefined)
     update.can_override_model = parsed.data.can_override_model;
 
-  await getDb().update(users).set(update).where(eq(users.id, req.params.id));
+  await db.update(users).set(update).where(eq(users.id, req.params.id));
   await audit({
     actor_user_id: req.auth!.user_id,
     action: 'admin.user.update',
@@ -125,9 +185,14 @@ adminUsersRouter.patch('/:id', async (req, res) => {
 });
 
 adminUsersRouter.post('/:id/reset-password', async (req, res) => {
-  // Generate a one-time link token (stub — Phase 4 wires email/SMS later).
-  const onetime = Math.random().toString(36).slice(2, 14);
-  // TODO Phase 4: persist this in a `password_resets` table with expiry.
+  if (!uuidSchema.safeParse(req.params.id).success) {
+    res.status(400).json({ error: 'bad_request', detail: 'invalid id' });
+    return;
+  }
+  // Cryptographically-random 32 bytes encoded url-safe base64 (~43 chars).
+  // TODO Phase 4 follow-up: persist this in a `password_resets` table with
+  // expiry + one-time use, and deliver via email.
+  const reset_token = crypto.randomBytes(32).toString('base64url');
   await audit({
     actor_user_id: req.auth!.user_id,
     action: 'admin.user.reset_password',
@@ -135,11 +200,33 @@ adminUsersRouter.post('/:id/reset-password', async (req, res) => {
     target_id: req.params.id,
     ip: req.ip,
   });
-  res.json({ reset_token: onetime, note: 'TODO: deliver via email/SMS in Phase 4 follow-up.' });
+  res.json({ reset_token, note: 'TODO: deliver via email/SMS in Phase 4 follow-up.' });
 });
 
 adminUsersRouter.delete('/:id', async (req, res) => {
-  await getDb()
+  if (!uuidSchema.safeParse(req.params.id).success) {
+    res.status(400).json({ error: 'bad_request', detail: 'invalid id' });
+    return;
+  }
+  const db = getDb();
+  const [target] = await db.select().from(users).where(eq(users.id, req.params.id)).limit(1);
+  if (!target || target.deleted_at) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  if (target.id === req.auth!.user_id) {
+    res.status(409).json({ error: 'cannot_delete_self' });
+    return;
+  }
+  if (target.role === 'admin' && target.is_active) {
+    const others = await otherActiveAdminCount(target.id);
+    if (others === 0) {
+      res.status(409).json({ error: 'last_admin_protected' });
+      return;
+    }
+  }
+
+  await db
     .update(users)
     .set({ deleted_at: new Date(), is_active: false })
     .where(eq(users.id, req.params.id));

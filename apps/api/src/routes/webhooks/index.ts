@@ -1,4 +1,11 @@
 // Phase 8 — webhook receivers.
+//
+// IMPORTANT: this router is mounted with `express.raw({ type: '*/*' })` so
+// `req.body` is the raw request bytes (Buffer) — GitHub computes the HMAC over
+// the exact transmitted payload, not the JSON-parsed value. Re-parsing via
+// `express.json()` and then `JSON.stringify(req.body)` would NOT produce
+// byte-identical output (whitespace, key ordering, escape differences) and
+// would reject otherwise-valid signatures.
 import { Router } from 'express';
 import crypto from 'node:crypto';
 import { env } from '../../config/env.js';
@@ -20,12 +27,16 @@ webhooksRouter.post('/github', async (req, res) => {
     res.status(401).json({ error: 'no_signature' });
     return;
   }
-  const expected = `sha256=${crypto
-    .createHmac('sha256', secret)
-    .update(JSON.stringify(req.body))
-    .digest('hex')}`;
-  const match =
-    sig.length === expected.length && crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+  const raw = Buffer.isBuffer(req.body) ? (req.body as Buffer) : Buffer.from('');
+  const expected = `sha256=${crypto.createHmac('sha256', secret).update(raw).digest('hex')}`;
+  let match = false;
+  try {
+    match =
+      sig.length === expected.length &&
+      crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+  } catch {
+    match = false;
+  }
   if (!match) {
     res.status(401).json({ error: 'bad_signature' });
     return;
