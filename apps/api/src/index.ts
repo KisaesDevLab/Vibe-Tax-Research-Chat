@@ -3,6 +3,7 @@ import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { logger } from './lib/logger.js';
 import { startWorkers } from './jobs/workers.js';
+import { recoverOrphanedStreams } from './lib/stream-recovery.js';
 
 // Last-line-of-defense: any promise that escapes our handlers should be
 // logged, not abort the process. BullMQ workers + their per-queue 'error'
@@ -28,6 +29,13 @@ if (process.env.WORKERS_ENABLED !== 'false') {
   startWorkers();
   logger.info('background workers started');
 }
+
+// Recover any chat threads whose last assistant turn was severed by the
+// previous process dying mid-stream. We can't catch that case from inside
+// the SSE handler (req.on('close') doesn't fire when the SERVER goes
+// away), so we sweep on startup instead and write a system_note into
+// each affected chat. Runs async; never blocks listening.
+void recoverOrphanedStreams();
 
 const shutdown = (signal: string) => {
   logger.info({ signal }, 'shutting down');

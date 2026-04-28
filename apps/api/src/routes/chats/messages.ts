@@ -204,6 +204,21 @@ messagesRouter.post('/', async (req, res) => {
     }
   });
 
+  // Lifecycle log: stream start. Logging at this point captures the
+  // chat / user / model + skill set so we can correlate later events
+  // when triaging "no reply" reports.
+  logger.info(
+    {
+      chat_id: chatId,
+      user_id: req.auth!.user_id,
+      user_msg_id: userMsg!.id,
+      model_id: modelId,
+      attached_skill_count: attached_skill_ids.length,
+      message_chars: parsed.data.content.length,
+    },
+    'stream start',
+  );
+
   try {
     const stream = streamChat({
       chat_id: chatId,
@@ -228,6 +243,10 @@ messagesRouter.post('/', async (req, res) => {
         case 'tool_use':
           toolUses.set(ev.id, { tool_name: ev.tool_name, input: ev.input });
           send('tool_use', { id: ev.id, tool_name: ev.tool_name, input: ev.input });
+          logger.debug(
+            { chat_id: chatId, tool_name: ev.tool_name, tool_use_id: ev.id },
+            'stream tool_use',
+          );
           // Phase 17 — capture for primary_source_consultations
           if (ev.tool_name === 'web_fetch') {
             const url = (ev.input as { url?: string }).url;
@@ -263,6 +282,16 @@ messagesRouter.post('/', async (req, res) => {
           // Mark the request as fully completed so the req.on('close')
           // handler below treats this as a clean finish, not an abort.
           completed = true;
+          logger.info(
+            {
+              chat_id: chatId,
+              stop_reason: ev.stop_reason,
+              chars: assistantText.length,
+              tool_uses: toolUses.size,
+              consultations: consultations.length,
+            },
+            'stream message_stop',
+          );
           // Persist assistant message + cost
           const cost = computeCost(
             {
