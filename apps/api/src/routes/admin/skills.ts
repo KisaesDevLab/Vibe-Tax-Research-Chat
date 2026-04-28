@@ -198,19 +198,35 @@ async function walk(
 
 adminSkillsRouter.get('/:skill_id/content', async (req, res) => {
   const requestedId = req.params.skill_id;
+  const db = getDb();
   // Look up by skill_id OR local_slug. Anthropic-issued skill_ids only
   // exist after a successful upload; if the appliance is in a state where
   // a skill is registered but never made it to Anthropic (sync that aborted
   // mid-flight, key missing the first time round, etc.) the row may carry
   // a placeholder. Falling back to local_slug also lets a future SPA call
   // the human-readable slug directly without breaking existing callers.
-  const [row] = await getDb()
+  const [row] = await db
     .select()
     .from(skills)
     .where(or(eq(skills.skill_id, requestedId), eq(skills.local_slug, requestedId)))
     .limit(1);
   if (!row) {
-    res.status(404).json({ error: 'not_found', requested_id: requestedId });
+    // Help triage: dump every (skill_id, local_slug) pair so we can see
+    // whether the row is genuinely absent (DB never seeded / wiped) vs
+    // stored under a slightly different value (whitespace, case, etc.).
+    const all = await db
+      .select({ skill_id: skills.skill_id, local_slug: skills.local_slug })
+      .from(skills);
+    logger.warn(
+      { requestedId, total_in_table: all.length, available: all.slice(0, 20) },
+      'skills/content: lookup miss',
+    );
+    res.status(404).json({
+      error: 'not_found',
+      requested_id: requestedId,
+      total_in_table: all.length,
+      available_slugs: all.map((r) => r.local_slug).slice(0, 20),
+    });
     return;
   }
   if (!row.github_path) {

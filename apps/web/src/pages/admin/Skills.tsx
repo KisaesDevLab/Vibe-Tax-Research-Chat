@@ -92,13 +92,27 @@ export function AdminSkillsPage() {
           'This skill has no on-disk source. (Custom skills authored in the appliance are visible under Admin → Custom skills.)',
         );
       } else if (e instanceof ApiError && e.message === 'not_found') {
-        const requested =
-          typeof e.body === 'object' && e.body !== null && 'requested_id' in e.body
-            ? String((e.body as Record<string, unknown>).requested_id)
-            : lookupId;
-        setViewError(
-          `Couldn't find a skill matching "${requested}" in the database. The list may be stale — try refreshing the page.`,
-        );
+        const body = (e.body ?? {}) as {
+          requested_id?: string;
+          total_in_table?: number;
+          available_slugs?: string[];
+        };
+        const requested = body.requested_id ?? lookupId;
+        if (body.total_in_table === 0) {
+          setViewError(
+            `Skills table is empty in the database. Click "Sync from upstream" above and apply the diff to populate it.`,
+          );
+        } else if (
+          Array.isArray(body.available_slugs) &&
+          body.available_slugs.length > 0 &&
+          !body.available_slugs.includes(requested)
+        ) {
+          setViewError(
+            `"${requested}" isn't in the skills table. The displayed list may be stale — refresh the page. Available slugs: ${body.available_slugs.slice(0, 8).join(', ')}${body.available_slugs.length > 8 ? '…' : ''}`,
+          );
+        } else {
+          setViewError(`Couldn't find "${requested}" — the list may be stale. Refresh the page.`);
+        }
       } else {
         setViewError((e as Error).message);
       }
