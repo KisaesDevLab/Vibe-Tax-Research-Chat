@@ -20,6 +20,7 @@ adminCustomSkillsRouter.use(requireAuth, requireRole('admin'));
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
+const uuidSchema = z.string().uuid();
 const SLUG_RE = /^[a-z][a-z0-9-]{2,63}$/;
 const RESERVED = new Set(['anthropic', 'claude', 'cpa-pack-index', 'compliance-ssts-circular230']);
 const REF_FILENAME_RE = /^[a-zA-Z0-9._-]+(?:\/[a-zA-Z0-9._-]+)*$/;
@@ -135,6 +136,10 @@ async function packSkillToTempDir(row: CustomSkillRow): Promise<string> {
 }
 
 adminCustomSkillsRouter.post('/:id/publish', async (req, res) => {
+  if (!uuidSchema.safeParse(req.params.id).success) {
+    res.status(400).json({ error: 'bad_request', detail: 'invalid id' });
+    return;
+  }
   const id = req.params.id;
   const [row] = await getDb().select().from(custom_skills).where(eq(custom_skills.id, id)).limit(1);
   if (!row) {
@@ -180,7 +185,12 @@ adminCustomSkillsRouter.post('/:id/publish', async (req, res) => {
     res.json({ ok: true, skill_id: upload.skill_id, version: upload.anthropic_skill_version });
   } catch (err) {
     logger.error({ err, id }, 'custom skill publish failed');
-    res.status(502).json({ error: 'publish_failed', detail: (err as Error).message });
+    const msg = (err as Error).message ?? '';
+    if (msg.toLowerCase().includes('anthropic api key is not configured')) {
+      res.status(412).json({ error: 'anthropic_key_missing' });
+    } else {
+      res.status(502).json({ error: 'publish_failed', detail: msg.slice(0, 500) });
+    }
   } finally {
     if (tmpDir) {
       await fs.rm(tmpDir, { recursive: true, force: true }).catch((err) => {
@@ -191,6 +201,10 @@ adminCustomSkillsRouter.post('/:id/publish', async (req, res) => {
 });
 
 adminCustomSkillsRouter.post('/:id/unpublish', async (req, res) => {
+  if (!uuidSchema.safeParse(req.params.id).success) {
+    res.status(400).json({ error: 'bad_request', detail: 'invalid id' });
+    return;
+  }
   await getDb()
     .update(custom_skills)
     .set({ is_active: false })
@@ -206,6 +220,10 @@ adminCustomSkillsRouter.post('/:id/unpublish', async (req, res) => {
 });
 
 adminCustomSkillsRouter.delete('/:id', async (req, res) => {
+  if (!uuidSchema.safeParse(req.params.id).success) {
+    res.status(400).json({ error: 'bad_request', detail: 'invalid id' });
+    return;
+  }
   await getDb().delete(custom_skills).where(eq(custom_skills.id, req.params.id));
   await audit({
     actor_user_id: req.auth!.user_id,

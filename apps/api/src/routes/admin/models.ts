@@ -11,6 +11,8 @@ import { requireAuth, requireRole } from '../../middleware/auth.js';
 import { audit } from '../../lib/audit.js';
 import { logger } from '../../lib/logger.js';
 import { env } from '../../config/env.js';
+import { getSetting } from '../../lib/settings-store.js';
+import { SETTING_KEYS } from '@vibe/db/schema';
 
 export const adminModelsRouter = Router();
 adminModelsRouter.use(requireAuth, requireRole('admin'));
@@ -41,6 +43,20 @@ adminModelsRouter.patch('/:id', async (req, res) => {
   if (!parsed.success) {
     res.status(400).json({ error: 'bad_request', detail: parsed.error.flatten() });
     return;
+  }
+  // Guard: refuse to disable the model that's currently set as the
+  // default. Without this, admins can lock every user out of chat with
+  // a single PATCH — the next chat-send picks the saved default,
+  // doesn't find it active, and 400s. They'd have to fix it via SQL.
+  if (parsed.data.is_active === false) {
+    const currentDefault = await getSetting<string>(SETTING_KEYS.DEFAULT_MODEL_ID);
+    if (currentDefault === req.params.id) {
+      res.status(409).json({
+        error: 'cannot_disable_default_model',
+        detail: 'Pick a different default model first under Admin → Models → Set default.',
+      });
+      return;
+    }
   }
   const update: Record<string, unknown> = { updated_at: new Date(), updated_by: req.auth!.user_id };
   for (const [k, v] of Object.entries(parsed.data)) {

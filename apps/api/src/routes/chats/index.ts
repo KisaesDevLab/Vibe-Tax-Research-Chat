@@ -12,6 +12,8 @@ import { attachmentsRouter } from './attachments.js';
 export const chatsRouter = Router();
 chatsRouter.use(requireAuth);
 
+const uuidSchema = z.string().uuid();
+
 const createSchema = z.object({
   title: z.string().max(200).optional(),
   default_model_id: z.string().nullable().optional(),
@@ -57,6 +59,10 @@ function ownerOrAdminFilter(chatId: string, userId: string, isAdmin: boolean) {
 }
 
 chatsRouter.get('/:id', async (req, res) => {
+  if (!uuidSchema.safeParse(req.params.id).success) {
+    res.status(400).json({ error: 'bad_request', detail: 'invalid id' });
+    return;
+  }
   const db = getDb();
   const isAdmin = req.auth!.role === 'admin';
   const [chat] = await db
@@ -103,6 +109,10 @@ const patchSchema = z.object({
 });
 
 chatsRouter.patch('/:id', async (req, res) => {
+  if (!uuidSchema.safeParse(req.params.id).success) {
+    res.status(400).json({ error: 'bad_request', detail: 'invalid id' });
+    return;
+  }
   const parsed = patchSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: 'bad_request' });
@@ -132,6 +142,10 @@ chatsRouter.patch('/:id', async (req, res) => {
 });
 
 chatsRouter.delete('/:id', async (req, res) => {
+  if (!uuidSchema.safeParse(req.params.id).success) {
+    res.status(400).json({ error: 'bad_request', detail: 'invalid id' });
+    return;
+  }
   const isAdmin = req.auth!.role === 'admin';
   const where = isAdmin
     ? eq(chats.id, req.params.id)

@@ -1,7 +1,6 @@
 // Phase 4 — admin user CRUD + spend cap.
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
-import crypto from 'node:crypto';
 import { z } from 'zod';
 import { eq, ilike, or, isNull, and, ne, count } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
@@ -184,23 +183,43 @@ adminUsersRouter.patch('/:id', async (req, res) => {
   res.status(204).end();
 });
 
-adminUsersRouter.post('/:id/reset-password', async (req, res) => {
+// Admin sets a new password directly. For a single-tenant appliance this
+// is simpler and more useful than a token-based reset flow — there's no
+// email infrastructure to maintain and the admin has full authority over
+// the user table anyway. The actor_user_id and target are audit-logged
+// (not the password itself, ever).
+const setPasswordSchema = z.object({
+  password: z.string().min(8).max(256),
+});
+adminUsersRouter.post('/:id/set-password', async (req, res) => {
   if (!uuidSchema.safeParse(req.params.id).success) {
     res.status(400).json({ error: 'bad_request', detail: 'invalid id' });
     return;
   }
-  // Cryptographically-random 32 bytes encoded url-safe base64 (~43 chars).
-  // TODO Phase 4 follow-up: persist this in a `password_resets` table with
-  // expiry + one-time use, and deliver via email.
-  const reset_token = crypto.randomBytes(32).toString('base64url');
+  const parsed = setPasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request', detail: parsed.error.flatten() });
+    return;
+  }
+  const db = getDb();
+  const [target] = await db.select().from(users).where(eq(users.id, req.params.id)).limit(1);
+  if (!target || target.deleted_at) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  const password_hash = await bcrypt.hash(parsed.data.password, 12);
+  await db
+    .update(users)
+    .set({ password_hash, updated_at: new Date() })
+    .where(eq(users.id, target.id));
   await audit({
     actor_user_id: req.auth!.user_id,
-    action: 'admin.user.reset_password',
+    action: 'admin.user.set_password',
     target_type: 'user',
-    target_id: req.params.id,
+    target_id: target.id,
     ip: req.ip,
   });
-  res.json({ reset_token, note: 'TODO: deliver via email/SMS in Phase 4 follow-up.' });
+  res.status(204).end();
 });
 
 adminUsersRouter.delete('/:id', async (req, res) => {
