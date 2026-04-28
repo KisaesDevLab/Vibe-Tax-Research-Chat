@@ -120,10 +120,26 @@ export function buildResponsePdf(m: MessageForExport): Promise<Buffer> {
     const headerMeta = `Generated ${created} · model ${m.model_id ?? 'unknown'}${
       m.cost_usd != null ? ` · cost $${Number(m.cost_usd).toFixed(4)}` : ''
     }`;
+    // Snapshot the body-stamp page count BEFORE we start drawing chrome.
+    // text() inside the bottom-margin region triggers PDFKit's
+    // `continueOnNewPage`, which appends a new page to the buffer even
+    // with bufferPages:true. To prevent that we temporarily zero the
+    // page margins while writing chrome — the renderer only checks
+    // `y > pageHeight - margins.bottom` for pagination, so margins.bottom
+    // = 0 silences the check. We restore the margins after each page so
+    // any subsequent text() (none here, but defensive) sees the real
+    // values. We also stop iteration at `bodyPages` so even if a stray
+    // page DID get appended we wouldn't double-count.
     const range = doc.bufferedPageRange();
-    for (let i = 0; i < range.count; i++) {
+    const bodyPages = range.count;
+    for (let i = 0; i < bodyPages; i++) {
       doc.switchToPage(range.start + i);
       doc.save();
+      const savedTop = doc.page.margins.top;
+      const savedBottom = doc.page.margins.bottom;
+      const savedLeft = doc.page.margins.left;
+      const savedRight = doc.page.margins.right;
+      doc.page.margins = { top: 0, bottom: 0, left: 0, right: 0 };
 
       // Header band.
       doc
@@ -167,12 +183,18 @@ export function buildResponsePdf(m: MessageForExport): Promise<Buffer> {
           footerY,
           { lineBreak: false, width: doc.page.width - MARGIN * 2 - 80 },
         );
-      doc.text(`Page ${i + 1} of ${range.count}`, doc.page.width - MARGIN - 80, footerY, {
+      doc.text(`Page ${i + 1} of ${bodyPages}`, doc.page.width - MARGIN - 80, footerY, {
         lineBreak: false,
         width: 80,
         align: 'right',
       });
 
+      doc.page.margins = {
+        top: savedTop,
+        bottom: savedBottom,
+        left: savedLeft,
+        right: savedRight,
+      };
       doc.restore();
     }
 
