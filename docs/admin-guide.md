@@ -30,13 +30,13 @@ Roll back by editing the rates manually — there is no automatic rollback.
 
 Admin → Users.
 
-| Action         | Endpoint                                           | Notes                                      |
-| -------------- | -------------------------------------------------- | ------------------------------------------ |
-| Invite         | `POST /api/admin/users`                            | One-time password; reset after first login |
-| Disable        | `PATCH /api/admin/users/:id is_active=false`       | Login blocked, chats preserved             |
-| Spend cap      | `PATCH /api/admin/users/:id monthly_spend_cap_usd` | Hard cap; turns blocked when exceeded      |
-| Reset password | `POST /api/admin/users/:id/reset-password`         | Returns a one-time link                    |
-| Soft-delete    | `DELETE /api/admin/users/:id`                      | `deleted_at` set; audit history preserved  |
+| Action       | Endpoint                                           | Notes                                      |
+| ------------ | -------------------------------------------------- | ------------------------------------------ |
+| Invite       | `POST /api/admin/users`                            | One-time password; reset after first login |
+| Disable      | `PATCH /api/admin/users/:id is_active=false`       | Login blocked, chats preserved             |
+| Spend cap    | `PATCH /api/admin/users/:id monthly_spend_cap_usd` | Hard cap; turns blocked when exceeded      |
+| Set password | `POST /api/admin/users/:id/set-password`           | Admin sets a new password directly         |
+| Soft-delete  | `DELETE /api/admin/users/:id`                      | `deleted_at` set; audit history preserved  |
 
 ## Backup & restore
 
