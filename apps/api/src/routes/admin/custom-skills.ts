@@ -2,6 +2,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import multer from 'multer';
+import AdmZip from 'adm-zip';
+import YAML from 'yaml';
 import os from 'node:os';
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
@@ -215,14 +217,222 @@ adminCustomSkillsRouter.delete('/:id', async (req, res) => {
   res.status(204).end();
 });
 
-// Phase 22 — bulk import from a zip / SKILL.md upload.
-// TODO Phase 22: parse the zip, validate each SKILL.md frontmatter, dry-run,
-// then publish each. For now this returns a not_implemented.
-adminCustomSkillsRouter.post('/import', upload.single('archive'), (req, res) => {
+// Phase 22 — bulk import from a zip. Each SKILL.md must live under a
+// dedicated folder (its slug); references next to it travel along.
+// Per-skill flow:
+//   1. parse YAML frontmatter (name, description required)
+//   2. validate slug + reserved-name + tag-free description
+//   3. INSERT custom_skills row (or skip on slug conflict)
+//   4. POST /v1/skills via uploadSkillToAnthropic (same path as /publish)
+//   5. UPDATE row with returned skill_id + version + is_active=true
+// Returns a per-skill summary so partial failures don't lose progress.
+interface ImportOutcome {
+  slug: string;
+  status: 'imported' | 'skipped' | 'failed';
+  reason?: string;
+  skill_id?: string;
+}
+
+const ZIP_MIME = new Set([
+  'application/zip',
+  'application/x-zip-compressed',
+  'application/octet-stream',
+]);
+
+adminCustomSkillsRouter.post('/import', upload.single('archive'), async (req, res) => {
   if (!req.file) {
     res.status(400).json({ error: 'no_file' });
     return;
   }
-  // TODO: extract zip, walk skills/, validate, publish.
-  res.status(501).json({ error: 'not_implemented', received_bytes: req.file.size });
+  if (!ZIP_MIME.has(req.file.mimetype) && !req.file.originalname.toLowerCase().endsWith('.zip')) {
+    res.status(400).json({ error: 'expected_zip', mime_type: req.file.mimetype });
+    return;
+  }
+
+  let zip: AdmZip;
+  try {
+    zip = new AdmZip(req.file.buffer);
+  } catch (err) {
+    res.status(400).json({ error: 'bad_zip', detail: (err as Error).message });
+    return;
+  }
+
+  // Group entries by their containing folder (the slug dir).
+  // The archive shape we accept matches what `git archive` / pack repos
+  // produce: skills/<slug>/SKILL.md, skills/<slug>/references/...
+  const bySkill = new Map<string, AdmZip.IZipEntry[]>();
+  for (const e of zip.getEntries()) {
+    if (e.isDirectory) continue;
+    const parts = e.entryName.replace(/\\/g, '/').split('/').filter(Boolean);
+    if (parts.length < 2) continue; // SKILL.md at the very root: no folder
+    // Find the folder that directly contains SKILL.md.
+    const skillIdx = parts.findIndex((p, i) => i < parts.length - 1 && parts[i + 1] === 'SKILL.md');
+    if (skillIdx === -1) continue;
+    // For multi-segment paths under that folder, group by the slug segment.
+    const slug = parts[skillIdx]!;
+    if (!bySkill.has(slug)) bySkill.set(slug, []);
+    bySkill.get(slug)!.push(e);
+  }
+
+  if (bySkill.size === 0) {
+    res
+      .status(400)
+      .json({ error: 'no_skills_found', detail: 'no <slug>/SKILL.md entries in archive' });
+    return;
+  }
+
+  const outcomes: ImportOutcome[] = [];
+  const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'vibe-import-'));
+  try {
+    for (const [slug, entries] of bySkill) {
+      const outcome = await importOne({
+        slug,
+        entries,
+        tmpRoot,
+        actor: req.auth!.user_id,
+        ip: req.ip,
+      });
+      outcomes.push(outcome);
+    }
+  } finally {
+    await fs.rm(tmpRoot, { recursive: true, force: true }).catch(() => {});
+  }
+
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'admin.custom_skill.import',
+    metadata: {
+      total: outcomes.length,
+      imported: outcomes.filter((o) => o.status === 'imported').length,
+      skipped: outcomes.filter((o) => o.status === 'skipped').length,
+      failed: outcomes.filter((o) => o.status === 'failed').length,
+    },
+    ip: req.ip,
+  });
+
+  res.json({ outcomes });
 });
+
+async function importOne(opts: {
+  slug: string;
+  entries: AdmZip.IZipEntry[];
+  tmpRoot: string;
+  actor: string;
+  ip?: string;
+}): Promise<ImportOutcome> {
+  const { slug, entries, tmpRoot, actor, ip } = opts;
+  if (!SLUG_RE.test(slug)) {
+    return { slug, status: 'failed', reason: 'invalid slug' };
+  }
+  if (RESERVED.has(slug)) {
+    return { slug, status: 'failed', reason: 'reserved name' };
+  }
+
+  // Find SKILL.md to extract metadata from.
+  const skillMdEntry = entries.find((e) => e.entryName.replace(/\\/g, '/').endsWith('/SKILL.md'));
+  if (!skillMdEntry) {
+    return { slug, status: 'failed', reason: 'SKILL.md missing' };
+  }
+  const skillMdText = skillMdEntry.getData().toString('utf-8');
+  const fmMatch = skillMdText.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
+  if (!fmMatch) {
+    return { slug, status: 'failed', reason: 'SKILL.md missing YAML frontmatter' };
+  }
+  let frontmatter: Record<string, unknown>;
+  try {
+    frontmatter = (YAML.parse(fmMatch[1]!) ?? {}) as Record<string, unknown>;
+  } catch (err) {
+    return { slug, status: 'failed', reason: `YAML parse error: ${(err as Error).message}` };
+  }
+  const description = typeof frontmatter.description === 'string' ? frontmatter.description : null;
+  if (!description) {
+    return { slug, status: 'failed', reason: 'frontmatter.description missing' };
+  }
+  const display_name =
+    (typeof frontmatter.display_name === 'string' && frontmatter.display_name) ||
+    slug
+      .split('-')
+      .map((w) => w[0]!.toUpperCase() + w.slice(1))
+      .join(' ');
+
+  // Conflict on slug: skip rather than overwrite, so the admin can
+  // explicitly delete + re-import if they want.
+  const db = getDb();
+  const existing = await db
+    .select({ id: custom_skills.id })
+    .from(custom_skills)
+    .where(eq(custom_skills.name, slug))
+    .limit(1);
+  if (existing.length > 0) {
+    return { slug, status: 'skipped', reason: 'already exists' };
+  }
+
+  // Lay the skill out under a per-import temp dir, mirroring the same
+  // shape the publish path packs.
+  const skillDir = path.join(tmpRoot, slug);
+  await fs.mkdir(skillDir, { recursive: true });
+  for (const e of entries) {
+    const inside = e.entryName.replace(/\\/g, '/').split('/');
+    const idx = inside.indexOf(slug);
+    if (idx === -1) continue;
+    const rel = inside.slice(idx + 1).join('/');
+    if (!rel) continue;
+    if (!REF_FILENAME_RE.test(rel) && rel !== 'SKILL.md') continue;
+    const dest = path.resolve(skillDir, rel);
+    if (!dest.startsWith(path.resolve(skillDir) + path.sep) && dest !== path.resolve(skillDir)) {
+      return { slug, status: 'failed', reason: `unsafe entry path: ${rel}` };
+    }
+    await fs.mkdir(path.dirname(dest), { recursive: true });
+    await fs.writeFile(dest, e.getData());
+  }
+
+  // Persist row, then upload, then mark active.
+  const [row] = await db
+    .insert(custom_skills)
+    .values({
+      name: slug,
+      display_name,
+      description,
+      body_md: fmMatch[2] ?? '',
+      references: [],
+      routing_keywords: Array.isArray(frontmatter.routing_keywords)
+        ? (frontmatter.routing_keywords as unknown[]).filter(
+            (k): k is string => typeof k === 'string',
+          )
+        : [],
+      is_always_attached: false,
+      visibility: 'firm',
+      created_by: actor,
+    })
+    .returning({ id: custom_skills.id });
+
+  try {
+    const upload = await uploadSkillToAnthropic({
+      local_slug: slug,
+      display_name,
+      description,
+      skill_dir: skillDir,
+    });
+    await db
+      .update(custom_skills)
+      .set({
+        anthropic_skill_id: upload.skill_id,
+        anthropic_skill_version: upload.anthropic_skill_version,
+        is_active: true,
+        updated_at: new Date(),
+      })
+      .where(eq(custom_skills.id, row!.id));
+    await audit({
+      actor_user_id: actor,
+      action: 'admin.custom_skill.import.publish',
+      target_type: 'custom_skill',
+      target_id: row!.id,
+      metadata: { slug, skill_id: upload.skill_id },
+      ip,
+    });
+    return { slug, status: 'imported', skill_id: upload.skill_id };
+  } catch (err) {
+    logger.error({ err, slug }, 'custom skill import publish failed');
+    return { slug, status: 'failed', reason: (err as Error).message.slice(0, 300) };
+  }
+}

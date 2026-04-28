@@ -12,11 +12,25 @@ import { useChatStream } from '../hooks/useChatStream';
 import { api } from '../lib/api';
 import type { ChatDTO, MessageDTO } from '@vibe/shared';
 
+// The model emits ```json authorities ... ``` and ```json compliance ... ```
+// fenced blocks at the end of each turn so the API can parse them into the
+// `authorities` / `compliance_check` columns. Those structured payloads get
+// rendered by AuthoritiesPanel / CompliancePanel below — admins shouldn't
+// also see raw JSON walls in the prose. Strip the fenced blocks before
+// passing the body to Markdown.
+const SIDECAR_FENCE_RE = /```(?:json)?\s+(?:authorities|compliance)\s*\n[\s\S]*?\n```/gi;
+function stripSidecars(text: string): string {
+  return text
+    .replace(SIDECAR_FENCE_RE, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trimEnd();
+}
+
 export function ChatPage() {
   const { chatId } = useParams<{ chatId?: string }>();
   if (!chatId) {
     return (
-      <div className="grid grid-cols-[260px_1fr] min-h-screen">
+      <div className="grid grid-cols-[260px_1fr] h-screen overflow-hidden">
         <ChatSidebar />
         <div className="grid place-items-center text-ink/50">
           <div className="text-center">
@@ -62,60 +76,73 @@ function ChatView({ chatId }: { chatId: string }) {
   }, [streaming]);
 
   return (
-    <div className="grid grid-cols-[260px_1fr] min-h-screen bg-paper">
+    // h-screen + overflow-hidden on the outer grid so the sidebar and chat
+    // column are each capped at the viewport. The chat column is a flex
+    // column with min-h-0 (the magic that lets a flex child actually scroll
+    // instead of forcing the parent taller), header and form are
+    // shrink-to-content, and only <main> scrolls between them.
+    <div className="grid grid-cols-[260px_1fr] h-screen overflow-hidden bg-paper">
       <ChatSidebar />
-      <div className="flex flex-col">
-        <header className="px-8 py-4 border-b border-ink/10 flex items-center justify-between">
+      <div className="flex flex-col min-h-0">
+        <header className="shrink-0 px-8 py-4 border-b border-ink/10 flex items-center justify-between">
           <div className="font-display text-lg">{data?.chat.title ?? 'Loading…'}</div>
-          <div className="font-mono text-xs text-ink/50">
-            {data?.messages.length ?? 0} messages
-          </div>
+          <div className="font-mono text-xs text-ink/50">{data?.messages.length ?? 0} messages</div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-8 py-6 max-w-4xl mx-auto w-full">
-          {data?.messages.map((m) => (
-            <MessageBlock key={m.id} message={m} />
-          ))}
-          {streaming && (
-            <div className="mt-6">
-              <div className="text-xs uppercase tracking-wider text-ink/50 mb-1">Assistant (streaming)</div>
-              <Markdown>{streaming.text || '…'}</Markdown>
-              <CostLedger
-                usage={streaming.usage}
-                cost_usd={streaming.cost ?? provisionalCost}
-                model_id={data?.chat.default_model_id ?? undefined}
-                provisional={!streaming.done}
-              />
-              {streaming.error && (
-                <div className="text-oxblood text-sm mt-2">{streaming.error}</div>
-              )}
-            </div>
-          )}
-        </main>
-
-        <form onSubmit={onSubmit} className="px-8 py-4 border-t border-ink/10 max-w-4xl mx-auto w-full">
-          <div className="flex gap-2">
-            <textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder="Ask a tax research question…"
-              rows={3}
-              className="flex-1 px-3 py-2 border border-ink/20 rounded font-body resize-none"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void onSubmit(e);
-              }}
-            />
-            {streaming && !streaming.done ? (
-              <button type="button" onClick={abort} className="px-4 py-2 border border-oxblood text-oxblood rounded">
-                Stop
-              </button>
-            ) : (
-              <button type="submit" className="px-4 py-2 bg-ink text-paper rounded">
-                Send
-              </button>
+        <main className="flex-1 min-h-0 overflow-y-auto">
+          <div className="px-8 py-6 max-w-4xl mx-auto w-full">
+            {data?.messages.map((m) => (
+              <MessageBlock key={m.id} message={m} />
+            ))}
+            {streaming && (
+              <div className="mt-6">
+                <div className="text-xs uppercase tracking-wider text-ink/50 mb-1">
+                  Assistant (streaming)
+                </div>
+                <Markdown>{stripSidecars(streaming.text) || '…'}</Markdown>
+                <CostLedger
+                  usage={streaming.usage}
+                  cost_usd={streaming.cost ?? provisionalCost}
+                  model_id={data?.chat.default_model_id ?? undefined}
+                  provisional={!streaming.done}
+                />
+                {streaming.error && (
+                  <div className="text-oxblood text-sm mt-2">{streaming.error}</div>
+                )}
+              </div>
             )}
           </div>
-          <div className="text-[10px] text-ink/40 mt-1">⌘/Ctrl + Enter to send</div>
+        </main>
+
+        <form onSubmit={onSubmit} className="shrink-0 px-8 py-4 border-t border-ink/10 bg-paper">
+          <div className="max-w-4xl mx-auto w-full">
+            <div className="flex gap-2">
+              <textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder="Ask a tax research question…"
+                rows={3}
+                className="flex-1 px-3 py-2 border border-ink/20 rounded font-body resize-none"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void onSubmit(e);
+                }}
+              />
+              {streaming && !streaming.done ? (
+                <button
+                  type="button"
+                  onClick={abort}
+                  className="px-4 py-2 border border-oxblood text-oxblood rounded"
+                >
+                  Stop
+                </button>
+              ) : (
+                <button type="submit" className="px-4 py-2 bg-ink text-paper rounded">
+                  Send
+                </button>
+              )}
+            </div>
+            <div className="text-[10px] text-ink/40 mt-1">⌘/Ctrl + Enter to send</div>
+          </div>
         </form>
       </div>
     </div>
@@ -125,27 +152,27 @@ function ChatView({ chatId }: { chatId: string }) {
 function MessageBlock({ message: m }: { message: MessageDTO }) {
   if (m.role === 'user') {
     return (
-      <div className="mb-6">
+      <div className="mb-4">
         <div className="text-xs uppercase tracking-wider text-ink/50 mb-1">You</div>
         <div className="bg-ink/5 rounded p-3 font-body">{m.content}</div>
       </div>
     );
   }
   if (m.role === 'system_note') {
-    return <div className="my-4 text-xs text-ink/50 italic">{m.content}</div>;
+    return <div className="my-3 text-xs text-ink/50 italic">{m.content}</div>;
   }
   return (
-    <div className="mb-8">
-      <div className="text-xs uppercase tracking-wider text-ink/50 mb-1">Assistant</div>
-      <Markdown>{m.content}</Markdown>
+    // Wrap the assistant body + panels in a vertical-rhythm container so
+    // every block (Markdown prose, Authorities, Compliance, Skills, Cost)
+    // gets the same 12px gap. Reduces the previous mish-mash of mt-4 +
+    // implicit margin into a single uniform stack.
+    <div className="mb-6 space-y-3">
+      <div className="text-xs uppercase tracking-wider text-ink/50">Assistant</div>
+      <Markdown>{stripSidecars(m.content)}</Markdown>
       <AuthoritiesPanel authorities={(m.authorities as never) ?? []} />
       <CompliancePanel check={m.compliance_check} />
       <SkillsPanel skills={m.skills} />
-      <CostLedger
-        usage={m.usage}
-        cost_usd={m.cost_usd}
-        model_id={m.model_id}
-      />
+      <CostLedger usage={m.usage} cost_usd={m.cost_usd} model_id={m.model_id} />
     </div>
   );
 }

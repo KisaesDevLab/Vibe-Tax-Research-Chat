@@ -93,6 +93,15 @@ setupRouter.post('/bootstrap', setupBootstrapLimiter, async (req, res) => {
     role: 'admin',
     email: parsed.data.email,
   });
+  // Mirror into a cookie too, so /admin/queues (Bull Board) is reachable
+  // immediately after bootstrap without a separate login.
+  res.cookie('vibe_at', access_token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: 15 * 60 * 1000,
+  });
 
   await audit({
     actor_user_id: inserted.id,

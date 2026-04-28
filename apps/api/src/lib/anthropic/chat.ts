@@ -61,18 +61,27 @@ export async function* streamChat(opts: StreamChatOpts): AsyncIterable<ChatEvent
     web_search_calls: 0,
   };
 
-  const tools: Array<Record<string, unknown>> = [
-    { type: 'code_execution_20250825', name: 'code_execution' },
-  ];
+  // The skills beta auto-injects code_execution when container.skills is
+  // present. Adding it manually then triggers a 400 "Auto-injecting tools
+  // would conflict with existing tool names: ['code_execution']". Only
+  // attach code_execution ourselves when no skills are attached.
+  const tools: Array<Record<string, unknown>> = [];
+  if (opts.attached_skill_ids.length === 0) {
+    tools.push({ type: 'code_execution_20250825', name: 'code_execution' });
+  }
   if (opts.enable_web_tools) {
+    // Pin to the current tool revisions Anthropic accepts. The 2025-08-28
+    // versions (named in the original CLAUDE.md scaffolding) were
+    // deprecated and the API now rejects them with an invalid_request_error
+    // listing the valid set. Bump these when Anthropic ships newer.
     tools.push({
-      type: 'web_fetch_20250828',
+      type: 'web_fetch_20260309',
       name: 'web_fetch',
       max_uses: opts.fetches_per_turn ?? DEFAULT_WEB_BUDGET.fetches_per_turn,
       allowed_domains: WEB_ALLOWLIST_DOMAINS,
     });
     tools.push({
-      type: 'web_search_20250828',
+      type: 'web_search_20260209',
       name: 'web_search',
       max_uses: opts.searches_per_turn ?? DEFAULT_WEB_BUDGET.searches_per_turn,
       allowed_domains: WEB_ALLOWLIST_DOMAINS,
@@ -99,7 +108,18 @@ export async function* streamChat(opts: StreamChatOpts): AsyncIterable<ChatEvent
     tools: tools as unknown as Anthropic.Beta.Messages.BetaToolUnion[],
     betas: [...BETAS],
     ...(opts.attached_skill_ids.length
-      ? { container: { skills: opts.attached_skill_ids.map((id) => ({ id })) } }
+      ? {
+          // container.skills[] entries require {type, id}. The skills we
+          // uploaded come back from POST /v1/skills with source="custom",
+          // so type="custom" is correct here. (anthropic-issued bundled
+          // skills would use type="anthropic_skill" once those exist.)
+          container: {
+            skills: opts.attached_skill_ids.map((id) => ({
+              type: 'custom' as const,
+              skill_id: id,
+            })),
+          },
+        }
       : {}),
   } as unknown as Anthropic.Beta.Messages.MessageCreateParams;
 

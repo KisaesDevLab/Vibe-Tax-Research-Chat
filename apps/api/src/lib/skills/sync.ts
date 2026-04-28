@@ -100,7 +100,13 @@ export async function runDryRun(opts: DryRunOpts): Promise<{ run_id: string; dif
   return { run_id: runId, diff };
 }
 
-export async function applyRun(opts: { run_id: string; applied_by: string }): Promise<void> {
+export interface ApplyResult {
+  uploaded: Array<{ slug: string; skill_id: string; version: string }>;
+  failed: Array<{ slug: string; error: string }>;
+  removed: string[];
+}
+
+export async function applyRun(opts: { run_id: string; applied_by: string }): Promise<ApplyResult> {
   const db = getDb();
   const [run] = await db
     .select()
@@ -122,61 +128,77 @@ export async function applyRun(opts: { run_id: string; applied_by: string }): Pr
     unchanged_count: 0,
   };
 
+  const uploaded: ApplyResult['uploaded'] = [];
+  const failed: ApplyResult['failed'] = [];
+
   for (const p of parsed) {
     if (!summary.added.includes(p.local_slug) && !summary.updated.includes(p.local_slug)) continue;
-    const upload = await uploadSkillToAnthropic({
-      local_slug: p.local_slug,
-      display_name: p.display_name,
-      description: p.description,
-      skill_dir: dirs.find((d) => d.endsWith(p.github_path))!,
-    });
-
-    // Mark prior versions superseded
-    await db
-      .update(skill_versions)
-      .set({ status: 'superseded' })
-      .where(eq(skill_versions.skill_id, upload.skill_id));
-
-    await db
-      .insert(skills)
-      .values({
-        skill_id: upload.skill_id,
-        source: 'pack',
+    try {
+      const upload = await uploadSkillToAnthropic({
         local_slug: p.local_slug,
         display_name: p.display_name,
         description: p.description,
-        category: p.category,
-        current_version: upload.anthropic_skill_version,
-        github_path: p.github_path,
-        github_sha: p.sha256,
-        status_field: p.status_field,
-        is_always_attached:
-          p.local_slug === 'cpa-pack-index' || p.local_slug === 'compliance-ssts-circular230',
-        routing_keywords: p.routing_keywords,
-        uploaded_at: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: skills.skill_id,
-        set: {
-          current_version: upload.anthropic_skill_version,
-          github_sha: p.sha256,
-          status_field: p.status_field,
-          uploaded_at: new Date(),
-        },
+        skill_dir: dirs.find((d) => d.endsWith(p.github_path))!,
       });
 
-    await db.insert(skill_versions).values({
-      skill_id: upload.skill_id,
-      upstream_sha: p.sha256,
-      anthropic_skill_version: upload.anthropic_skill_version,
-      status: 'current',
-      status_field: p.status_field,
-      uploaded_by: opts.applied_by,
-    });
+      // Mark prior versions superseded
+      await db
+        .update(skill_versions)
+        .set({ status: 'superseded' })
+        .where(eq(skill_versions.skill_id, upload.skill_id));
+
+      await db
+        .insert(skills)
+        .values({
+          skill_id: upload.skill_id,
+          source: 'pack',
+          local_slug: p.local_slug,
+          display_name: p.display_name,
+          description: p.description,
+          category: p.category,
+          current_version: upload.anthropic_skill_version,
+          github_path: p.github_path,
+          github_sha: p.sha256,
+          status_field: p.status_field,
+          is_always_attached:
+            p.local_slug === 'cpa-pack-index' || p.local_slug === 'compliance-ssts-circular230',
+          routing_keywords: p.routing_keywords,
+          uploaded_at: new Date(),
+        })
+        .onConflictDoUpdate({
+          target: skills.skill_id,
+          set: {
+            current_version: upload.anthropic_skill_version,
+            github_sha: p.sha256,
+            status_field: p.status_field,
+            uploaded_at: new Date(),
+          },
+        });
+
+      await db.insert(skill_versions).values({
+        skill_id: upload.skill_id,
+        upstream_sha: p.sha256,
+        anthropic_skill_version: upload.anthropic_skill_version,
+        status: 'current',
+        status_field: p.status_field,
+        uploaded_by: opts.applied_by,
+      });
+
+      uploaded.push({
+        slug: p.local_slug,
+        skill_id: upload.skill_id,
+        version: upload.anthropic_skill_version,
+      });
+    } catch (err) {
+      // Per-skill failure: record it and keep going. The sync_run row gets
+      // result='partial' if anything failed, 'success' otherwise.
+      failed.push({ slug: p.local_slug, error: (err as Error).message.slice(0, 500) });
+    }
   }
 
   // Mark removed skills inactive (preserve skill_id for historical lookup).
-  for (const slug of summary.removed) {
+  const removedNames = summary.removed ?? [];
+  for (const slug of removedNames) {
     await db
       .update(skills)
       .set({ is_active: false, retired_at: new Date() })
@@ -185,8 +207,17 @@ export async function applyRun(opts: { run_id: string; applied_by: string }): Pr
 
   await db
     .update(skills_sync_runs)
-    .set({ result: 'success', applied_at: new Date(), applied_by: opts.applied_by })
+    .set({
+      result: failed.length === 0 ? 'success' : 'partial',
+      applied_at: new Date(),
+      applied_by: opts.applied_by,
+      error_message: failed.length
+        ? `${failed.length} skill(s) failed: ${failed.map((f) => f.slug).join(', ')}`.slice(0, 2000)
+        : null,
+    })
     .where(eq(skills_sync_runs.id, opts.run_id));
+
+  return { uploaded, failed, removed: removedNames };
 }
 
 export async function rollbackSkill(skill_id: string, version_id: string): Promise<void> {

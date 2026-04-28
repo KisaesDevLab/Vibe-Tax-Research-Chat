@@ -4,7 +4,7 @@ import type { Authority } from '@vibe/shared';
 export function AuthoritiesPanel({ authorities }: { authorities: Authority[] }) {
   if (!authorities || authorities.length === 0) return null;
   return (
-    <section className="border border-ink/10 rounded mt-4 bg-white">
+    <section className="border border-ink/10 rounded bg-white">
       <header className="px-4 py-2 border-b border-ink/10 font-display tracking-wide text-sm flex items-center justify-between">
         <span>Authorities</span>
         <span className="text-xs font-mono text-ink/50">{authorities.length} cited</span>
@@ -31,10 +31,22 @@ export function AuthoritiesPanel({ authorities }: { authorities: Authority[] }) 
 
 function VerificationChip({ authority }: { authority: Authority }) {
   if (authority.verified_this_turn) {
-    return <span className="text-xs px-2 py-0.5 rounded bg-moss/10 text-moss border border-moss/30">✓ verified this turn</span>;
+    return (
+      <span className="text-xs px-2 py-0.5 rounded bg-moss/10 text-moss border border-moss/30">
+        ✓ verified this turn
+      </span>
+    );
   }
   if (authority.cache_age_seconds !== undefined) {
-    return <span className="text-xs px-2 py-0.5 rounded bg-gold/10 text-gold border border-gold/30">⚠ cached</span>;
+    return (
+      <span className="text-xs px-2 py-0.5 rounded bg-gold/10 text-gold border border-gold/30">
+        ⚠ cached
+      </span>
+    );
   }
-  return <span className="text-xs px-2 py-0.5 rounded bg-oxblood/10 text-oxblood border border-oxblood/30">✗ unverified</span>;
+  return (
+    <span className="text-xs px-2 py-0.5 rounded bg-oxblood/10 text-oxblood border border-oxblood/30">
+      ✗ unverified
+    </span>
+  );
 }

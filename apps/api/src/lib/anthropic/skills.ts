@@ -11,6 +11,7 @@
 // in a later release. When it does, switch to the typed surface.
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
+import YAML from 'yaml';
 import { getAnthropic } from './client.js';
 import { logger } from '../logger.js';
 
@@ -29,11 +30,14 @@ interface CollectedFile {
 }
 
 interface CreateSkillResponse {
-  // Real shape per Anthropic Skills beta: confirm against their docs as the
-  // beta stabilizes. We tolerate either {id, version} or
-  // {skill_id, version}. Other fields ignored.
+  // Anthropic Skills beta (skills-2025-10-02) returns:
+  //   { type: "skill", id, display_title, source, latest_version,
+  //     created_at, updated_at }
+  // We tolerate older shapes (`skill_id`, `version`) too in case the field
+  // names settle differently before GA.
   id?: string;
   skill_id?: string;
+  latest_version?: string;
   version?: string;
 }
 
@@ -60,14 +64,27 @@ export async function uploadSkillToAnthropic(opts: {
   //   compliance-ssts-circular230/references/foo.md
   const folder = opts.local_slug;
 
+  // Anthropic validates: description must not contain HTML/XML tags and is
+  // capped (1024 chars based on observed 400s). Two upstream pack skills
+  // currently ship with `<tag>`-style placeholders in their descriptions —
+  // strip them rather than fail the whole apply for a docs nit.
+  const safeDescription = sanitizeForAnthropic(opts.description, 1024);
+  const safeDisplayName = sanitizeForAnthropic(opts.display_name, 120);
+
   const fd = new FormData();
-  fd.append('display_name', opts.display_name);
-  fd.append('description', opts.description);
+  fd.append('display_name', safeDisplayName);
+  fd.append('description', safeDescription);
   for (const f of files) {
-    // Use a Blob with octet-stream — Anthropic infers nothing from MIME.
-    // The third FormData.append arg sets the multipart filename header,
-    // which is how the server sees the relative path.
-    const blob = new Blob([new Uint8Array(f.bytes)], { type: 'application/octet-stream' });
+    // Anthropic reads `description` from the SKILL.md frontmatter directly
+    // (not the multipart form field), and rejects any XML/HTML tags in it.
+    // Two upstream pack skills currently ship with placeholder tags in
+    // their description — rewrite the frontmatter description before
+    // upload so the rest of the pack still applies cleanly.
+    let bytes = f.bytes;
+    if (f.rel_path === 'SKILL.md') {
+      bytes = sanitizeSkillMd(f.bytes);
+    }
+    const blob = new Blob([new Uint8Array(bytes)], { type: 'application/octet-stream' });
     fd.append('files[]', blob, `${folder}/${f.rel_path}`);
   }
 
@@ -100,13 +117,54 @@ export async function uploadSkillToAnthropic(opts: {
 
   const json = (await res.json()) as CreateSkillResponse;
   const skill_id = json.skill_id ?? json.id;
-  const version = json.version;
+  const version = json.latest_version ?? json.version;
   if (!skill_id || !version) {
     throw new Error(
       `skill upload ${opts.local_slug} returned malformed response: ${JSON.stringify(json).slice(0, 300)}`,
     );
   }
   return { skill_id, anthropic_skill_version: version };
+}
+
+// Strip HTML/XML tags and clamp length so descriptions / display names pass
+// Anthropic's Skills upload validator. Some upstream pack skills ship with
+// placeholder tags like `<state-code>` in their description.
+function sanitizeForAnthropic(s: string, maxLen: number): string {
+  const noTags = s
+    .replace(/<\/?[a-z][^>]*>/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return noTags.length > maxLen ? noTags.slice(0, maxLen - 1) + '…' : noTags;
+}
+
+// Rewrite SKILL.md so the YAML-frontmatter `description:` value is free of
+// XML/HTML-ish tags. Parses with the `yaml` lib (handles single-line, quoted,
+// and multi-line block scalars `|`/`>`), sanitizes the string, and round-
+// trips back to a YAML document. Everything outside the frontmatter is left
+// byte-identical.
+function sanitizeSkillMd(bytes: Buffer): Buffer {
+  const text = bytes.toString('utf-8');
+  const m = text.match(/^(---\r?\n)([\s\S]*?)(\r?\n---\r?\n)([\s\S]*)$/);
+  if (!m) return bytes;
+  const [, openFence, frontmatter, closeFence, body] = m;
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = (YAML.parse(frontmatter!) ?? {}) as Record<string, unknown>;
+  } catch {
+    // If we can't parse, leave the file alone — Anthropic will reject and
+    // the per-skill error will surface to the admin.
+    return bytes;
+  }
+  if (typeof parsed.description === 'string') {
+    parsed.description = sanitizeForAnthropic(parsed.description, 1024);
+  }
+  if (typeof parsed.name === 'string') {
+    parsed.name = sanitizeForAnthropic(parsed.name, 64);
+  }
+  // Preserve readability: keep block-scalar style for long descriptions,
+  // but with the cleaned text.
+  const dumped = YAML.stringify(parsed, { lineWidth: 0 });
+  return Buffer.from(`${openFence}${dumped.trimEnd()}${closeFence}${body}`, 'utf-8');
 }
 
 async function collectFiles(dir: string, rel = ''): Promise<CollectedFile[]> {

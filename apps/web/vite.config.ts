@@ -34,6 +34,14 @@ export default defineConfig(({ command }) => {
           target: process.env.VITE_API_BASE_URL ?? 'http://localhost:4000',
           changeOrigin: true,
         },
+        // Bull Board is mounted at /admin/queues by the API. Proxy that
+        // path through dev too so the same-origin cookie set by /api/auth
+        // /login (`vibe_at`) is sent automatically when the admin clicks
+        // the "Queues UI" link.
+        '/admin/queues': {
+          target: process.env.VITE_API_BASE_URL ?? 'http://localhost:4000',
+          changeOrigin: true,
+        },
       },
     },
     build: {

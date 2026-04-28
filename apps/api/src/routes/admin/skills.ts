@@ -57,13 +57,11 @@ adminSkillsRouter.post('/sync/apply', async (req, res) => {
     res.status(400).json({ error: 'bad_request' });
     return;
   }
+  let result;
   try {
-    await applyRun({ run_id: parsed.data.run_id, applied_by: req.auth!.user_id });
+    result = await applyRun({ run_id: parsed.data.run_id, applied_by: req.auth!.user_id });
   } catch (err) {
     const msg = (err as Error).message ?? '';
-    // Map well-known precondition failures to 412 with a structured error
-    // code, so the UI can render a "Set your Anthropic key first" banner
-    // instead of a generic 500 with a stack-trace blob.
     if (msg.toLowerCase().includes('anthropic api key is not configured')) {
       res.status(412).json({ error: 'anthropic_key_missing' });
       return;
@@ -76,9 +74,15 @@ adminSkillsRouter.post('/sync/apply', async (req, res) => {
     action: 'admin.skills.sync.apply',
     target_type: 'sync_run',
     target_id: parsed.data.run_id,
+    metadata: {
+      uploaded: result.uploaded.length,
+      failed: result.failed.length,
+      removed: result.removed.length,
+    },
     ip: req.ip,
   });
-  res.status(204).end();
+  // Always 200 with the per-skill outcome — the UI renders the partial state.
+  res.json(result);
 });
 
 const rollbackSchema = z.object({ skill_id: z.string(), version_id: z.string().uuid() });

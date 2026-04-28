@@ -1,6 +1,9 @@
 // Phase 5 — anthropic key management + general settings.
 import { Router } from 'express';
 import { z } from 'zod';
+import { eq, and } from 'drizzle-orm';
+import { getDb } from '@vibe/db';
+import { models } from '@vibe/db/schema';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
 import { audit } from '../../lib/audit.js';
 import { getSetting, setSetting, deleteSetting } from '../../lib/settings-store.js';
@@ -72,7 +75,18 @@ adminSettingsRouter.post('/default-model', async (req, res) => {
     res.status(400).json({ error: 'bad_request' });
     return;
   }
-  // TODO Phase 6: validate model_id exists and is_active=true.
+  // Validate the model_id exists in the registry AND is active. A default
+  // pointing at an unknown / retired model would silently break the next
+  // chat turn with a 500 from the resolveModel step in messages.ts.
+  const [m] = await getDb()
+    .select({ model_id: models.model_id, is_active: models.is_active })
+    .from(models)
+    .where(and(eq(models.model_id, parsed.data.model_id), eq(models.is_active, true)))
+    .limit(1);
+  if (!m) {
+    res.status(400).json({ error: 'unknown_or_inactive_model', model_id: parsed.data.model_id });
+    return;
+  }
   await setSetting(SETTING_KEYS.DEFAULT_MODEL_ID, parsed.data.model_id, {
     updated_by: req.auth!.user_id,
   });

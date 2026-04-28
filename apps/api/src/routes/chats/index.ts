@@ -73,7 +73,25 @@ chatsRouter.get('/:id', async (req, res) => {
     .from(messages)
     .where(eq(messages.chat_id, chat.id))
     .orderBy(asc(messages.created_at));
-  res.json({ chat, messages: msgs });
+  // The DB stores token + cost columns flat on the messages row, but the
+  // wire format the SPA expects (MessageDTO) carries them under `usage`
+  // for the CostLedger to read. Project here.
+  const dto = msgs.map((m) => ({
+    ...m,
+    cost_usd: m.cost_usd != null ? Number(m.cost_usd) : 0,
+    usage:
+      m.role === 'assistant'
+        ? {
+            input_tokens: m.input_tokens,
+            output_tokens: m.output_tokens,
+            cache_creation_input_tokens: m.cache_creation_input_tokens,
+            cache_read_input_tokens: m.cache_read_input_tokens,
+            web_fetch_calls: m.web_fetch_calls,
+            web_search_calls: m.web_search_calls,
+          }
+        : undefined,
+  }));
+  res.json({ chat, messages: dto });
 });
 
 const patchSchema = z.object({

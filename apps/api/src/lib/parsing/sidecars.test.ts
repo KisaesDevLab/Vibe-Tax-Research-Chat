@@ -60,8 +60,11 @@ describe('extractAuthorities', () => {
 describe('extractCompliance', () => {
   it('parses the sidecar JSON', () => {
     const c = extractCompliance(SAMPLE);
-    expect(c?.ssts_1_1?.ok).toBe(true);
-    expect(c?.ssts_2_3?.ok).toBe(false);
+    // ComplianceCheck is now a permissive union (bool | string | null |
+    // {ok, note}); the fixture in this file uses the {ok, note} object
+    // shape, so narrow with a type assertion.
+    expect((c?.ssts_1_1 as { ok: boolean })?.ok).toBe(true);
+    expect((c?.ssts_2_3 as { ok: boolean })?.ok).toBe(false);
     expect(c?.loper_bright_caveat).toBe(true);
   });
 

@@ -10,6 +10,7 @@ import express, { type Express, type ErrorRequestHandler } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
+import cookieParser from 'cookie-parser';
 import pinoHttp from 'pino-http';
 import { logger } from './lib/logger.js';
 import { env } from './config/env.js';
@@ -52,6 +53,12 @@ export function createApp(): Express {
 
   app.use(express.json({ limit: '5mb' }));
   app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+  // cookie-parser populates req.cookies. Used by middleware/auth.ts to
+  // accept the access token via the `vibe_at` cookie when no Bearer
+  // header is present — that's how Bull Board (a server-rendered admin
+  // UI mounted at /admin/queues) gets authenticated, since browsers
+  // don't attach Authorization headers to plain link clicks.
+  app.use(cookieParser());
   app.use(pinoHttp({ logger }));
 
   app.use('/api/health', healthRouter);

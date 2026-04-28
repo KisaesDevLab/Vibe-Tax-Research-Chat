@@ -14,7 +14,7 @@ export function CostLedger({
 }) {
   if (!usage) return null;
   return (
-    <section className="border border-ink/10 rounded mt-4 bg-white">
+    <section className="border border-ink/10 rounded bg-white">
       <header className="px-4 py-2 border-b border-ink/10 flex items-center justify-between text-sm">
         <span className="font-display tracking-wide">Cost</span>
         <span className="font-mono text-xs text-ink/50">{model_id ?? '—'}</span>

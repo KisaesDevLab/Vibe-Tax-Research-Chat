@@ -18,13 +18,26 @@ declare global {
   }
 }
 
+// Accept the access token from EITHER the Authorization header (the SPA's
+// default path; tokens come from token-store / localStorage) OR a cookie
+// named `vibe_at` (Bull Board / direct browser navigation, since browsers
+// don't send Authorization on plain link clicks). The cookie is set by
+// /api/auth/login and cleared by /api/auth/logout.
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+  let token: string | undefined;
   const header = req.headers.authorization;
-  if (!header?.startsWith('Bearer ')) {
+  if (header?.startsWith('Bearer ')) {
+    token = header.slice('Bearer '.length);
+  } else {
+    const cookies = (req as Request & { cookies?: Record<string, string> }).cookies;
+    if (cookies && typeof cookies.vibe_at === 'string') {
+      token = cookies.vibe_at;
+    }
+  }
+  if (!token) {
     res.status(401).json({ error: 'unauthorized' });
     return;
   }
-  const token = header.slice('Bearer '.length);
   try {
     const claims = verifyAccess(token);
     req.auth = { user_id: claims.sub, email: claims.email, role: claims.role };

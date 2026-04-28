@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMemo } from 'react';
 import { api } from '../lib/api';
+import { useFontSize } from '../lib/font-size';
 import type { ChatDTO } from '@vibe/shared';
 
 export function ChatSidebar() {
@@ -26,10 +27,15 @@ export function ChatSidebar() {
   const groups = useMemo(() => groupChats(data?.chats ?? []), [data]);
 
   return (
-    <aside className="border-r border-ink/10 w-[260px] flex flex-col bg-paper">
+    <aside className="border-r border-ink/10 w-[260px] h-full flex flex-col bg-paper min-h-0">
       <div className="p-3 border-b border-ink/10 flex items-center justify-between">
-        <Link to="/chat" className="font-display tracking-tight">Vibe</Link>
-        <button onClick={() => create.mutate()} className="text-xs px-2 py-1 bg-ink text-paper rounded">
+        <Link to="/chat" className="font-display tracking-tight">
+          Vibe
+        </Link>
+        <button
+          onClick={() => create.mutate()}
+          className="text-xs px-2 py-1 bg-ink text-paper rounded"
+        >
           + New
         </button>
       </div>
@@ -53,10 +59,51 @@ export function ChatSidebar() {
           );
         })}
       </div>
-      <div className="p-3 border-t border-ink/10 text-xs text-ink/40">
-        <Link to="/admin" className="underline">Admin</Link>
+      <div className="p-3 border-t border-ink/10 text-xs text-ink/40 space-y-2">
+        <FontSizeSelector />
+        <Link to="/admin" className="underline">
+          Admin
+        </Link>
       </div>
     </aside>
+  );
+}
+
+// Aa- / Aa / Aa+ trio matches the Vibe-MyBooks + Vibe-Trial-Balance pattern.
+// Persists to localStorage and propagates cross-tab via useFontSize().
+export function FontSizeSelector() {
+  const { size, bump, setSize } = useFontSize();
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="uppercase tracking-wider text-ink/40">font</span>
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          aria-label="Decrease font size"
+          onClick={() => bump(-1)}
+          className="w-6 h-6 grid place-items-center border border-ink/15 rounded hover:bg-ink/5"
+        >
+          <span className="text-[10px]">A−</span>
+        </button>
+        <button
+          type="button"
+          aria-label="Reset font size"
+          onClick={() => setSize('md')}
+          className="w-6 h-6 grid place-items-center border border-ink/15 rounded text-[10px] uppercase hover:bg-ink/5"
+          title={`Current: ${size}`}
+        >
+          {size}
+        </button>
+        <button
+          type="button"
+          aria-label="Increase font size"
+          onClick={() => bump(1)}
+          className="w-6 h-6 grid place-items-center border border-ink/15 rounded hover:bg-ink/5"
+        >
+          <span className="text-[12px]">A+</span>
+        </button>
+      </div>
+    </div>
   );
 }
 
