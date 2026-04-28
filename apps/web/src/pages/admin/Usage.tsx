@@ -1,6 +1,6 @@
 // Phase 24 — usage analytics page.
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../../lib/api';
+import { api, apiUrl } from '../../lib/api';
 
 interface UsageEvent {
   occurred_at: string;
@@ -31,7 +31,10 @@ export function AdminUsagePage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-3xl">Usage</h1>
-        <a href="/api/admin/usage?format=csv" className="px-3 py-1.5 border border-ink/20 rounded text-sm">
+        <a
+          href={apiUrl('/api/admin/usage?format=csv')}
+          className="px-3 py-1.5 border border-ink/20 rounded text-sm"
+        >
           Download CSV
         </a>
       </div>
