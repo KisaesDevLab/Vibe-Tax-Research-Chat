@@ -65,8 +65,16 @@ interface ComplianceCheckShape {
 
 export function buildResponsePdf(m: MessageForExport): Promise<Buffer> {
   return new Promise((resolve, reject) => {
+    // bufferPages:true holds every page in memory until end() so we can
+    // draw the header/footer chrome AFTER all body content has flowed
+    // and we know exactly how many pages there are. Crucially this also
+    // lets us avoid a `pageAdded` listener — the previous version's
+    // listener wrote text in the bottom-margin region, which itself
+    // triggered a new page, which fired pageAdded again, recursing
+    // until "Maximum call stack size exceeded".
     const doc = new PDFDocument({
       size: 'LETTER',
+      bufferPages: true,
       margins: {
         top: MARGIN + HEADER_RESERVE,
         bottom: MARGIN + FOOTER_RESERVE,
@@ -86,56 +94,8 @@ export function buildResponsePdf(m: MessageForExport): Promise<Buffer> {
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    // Header + footer on every page (pageAdded fires for every new page,
-    // including the implicit first one created by PDFKit).
-    const drawChrome = () => {
-      const created = new Date(m.created_at).toLocaleString();
-      const headerMeta = `Generated ${created} · model ${m.model_id ?? 'unknown'}${
-        m.cost_usd != null ? ` · cost $${Number(m.cost_usd).toFixed(4)}` : ''
-      }`;
-      doc.save();
-      // Header band.
-      doc
-        .font('Helvetica-Bold')
-        .fontSize(13)
-        .fillColor('#1a1714')
-        .text('Tax research response', MARGIN, MARGIN, { lineBreak: false });
-      doc
-        .font('Helvetica')
-        .fontSize(9)
-        .fillColor('#666666')
-        .text(headerMeta, MARGIN, MARGIN + 16, { lineBreak: false });
-      doc
-        .strokeColor('#dddddd')
-        .lineWidth(0.5)
-        .moveTo(MARGIN, MARGIN + 32)
-        .lineTo(doc.page.width - MARGIN, MARGIN + 32)
-        .stroke();
-
-      // Footer.
-      const footerY = doc.page.height - MARGIN - 18;
-      doc
-        .strokeColor('#dddddd')
-        .lineWidth(0.5)
-        .moveTo(MARGIN, footerY - 6)
-        .lineTo(doc.page.width - MARGIN, footerY - 6)
-        .stroke();
-      doc
-        .font('Helvetica-Oblique')
-        .fontSize(8)
-        .fillColor('#888888')
-        .text(
-          'Vibe Tax Research · AI-generated; verify all citations before reliance.',
-          MARGIN,
-          footerY,
-          { lineBreak: false, width: doc.page.width - MARGIN * 2 },
-        );
-      doc.restore();
-    };
-    doc.on('pageAdded', drawChrome);
-    drawChrome();
-
-    // Render: prose body, then Authorities, then Compliance.
+    // Render the body first. The first page already exists; content
+    // flows into it and PDFKit auto-paginates as needed.
     const prose = stripSidecars(m.content).trim();
     if (prose) renderMarkdown(doc, prose);
 
@@ -151,21 +111,68 @@ export function buildResponsePdf(m: MessageForExport): Promise<Buffer> {
       renderCompliance(doc, compliance);
     }
 
-    // Page numbers (added last so we know the total).
-    const pages = doc.bufferedPageRange();
-    for (let i = 0; i < pages.count; i++) {
-      doc.switchToPage(pages.start + i);
+    // Now walk every buffered page and stamp on the header band, footer
+    // disclaimer, and page count. We use raw graphics primitives + a
+    // text() call that is constrained in width but rendered with
+    // lineBreak:false at coordinates strictly inside the page — no
+    // chance of triggering a page break and thus no recursion.
+    const created = new Date(m.created_at).toLocaleString();
+    const headerMeta = `Generated ${created} · model ${m.model_id ?? 'unknown'}${
+      m.cost_usd != null ? ` · cost $${Number(m.cost_usd).toFixed(4)}` : ''
+    }`;
+    const range = doc.bufferedPageRange();
+    for (let i = 0; i < range.count; i++) {
+      doc.switchToPage(range.start + i);
       doc.save();
+
+      // Header band.
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(13)
+        .fillColor('#1a1714')
+        .text('Tax research response', MARGIN, MARGIN, {
+          lineBreak: false,
+          width: doc.page.width - MARGIN * 2,
+        });
+      doc
+        .font('Helvetica')
+        .fontSize(9)
+        .fillColor('#666666')
+        .text(headerMeta, MARGIN, MARGIN + 16, {
+          lineBreak: false,
+          width: doc.page.width - MARGIN * 2,
+        });
+      doc
+        .strokeColor('#dddddd')
+        .lineWidth(0.5)
+        .moveTo(MARGIN, MARGIN + 32)
+        .lineTo(doc.page.width - MARGIN, MARGIN + 32)
+        .stroke();
+
+      // Footer band.
+      const footerY = doc.page.height - MARGIN - 18;
+      doc
+        .strokeColor('#dddddd')
+        .lineWidth(0.5)
+        .moveTo(MARGIN, footerY - 6)
+        .lineTo(doc.page.width - MARGIN, footerY - 6)
+        .stroke();
       doc
         .font('Helvetica-Oblique')
         .fontSize(8)
         .fillColor('#888888')
         .text(
-          `Page ${i + 1} of ${pages.count}`,
-          doc.page.width - MARGIN - 60,
-          doc.page.height - MARGIN - 18,
-          { lineBreak: false, width: 60, align: 'right' },
+          'Vibe Tax Research · AI-generated; verify all citations before reliance.',
+          MARGIN,
+          footerY,
+          { lineBreak: false, width: doc.page.width - MARGIN * 2 - 80 },
         );
+      doc.text(`Page ${i + 1} of ${range.count}`, doc.page.width - MARGIN - 80, footerY, {
+        lineBreak: false,
+        width: 80,
+        align: 'right',
+      });
+
       doc.restore();
     }
 
