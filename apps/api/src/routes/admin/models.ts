@@ -2,10 +2,14 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
+import path from 'node:path';
+import { promises as fs } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { getDb } from '@vibe/db';
 import { models } from '@vibe/db/schema';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
 import { audit } from '../../lib/audit.js';
+import { logger } from '../../lib/logger.js';
 import { env } from '../../config/env.js';
 
 export const adminModelsRouter = Router();
@@ -69,18 +73,61 @@ interface ManifestEntry {
   notes?: string;
 }
 
+// Resolve the bundled seed manifest. The seed file lives in the @vibe/db
+// package so we walk up from this compiled file's location to find it.
+// Compiled dist path: apps/api/dist/routes/admin/models.js
+//   → ../../../../packages/db/seeds/models.json
+async function loadBundledManifest(): Promise<{ models: ManifestEntry[] } | null> {
+  try {
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    const candidates = [
+      path.resolve(here, '../../../../packages/db/seeds/models.json'),
+      // Fallback for ts-node / dev path: apps/api/src/routes/admin/models.ts
+      path.resolve(here, '../../../../../packages/db/seeds/models.json'),
+    ];
+    for (const p of candidates) {
+      try {
+        const raw = await fs.readFile(p, 'utf-8');
+        return JSON.parse(raw) as { models: ManifestEntry[] };
+      } catch {
+        // try next candidate
+      }
+    }
+  } catch (err) {
+    logger.warn({ err }, 'bundled manifest read failed');
+  }
+  return null;
+}
+
 adminModelsRouter.post('/refresh', async (_req, res) => {
-  // Fetch the upstream manifest with a 5s timeout.
-  let manifest: { models: ManifestEntry[] };
+  // Try the configured upstream URL first; on ANY failure (network,
+  // non-2xx, parse error) fall back to the manifest bundled with @vibe/db.
+  // The bundled file is the same one the seeder uses, so a fresh appliance
+  // always has a working "Refresh from upstream" even before a real CDN
+  // exists at MODELS_MANIFEST_URL.
+  let manifest: { models: ManifestEntry[] } | null = null;
+  let source: 'upstream' | 'bundled' = 'upstream';
+  let upstream_error: string | undefined;
   try {
     const r = await fetch(env.MODELS_MANIFEST_URL, { signal: AbortSignal.timeout(5000) });
     if (!r.ok) {
-      res.status(502).json({ error: 'manifest_fetch_failed', status: r.status });
-      return;
+      upstream_error = `HTTP ${r.status}`;
+    } else {
+      manifest = (await r.json()) as { models: ManifestEntry[] };
     }
-    manifest = (await r.json()) as { models: ManifestEntry[] };
   } catch (err) {
-    res.status(502).json({ error: 'manifest_fetch_failed', detail: (err as Error).message });
+    upstream_error = (err as Error).message;
+  }
+  if (!manifest) {
+    logger.warn(
+      { url: env.MODELS_MANIFEST_URL, upstream_error },
+      'upstream manifest unreachable; falling back to bundled seed',
+    );
+    manifest = await loadBundledManifest();
+    source = 'bundled';
+  }
+  if (!manifest) {
+    res.status(502).json({ error: 'manifest_unavailable', upstream_error });
     return;
   }
 
@@ -115,7 +162,14 @@ adminModelsRouter.post('/refresh', async (_req, res) => {
     }
   }
 
-  res.json({ added, updated, removed: [], unchanged_count: current.length - updated.length });
+  res.json({
+    source,
+    upstream_error,
+    added,
+    updated,
+    removed: [],
+    unchanged_count: current.length - updated.length,
+  });
 });
 
 const applySchema = z.object({

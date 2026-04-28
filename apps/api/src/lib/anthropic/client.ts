@@ -14,6 +14,9 @@ import { fingerprint } from '../crypto.js';
 export interface AnthropicHandle {
   client: Anthropic;
   key_fingerprint: string;
+  // Raw key — included so callers that bypass the SDK (multipart uploads
+  // for /v1/skills, etc.) can sign their own request. Never logged.
+  api_key: string;
 }
 
 export async function getAnthropic(): Promise<AnthropicHandle> {
@@ -22,7 +25,7 @@ export async function getAnthropic(): Promise<AnthropicHandle> {
     throw new Error('Anthropic API key is not configured. Admin must set it via Admin → Settings.');
   }
   const client = new Anthropic({ apiKey: key });
-  return { client, key_fingerprint: fingerprint(key) };
+  return { client, key_fingerprint: fingerprint(key), api_key: key };
 }
 
 // 1-token validation call used at key save time.
