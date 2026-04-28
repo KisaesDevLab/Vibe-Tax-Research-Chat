@@ -19,6 +19,13 @@ export interface StreamingMessage {
   done: boolean;
   cost?: number;
   error?: string;
+  // What the user just sent. Held in the streaming object so the chat
+  // view can show the question immediately instead of waiting for the
+  // refetch that happens after `done` to surface it via the messages
+  // GET response.
+  user_message: string;
+  // ms epoch when the request was kicked off, for an "elapsed" timer.
+  started_at: number;
 }
 
 export function useChatStream() {
@@ -28,7 +35,14 @@ export function useChatStream() {
   const send = useCallback(async (chatId: string, content: string, model_id?: string) => {
     const ac = new AbortController();
     abortRef.current = ac;
-    setStreaming({ text: '', usage: {}, tool_uses: [], done: false });
+    setStreaming({
+      text: '',
+      usage: {},
+      tool_uses: [],
+      done: false,
+      user_message: content,
+      started_at: Date.now(),
+    });
 
     const access = tokenStore.getAccess();
     const res = await fetch(apiUrl(`/api/chats/${chatId}/messages`), {
@@ -43,7 +57,14 @@ export function useChatStream() {
     });
     if (!res.ok || !res.body) {
       setStreaming((s) => ({
-        ...(s ?? { text: '', usage: {}, tool_uses: [], done: true }),
+        ...(s ?? {
+          text: '',
+          usage: {},
+          tool_uses: [],
+          done: true,
+          user_message: content,
+          started_at: Date.now(),
+        }),
         done: true,
         error: `HTTP ${res.status}`,
       }));
@@ -64,7 +85,14 @@ export function useChatStream() {
         const event = parseSse(chunk);
         if (!event) continue;
         setStreaming((cur) => {
-          const c = cur ?? { text: '', usage: {}, tool_uses: [], done: false };
+          const c = cur ?? {
+            text: '',
+            usage: {},
+            tool_uses: [],
+            done: false,
+            user_message: '',
+            started_at: Date.now(),
+          };
           switch (event.event) {
             case 'text':
               return { ...c, text: c.text + (event.data as { delta: string }).delta };

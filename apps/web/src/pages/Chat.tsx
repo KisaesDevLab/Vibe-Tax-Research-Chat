@@ -8,7 +8,7 @@ import { CostLedger } from '../components/CostLedger';
 import { AuthoritiesPanel } from '../components/panels/AuthoritiesPanel';
 import { CompliancePanel } from '../components/panels/CompliancePanel';
 import { SkillsPanel } from '../components/panels/SkillsPanel';
-import { useChatStream } from '../hooks/useChatStream';
+import { useChatStream, type StreamingMessage } from '../hooks/useChatStream';
 import { api } from '../lib/api';
 import type { ChatDTO, MessageDTO } from '@vibe/shared';
 
@@ -128,21 +128,45 @@ function ChatView({ chatId }: { chatId: string }) {
               <MessageBlock key={m.id} message={m} />
             ))}
             {streaming && (
-              <div className="mt-6">
-                <div className="text-xs uppercase tracking-wider text-ink/50 mb-1">
-                  Assistant (streaming)
-                </div>
-                <Markdown>{stripSidecars(streaming.text) || '…'}</Markdown>
-                <CostLedger
-                  usage={streaming.usage}
-                  cost_usd={streaming.cost ?? provisionalCost}
-                  model_id={data?.chat.default_model_id ?? undefined}
-                  provisional={!streaming.done}
-                />
-                {streaming.error && (
-                  <div className="text-oxblood text-sm mt-2">{streaming.error}</div>
+              <>
+                {/*
+                  Optimistic user-message echo. The persisted user-message
+                  row only appears on refetch (after `done`), so without
+                  this block users see their textarea clear and then
+                  silence for a few seconds while the model thinks. Mirrors
+                  the styling of the persisted "You" block in MessageBlock.
+                */}
+                {streaming.user_message && (
+                  <div className="mb-4">
+                    <div className="text-xs uppercase tracking-wider text-ink/50 mb-1">You</div>
+                    <div className="bg-ink/5 rounded p-3 font-body whitespace-pre-wrap">
+                      {streaming.user_message}
+                    </div>
+                  </div>
                 )}
-              </div>
+                <div className="mb-6 space-y-3">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <div className="text-xs uppercase tracking-wider text-ink/50">Assistant</div>
+                    <StreamingStatus streaming={streaming} />
+                  </div>
+                  {streaming.text ? (
+                    <Markdown>{stripSidecars(streaming.text)}</Markdown>
+                  ) : (
+                    <div className="text-sm text-ink/50 italic">
+                      Working on it{streaming.tool_uses.length === 0 ? '…' : ''}
+                    </div>
+                  )}
+                  <CostLedger
+                    usage={streaming.usage}
+                    cost_usd={streaming.cost ?? provisionalCost}
+                    model_id={data?.chat.default_model_id ?? undefined}
+                    provisional={!streaming.done}
+                  />
+                  {streaming.error && (
+                    <div className="text-oxblood text-sm mt-2">{streaming.error}</div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         </main>
@@ -180,6 +204,65 @@ function ChatView({ chatId }: { chatId: string }) {
       </div>
     </div>
   );
+}
+
+// Live status line for the streaming assistant turn. Three layers of info:
+//   1. an animated dot to signal "still working"
+//   2. a short narration of what's happening right now ("Searching irs.gov",
+//      "Running code", "Drafting answer")
+//   3. an elapsed timer that ticks every second so the user can tell the
+//      request hasn't stalled
+function StreamingStatus({ streaming }: { streaming: StreamingMessage }) {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (streaming.done) return;
+    const id = window.setInterval(() => setTick((t) => t + 1), 1000);
+    return () => window.clearInterval(id);
+  }, [streaming.done]);
+
+  const elapsedSec = Math.max(0, Math.floor((Date.now() - streaming.started_at) / 1000));
+  const narration = describeActivity(streaming);
+
+  return (
+    <div className="text-xs text-ink/60 flex items-center gap-2 whitespace-nowrap">
+      {!streaming.done && (
+        <span className="inline-flex h-2 w-2 rounded-full bg-moss animate-pulse" aria-hidden />
+      )}
+      <span>{streaming.done ? 'Finished' : narration}</span>
+      <span className="text-ink/30">·</span>
+      <span className="font-mono">{elapsedSec}s</span>
+    </div>
+  );
+}
+
+function describeActivity(streaming: StreamingMessage): string {
+  if (streaming.error) return 'Errored';
+  // Most recent in-flight tool use wins; fallback to "Drafting" once text
+  // has started flowing, otherwise "Thinking".
+  const open = [...streaming.tool_uses].reverse().find((t) => !t.status);
+  if (open) {
+    if (open.tool_name === 'web_fetch') {
+      const url = (open.input as { url?: string } | null)?.url;
+      const host = url ? safeHost(url) : null;
+      return host ? `Fetching ${host}` : 'Fetching source';
+    }
+    if (open.tool_name === 'web_search') {
+      const q = (open.input as { query?: string } | null)?.query;
+      return q ? `Searching: ${q.slice(0, 60)}` : 'Searching the web';
+    }
+    if (open.tool_name === 'code_execution') return 'Running code';
+    return `Running ${open.tool_name}`;
+  }
+  if (streaming.text.length > 0) return 'Drafting answer';
+  return 'Thinking';
+}
+
+function safeHost(url: string): string | null {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return null;
+  }
 }
 
 function MessageBlock({ message: m }: { message: MessageDTO }) {
