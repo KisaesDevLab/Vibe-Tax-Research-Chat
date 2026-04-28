@@ -86,14 +86,20 @@ export function CompliancePanel({ check }: { check?: ComplianceCheck | null }) {
 
   return (
     <section>
-      <div className="flex items-baseline justify-between gap-3 mt-8 mb-3">
-        <h2 className="font-display text-xl">Compliance</h2>
-        {check.confidence_band && (
-          <span className="text-xs font-mono text-moss/80 whitespace-nowrap">
-            {check.confidence_band}
-          </span>
-        )}
-      </div>
+      {/*
+        Heading + confidence band. The band can be a full sentence (e.g.
+        "HIGH — well-settled IRS publication authority and IRC §168
+        rules apply…"), which is too long to sit on the same line as
+        the H2 without overflowing the column. Keep the heading on
+        its own row, then render the band as a wrapping line directly
+        underneath.
+      */}
+      <h2 className="font-display text-xl mt-8 mb-1">Compliance</h2>
+      {check.confidence_band && (
+        <p className="text-xs font-mono text-moss/80 leading-relaxed mb-3 break-words">
+          {check.confidence_band}
+        </p>
+      )}
 
       {check.engagement_type && (
         <p className="text-sm leading-relaxed text-ink/80 mb-3">

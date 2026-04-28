@@ -324,7 +324,18 @@ function MessageActions({ message: m }: { message: MessageDTO }) {
     }
   };
 
-  const onPrint = () => openPrintWindow(m, exportMd);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const onPdf = async () => {
+    setPdfBusy(true);
+    try {
+      await downloadMessagePdf(m, exportMd);
+    } catch (err) {
+      console.error('pdf export failed', err);
+      alert(`PDF export failed: ${(err as Error).message}`);
+    } finally {
+      setPdfBusy(false);
+    }
+  };
 
   return (
     <div className="text-xs flex items-center gap-3">
@@ -337,11 +348,12 @@ function MessageActions({ message: m }: { message: MessageDTO }) {
       </button>
       <button
         type="button"
-        onClick={onPrint}
-        className="text-ink/50 hover:text-ink underline-offset-2 hover:underline"
-        title="Open in a new window and print / save as PDF"
+        onClick={onPdf}
+        disabled={pdfBusy}
+        className="text-ink/50 hover:text-ink underline-offset-2 hover:underline disabled:opacity-50"
+        title="Download a formatted PDF of this response"
       >
-        Save as PDF
+        {pdfBusy ? 'Building PDF…' : 'Download PDF'}
       </button>
     </div>
   );
@@ -387,63 +399,211 @@ function buildExportMarkdown(m: MessageDTO): string {
   return lines.join('\n');
 }
 
-// Open a fresh window, write a styled HTML rendering of the message into
-// it, and call window.print() so the user gets the native print / save-
-// as-PDF dialog. Using a popup avoids having to wrestle the chat layout
-// out of the print stylesheet.
-function openPrintWindow(m: MessageDTO, markdown: string) {
-  const w = window.open('', '_blank', 'width=820,height=1000');
-  if (!w) {
-    alert('Popup blocked — allow popups for this page to save as PDF.');
-    return;
-  }
-  const created = new Date(m.created_at).toLocaleString();
-  const safe = (s: string) =>
-    s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
-  const escapedMd = safe(markdown);
+// Generate a real, downloadable PDF (selectable text, ~25KB per turn) by
+// streaming the message's Markdown export into jsPDF. We don't rasterize
+// the DOM — that would produce big image PDFs with no text reflow, and
+// would lose the Fraunces / Source Serif faces (jsPDF doesn't ship them
+// either, but standard Times produces a clean, archivable document).
+async function downloadMessagePdf(m: MessageDTO, markdown: string) {
+  // Lazy-load jsPDF so the chat-page route doesn't pay for ~250KB on
+  // first paint. The dynamic import only runs when the user clicks
+  // Download PDF.
+  const { default: jsPDF } = await import('jspdf');
 
-  w.document.open();
-  w.document.write(`<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>Vibe Tax Research — ${safe(m.id.slice(0, 8))}</title>
-  <style>
-    @page { size: letter; margin: 0.75in; }
-    body { font-family: 'Source Serif 4', Georgia, serif; color: #1a1714; font-size: 11pt; line-height: 1.5; }
-    header { border-bottom: 1px solid #1a17141a; padding-bottom: 8pt; margin-bottom: 16pt; }
-    header h1 { font-family: Fraunces, Georgia, serif; font-size: 14pt; margin: 0 0 4pt; }
-    header .meta { font-size: 9pt; color: #1a17148f; }
-    main { white-space: pre-wrap; }
-    h2 { font-family: Fraunces, Georgia, serif; font-size: 13pt; margin: 18pt 0 6pt; }
-    h3 { font-family: Fraunces, Georgia, serif; font-size: 11pt; margin: 14pt 0 5pt; }
-    hr { border: none; border-top: 1px solid #1a17141a; margin: 14pt 0; }
-    pre { white-space: pre-wrap; word-break: break-word; }
-    a { color: #7a2a1a; }
-    footer { margin-top: 24pt; padding-top: 8pt; border-top: 1px solid #1a17141a; font-size: 9pt; color: #1a17148f; }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>Tax research response</h1>
-    <div class="meta">
-      Generated ${safe(created)} · model ${safe(m.model_id ?? 'unknown')}${
-        m.cost_usd != null ? ` · cost $${Number(m.cost_usd).toFixed(4)}` : ''
+  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 54; // 0.75in
+  const contentW = pageW - margin * 2;
+
+  let y = margin;
+  const ensureSpace = (need: number) => {
+    if (y + need > pageH - margin) {
+      doc.addPage();
+      y = margin;
+    }
+  };
+
+  // ── Header ────────────────────────────────────────────────────────────
+  doc.setFont('times', 'bold');
+  doc.setFontSize(16);
+  doc.text('Tax research response', margin, y);
+  y += 22;
+  doc.setFont('times', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(110);
+  const created = new Date(m.created_at).toLocaleString();
+  const headerMeta = `Generated ${created} · model ${m.model_id ?? 'unknown'}${
+    m.cost_usd != null ? ` · cost $${Number(m.cost_usd).toFixed(4)}` : ''
+  }`;
+  doc.text(headerMeta, margin, y);
+  y += 8;
+  doc.setDrawColor(220);
+  doc.line(margin, y, pageW - margin, y);
+  y += 16;
+  doc.setTextColor(26);
+
+  // ── Body ──────────────────────────────────────────────────────────────
+  // Walk the markdown line-by-line so we can map # / ## / ### / --- /
+  // bullet / number / blockquote into native jsPDF formatting. Inline
+  // **bold** runs are honored by splitting each paragraph into
+  // bold/normal segments.
+  const lines = markdown.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i]!;
+
+    // Blank line → paragraph gap.
+    if (raw.trim() === '') {
+      y += 6;
+      continue;
+    }
+
+    // Horizontal rule.
+    if (/^---+\s*$/.test(raw.trim())) {
+      ensureSpace(14);
+      y += 4;
+      doc.setDrawColor(220);
+      doc.line(margin, y, pageW - margin, y);
+      y += 14;
+      continue;
+    }
+
+    // Headings.
+    const h = raw.match(/^(#{1,4})\s+(.*)$/);
+    if (h) {
+      const level = h[1]!.length;
+      const text = h[2]!.trim();
+      const sizeMap = [16, 14, 12, 11];
+      const topPad = [16, 14, 12, 8];
+      ensureSpace(sizeMap[level - 1]! + topPad[level - 1]!);
+      y += topPad[level - 1]!;
+      doc.setFont('times', 'bold');
+      doc.setFontSize(sizeMap[level - 1]!);
+      const wrapped = doc.splitTextToSize(text, contentW) as string[];
+      for (const w of wrapped) {
+        ensureSpace(sizeMap[level - 1]! + 2);
+        doc.text(w, margin, y);
+        y += sizeMap[level - 1]! + 2;
       }
-    </div>
-  </header>
-  <main><pre>${escapedMd}</pre></main>
-  <footer>
-    Vibe Tax Research · this response was generated by an AI assistant; verify all citations and
-    confirm tax positions before reliance.
-  </footer>
-  <script>
-    window.addEventListener('load', () => {
-      // Slight delay so layout settles before the print dialog opens.
-      setTimeout(() => window.print(), 100);
-    });
-  </script>
-</body>
-</html>`);
-  w.document.close();
+      y += 2;
+      doc.setFont('times', 'normal');
+      doc.setFontSize(11);
+      continue;
+    }
+
+    // Bulleted / numbered list item.
+    const bullet = raw.match(/^(\s*)([*-]|\d+\.)\s+(.*)$/);
+    if (bullet) {
+      const indent = (bullet[1]!.length / 2) * 8;
+      const marker = /\d/.test(bullet[2]!) ? bullet[2]! : '•';
+      const text = bullet[3]!.trim();
+      doc.setFont('times', 'normal');
+      doc.setFontSize(11);
+      const wrapped = doc.splitTextToSize(text, contentW - 18 - indent) as string[];
+      ensureSpace(14 * wrapped.length);
+      for (let li = 0; li < wrapped.length; li++) {
+        if (li === 0) doc.text(marker, margin + indent, y);
+        const segments = parseInline(wrapped[li]!);
+        renderInline(doc, segments, margin + indent + 16, y);
+        y += 14;
+      }
+      continue;
+    }
+
+    // Blockquote.
+    if (/^>\s+/.test(raw)) {
+      const text = raw.replace(/^>\s+/, '').trim();
+      doc.setFont('times', 'italic');
+      doc.setFontSize(11);
+      doc.setTextColor(80);
+      const wrapped = doc.splitTextToSize(text, contentW - 14) as string[];
+      ensureSpace(14 * wrapped.length);
+      for (const w of wrapped) {
+        doc.setDrawColor(180);
+        doc.line(margin + 2, y - 9, margin + 2, y + 1);
+        doc.text(w, margin + 14, y);
+        y += 14;
+      }
+      doc.setFont('times', 'normal');
+      doc.setTextColor(26);
+      continue;
+    }
+
+    // Plain paragraph.
+    doc.setFont('times', 'normal');
+    doc.setFontSize(11);
+    const wrapped = doc.splitTextToSize(raw, contentW) as string[];
+    for (const w of wrapped) {
+      ensureSpace(14);
+      const segments = parseInline(w);
+      renderInline(doc, segments, margin, y);
+      y += 14;
+    }
+  }
+
+  // ── Footer ────────────────────────────────────────────────────────────
+  const pageCount = doc.getNumberOfPages();
+  for (let p = 1; p <= pageCount; p++) {
+    doc.setPage(p);
+    doc.setFont('times', 'italic');
+    doc.setFontSize(8);
+    doc.setTextColor(140);
+    doc.text(
+      'Vibe Tax Research · AI-generated; verify all citations before reliance.',
+      margin,
+      pageH - 30,
+    );
+    doc.text(`Page ${p} of ${pageCount}`, pageW - margin, pageH - 30, { align: 'right' });
+  }
+
+  const slug = (m.id.slice(0, 8) || 'response').toLowerCase();
+  const stamp = new Date(m.created_at).toISOString().slice(0, 10);
+  doc.save(`vibe-tax-research-${stamp}-${slug}.pdf`);
+}
+
+// Split a single line into runs of bold / normal so **like this** renders
+// with the right weight. URLs are pulled out so jsPDF can attach them
+// as link annotations.
+type InlineSeg = { text: string; bold?: boolean; href?: string };
+function parseInline(line: string): InlineSeg[] {
+  const segs: InlineSeg[] = [];
+  // Walk **bold** spans first, then check each plain run for URLs.
+  const boldRe = /\*\*([^*]+)\*\*/g;
+  let cursor = 0;
+  let bm: RegExpExecArray | null;
+  while ((bm = boldRe.exec(line)) !== null) {
+    if (bm.index > cursor) segs.push(...splitUrls(line.slice(cursor, bm.index), false));
+    segs.push({ text: bm[1]!, bold: true });
+    cursor = bm.index + bm[0].length;
+  }
+  if (cursor < line.length) segs.push(...splitUrls(line.slice(cursor), false));
+  return segs;
+}
+function splitUrls(text: string, bold: boolean): InlineSeg[] {
+  const out: InlineSeg[] = [];
+  const re = /(https?:\/\/[^\s)]+)/g;
+  let cursor = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > cursor) out.push({ text: text.slice(cursor, m.index), bold });
+    out.push({ text: m[1]!, bold, href: m[1]! });
+    cursor = m.index + m[0].length;
+  }
+  if (cursor < text.length) out.push({ text: text.slice(cursor), bold });
+  return out.length > 0 ? out : [{ text, bold }];
+}
+function renderInline(doc: import('jspdf').jsPDF, segs: InlineSeg[], x: number, y: number): void {
+  let cx = x;
+  for (const s of segs) {
+    if (!s.text) continue;
+    doc.setFont('times', s.bold ? 'bold' : 'normal');
+    if (s.href) doc.setTextColor(122, 42, 26); // oxblood
+    doc.text(s.text, cx, y);
+    if (s.href) {
+      const w = doc.getTextWidth(s.text);
+      doc.link(cx, y - 9, w, 12, { url: s.href });
+      doc.setTextColor(26);
+    }
+    cx += doc.getTextWidth(s.text);
+  }
 }
