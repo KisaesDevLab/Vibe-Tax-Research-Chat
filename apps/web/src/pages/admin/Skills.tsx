@@ -134,14 +134,20 @@ export function AdminSkillsPage() {
     onError: (e) => setError((e as Error).message),
   });
 
+  // When checked, the apply request asks the server to re-upload every
+  // parsed skill regardless of the diff. Useful after a partial failure
+  // or when Anthropic-side state has drifted (skills deleted upstream,
+  // stale skill_ids in the DB, etc.).
+  const [forceReupload, setForceReupload] = useState(false);
   const apply = useMutation({
     mutationFn: () =>
       api('/api/admin/skills/sync/apply', {
         method: 'POST',
-        body: JSON.stringify({ run_id: diff!.run_id }),
+        body: JSON.stringify({ run_id: diff!.run_id, force: forceReupload }),
       }),
     onSuccess: () => {
       setDiff(null);
+      setForceReupload(false);
       qc.invalidateQueries({ queryKey: ['admin', 'skills'] });
     },
     onError: (e) => {
@@ -246,13 +252,40 @@ export function AdminSkillsPage() {
               cls="text-oxblood"
             />
           </div>
+          <label className="mt-3 flex items-start gap-2 text-xs text-ink/70 select-none cursor-pointer">
+            <input
+              type="checkbox"
+              checked={forceReupload}
+              onChange={(e) => setForceReupload(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              <span className="font-display text-sm text-ink">Force re-upload all skills</span>
+              <span className="block text-ink/60 mt-0.5">
+                Ignore the diff and re-upload every parsed skill (including the{' '}
+                {diff.diff.unchanged_count} unchanged). Use this when a previous apply failed
+                partway, or when Anthropic-side state has drifted from the appliance.
+              </span>
+            </span>
+          </label>
+          {forceReupload && (
+            <div className="mt-2 text-xs text-gold-700 bg-gold/5 border border-gold/30 rounded p-2">
+              Will re-upload{' '}
+              {diff.diff.added.length + diff.diff.updated.length + diff.diff.unchanged_count}{' '}
+              skill(s) to Anthropic. New skill_ids will be issued for each.
+            </div>
+          )}
           <div className="flex gap-2 mt-3">
             <button
               onClick={() => apply.mutate()}
               disabled={apply.isPending}
               className="px-3 py-1.5 bg-ink text-paper rounded text-sm disabled:opacity-50"
             >
-              {apply.isPending ? 'Applying…' : 'Apply'}
+              {apply.isPending
+                ? 'Applying…'
+                : forceReupload
+                  ? `Apply (force, ${diff.diff.added.length + diff.diff.updated.length + diff.diff.unchanged_count})`
+                  : 'Apply'}
             </button>
             <button onClick={() => setDiff(null)} className="px-3 py-1.5 text-sm">
               Cancel

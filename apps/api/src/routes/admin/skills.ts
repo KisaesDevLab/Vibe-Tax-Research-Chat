@@ -52,7 +52,12 @@ adminSkillsRouter.post('/sync', async (req, res) => {
   res.json({ run_id, diff });
 });
 
-const applySchema = z.object({ run_id: z.string().uuid() });
+const applySchema = z.object({
+  run_id: z.string().uuid(),
+  // When true, re-upload every parsed skill — bypasses the dry-run filter
+  // that would otherwise skip rows the diff classifies as 'unchanged'.
+  force: z.boolean().optional(),
+});
 
 adminSkillsRouter.post('/sync/apply', async (req, res) => {
   const parsed = applySchema.safeParse(req.body);
@@ -62,7 +67,11 @@ adminSkillsRouter.post('/sync/apply', async (req, res) => {
   }
   let result;
   try {
-    result = await applyRun({ run_id: parsed.data.run_id, applied_by: req.auth!.user_id });
+    result = await applyRun({
+      run_id: parsed.data.run_id,
+      applied_by: req.auth!.user_id,
+      force: parsed.data.force,
+    });
   } catch (err) {
     const msg = (err as Error).message ?? '';
     if (msg.toLowerCase().includes('anthropic api key is not configured')) {
@@ -81,6 +90,7 @@ adminSkillsRouter.post('/sync/apply', async (req, res) => {
       uploaded: result.uploaded.length,
       failed: result.failed.length,
       removed: result.removed.length,
+      force: parsed.data.force ?? false,
     },
     ip: req.ip,
   });

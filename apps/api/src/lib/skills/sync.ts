@@ -106,7 +106,14 @@ export interface ApplyResult {
   removed: string[];
 }
 
-export async function applyRun(opts: { run_id: string; applied_by: string }): Promise<ApplyResult> {
+export async function applyRun(opts: {
+  run_id: string;
+  applied_by: string;
+  // Force a re-upload of every parsed skill, ignoring the dry-run diff.
+  // Used to recover when Anthropic-side state has drifted from the DB
+  // (skill deleted upstream, partial failure mid-apply, etc.).
+  force?: boolean;
+}): Promise<ApplyResult> {
   const db = getDb();
   const [run] = await db
     .select()
@@ -132,7 +139,12 @@ export async function applyRun(opts: { run_id: string; applied_by: string }): Pr
   const failed: ApplyResult['failed'] = [];
 
   for (const p of parsed) {
-    if (!summary.added.includes(p.local_slug) && !summary.updated.includes(p.local_slug)) continue;
+    if (
+      !opts.force &&
+      !summary.added.includes(p.local_slug) &&
+      !summary.updated.includes(p.local_slug)
+    )
+      continue;
     try {
       const upload = await uploadSkillToAnthropic({
         local_slug: p.local_slug,
