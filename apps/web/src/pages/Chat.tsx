@@ -124,9 +124,27 @@ function ChatView({ chatId }: { chatId: string }) {
 
         <main className="flex-1 min-h-0 overflow-y-auto">
           <div className="px-7 py-6 max-w-4xl w-full">
-            {data?.messages.map((m) => (
-              <MessageBlock key={m.id} message={m} />
-            ))}
+            {(() => {
+              // Walk the messages forward and remember each system_note's
+              // immediately-preceding user message. That's what the
+              // "Re-send question" button replays — a user-friendly retry
+              // for the recovery / abort / error system_notes the server
+              // emits at the bottom of broken turns.
+              const msgs = data?.messages ?? [];
+              let lastUserContent: string | null = null;
+              return msgs.map((m) => {
+                if (m.role === 'user') lastUserContent = m.content;
+                const priorUser = m.role === 'system_note' ? lastUserContent : null;
+                return (
+                  <MessageBlock
+                    key={m.id}
+                    message={m}
+                    priorUserContent={priorUser}
+                    onResend={(text) => void send(chatId, text)}
+                  />
+                );
+              });
+            })()}
             {streaming && (
               <>
                 {/*
@@ -265,7 +283,15 @@ function safeHost(url: string): string | null {
   }
 }
 
-function MessageBlock({ message: m }: { message: MessageDTO }) {
+function MessageBlock({
+  message: m,
+  priorUserContent,
+  onResend,
+}: {
+  message: MessageDTO;
+  priorUserContent?: string | null;
+  onResend?: (text: string) => void;
+}) {
   if (m.role === 'user') {
     return (
       <div className="mb-4">
@@ -275,7 +301,29 @@ function MessageBlock({ message: m }: { message: MessageDTO }) {
     );
   }
   if (m.role === 'system_note') {
-    return <div className="my-3 text-xs text-ink/50 italic">{m.content}</div>;
+    // Recovery / abort / error system_notes typically end with a hint to
+    // re-send the question. When we have the immediately-preceding user
+    // message in hand, surface a one-click "Re-send question" button so
+    // the admin doesn't have to hunt for or retype it.
+    const looksRecoverable =
+      /re-?send|connection lost|server restart|retry/i.test(m.content) &&
+      typeof priorUserContent === 'string' &&
+      priorUserContent.length > 0 &&
+      typeof onResend === 'function';
+    return (
+      <div className="my-3 text-xs text-ink/50 italic flex items-baseline gap-3">
+        <span>{m.content}</span>
+        {looksRecoverable && (
+          <button
+            type="button"
+            onClick={() => onResend!(priorUserContent!)}
+            className="not-italic text-ink/80 underline underline-offset-2 hover:text-ink whitespace-nowrap"
+          >
+            Re-send question
+          </button>
+        )}
+      </div>
+    );
   }
   return (
     // Wrap the assistant body + panels in a vertical-rhythm container so
