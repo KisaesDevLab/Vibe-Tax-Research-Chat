@@ -33,8 +33,10 @@ const schema = z.object({
     .string()
     .url()
     .default('https://github.com/KisaesDevLab/Vibe-Claude-Tax-Research-Skills'),
-  SKILLS_REPO_PIN_TYPE: z.enum(['tag', 'branch', 'sha']).default('tag'),
-  SKILLS_REPO_PIN_VALUE: z.string().default('v1.0.0-beta'),
+  // Default to the upstream `main` branch — the skills pack is still pre-1.0
+  // and has no tags yet. Admins can change this via Admin → Skills → Source.
+  SKILLS_REPO_PIN_TYPE: z.enum(['tag', 'branch', 'sha']).default('branch'),
+  SKILLS_REPO_PIN_VALUE: z.string().default('main'),
   SKILLS_WORKSPACE_DIR: z.string().default('./workspaces/skills'),
   GITHUB_WEBHOOK_SECRET: z.string().optional(),
 
