@@ -94,13 +94,19 @@ messagesRouter.post('/', async (req, res) => {
   const allCustom = await db.select().from(custom_skills).where(eq(custom_skills.is_active, true));
   const route = selectSkills({
     message: parsed.data.content,
-    available: allSkills.map((s) => ({ local_slug: s.local_slug, routing_keywords: s.routing_keywords })),
+    available: allSkills.map((s) => ({
+      local_slug: s.local_slug,
+      routing_keywords: s.routing_keywords,
+    })),
     custom: allCustom.map((c) => ({ local_slug: c.name, routing_keywords: c.routing_keywords })),
   });
   const skillSlugToId = new Map<string, string>();
   for (const s of allSkills) skillSlugToId.set(s.local_slug, s.skill_id);
-  for (const c of allCustom) if (c.anthropic_skill_id) skillSlugToId.set(c.name, c.anthropic_skill_id);
-  const attached_skill_ids = route.slugs.map((slug) => skillSlugToId.get(slug)).filter(Boolean) as string[];
+  for (const c of allCustom)
+    if (c.anthropic_skill_id) skillSlugToId.set(c.name, c.anthropic_skill_id);
+  const attached_skill_ids = route.slugs
+    .map((slug) => skillSlugToId.get(slug))
+    .filter(Boolean) as string[];
 
   // 4. History
   const history = await db
@@ -109,15 +115,38 @@ messagesRouter.post('/', async (req, res) => {
     .where(eq(messages.chat_id, chatId))
     .orderBy(asc(messages.created_at));
 
-  // SSE setup
-  res.setHeader('Content-Type', 'text/event-stream');
+  // SSE setup. The X-Accel-Buffering header tells nginx (and any well-
+  // behaved reverse proxy / Vite-style dev proxy) to disable response
+  // buffering for this response, so each SSE write flushes immediately
+  // instead of pooling into 8/16/32KB chunks. We also call res.flush()
+  // after every write — `compression` exposes that method when it owns
+  // the response, and Express's plain ServerResponse exposes it too on
+  // recent Node versions. The combination keeps deltas reaching the
+  // browser in real time even if the compression filter for SSE were
+  // ever to slip back on.
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
   res.flushHeaders();
+  const flush = (res as unknown as { flush?: () => void }).flush;
   const send = (event: string, data: unknown) => {
     res.write(`event: ${event}\n`);
     res.write(`data: ${JSON.stringify(data)}\n\n`);
+    if (typeof flush === 'function') flush.call(res);
   };
+
+  // Heartbeat: send a comment line every 15 s so the connection stays
+  // open through any idle timeouts and the browser's `EventSource`-like
+  // reader doesn't think the request stalled. SSE comment lines start
+  // with `:` and are ignored by the client.
+  const heartbeat = setInterval(() => {
+    if (res.writableEnded) return;
+    res.write(`: keepalive ${Date.now()}\n\n`);
+    if (typeof flush === 'function') flush.call(res);
+  }, 15000);
+  res.on('close', () => clearInterval(heartbeat));
+  res.on('finish', () => clearInterval(heartbeat));
 
   // Trigger streaming
   let assistantText = '';
@@ -176,7 +205,9 @@ messagesRouter.post('/', async (req, res) => {
             if (last) {
               last.response_status = ev.status === 'error' ? 500 : 200;
               last.response_excerpt =
-                typeof ev.result === 'string' ? ev.result.slice(0, 2048) : JSON.stringify(ev.result).slice(0, 2048);
+                typeof ev.result === 'string'
+                  ? ev.result.slice(0, 2048)
+                  : JSON.stringify(ev.result).slice(0, 2048);
             }
           }
           break;

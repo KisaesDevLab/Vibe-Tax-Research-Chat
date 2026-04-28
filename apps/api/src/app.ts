@@ -44,7 +44,19 @@ export function createApp(): Express {
       credentials: true,
     }),
   );
-  app.use(compression());
+  // compression() must NOT compress text/event-stream — it buffers writes
+  // and the browser sees deltas in big batches instead of as they arrive,
+  // which makes a streaming chat turn look frozen for tens of seconds at
+  // a time. Skip SSE; let everything else compress normally.
+  app.use(
+    compression({
+      filter: (req, res) => {
+        const ct = res.getHeader('Content-Type');
+        if (typeof ct === 'string' && ct.includes('text/event-stream')) return false;
+        return compression.filter(req, res);
+      },
+    }),
+  );
   // Webhooks need the raw body for HMAC verification — mount BEFORE express.json()
   // so the JSON parser doesn't consume + reformat the bytes (GitHub signs the
   // exact request body; round-tripping JSON.parse → JSON.stringify will not
