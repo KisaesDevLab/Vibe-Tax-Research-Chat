@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { and, gte, lte, eq, desc, sql } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
-import { usage_events, usage_daily } from '@vibe/db/schema';
+import { usage_events, usage_daily, users } from '@vibe/db/schema';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
 
 export const adminUsageRouter = Router();
@@ -30,9 +30,29 @@ adminUsageRouter.get('/', async (req, res) => {
   if (user_id) conditions.push(eq(usage_events.user_id, user_id));
   if (model_id) conditions.push(eq(usage_events.model_id, model_id));
 
+  // LEFT JOIN against users so the SPA + CSV export both carry an email
+  // for the actor. usage_events.user_id is non-nullable, but the join is
+  // still LEFT in case a user got hard-deleted (soft delete is the norm —
+  // see admin/users.ts — but a hard prod cleanup shouldn't hide history).
   const rows = await getDb()
-    .select()
+    .select({
+      occurred_at: usage_events.occurred_at,
+      user_id: usage_events.user_id,
+      user_email: users.email,
+      user_display_name: users.display_name,
+      chat_id: usage_events.chat_id,
+      message_id: usage_events.message_id,
+      model_id: usage_events.model_id,
+      input_tokens: usage_events.input_tokens,
+      output_tokens: usage_events.output_tokens,
+      cache_creation_input_tokens: usage_events.cache_creation_input_tokens,
+      cache_read_input_tokens: usage_events.cache_read_input_tokens,
+      web_fetch_calls: usage_events.web_fetch_calls,
+      web_search_calls: usage_events.web_search_calls,
+      cost_usd: usage_events.cost_usd,
+    })
     .from(usage_events)
+    .leftJoin(users, eq(users.id, usage_events.user_id))
     .where(conditions.length ? and(...conditions) : undefined)
     .orderBy(desc(usage_events.occurred_at))
     .limit(5000);
@@ -40,10 +60,17 @@ adminUsageRouter.get('/', async (req, res) => {
   if (format === 'csv') {
     res.setHeader('content-type', 'text/csv');
     res.setHeader('content-disposition', 'attachment; filename="usage.csv"');
-    const header = 'occurred_at,user_id,chat_id,model_id,input,output,cache_w,cache_r,fetches,searches,cost_usd\n';
+    // Quote the email so unusual addresses don't break column alignment;
+    // double any embedded quote per RFC 4180.
+    const csvField = (s: string | null | undefined): string => {
+      const v = (s ?? '').toString();
+      return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+    };
+    const header =
+      'occurred_at,user_id,user_email,chat_id,model_id,input,output,cache_w,cache_r,fetches,searches,est_cost_usd\n';
     const lines = rows.map(
       (r) =>
-        `${r.occurred_at.toISOString()},${r.user_id},${r.chat_id},${r.model_id},${r.input_tokens},${r.output_tokens},${r.cache_creation_input_tokens},${r.cache_read_input_tokens},${r.web_fetch_calls},${r.web_search_calls},${r.cost_usd}`,
+        `${r.occurred_at.toISOString()},${r.user_id},${csvField(r.user_email)},${r.chat_id},${r.model_id},${r.input_tokens},${r.output_tokens},${r.cache_creation_input_tokens},${r.cache_read_input_tokens},${r.web_fetch_calls},${r.web_search_calls},${r.cost_usd}`,
     );
     res.send(header + lines.join('\n'));
     return;
