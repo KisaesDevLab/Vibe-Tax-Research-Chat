@@ -1,0 +1,102 @@
+// Phase 13 — chat CRUD; messages router mounted under /:id/messages.
+import { Router } from 'express';
+import { z } from 'zod';
+import { eq, and, desc, asc } from 'drizzle-orm';
+import { getDb } from '@vibe/db';
+import { chats, messages } from '@vibe/db/schema';
+import { requireAuth } from '../../middleware/auth.js';
+import { messagesRouter } from './messages.js';
+import { attachmentsRouter } from './attachments.js';
+
+export const chatsRouter = Router();
+chatsRouter.use(requireAuth);
+
+const createSchema = z.object({
+  title: z.string().max(200).optional(),
+  default_model_id: z.string().nullable().optional(),
+});
+
+chatsRouter.post('/', async (req, res) => {
+  const parsed = createSchema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request' });
+    return;
+  }
+  const inserted = await getDb()
+    .insert(chats)
+    .values({
+      user_id: req.auth!.user_id,
+      title: parsed.data.title ?? 'Untitled chat',
+      default_model_id: parsed.data.default_model_id ?? null,
+    })
+    .returning();
+  res.status(201).json({ chat: inserted[0] });
+});
+
+chatsRouter.get('/', async (req, res) => {
+  const isAdmin = req.auth!.role === 'admin';
+  const targetUserId = isAdmin && typeof req.query.user_id === 'string' ? req.query.user_id : req.auth!.user_id;
+  const rows = await getDb()
+    .select()
+    .from(chats)
+    .where(eq(chats.user_id, targetUserId))
+    .orderBy(desc(chats.updated_at))
+    .limit(200);
+  res.json({ chats: rows });
+});
+
+chatsRouter.get('/:id', async (req, res) => {
+  const db = getDb();
+  const [chat] = await db
+    .select()
+    .from(chats)
+    .where(and(eq(chats.id, req.params.id), eq(chats.user_id, req.auth!.user_id)))
+    .limit(1);
+  if (!chat) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  const msgs = await db.select().from(messages).where(eq(messages.chat_id, chat.id)).orderBy(asc(messages.created_at));
+  res.json({ chat, messages: msgs });
+});
+
+const patchSchema = z.object({
+  title: z.string().max(200).optional(),
+  archived: z.boolean().optional(),
+  pinned_pack_version: z.string().nullable().optional(),
+  default_model_id: z.string().nullable().optional(),
+  pii_disclosure_acknowledged: z.boolean().optional(),
+});
+
+chatsRouter.patch('/:id', async (req, res) => {
+  const parsed = patchSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request' });
+    return;
+  }
+  const update: Record<string, unknown> = { updated_at: new Date() };
+  if (parsed.data.title !== undefined) update.title = parsed.data.title;
+  if (parsed.data.archived !== undefined)
+    update.archived_at = parsed.data.archived ? new Date() : null;
+  if (parsed.data.pinned_pack_version !== undefined)
+    update.pinned_pack_version = parsed.data.pinned_pack_version;
+  if (parsed.data.default_model_id !== undefined)
+    update.default_model_id = parsed.data.default_model_id;
+  if (parsed.data.pii_disclosure_acknowledged !== undefined)
+    update.pii_disclosure_acknowledged = parsed.data.pii_disclosure_acknowledged;
+  await getDb()
+    .update(chats)
+    .set(update)
+    .where(and(eq(chats.id, req.params.id), eq(chats.user_id, req.auth!.user_id)));
+  res.status(204).end();
+});
+
+chatsRouter.delete('/:id', async (req, res) => {
+  await getDb()
+    .delete(chats)
+    .where(and(eq(chats.id, req.params.id), eq(chats.user_id, req.auth!.user_id)));
+  res.status(204).end();
+});
+
+chatsRouter.use('/:id/messages', messagesRouter);
+chatsRouter.use('/:id/attachments', attachmentsRouter);

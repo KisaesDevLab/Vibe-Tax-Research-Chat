@@ -1,0 +1,27 @@
+// Phase 5 — settings KV (with encryption flag).
+import { pgTable, text, jsonb, boolean, timestamp, uuid } from 'drizzle-orm/pg-core';
+
+export const settings = pgTable('settings', {
+  key: text('key').primaryKey(),
+  value: jsonb('value').notNull().$type<Record<string, unknown> | string | number | boolean>(),
+  is_encrypted: boolean('is_encrypted').notNull().default(false),
+  updated_by: uuid('updated_by'),
+  updated_at: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Setting = typeof settings.$inferSelect;
+export type NewSetting = typeof settings.$inferInsert;
+
+// Canonical setting keys used across the app.
+export const SETTING_KEYS = {
+  ANTHROPIC_API_KEY: 'anthropic_api_key',
+  DEFAULT_MODEL_ID: 'default_model_id',
+  SKILLS_REPO_REF: 'skills_repo_ref',
+  WEB_RESOURCE_STRATEGY: 'web_resource_strategy',
+  COMPLIANCE_BANNER_ENABLED: 'compliance_banner_enabled',
+  PII_STRIP_ENABLED: 'pii_strip_enabled',
+  HIDE_UNVERIFIED_CITATIONS: 'hide_unverified_citations',
+  CHAT_RETENTION_DAYS: 'chat_retention_days',
+  SHOW_SKILLS_PANEL: 'show_skills_panel',
+  HAIKU_FALLBACK_ROUTING: 'haiku_fallback_routing',
+} as const;

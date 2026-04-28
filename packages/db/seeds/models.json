@@ -1,0 +1,68 @@
+{
+  "updated_at": "2026-04-27",
+  "models": [
+    {
+      "model_id": "claude-opus-4-7",
+      "display_name": "Claude Opus 4.7",
+      "input_per_mtok": 5.00,
+      "output_per_mtok": 25.00,
+      "cache_write_per_mtok": 6.25,
+      "cache_read_per_mtok": 0.50,
+      "tokenizer_factor": 1.18,
+      "web_fetch_unit_cost": 0.01,
+      "web_search_unit_cost": 0.01,
+      "web_tools_enabled": true,
+      "fetches_per_turn": 8,
+      "searches_per_turn": 4,
+      "is_active": true,
+      "notes": "New tokenizer adds up to 35% more tokens vs 4.6"
+    },
+    {
+      "model_id": "claude-opus-4-6",
+      "display_name": "Claude Opus 4.6",
+      "input_per_mtok": 5.00,
+      "output_per_mtok": 25.00,
+      "cache_write_per_mtok": 6.25,
+      "cache_read_per_mtok": 0.50,
+      "tokenizer_factor": 1.00,
+      "web_fetch_unit_cost": 0.01,
+      "web_search_unit_cost": 0.01,
+      "web_tools_enabled": true,
+      "fetches_per_turn": 8,
+      "searches_per_turn": 4,
+      "is_active": true
+    },
+    {
+      "model_id": "claude-sonnet-4-6",
+      "display_name": "Claude Sonnet 4.6",
+      "input_per_mtok": 3.00,
+      "output_per_mtok": 15.00,
+      "cache_write_per_mtok": 3.75,
+      "cache_read_per_mtok": 0.30,
+      "tokenizer_factor": 1.00,
+      "web_fetch_unit_cost": 0.01,
+      "web_search_unit_cost": 0.01,
+      "web_tools_enabled": true,
+      "fetches_per_turn": 8,
+      "searches_per_turn": 4,
+      "is_active": true,
+      "notes": "Default model — best cost/quality for tax research"
+    },
+    {
+      "model_id": "claude-haiku-4-5",
+      "display_name": "Claude Haiku 4.5",
+      "input_per_mtok": 1.00,
+      "output_per_mtok": 5.00,
+      "cache_write_per_mtok": 1.25,
+      "cache_read_per_mtok": 0.10,
+      "tokenizer_factor": 1.00,
+      "web_fetch_unit_cost": 0.01,
+      "web_search_unit_cost": 0.01,
+      "web_tools_enabled": false,
+      "fetches_per_turn": 0,
+      "searches_per_turn": 0,
+      "is_active": true,
+      "notes": "Used for routing/dispatch and chat title generation"
+    }
+  ]
+}

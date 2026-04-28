@@ -1,0 +1,75 @@
+// Phase 13 — chat list sidebar grouped by Today / Yesterday / Earlier.
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useMemo } from 'react';
+import { api } from '../lib/api';
+import type { ChatDTO } from '@vibe/shared';
+
+export function ChatSidebar() {
+  const qc = useQueryClient();
+  const navigate = useNavigate();
+  const { chatId } = useParams<{ chatId?: string }>();
+
+  const { data } = useQuery<{ chats: ChatDTO[] }>({
+    queryKey: ['chats'],
+    queryFn: () => api('/api/chats'),
+  });
+
+  const create = useMutation({
+    mutationFn: () => api<{ chat: ChatDTO }>('/api/chats', { method: 'POST' }),
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ['chats'] });
+      navigate(`/chat/${r.chat.id}`);
+    },
+  });
+
+  const groups = useMemo(() => groupChats(data?.chats ?? []), [data]);
+
+  return (
+    <aside className="border-r border-ink/10 w-[260px] flex flex-col bg-paper">
+      <div className="p-3 border-b border-ink/10 flex items-center justify-between">
+        <Link to="/chat" className="font-display tracking-tight">Vibe</Link>
+        <button onClick={() => create.mutate()} className="text-xs px-2 py-1 bg-ink text-paper rounded">
+          + New
+        </button>
+      </div>
+      <div className="overflow-y-auto flex-1">
+        {(['Today', 'Yesterday', 'Earlier'] as const).map((g) => {
+          const items = groups[g];
+          if (!items || items.length === 0) return null;
+          return (
+            <div key={g} className="mt-2">
+              <div className="px-3 text-[10px] uppercase tracking-wider text-ink/40 mb-1">{g}</div>
+              {items.map((c) => (
+                <Link
+                  key={c.id}
+                  to={`/chat/${c.id}`}
+                  className={`block px-3 py-1.5 text-sm truncate hover:bg-ink/5 ${chatId === c.id ? 'bg-ink/10' : ''}`}
+                >
+                  {c.title}
+                </Link>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+      <div className="p-3 border-t border-ink/10 text-xs text-ink/40">
+        <Link to="/admin" className="underline">Admin</Link>
+      </div>
+    </aside>
+  );
+}
+
+function groupChats(chats: ChatDTO[]): Record<'Today' | 'Yesterday' | 'Earlier', ChatDTO[]> {
+  const out = { Today: [] as ChatDTO[], Yesterday: [] as ChatDTO[], Earlier: [] as ChatDTO[] };
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const yesterday = today - 24 * 60 * 60 * 1000;
+  for (const c of chats) {
+    const t = new Date(c.updated_at).getTime();
+    if (t >= today) out.Today.push(c);
+    else if (t >= yesterday) out.Yesterday.push(c);
+    else out.Earlier.push(c);
+  }
+  return out;
+}

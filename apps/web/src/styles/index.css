@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-paper text-ink font-body;
+  }
+  body {
+    @apply min-h-screen antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight;
+  }
+  code,
+  pre,
+  .font-mono {
+    @apply font-mono;
+  }
+}
+
+@layer components {
+  .citation-chip {
+    @apply font-mono text-xs px-2 py-0.5 rounded border border-oxblood/30 bg-oxblood/5 text-oxblood;
+  }
+  .compliance-chip {
+    @apply font-mono text-xs px-2 py-0.5 rounded border border-moss/30 bg-moss/5 text-moss;
+  }
+  .footnote-chip {
+    @apply font-mono text-xs px-2 py-0.5 rounded border border-gold/30 bg-gold/5 text-gold;
+  }
+}
