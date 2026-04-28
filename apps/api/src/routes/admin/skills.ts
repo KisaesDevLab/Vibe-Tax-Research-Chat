@@ -2,12 +2,15 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { eq, desc } from 'drizzle-orm';
+import path from 'node:path';
+import { promises as fs } from 'node:fs';
 import { getDb } from '@vibe/db';
 import { skills, skill_versions, skills_sync_runs } from '@vibe/db/schema';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
 import { audit } from '../../lib/audit.js';
 import { runDryRun, applyRun, rollbackSkill } from '../../lib/skills/sync.js';
 import { env } from '../../config/env.js';
+import { logger } from '../../lib/logger.js';
 
 export const adminSkillsRouter = Router();
 adminSkillsRouter.use(requireAuth, requireRole('admin'));
@@ -121,4 +124,153 @@ adminSkillsRouter.get('/:skill_id/versions', async (req, res) => {
     .where(eq(skill_versions.skill_id, req.params.skill_id))
     .orderBy(desc(skill_versions.uploaded_at));
   res.json({ versions: rows });
+});
+
+// View-skill content. The pack skills schema doesn't store body_md (only
+// metadata) — the source lives on disk under SKILLS_WORKSPACE_DIR/skills/
+// at the pinned revision. This endpoint reads SKILL.md plus reference
+// files (references/, scripts/, shared/, examples/) and returns them
+// inline so the admin can audit what's actually in the routed skill.
+//
+// Path safety: every resolved path is checked against the workspace root
+// (not just the skill dir) — `path.resolve(skill_dir, '../foo')` would
+// stay under the workspace but escape the skill, which we reject.
+const MAX_INLINE_FILE_BYTES = 512 * 1024; // skip-inline files larger than this
+const MAX_TOTAL_INLINE_BYTES = 4 * 1024 * 1024; // hard cap across the whole skill
+const TEXT_EXT = new Set([
+  '.md',
+  '.txt',
+  '.json',
+  '.yaml',
+  '.yml',
+  '.csv',
+  '.tsv',
+  '.html',
+  '.htm',
+  '.py',
+  '.js',
+  '.ts',
+  '.tsx',
+  '.jsx',
+  '.sh',
+]);
+
+interface SkillFileEntry {
+  rel_path: string;
+  size_bytes: number;
+  is_text: boolean;
+  // present when is_text && size_bytes <= MAX_INLINE_FILE_BYTES && total budget remaining
+  content?: string;
+  truncated?: boolean;
+}
+
+async function walk(
+  dir: string,
+  rel: string,
+  out: Array<{ rel: string; abs: string; size: number }>,
+): Promise<void> {
+  let entries: import('node:fs').Dirent[];
+  try {
+    entries = await fs.readdir(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const e of entries) {
+    if (e.name === '.git' || e.name === 'node_modules') continue;
+    const full = path.join(dir, e.name);
+    const next = rel ? `${rel}/${e.name}` : e.name;
+    if (e.isDirectory()) {
+      // Mirror parser.ts: only descend into the conventional subdirs at the
+      // top level; once we're inside one, recurse freely.
+      if (rel || ['references', 'scripts', 'shared', 'examples'].includes(e.name)) {
+        await walk(full, next, out);
+      }
+      continue;
+    }
+    try {
+      const st = await fs.stat(full);
+      out.push({ rel: next, abs: full, size: st.size });
+    } catch {
+      // skip unreadable
+    }
+  }
+}
+
+adminSkillsRouter.get('/:skill_id/content', async (req, res) => {
+  const [row] = await getDb()
+    .select()
+    .from(skills)
+    .where(eq(skills.skill_id, req.params.skill_id))
+    .limit(1);
+  if (!row) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  if (!row.github_path) {
+    res.status(409).json({ error: 'no_github_path', detail: 'skill has no on-disk source' });
+    return;
+  }
+
+  const repo_dir = path.resolve(env.SKILLS_WORKSPACE_DIR);
+  const skills_root = path.join(repo_dir, 'skills');
+  const skill_dir = path.resolve(skills_root, row.github_path);
+  // Refuse anything that escapes the skills root — github_path is
+  // user-supplied (well, upstream-supplied) and has historically been
+  // a single directory name, but a malicious '../' value must not be
+  // able to read arbitrary host files.
+  if (!skill_dir.startsWith(skills_root + path.sep) && skill_dir !== skills_root) {
+    logger.warn(
+      { skill_id: row.skill_id, github_path: row.github_path },
+      'skill content: refused path that escapes skills root',
+    );
+    res.status(400).json({ error: 'unsafe_path' });
+    return;
+  }
+  const skillMdPath = path.join(skill_dir, 'SKILL.md');
+  let body_md: string;
+  try {
+    body_md = await fs.readFile(skillMdPath, 'utf-8');
+  } catch (err) {
+    res.status(404).json({
+      error: 'workspace_missing',
+      detail: 'SKILL.md not found in workspace; run a sync to refresh.',
+      hint: (err as Error).message.slice(0, 200),
+    });
+    return;
+  }
+
+  const collected: Array<{ rel: string; abs: string; size: number }> = [];
+  await walk(skill_dir, '', collected);
+  collected.sort((a, b) => a.rel.localeCompare(b.rel));
+
+  let totalInlined = 0;
+  const files: SkillFileEntry[] = [];
+  for (const f of collected) {
+    if (f.rel === 'SKILL.md') continue; // already returned as body_md
+    const ext = path.extname(f.rel).toLowerCase();
+    const is_text = TEXT_EXT.has(ext);
+    const entry: SkillFileEntry = { rel_path: f.rel, size_bytes: f.size, is_text };
+    if (
+      is_text &&
+      f.size <= MAX_INLINE_FILE_BYTES &&
+      totalInlined + f.size <= MAX_TOTAL_INLINE_BYTES
+    ) {
+      try {
+        entry.content = await fs.readFile(f.abs, 'utf-8');
+        totalInlined += f.size;
+      } catch {
+        // unreadable for some reason — leave content out so the UI shows the
+        // entry without crashing; the admin can pull it via the workspace shell.
+      }
+    } else if (is_text && f.size > MAX_INLINE_FILE_BYTES) {
+      entry.truncated = true;
+    }
+    files.push(entry);
+  }
+
+  res.json({
+    skill: row,
+    body_md,
+    files,
+  });
 });
