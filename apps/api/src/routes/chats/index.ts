@@ -1,13 +1,20 @@
 // Phase 13 — chat CRUD; messages router mounted under /:id/messages.
 import { Router } from 'express';
 import { z } from 'zod';
-import { eq, and, desc, asc } from 'drizzle-orm';
+import { eq, and, desc, asc, inArray } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
-import { chats, messages } from '@vibe/db/schema';
+import { chats, messages, skills as skillsTable, custom_skills } from '@vibe/db/schema';
 import { requireAuth } from '../../middleware/auth.js';
 import { audit } from '../../lib/audit.js';
 import { messagesRouter } from './messages.js';
 import { attachmentsRouter } from './attachments.js';
+import type { SkillAttribution } from '@vibe/shared';
+
+// Identifiers the SPA's SkillsPanel uses to colour the chip — kept here
+// rather than on the row because they're routing/role markers, not
+// configuration. If new dispatcher-class skills land, add them here.
+const DISPATCHER_SLUGS = new Set(['cpa-pack-index']);
+const COMPLIANCE_SLUGS = new Set(['compliance-ssts-circular230']);
 
 export const chatsRouter = Router();
 chatsRouter.use(requireAuth);
@@ -79,24 +86,93 @@ chatsRouter.get('/:id', async (req, res) => {
     .from(messages)
     .where(eq(messages.chat_id, chat.id))
     .orderBy(asc(messages.created_at));
+  // Hydrate the SkillAttribution[] the SPA's SkillsPanel renders. The
+  // messages row only stores raw skill_ids + versions captured at send
+  // time — without this projection the panel always sees `undefined`
+  // and renders nothing, even though the routing did happen and the
+  // ids are persisted. Pull both pack skills and custom skills, since
+  // attached_skill_ids on a single row can mix the two.
+  const allAttachedIds = Array.from(
+    new Set(msgs.flatMap((m) => (m.attached_skill_ids ?? []) as string[])),
+  );
+  type SkillsLookup = Map<string, Omit<SkillAttribution, 'version'> & { default_version: string }>;
+  const skillsLookup: SkillsLookup = new Map();
+  if (allAttachedIds.length > 0) {
+    const packRows = await db
+      .select()
+      .from(skillsTable)
+      .where(inArray(skillsTable.skill_id, allAttachedIds));
+    for (const s of packRows) {
+      skillsLookup.set(s.skill_id, {
+        skill_id: s.skill_id,
+        local_slug: s.local_slug,
+        display_name: s.display_name,
+        always_attached: s.is_always_attached,
+        is_dispatcher: DISPATCHER_SLUGS.has(s.local_slug),
+        is_compliance: COMPLIANCE_SLUGS.has(s.local_slug),
+        default_version: s.current_version,
+      });
+    }
+    const customRows = await db
+      .select()
+      .from(custom_skills)
+      .where(inArray(custom_skills.anthropic_skill_id, allAttachedIds));
+    for (const c of customRows) {
+      if (!c.anthropic_skill_id) continue;
+      skillsLookup.set(c.anthropic_skill_id, {
+        skill_id: c.anthropic_skill_id,
+        local_slug: c.name,
+        display_name: c.display_name,
+        always_attached: c.is_always_attached,
+        is_dispatcher: false,
+        is_compliance: false,
+        default_version: c.anthropic_skill_version ?? '?',
+      });
+    }
+  }
+
   // The DB stores token + cost columns flat on the messages row, but the
   // wire format the SPA expects (MessageDTO) carries them under `usage`
   // for the CostLedger to read. Project here.
-  const dto = msgs.map((m) => ({
-    ...m,
-    cost_usd: m.cost_usd != null ? Number(m.cost_usd) : 0,
-    usage:
-      m.role === 'assistant'
-        ? {
-            input_tokens: m.input_tokens,
-            output_tokens: m.output_tokens,
-            cache_creation_input_tokens: m.cache_creation_input_tokens,
-            cache_read_input_tokens: m.cache_read_input_tokens,
-            web_fetch_calls: m.web_fetch_calls,
-            web_search_calls: m.web_search_calls,
-          }
-        : undefined,
-  }));
+  const dto = msgs.map((m) => {
+    const ids = (m.attached_skill_ids ?? []) as string[];
+    const versions = (m.attached_skill_versions ?? []) as string[];
+    const skillsForMsg: SkillAttribution[] = ids
+      .map((id, idx) => {
+        const meta = skillsLookup.get(id);
+        if (!meta) return null;
+        return {
+          skill_id: meta.skill_id,
+          local_slug: meta.local_slug,
+          display_name: meta.display_name,
+          always_attached: meta.always_attached,
+          is_dispatcher: meta.is_dispatcher,
+          is_compliance: meta.is_compliance,
+          // Prefer the version captured at send-time (frozen against
+          // mid-flight pack updates); fall back to the row's current
+          // version when send-time wasn't recorded.
+          version: versions[idx] ?? meta.default_version,
+        } satisfies SkillAttribution;
+      })
+      .filter((x): x is SkillAttribution => x !== null);
+
+    return {
+      ...m,
+      cost_usd: m.cost_usd != null ? Number(m.cost_usd) : 0,
+      usage:
+        m.role === 'assistant'
+          ? {
+              input_tokens: m.input_tokens,
+              output_tokens: m.output_tokens,
+              cache_creation_input_tokens: m.cache_creation_input_tokens,
+              cache_read_input_tokens: m.cache_read_input_tokens,
+              web_fetch_calls: m.web_fetch_calls,
+              web_search_calls: m.web_search_calls,
+            }
+          : undefined,
+      skills: m.role === 'assistant' && skillsForMsg.length > 0 ? skillsForMsg : undefined,
+    };
+  });
   res.json({ chat, messages: dto });
 });
 

@@ -15,11 +15,19 @@ interface CustomSkillRow {
   anthropic_skill_version: string | null;
 }
 
+// The drawer drives both create + edit. `id` distinguishes them: when
+// present the drawer is editing an existing row (slug is read-only); when
+// absent the drawer is creating a new row.
 interface DraftBody {
+  id?: string;
   name: string;
   display_name: string;
   description: string;
   body: string;
+}
+
+interface FullCustomSkill extends CustomSkillRow {
+  body_md: string;
 }
 
 export function AdminCustomSkillsPage() {
@@ -50,6 +58,43 @@ export function AdminCustomSkillsPage() {
     },
     onError: (e) => setError(humanize(e)),
   });
+
+  const edit = useMutation({
+    mutationFn: (payload: DraftBody & { id: string }) =>
+      api(`/api/admin/custom-skills/${payload.id}`, {
+        method: 'PATCH',
+        // Slug isn't editable — re-uploading under the same skill_id is
+        // what /publish does, but a slug change would orphan the
+        // already-uploaded skill. Author a new skill if you need a
+        // different slug.
+        body: JSON.stringify({
+          display_name: payload.display_name,
+          description: payload.description,
+          body_md: payload.body,
+        }),
+      }),
+    onSuccess: () => {
+      setDrawer(null);
+      qc.invalidateQueries({ queryKey: ['admin', 'custom-skills'] });
+    },
+    onError: (e) => setError(humanize(e)),
+  });
+
+  async function openEdit(id: string) {
+    setError(null);
+    try {
+      const r = await api<{ custom_skill: FullCustomSkill }>(`/api/admin/custom-skills/${id}`);
+      setDrawer({
+        id: r.custom_skill.id,
+        name: r.custom_skill.name,
+        display_name: r.custom_skill.display_name,
+        description: r.custom_skill.description,
+        body: r.custom_skill.body_md,
+      });
+    } catch (e) {
+      setError(humanize(e));
+    }
+  }
 
   async function publish(id: string) {
     setBusyId(id);
@@ -147,6 +192,13 @@ export function AdminCustomSkillsPage() {
                 </td>
                 <td>
                   <div className="flex gap-3 justify-end whitespace-nowrap">
+                    <button
+                      onClick={() => void openEdit(s.id)}
+                      disabled={busyId === s.id}
+                      className="text-xs underline disabled:opacity-50"
+                    >
+                      edit
+                    </button>
                     {!s.is_active ? (
                       <button
                         onClick={() => void publish(s.id)}
@@ -156,6 +208,16 @@ export function AdminCustomSkillsPage() {
                         {busyId === s.id ? 'publishing…' : 'publish'}
                       </button>
                     ) : (
+                      <button
+                        onClick={() => void publish(s.id)}
+                        disabled={busyId === s.id}
+                        className="text-xs underline disabled:opacity-50"
+                        title="Re-upload current content to Anthropic"
+                      >
+                        {busyId === s.id ? 'publishing…' : 'republish'}
+                      </button>
+                    )}
+                    {s.is_active && (
                       <button
                         onClick={() => void unpublish(s.id)}
                         disabled={busyId === s.id}
@@ -182,13 +244,17 @@ export function AdminCustomSkillsPage() {
       {drawer && (
         <div className="fixed inset-0 bg-ink/40">
           <div className="absolute right-0 top-0 bottom-0 w-[680px] bg-paper p-6 overflow-y-auto">
-            <h2 className="font-display text-xl mb-4">New custom skill</h2>
+            <h2 className="font-display text-xl mb-4">
+              {drawer.id ? `Edit ${drawer.name}` : 'New custom skill'}
+            </h2>
             <div className="space-y-3">
               <input
                 placeholder="slug (lowercase, hyphens; e.g. firm-billing-rates)"
                 value={drawer.name}
                 onChange={(e) => setDrawer({ ...drawer, name: e.target.value })}
-                className="w-full px-3 py-2 border border-ink/20 rounded font-mono text-sm"
+                disabled={Boolean(drawer.id)}
+                className="w-full px-3 py-2 border border-ink/20 rounded font-mono text-sm disabled:bg-ink/5 disabled:text-ink/50"
+                title={drawer.id ? 'Slug is fixed once published' : undefined}
               />
               <input
                 placeholder="display name"
@@ -210,15 +276,29 @@ export function AdminCustomSkillsPage() {
                   onChange={(v) => setDrawer({ ...drawer, body: v ?? '' })}
                 />
               </div>
+              {drawer.id && (
+                <p className="text-xs text-ink/50">
+                  Saving stores the draft in the appliance database. Click{' '}
+                  <span className="font-mono">republish</span> on the row afterwards to push the new
+                  content to Anthropic.
+                </p>
+              )}
             </div>
             <div className="flex justify-end gap-2 mt-4">
               <button onClick={() => setDrawer(null)} className="px-3 py-1.5 text-sm">
                 Cancel
               </button>
               <button
-                onClick={() => create.mutate(drawer)}
+                onClick={() => {
+                  if (drawer.id) {
+                    edit.mutate({ ...drawer, id: drawer.id });
+                  } else {
+                    create.mutate(drawer);
+                  }
+                }}
                 disabled={
                   create.isPending ||
+                  edit.isPending ||
                   drawer.name.length < 3 ||
                   drawer.display_name.length < 1 ||
                   drawer.description.length < 1 ||
@@ -226,7 +306,13 @@ export function AdminCustomSkillsPage() {
                 }
                 className="px-3 py-1.5 bg-ink text-paper rounded text-sm disabled:opacity-50"
               >
-                {create.isPending ? 'Saving…' : 'Save draft'}
+                {drawer.id
+                  ? edit.isPending
+                    ? 'Saving…'
+                    : 'Save changes'
+                  : create.isPending
+                    ? 'Saving…'
+                    : 'Save draft'}
               </button>
             </div>
           </div>

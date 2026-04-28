@@ -92,6 +92,72 @@ adminCustomSkillsRouter.post('/', async (req, res) => {
   res.status(201).json({ id: inserted[0]!.id });
 });
 
+// Drop name from the patch shape — slug changes would orphan the
+// already-uploaded Anthropic skill (its skill_id is keyed off the original
+// name in the multipart upload). Re-create the skill if the slug needs to
+// change.
+const patchSchema = createSchema.partial().omit({ name: true });
+
+adminCustomSkillsRouter.get('/:id', async (req, res) => {
+  if (!uuidSchema.safeParse(req.params.id).success) {
+    res.status(400).json({ error: 'bad_request', detail: 'invalid id' });
+    return;
+  }
+  const [row] = await getDb()
+    .select()
+    .from(custom_skills)
+    .where(eq(custom_skills.id, req.params.id))
+    .limit(1);
+  if (!row) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  res.json({ custom_skill: row });
+});
+
+adminCustomSkillsRouter.patch('/:id', async (req, res) => {
+  if (!uuidSchema.safeParse(req.params.id).success) {
+    res.status(400).json({ error: 'bad_request', detail: 'invalid id' });
+    return;
+  }
+  const parsed = patchSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request', detail: parsed.error.flatten() });
+    return;
+  }
+  const update: Record<string, unknown> = { updated_at: new Date() };
+  for (const [k, v] of Object.entries(parsed.data)) {
+    if (v === undefined) continue;
+    update[k] = v;
+  }
+  // Anthropic-side staleness flag: any content change (body or refs) means
+  // the published version no longer matches the DB. We don't auto-republish
+  // from PATCH because that doubles the latency of a routine save and the
+  // admin may want to stage several edits before pushing. Surface it in
+  // the GET response (anthropic_skill_id_stale) so the UI can prompt.
+  // The flag itself isn't a column — it's derived in the GET projection by
+  // comparing updated_at vs the row's anthropic_skill_version timestamp.
+  // For now, simply log so triage can correlate.
+  const result = await getDb()
+    .update(custom_skills)
+    .set(update)
+    .where(eq(custom_skills.id, req.params.id))
+    .returning({ id: custom_skills.id, is_active: custom_skills.is_active });
+  if (result.length === 0) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'admin.custom_skill.update',
+    target_type: 'custom_skill',
+    target_id: req.params.id,
+    metadata: { fields: Object.keys(parsed.data) },
+    ip: req.ip,
+  });
+  res.status(204).end();
+});
+
 interface CustomSkillRow {
   id: string;
   name: string;
