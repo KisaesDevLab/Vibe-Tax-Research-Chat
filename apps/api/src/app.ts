@@ -1,4 +1,11 @@
 // Phase 1 — Express app factory. Mounts all routers.
+//
+// `express-async-errors` is a side-effect import that monkey-patches
+// Express 4's Router so async route handlers that throw forward the error
+// to the registered error middleware (rather than escaping as an
+// unhandledRejection). Express 5 ships this behavior natively; remove this
+// import when we upgrade.
+import 'express-async-errors';
 import express, { type Express, type ErrorRequestHandler } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';

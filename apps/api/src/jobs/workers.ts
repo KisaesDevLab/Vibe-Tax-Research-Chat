@@ -1,13 +1,16 @@
 // Phase 25 — BullMQ workers + cron schedules.
-import { Worker } from 'bullmq';
+//
+// Each Worker instance is wrapped with a `failed` + `error` listener so a
+// thrown job (e.g. a missing upstream tag for skills-sync) gets recorded and
+// logged, but never propagates to the Node process as an unhandledRejection
+// — which previously crashed the API the first time the nightly cron tried
+// to checkout a non-existent tag.
+import { Worker, type Job } from 'bullmq';
 import { eq, asc, sql } from 'drizzle-orm';
 import { getRedis } from '../lib/redis.js';
 import { logger } from '../lib/logger.js';
 import { runDryRun } from '../lib/skills/sync.js';
-import {
-  skillsSyncQueue,
-  usageRollupQueue,
-} from './queues.js';
+import { skillsSyncQueue, usageRollupQueue } from './queues.js';
 import { env } from '../config/env.js';
 import { getDb } from '@vibe/db';
 import { chats, messages, chat_attachments, usage_events, usage_daily } from '@vibe/db/schema';
@@ -15,51 +18,57 @@ import { getAnthropic } from '../lib/anthropic/client.js';
 
 const connection = getRedis();
 
+// Default to `any` for the job-data shape — BullMQ's own Worker<T> default
+// is `any` and the existing call sites read job.data?.x without runtime
+// guards. The handlers narrow with `typeof === 'string'` checks before use.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type WorkerHandler = (job: Job<any>) => Promise<unknown>;
+
+// Wrap Worker construction so every queue gets uniform error handling. If a
+// job throws, BullMQ marks it failed; we log it and DO NOT let it bubble to
+// process-level unhandledRejection (which Node 20 treats as fatal).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function createWorker(name: string, handler: WorkerHandler): Worker<any> {
+  const w = new Worker(name, handler, { connection });
+  w.on('failed', (job, err) => {
+    logger.error({ queue: name, job_id: job?.id, job_name: job?.name, err }, 'job failed');
+  });
+  w.on('error', (err) => {
+    // Connection-level errors (Redis blip, etc.). Logged, never fatal.
+    logger.error({ queue: name, err }, 'worker error');
+  });
+  return w;
+}
+
 export function startWorkers(): void {
   // ── skills-sync — dry-run only by default
-  new Worker(
-    'skills-sync',
-    async (job) => {
-      logger.info({ id: job.id, name: job.name }, 'skills:sync job start');
-      await runDryRun({
-        triggered_by: typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'cron',
-        pin_type: env.SKILLS_REPO_PIN_TYPE as 'tag' | 'branch' | 'sha',
-        pin_value: env.SKILLS_REPO_PIN_VALUE,
-      });
-    },
-    { connection },
-  );
+  createWorker('skills-sync', async (job) => {
+    logger.info({ id: job.id, name: job.name }, 'skills:sync job start');
+    await runDryRun({
+      triggered_by: typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'cron',
+      pin_type: env.SKILLS_REPO_PIN_TYPE as 'tag' | 'branch' | 'sha',
+      pin_value: env.SKILLS_REPO_PIN_VALUE,
+    });
+  });
 
   // ── chat-title — Haiku 4.5 auto-titler after the first assistant turn.
-  new Worker(
-    'chat-title',
-    async (job) => {
-      const chat_id = job.data?.chat_id as string | undefined;
-      if (!chat_id) return;
-      await titleChat(chat_id);
-    },
-    { connection },
-  );
+  createWorker('chat-title', async (job) => {
+    const chat_id = job.data?.chat_id as string | undefined;
+    if (!chat_id) return;
+    await titleChat(chat_id);
+  });
 
   // ── attachment-summarize — async Haiku 4.5 summary on PDF/DOCX upload.
-  new Worker(
-    'attachment-summarize',
-    async (job) => {
-      const attachment_id = job.data?.attachment_id as string | undefined;
-      if (!attachment_id) return;
-      await summarizeAttachment(attachment_id);
-    },
-    { connection },
-  );
+  createWorker('attachment-summarize', async (job) => {
+    const attachment_id = job.data?.attachment_id as string | undefined;
+    if (!attachment_id) return;
+    await summarizeAttachment(attachment_id);
+  });
 
   // ── usage-rollup — UPSERT usage_daily from the last 48h of usage_events.
-  new Worker(
-    'usage-rollup',
-    async () => {
-      await rollupUsageDaily();
-    },
-    { connection },
-  );
+  createWorker('usage-rollup', async () => {
+    await rollupUsageDaily();
+  });
 
   void scheduleCrons();
 }
@@ -133,7 +142,10 @@ async function summarizeAttachment(attachment_id: string): Promise<void> {
     return;
   }
   if (summary) {
-    await db.update(chat_attachments).set({ summary }).where(eq(chat_attachments.id, attachment_id));
+    await db
+      .update(chat_attachments)
+      .set({ summary })
+      .where(eq(chat_attachments.id, attachment_id));
   }
 }
 

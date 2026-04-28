@@ -16,7 +16,35 @@ export interface DryRunOpts {
 
 export async function runDryRun(opts: DryRunOpts): Promise<{ run_id: string; diff: SyncDiff }> {
   const db = getDb();
-  const repo = await ensureRepo({ pin_type: opts.pin_type, pin_value: opts.pin_value });
+  // Record the run row up-front so a failure in ensureRepo (e.g. missing tag,
+  // unreachable upstream) is auditable in skills_sync_runs rather than just
+  // crashing the worker.
+  const [seedRun] = await db
+    .insert(skills_sync_runs)
+    .values({
+      triggered_by: opts.triggered_by,
+      pin_type: opts.pin_type,
+      pin_value: opts.pin_value,
+      result: 'preview',
+    })
+    .returning({ id: skills_sync_runs.id });
+  const runId = seedRun!.id;
+
+  let repo;
+  try {
+    repo = await ensureRepo({ pin_type: opts.pin_type, pin_value: opts.pin_value });
+  } catch (err) {
+    await db
+      .update(skills_sync_runs)
+      .set({
+        finished_at: new Date(),
+        result: 'failed',
+        error_message: (err as Error).message.slice(0, 2000),
+      })
+      .where(eq(skills_sync_runs.id, runId));
+    throw err; // surface to caller, but the run row exists.
+  }
+
   const dirs = await listSkillDirs(repo.repo_dir);
   const parsed = await Promise.all(dirs.map((d) => parseSkill({ skill_dir: d })));
 
@@ -54,12 +82,9 @@ export async function runDryRun(opts: DryRunOpts): Promise<{ run_id: string; dif
     generated_at: new Date().toISOString(),
   };
 
-  const [run] = await db
-    .insert(skills_sync_runs)
-    .values({
-      triggered_by: opts.triggered_by,
-      pin_type: opts.pin_type,
-      pin_value: opts.pin_value,
+  await db
+    .update(skills_sync_runs)
+    .set({
       resolved_sha: repo.resolved_sha,
       finished_at: new Date(),
       result: 'preview',
@@ -70,9 +95,9 @@ export async function runDryRun(opts: DryRunOpts): Promise<{ run_id: string; dif
         unchanged_count: unchanged,
       },
     })
-    .returning({ id: skills_sync_runs.id });
+    .where(eq(skills_sync_runs.id, runId));
 
-  return { run_id: run!.id, diff };
+  return { run_id: runId, diff };
 }
 
 export async function applyRun(opts: { run_id: string; applied_by: string }): Promise<void> {
@@ -90,7 +115,12 @@ export async function applyRun(opts: { run_id: string; applied_by: string }): Pr
   });
   const dirs = await listSkillDirs(repo.repo_dir);
   const parsed = await Promise.all(dirs.map((d) => parseSkill({ skill_dir: d })));
-  const summary = run.changes_summary ?? { added: [], updated: [], removed: [], unchanged_count: 0 };
+  const summary = run.changes_summary ?? {
+    added: [],
+    updated: [],
+    removed: [],
+    unchanged_count: 0,
+  };
 
   for (const p of parsed) {
     if (!summary.added.includes(p.local_slug) && !summary.updated.includes(p.local_slug)) continue;
@@ -147,7 +177,10 @@ export async function applyRun(opts: { run_id: string; applied_by: string }): Pr
 
   // Mark removed skills inactive (preserve skill_id for historical lookup).
   for (const slug of summary.removed) {
-    await db.update(skills).set({ is_active: false, retired_at: new Date() }).where(eq(skills.local_slug, slug));
+    await db
+      .update(skills)
+      .set({ is_active: false, retired_at: new Date() })
+      .where(eq(skills.local_slug, slug));
   }
 
   await db
@@ -158,7 +191,13 @@ export async function applyRun(opts: { run_id: string; applied_by: string }): Pr
 
 export async function rollbackSkill(skill_id: string, version_id: string): Promise<void> {
   const db = getDb();
-  await db.update(skill_versions).set({ status: 'superseded' }).where(eq(skill_versions.skill_id, skill_id));
-  await db.update(skill_versions).set({ status: 'current' }).where(eq(skill_versions.id, version_id));
+  await db
+    .update(skill_versions)
+    .set({ status: 'superseded' })
+    .where(eq(skill_versions.skill_id, skill_id));
+  await db
+    .update(skill_versions)
+    .set({ status: 'current' })
+    .where(eq(skill_versions.id, version_id));
   // The actual Anthropic-side rollback (re-upload prior content) is a v1.5 follow-up.
 }
