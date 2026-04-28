@@ -5,8 +5,9 @@
 // sync-time. Whatever they pick rides through to runDryRun via the request
 // body — the env values are only the fallback for the nightly cron.
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../../lib/api';
+import { api, ApiError } from '../../lib/api';
 
 interface SkillRow {
   skill_id: string;
@@ -63,7 +64,15 @@ export function AdminSkillsPage() {
       setDiff(null);
       qc.invalidateQueries({ queryKey: ['admin', 'skills'] });
     },
-    onError: (e) => setError((e as Error).message),
+    onError: (e) => {
+      // Surface 412 / 502 with a friendlier banner. The key-missing case is
+      // the most common stumble in first-run setup.
+      if (e instanceof ApiError && e.status === 412 && e.message === 'anthropic_key_missing') {
+        setError('ANTHROPIC_KEY_MISSING');
+      } else {
+        setError((e as Error).message);
+      }
+    },
   });
 
   return (
@@ -116,11 +125,19 @@ export function AdminSkillsPage() {
         </p>
       </section>
 
-      {error && (
+      {error === 'ANTHROPIC_KEY_MISSING' ? (
+        <div className="border border-oxblood/40 bg-oxblood/5 text-oxblood text-sm rounded p-3 mb-4">
+          Set your Anthropic API key before applying. The sync uploads each skill via{' '}
+          <span className="font-mono">POST /v1/skills</span> and needs a working key.{' '}
+          <Link to="/admin/settings" className="underline font-display">
+            Open Settings →
+          </Link>
+        </div>
+      ) : error ? (
         <div className="border border-oxblood/40 bg-oxblood/5 text-oxblood text-sm rounded p-3 mb-4">
           {error}
         </div>
-      )}
+      ) : null}
 
       {diff && (
         <div className="mb-6 border border-gold/40 bg-gold/5 p-4 rounded">

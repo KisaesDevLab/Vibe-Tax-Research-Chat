@@ -39,7 +39,11 @@ adminSkillsRouter.post('/sync', async (req, res) => {
     action: 'admin.skills.sync.preview',
     target_type: 'sync_run',
     target_id: run_id,
-    metadata: { added: diff.added.length, updated: diff.updated.length, removed: diff.removed.length },
+    metadata: {
+      added: diff.added.length,
+      updated: diff.updated.length,
+      removed: diff.removed.length,
+    },
     ip: req.ip,
   });
   res.json({ run_id, diff });
@@ -53,7 +57,20 @@ adminSkillsRouter.post('/sync/apply', async (req, res) => {
     res.status(400).json({ error: 'bad_request' });
     return;
   }
-  await applyRun({ run_id: parsed.data.run_id, applied_by: req.auth!.user_id });
+  try {
+    await applyRun({ run_id: parsed.data.run_id, applied_by: req.auth!.user_id });
+  } catch (err) {
+    const msg = (err as Error).message ?? '';
+    // Map well-known precondition failures to 412 with a structured error
+    // code, so the UI can render a "Set your Anthropic key first" banner
+    // instead of a generic 500 with a stack-trace blob.
+    if (msg.toLowerCase().includes('anthropic api key is not configured')) {
+      res.status(412).json({ error: 'anthropic_key_missing' });
+      return;
+    }
+    res.status(502).json({ error: 'apply_failed', detail: msg.slice(0, 500) });
+    return;
+  }
   await audit({
     actor_user_id: req.auth!.user_id,
     action: 'admin.skills.sync.apply',
@@ -85,7 +102,11 @@ adminSkillsRouter.post('/sync/rollback', async (req, res) => {
 });
 
 adminSkillsRouter.get('/runs', async (_req, res) => {
-  const rows = await getDb().select().from(skills_sync_runs).orderBy(desc(skills_sync_runs.started_at)).limit(50);
+  const rows = await getDb()
+    .select()
+    .from(skills_sync_runs)
+    .orderBy(desc(skills_sync_runs.started_at))
+    .limit(50);
   res.json({ runs: rows });
 });
 
