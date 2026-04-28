@@ -176,12 +176,21 @@ export function buildResponsePdf(m: MessageForExport): Promise<Buffer> {
 // ── Markdown → PDFKit ─────────────────────────────────────────────────────
 
 function renderMarkdown(doc: PDFKit.PDFDocument, md: string): void {
+  // Strip inline markdown that we don't try to render specially. Bold
+  // **runs** become plain text (we'd otherwise hit a stack-overflow inside
+  // PDFKit when `continued:true` interacts with explicit width values on
+  // unusual inputs — the tax-research output tends to have very long
+  // paragraphs with lots of inline emphasis, which is exactly the shape
+  // that triggers it). Backticks render as plain text too. Em-dashes and
+  // bullets pass through; PDFKit's WinAnsi-mapped Helvetica handles them.
+  const stripInline = (s: string): string =>
+    s.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/`([^`]+)`/g, '$1');
+
   const lines = md.split('\n');
   let i = 0;
   while (i < lines.length) {
     const line = lines[i]!;
 
-    // Blank line.
     if (line.trim() === '') {
       doc.moveDown(0.5);
       i++;
@@ -198,8 +207,8 @@ function renderMarkdown(doc: PDFKit.PDFDocument, md: string): void {
       doc
         .font('Helvetica-Bold')
         .fontSize(sizes[level - 1]!)
-        .fillColor('#1a1714');
-      writeWithBold(doc, h[2]!);
+        .fillColor('#1a1714')
+        .text(stripInline(h[2]!));
       doc.moveDown(0.2);
       i++;
       continue;
@@ -219,57 +228,51 @@ function renderMarkdown(doc: PDFKit.PDFDocument, md: string): void {
       continue;
     }
 
-    // List block. Collect contiguous list items.
+    // List block. Collect contiguous list items, then defer to PDFKit's
+    // built-in doc.list() helper — it handles bullets, indents, and page
+    // breaks correctly without the recursion hazard of manual
+    // marker+text+continued plumbing.
     const listMatch = line.match(/^(\s*)([*-]|\d+\.)\s+(.*)$/);
     if (listMatch) {
-      const items: { marker: string; text: string }[] = [];
+      const isOrdered = /\d/.test(listMatch[2]!);
+      const items: string[] = [];
       while (i < lines.length) {
         const m2 = lines[i]!.match(/^(\s*)([*-]|\d+\.)\s+(.*)$/);
         if (!m2) break;
-        items.push({
-          marker: /\d/.test(m2[2]!) ? m2[2]! : '•',
-          text: m2[3]!,
-        });
+        items.push(stripInline(m2[3]!));
         i++;
       }
       doc.font('Helvetica').fontSize(11).fillColor('#1a1714');
-      for (const it of items) {
-        const startX = doc.page.margins.left;
-        const itemWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
-        const markerWidth = 16;
-        // Marker.
-        doc.text(it.marker, startX, doc.y, {
-          continued: false,
-          width: markerWidth,
-          lineBreak: false,
-        });
-        // Body indented past the marker.
-        doc.x = startX + markerWidth;
-        writeWithBold(doc, it.text, { width: itemWidth - markerWidth });
-        doc.x = startX;
-      }
+      doc.list(items, {
+        bulletRadius: 1.6,
+        textIndent: 14,
+        bulletIndent: 4,
+        listType: isOrdered ? 'numbered' : 'bullet',
+        paragraphGap: 2,
+      });
       doc.moveDown(0.3);
       continue;
     }
 
-    // Blockquote.
+    // Blockquote — render as italicized paragraph indented with a left
+    // bar drawn after we know the final y. No inline-bold gymnastics.
     if (/^>\s+/.test(line)) {
-      doc.font('Helvetica-Oblique').fontSize(11).fillColor('#555555');
-      const text = line.replace(/^>\s+/, '');
+      const text = stripInline(line.replace(/^>\s+/, ''));
       const startY = doc.y;
-      writeWithBold(doc, text);
-      // Vertical bar in the left margin.
+      doc.font('Helvetica-Oblique').fontSize(11).fillColor('#555555').text(text, {
+        indent: 14,
+      });
       doc
         .strokeColor('#bbbbbb')
         .lineWidth(2)
-        .moveTo(doc.page.margins.left - 8, startY)
-        .lineTo(doc.page.margins.left - 8, doc.y - 2)
+        .moveTo(doc.page.margins.left + 4, startY)
+        .lineTo(doc.page.margins.left + 4, doc.y - 2)
         .stroke();
       i++;
       continue;
     }
 
-    // Plain paragraph — keep collecting lines until blank or structural.
+    // Plain paragraph — keep collecting until structural break.
     const paraLines: string[] = [line];
     let j = i + 1;
     while (j < lines.length) {
@@ -286,42 +289,13 @@ function renderMarkdown(doc: PDFKit.PDFDocument, md: string): void {
       paraLines.push(nxt);
       j++;
     }
-    doc.font('Helvetica').fontSize(11).fillColor('#1a1714');
-    writeWithBold(doc, paraLines.join(' '));
+    doc
+      .font('Helvetica')
+      .fontSize(11)
+      .fillColor('#1a1714')
+      .text(stripInline(paraLines.join(' ')));
     doc.moveDown(0.4);
     i = j;
-  }
-}
-
-// Render text with **bold** runs honored. PDFKit's continued: true keeps
-// the text in the same paragraph wrapping context.
-function writeWithBold(doc: PDFKit.PDFDocument, text: string, opts: { width?: number } = {}): void {
-  // Strip backtick spans down to plain text (we don't have a mono font
-  // registered, so faking code styling would just look wrong).
-  const cleaned = text.replace(/`([^`]+)`/g, '$1');
-  const segments: { text: string; bold: boolean }[] = [];
-  const re = /\*\*([^*]+)\*\*/g;
-  let cursor = 0;
-  let mm: RegExpExecArray | null;
-  while ((mm = re.exec(cleaned)) !== null) {
-    if (mm.index > cursor) segments.push({ text: cleaned.slice(cursor, mm.index), bold: false });
-    segments.push({ text: mm[1]!, bold: true });
-    cursor = mm.index + mm[0].length;
-  }
-  if (cursor < cleaned.length) segments.push({ text: cleaned.slice(cursor), bold: false });
-  if (segments.length === 0) segments.push({ text: cleaned, bold: false });
-
-  // Snapshot the font name we were called under so we can restore it after
-  // bold runs. PDFKit's type defs don't expose the active font; the
-  // private _font field has been stable across versions, so cast through
-  // unknown rather than declaring a typed shim.
-  const currentFont = (doc as unknown as { _font?: { name?: string } })._font?.name ?? 'Helvetica';
-  const baseFont = currentFont === 'Helvetica-Bold' ? 'Helvetica-Bold' : 'Helvetica';
-  for (let k = 0; k < segments.length; k++) {
-    const s = segments[k]!;
-    const isLast = k === segments.length - 1;
-    doc.font(s.bold ? 'Helvetica-Bold' : baseFont);
-    doc.text(s.text, { continued: !isLast, width: opts.width });
   }
 }
 
@@ -340,15 +314,15 @@ function parseAuthorityArray(v: unknown): Authority[] {
 
 function renderAuthority(doc: PDFKit.PDFDocument, a: Authority, n: number): void {
   doc.moveDown(0.2);
-  // Cite line.
-  doc.font('Helvetica-Bold').fontSize(11).fillColor('#1a1714');
-  doc.text(`${n}. `, { continued: true });
-  doc.font('Helvetica-Bold').text(a.cite ?? '', { continued: true });
-  doc.font('Helvetica').fontSize(9).fillColor('#666666');
-  const status = a.verified_this_turn ? '  ✓ verified' : '  unverified';
-  doc.text(status);
-
-  // Meta line.
+  const status = a.verified_this_turn ? '✓ verified' : 'unverified';
+  // Single-call form: no `continued: true` chain (which can stack-overflow
+  // PDFKit's wrapper on long inline strings). Status word lives at the end
+  // of the cite line, separated by an em-space.
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(11)
+    .fillColor('#1a1714')
+    .text(`${n}. ${a.cite ?? ''}    [${status}]`);
   const meta: string[] = [];
   if (a.type) meta.push(a.type);
   if (a.weight) meta.push(`weight: ${a.weight}`);
@@ -356,13 +330,14 @@ function renderAuthority(doc: PDFKit.PDFDocument, a: Authority, n: number): void
     doc.font('Helvetica').fontSize(9).fillColor('#666666').text(meta.join(' · '));
   }
   if (a.source) {
+    const isUrl = /^https?:\/\//.test(a.source);
     doc
       .font('Helvetica')
       .fontSize(9)
       .fillColor('#7a2a1a')
       .text(a.source, {
-        link: /^https?:\/\//.test(a.source) ? a.source : undefined,
-        underline: /^https?:\/\//.test(a.source),
+        link: isUrl ? a.source : undefined,
+        underline: isUrl,
       });
   }
   if (a.warning) {
@@ -401,6 +376,9 @@ function normalizeRule(v: ComplianceRule): { state: 'pass' | 'na' | 'fail'; note
 }
 
 function renderCompliance(doc: PDFKit.PDFDocument, c: ComplianceCheckShape): void {
+  // No `continued: true` chains here — the prior version stack-overflowed
+  // PDFKit's text wrapper on long inputs. We render label + value in one
+  // call per field with the label inline.
   if (c.confidence_band) {
     doc.font('Helvetica').fontSize(9).fillColor('#2f4a30').text(c.confidence_band);
     doc.moveDown(0.3);
@@ -410,8 +388,7 @@ function renderCompliance(doc: PDFKit.PDFDocument, c: ComplianceCheckShape): voi
       .font('Helvetica-Bold')
       .fontSize(10)
       .fillColor('#1a1714')
-      .text('Engagement: ', { continued: true });
-    doc.font('Helvetica').text(c.engagement_type);
+      .text(`Engagement: ${c.engagement_type}`);
     doc.moveDown(0.3);
   }
   for (const row of RULE_ROWS) {
@@ -426,9 +403,7 @@ function renderCompliance(doc: PDFKit.PDFDocument, c: ComplianceCheckShape): voi
     const n = normalizeRule(v);
     if (!n) continue;
     const statusText = n.state === 'pass' ? '✓ satisfied' : n.state === 'fail' ? '⚠ review' : 'n/a';
-    doc.font('Helvetica').fontSize(11).fillColor('#1a1714');
-    doc.text(row.label, { continued: true });
-    doc.font('Helvetica').fontSize(9).fillColor('#666666').text(`   ${statusText}`);
+    doc.font('Helvetica').fontSize(11).fillColor('#1a1714').text(`${row.label}    [${statusText}]`);
     if (n.note) {
       doc.font('Helvetica').fontSize(9).fillColor('#666666').text(n.note);
     }
@@ -443,17 +418,11 @@ function renderCompliance(doc: PDFKit.PDFDocument, c: ComplianceCheckShape): voi
       .font('Helvetica-Bold')
       .fontSize(10)
       .fillColor('#1a1714')
-      .text('Disclosure forms: ', { continued: true });
-    doc.font('Helvetica').text(forms.join(', '));
+      .text(`Disclosure forms: ${forms.join(', ')}`);
   }
   if (c.notes) {
     doc.moveDown(0.3);
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(10)
-      .fillColor('#1a1714')
-      .text('Notes: ', { continued: true });
-    doc.font('Helvetica').text(c.notes);
+    doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1714').text(`Notes: ${c.notes}`);
   }
   if (c.loper_bright_caveat) {
     doc.moveDown(0.3);
