@@ -1,0 +1,105 @@
+name: release
+
+# Build + push api and web images to GHCR. Mirrors Vibe-Payroll-Time's
+# CI publish job: a fan-out matrix with one image per leg so a failed
+# api build doesn't cancel the web build (and vice versa). The
+# vibe-installer's apps/tax stack pulls these tags via env-pinned
+# VERSION knobs.
+#
+# Image names follow the Vibe distribution convention:
+#   vibe-tax-api       — Express + Drizzle + BullMQ
+#   vibe-tax-web       — nginx-served Vite SPA
+#
+# Triggers:
+#   - push to main             → :main, :sha-<shortsha>
+#   - tag push vX.Y.Z          → :X.Y.Z, :X.Y, :X, :latest
+#   - workflow_dispatch        → :<branch>, :sha-<shortsha>
+#
+# Pull requests build via the consumer side (see ci.yml when it lands)
+# but never publish to avoid leaking fork-authored images into the
+# canonical registry.
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch: {}
+
+jobs:
+  publish-images:
+    name: publish images (ghcr.io)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: api
+            image: vibe-tax-api
+            dockerfile: apps/api/Dockerfile
+          - name: web
+            image: vibe-tax-web
+            dockerfile: apps/web/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+
+      # Lower-case the repo owner — GHCR's image namespace is case-sensitive
+      # and `KisaesDevLab/...` resolves differently from `kisaesdevlab/...`.
+      - name: Compute lowercased image path
+        id: img
+        run: |
+          OWNER_LC="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          echo "ref=ghcr.io/$OWNER_LC/${{ matrix.image }}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Derive tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.img.outputs.ref }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha,format=short,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=Vibe Tax Research Chat — ${{ matrix.name }}
+            org.opencontainers.image.description=Self-hosted single-tenant AI tax-research chat appliance (${{ matrix.name }} image).
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.licenses=SEE LICENSE IN LICENSE
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          # The web Dockerfile has multiple build stages (deps / dev /
+          # builder / runtime); explicitly target runtime so we don't
+          # accidentally publish the dev stage. The api Dockerfile's
+          # final stage is also `runtime` so the same target works for
+          # both legs of the matrix.
+          target: runtime
+          push: true
+          # GMKtec NucBox M6 (reference appliance hardware) is x86_64.
+          # arm64 cross-build via QEMU adds ~5-10 min and isn't used by
+          # any current deployment target — flip on when a customer asks.
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_VERSION=${{ github.ref_type == 'tag' && github.ref_name || github.sha }}
+            GIT_SHA=${{ github.sha }}
+            BUILD_DATE=${{ github.event.head_commit.timestamp || github.run_started_at }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,scope=${{ matrix.name }},mode=max
