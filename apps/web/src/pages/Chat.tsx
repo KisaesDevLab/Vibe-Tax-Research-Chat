@@ -422,84 +422,151 @@ function buildExportMarkdown(m: MessageDTO): string {
 // for this export is archiving the response as it appeared, not full-
 // text search.
 async function downloadMessagePdf(m: MessageDTO, messageId: string) {
-  // Find the assistant block in the live DOM.
   const liveTarget = document.querySelector<HTMLElement>(
     `[data-message-id="${CSS.escape(messageId)}"] [data-pdf-target="response"]`,
   );
   if (!liveTarget) throw new Error('could not locate message for export');
 
-  const { default: jsPDF } = await import('jspdf');
+  const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+    import('jspdf'),
+    import('html2canvas'),
+  ]);
 
-  // Letter, 0.75in margins. The header band sits inside the top margin
-  // and the footer sits inside the bottom margin.
+  // Letter at 96 DPI ≈ 816 × 1056 pixels. Use a 1:1 px-to-pt mapping so
+  // html2canvas's pixel sizes line up with jsPDF's point coordinates.
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const sideMargin = 54;
-  const topMargin = 96; // bigger to leave room for the header band
-  const bottomMargin = 60; // leaves room for the footer
+  const topMargin = 96;
+  const bottomMargin = 60;
   const contentW = pageW - sideMargin * 2;
+  const contentH = pageH - topMargin - bottomMargin;
 
-  // Build a stable offscreen clone so the PDF capture isn't affected by
-  // the live element's flex/grid context (the chat scroll column has a
-  // narrow width which makes html2canvas wrap differently than letter
-  // size). The clone is laid out at exactly contentW pixels (1pt = 1px
-  // for jsPDF.html()), with explicit widths on lists / tables / panels
-  // so jsPDF's autoPaging:'text' page-break detector can do its job
-  // without truncating mid-line.
+  // Build an offscreen host where each top-level block is a flow child
+  // we can capture independently. Cloning the live target means the
+  // computed styles (Tailwind utility classes etc.) come along for the
+  // ride. A visible (not display:none) container is required so
+  // html2canvas can measure layout — we tuck it offscreen with a
+  // negative left and zero opacity instead.
   const printHost = document.createElement('div');
   printHost.style.cssText = [
-    'position:fixed',
+    'position:absolute',
     'left:-99999px',
     'top:0',
     `width:${contentW}px`,
     'background:#ffffff',
     'color:#1a1714',
-    "font-family:'Source Serif 4', Georgia, serif",
-    'font-size:11pt',
-    'line-height:1.55',
     'padding:0',
-    'z-index:-1',
+    'opacity:1',
+    'pointer-events:none',
   ].join(';');
   const cloned = liveTarget.cloneNode(true) as HTMLElement;
-  // Strip width-constraining utility classes so the cloned subtree
-  // re-flows to the host's contentW rather than the chat column width.
   cloned.style.width = '100%';
   cloned.style.maxWidth = 'none';
   printHost.appendChild(cloned);
   document.body.appendChild(printHost);
 
   try {
-    // jsPDF.html() runs html2canvas internally, but with autoPaging:'text'
-    // it walks the element's text-node bounding boxes and breaks pages
-    // BETWEEN lines instead of slicing mid-text — which fixes the
-    // top/bottom-of-page truncation we were getting from the manual
-    // image-slice path.
-    await new Promise<void>((resolve, reject) => {
-      doc.html(printHost, {
-        callback: () => resolve(),
-        x: sideMargin,
-        y: topMargin,
-        width: contentW,
-        windowWidth: contentW,
-        margin: [topMargin, sideMargin, bottomMargin, sideMargin],
-        autoPaging: 'text',
-        html2canvas: {
-          scale: 1, // 1 because 1px == 1pt at letter; bumping scales blows up width
-          backgroundColor: '#ffffff',
-          useCORS: true,
-          logging: false,
-        },
-      });
-    });
-  } catch (err) {
-    document.body.removeChild(printHost);
-    throw err;
-  }
-  document.body.removeChild(printHost);
+    // Wait one frame so the host has laid out. Without this, the very
+    // first capture sometimes measures zero-height because the cloned
+    // subtree's fonts haven't applied yet.
+    await new Promise<void>((r) => requestAnimationFrame(() => r()));
 
-  // Header + footer on every page, drawn AFTER pdf.html() so they sit
-  // on top of the rasterized content rather than getting overwritten.
+    // Walk the cloned subtree and capture each "leaf-ish" block. We go
+    // one level deep because the response wrapper has space-y-3 children,
+    // each of which is a complete prose paragraph / heading / panel.
+    const blocks = Array.from(cloned.children) as HTMLElement[];
+    if (blocks.length === 0) {
+      // Single-block fallback: capture the whole thing.
+      blocks.push(cloned);
+    }
+    // For each block that's a prose container with multiple paragraph
+    // children (the Markdown wrapper produces a single div with many
+    // <p>/<h2>/<ul> kids), expand it so each paragraph captures
+    // independently — that's what guarantees no mid-line page break.
+    const flat: HTMLElement[] = [];
+    for (const b of blocks) {
+      if (b.children.length > 1 && b.matches('div, section')) {
+        for (const c of Array.from(b.children) as HTMLElement[]) flat.push(c);
+      } else {
+        flat.push(b);
+      }
+    }
+
+    // Render each block to its own canvas, then place into pages.
+    let cursorY = topMargin;
+    let firstPlacement = true;
+
+    for (const block of flat) {
+      // Skip empty / zero-size blocks.
+      const rect = block.getBoundingClientRect();
+      if (rect.height < 1) continue;
+
+      const canvas = await html2canvas(block, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        logging: false,
+      });
+      const imgW = contentW;
+      const imgH = (canvas.height * imgW) / canvas.width;
+      const dataUrl = canvas.toDataURL('image/png');
+
+      // If this block is taller than a single page's content area, we
+      // have to slice it. Slicing happens on canvas pixels — for a
+      // long bullet list this still risks mid-line cuts but is a rare
+      // tail case (most real responses have many small blocks).
+      if (imgH > contentH) {
+        let placedY = 0;
+        while (placedY < imgH) {
+          if (!firstPlacement) {
+            doc.addPage();
+            cursorY = topMargin;
+          }
+          const remaining = imgH - placedY;
+          const sliceH = Math.min(contentH, remaining);
+          // Place the full image at a negative offset so only the slice
+          // we want falls inside the page region; the page implicitly
+          // clips the rest.
+          doc.addImage(dataUrl, 'PNG', sideMargin, topMargin - placedY, imgW, imgH);
+          // Mask above the body region (in case the negative offset
+          // pulled image content into the header band).
+          doc.setFillColor(255, 255, 255);
+          doc.rect(0, 0, pageW, topMargin, 'F');
+          // Mask below the body region.
+          doc.rect(0, topMargin + contentH, pageW, pageH - (topMargin + contentH), 'F');
+          placedY += sliceH;
+          firstPlacement = false;
+          cursorY = topMargin + sliceH;
+        }
+        continue;
+      }
+
+      // Block fits on a page. If it doesn't fit on the *current* page,
+      // start a new one.
+      if (!firstPlacement && cursorY + imgH > topMargin + contentH) {
+        doc.addPage();
+        cursorY = topMargin;
+      }
+      doc.addImage(dataUrl, 'PNG', sideMargin, cursorY, imgW, imgH);
+      cursorY += imgH + 2; // tiny gap between blocks
+      firstPlacement = false;
+    }
+
+    // If we emitted nothing (every block was empty), make sure the PDF
+    // still has at least one page.
+    if (firstPlacement) {
+      doc.setFont('times', 'italic');
+      doc.setFontSize(11);
+      doc.setTextColor(140);
+      doc.text('(empty response)', sideMargin, topMargin + 20);
+    }
+  } finally {
+    document.body.removeChild(printHost);
+  }
+
+  // Header + footer on every page, drawn last so they sit on top.
   const created = new Date(m.created_at).toLocaleString();
   const headerMeta = `Generated ${created} · model ${m.model_id ?? 'unknown'}${
     m.cost_usd != null ? ` · cost $${Number(m.cost_usd).toFixed(4)}` : ''
@@ -507,9 +574,11 @@ async function downloadMessagePdf(m: MessageDTO, messageId: string) {
   const pageCount = doc.getNumberOfPages();
   for (let p = 1; p <= pageCount; p++) {
     doc.setPage(p);
-    // White band behind the header so any image bleed-through is hidden.
+    // Mask header / footer regions so block content can't bleed in.
     doc.setFillColor(255, 255, 255);
     doc.rect(0, 0, pageW, topMargin - 16, 'F');
+    doc.rect(0, pageH - bottomMargin + 14, pageW, bottomMargin, 'F');
+
     doc.setFont('times', 'bold');
     doc.setFontSize(14);
     doc.setTextColor(26);
@@ -521,9 +590,6 @@ async function downloadMessagePdf(m: MessageDTO, messageId: string) {
     doc.setDrawColor(220);
     doc.line(sideMargin, topMargin - 18, pageW - sideMargin, topMargin - 18);
 
-    // White band behind the footer.
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, pageH - bottomMargin + 14, pageW, bottomMargin, 'F');
     doc.setFont('times', 'italic');
     doc.setFontSize(8);
     doc.setTextColor(140);
