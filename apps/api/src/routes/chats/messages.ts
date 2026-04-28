@@ -9,7 +9,7 @@
 //   6. On 'message_stop': persist assistant message + cost (Phase 15) + usage_event (Phase 24).
 import { Router } from 'express';
 import { z } from 'zod';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, and } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import {
   chats,
@@ -31,6 +31,7 @@ import { extractAuthorities, decorateVerification } from '../../lib/parsing/auth
 import { extractCompliance } from '../../lib/parsing/compliance.js';
 import { chatTitleQueue } from '../../jobs/queues.js';
 import { checkSpendCap } from '../../lib/spend-cap.js';
+import { buildResponsePdf } from '../../lib/export/response-pdf.js';
 
 export const messagesRouter = Router({ mergeParams: true });
 messagesRouter.use(requireAuth);
@@ -150,6 +151,7 @@ messagesRouter.post('/', async (req, res) => {
 
   // Trigger streaming
   let assistantText = '';
+  let completed = false;
   const toolUses = new Map<string, { tool_name: string; input: unknown }>();
   const consultations: Array<{
     tool_name: string;
@@ -159,6 +161,48 @@ messagesRouter.post('/', async (req, res) => {
     response_status?: number;
     response_excerpt?: string;
   }> = [];
+
+  // If the client connection drops before message_stop fires, persist
+  // whatever text we've already streamed plus a system_note explaining
+  // the abort. Without this the chat shows the user message with no
+  // reply at all (the SSE error event was sent but the client navigated
+  // away before reading it, and the assistant row was never written).
+  // The handler runs once and is no-op if the request completed
+  // normally.
+  req.on('close', async () => {
+    if (completed) return;
+    completed = true;
+    clearInterval(heartbeat);
+    try {
+      await db.transaction(async (tx) => {
+        if (assistantText.length > 0) {
+          await tx.insert(messages).values({
+            chat_id: chatId,
+            role: 'assistant',
+            content: assistantText,
+            model_id: modelId,
+            stop_reason: 'aborted',
+            attached_skill_ids,
+            attached_skill_versions: [],
+          });
+        }
+        await tx.insert(messages).values({
+          chat_id: chatId,
+          role: 'system_note',
+          content:
+            assistantText.length > 0
+              ? '⚠ Connection lost mid-response — the partial answer above was saved. Re-send your question to get a complete reply.'
+              : '⚠ Connection lost before the assistant could reply. Re-send your question to retry.',
+        });
+      });
+      logger.warn(
+        { chatId, partial_chars: assistantText.length },
+        'stream aborted — partial saved',
+      );
+    } catch (err) {
+      logger.error({ err, chatId }, 'failed to persist aborted-stream partial');
+    }
+  });
 
   try {
     const stream = streamChat({
@@ -216,6 +260,9 @@ messagesRouter.post('/', async (req, res) => {
           send('usage', ev.usage);
           break;
         case 'message_stop': {
+          // Mark the request as fully completed so the req.on('close')
+          // handler below treats this as a clean finish, not an abort.
+          completed = true;
           // Persist assistant message + cost
           const cost = computeCost(
             {
@@ -329,8 +376,88 @@ messagesRouter.post('/', async (req, res) => {
       }
     }
   } catch (err) {
+    // Mark completed so the req.on('close') handler doesn't ALSO try to
+    // persist a partial — the streamChat error path already wrote (or
+    // will write) the user-facing error event, and the user will see
+    // the assistant block missing from the chat history. Also write a
+    // system_note so the failure surfaces in the chat instead of being
+    // silently dropped on next refetch.
+    completed = true;
     logger.error({ err, chatId }, 'streamChat failed');
     send('error', { error: (err as Error).message });
+    try {
+      await db.insert(messages).values({
+        chat_id: chatId,
+        role: 'system_note',
+        content: `⚠ The assistant could not complete this turn: ${(err as Error).message.slice(0, 400)}`,
+      });
+    } catch (writeErr) {
+      logger.error({ err: writeErr, chatId }, 'failed to persist stream-error system_note');
+    }
     res.end();
   }
+});
+
+// ── PDF export ────────────────────────────────────────────────────────────
+// GET /api/chats/:id/messages/:messageId/pdf
+// Returns a real, selectable-text PDF built server-side via PDFKit. We
+// switched from client-side html2canvas/jsPDF to server rendering after
+// repeated formatting failures (Unicode glyphs, mid-line page breaks,
+// CSS context loss in offscreen clones). PDFKit's deterministic text
+// engine and built-in Helvetica metrics produce a clean, archivable
+// document every time.
+const pdfParamsSchema = z.object({
+  messageId: z.string().uuid(),
+});
+
+messagesRouter.get('/:messageId/pdf', async (req, res) => {
+  const chatId = (req.params as unknown as MergedParams).id;
+  const parsed = pdfParamsSchema.safeParse(req.params);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request' });
+    return;
+  }
+  const db = getDb();
+  // Owner-or-admin scope on the chat (mirrors GET /api/chats/:id).
+  const [chat] = await db.select().from(chats).where(eq(chats.id, chatId)).limit(1);
+  if (!chat || (chat.user_id !== req.auth!.user_id && req.auth!.role !== 'admin')) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  const [m] = await db
+    .select()
+    .from(messages)
+    .where(and(eq(messages.id, parsed.data.messageId), eq(messages.chat_id, chatId)))
+    .limit(1);
+  if (!m || m.role !== 'assistant') {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+
+  let buf: Buffer;
+  try {
+    buf = await buildResponsePdf({
+      id: m.id,
+      created_at: m.created_at,
+      content: m.content,
+      model_id: m.model_id,
+      cost_usd: m.cost_usd,
+      authorities: m.authorities,
+      compliance_check: m.compliance_check,
+    });
+  } catch (err) {
+    logger.error({ err, message_id: m.id }, 'pdf generation failed');
+    res.status(500).json({ error: 'pdf_generation_failed', detail: (err as Error).message });
+    return;
+  }
+
+  const stamp = m.created_at.toISOString().slice(0, 10);
+  const slug = m.id.slice(0, 8);
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="vibe-tax-research-${stamp}-${slug}.pdf"`,
+  );
+  res.setHeader('Content-Length', String(buf.byteLength));
+  res.end(buf);
 });

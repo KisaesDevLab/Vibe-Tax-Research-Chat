@@ -9,7 +9,8 @@ import { AuthoritiesPanel } from '../components/panels/AuthoritiesPanel';
 import { CompliancePanel } from '../components/panels/CompliancePanel';
 import { SkillsPanel } from '../components/panels/SkillsPanel';
 import { useChatStream, type StreamingMessage } from '../hooks/useChatStream';
-import { api } from '../lib/api';
+import { api, apiUrl } from '../lib/api';
+import { tokenStore } from '../lib/token-store';
 import type { ChatDTO, MessageDTO } from '@vibe/shared';
 
 // The model emits structured authorities + compliance payloads at the end
@@ -346,7 +347,8 @@ function MessageActions({ message: m }: { message: MessageDTO }) {
       setPdfBusy(false);
     }
   };
-  // Mark unused-but-kept-for-clipboard helper as referenced.
+  // exportMd is consumed by onCopy; reference here so TS doesn't flag it
+  // as unused-after-refactor when the PDF path moved to the server.
   void exportMd;
 
   return (
@@ -411,197 +413,48 @@ function buildExportMarkdown(m: MessageDTO): string {
   return lines.join('\n');
 }
 
-// Generate a downloadable PDF that mirrors the on-screen response. We
-// rasterize the live DOM with html2canvas (perfect fidelity for the
-// Fraunces / Source Serif faces, panels, list styling, etc.) and slice
-// the resulting image into letter-size pages with jsPDF.
-//
-// Trade-off: text isn't selectable inside the PDF — but the previous
-// hand-rolled markdown→jsPDF parser had Unicode + bold-wrap edge cases
-// that produced visible formatting glitches. A CPA's primary use case
-// for this export is archiving the response as it appeared, not full-
-// text search.
-async function downloadMessagePdf(m: MessageDTO, messageId: string) {
-  const liveTarget = document.querySelector<HTMLElement>(
-    `[data-message-id="${CSS.escape(messageId)}"] [data-pdf-target="response"]`,
-  );
-  if (!liveTarget) throw new Error('could not locate message for export');
-
-  const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-    import('jspdf'),
-    import('html2canvas'),
-  ]);
-
-  // Letter at 96 DPI ≈ 816 × 1056 pixels. Use a 1:1 px-to-pt mapping so
-  // html2canvas's pixel sizes line up with jsPDF's point coordinates.
-  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
-  const pageW = doc.internal.pageSize.getWidth();
-  const pageH = doc.internal.pageSize.getHeight();
-  const sideMargin = 54;
-  const topMargin = 96;
-  const bottomMargin = 60;
-  const contentW = pageW - sideMargin * 2;
-  const contentH = pageH - topMargin - bottomMargin;
-
-  // Build an offscreen host where each top-level block is a flow child
-  // we can capture independently. Cloning the live target means the
-  // computed styles (Tailwind utility classes etc.) come along for the
-  // ride. A visible (not display:none) container is required so
-  // html2canvas can measure layout — we tuck it offscreen with a
-  // negative left and zero opacity instead.
-  const printHost = document.createElement('div');
-  printHost.style.cssText = [
-    'position:absolute',
-    'left:-99999px',
-    'top:0',
-    `width:${contentW}px`,
-    'background:#ffffff',
-    'color:#1a1714',
-    'padding:0',
-    'opacity:1',
-    'pointer-events:none',
-  ].join(';');
-  const cloned = liveTarget.cloneNode(true) as HTMLElement;
-  cloned.style.width = '100%';
-  cloned.style.maxWidth = 'none';
-  printHost.appendChild(cloned);
-  document.body.appendChild(printHost);
-
-  try {
-    // Wait one frame so the host has laid out. Without this, the very
-    // first capture sometimes measures zero-height because the cloned
-    // subtree's fonts haven't applied yet.
-    await new Promise<void>((r) => requestAnimationFrame(() => r()));
-
-    // Walk the cloned subtree and capture each "leaf-ish" block. We go
-    // one level deep because the response wrapper has space-y-3 children,
-    // each of which is a complete prose paragraph / heading / panel.
-    const blocks = Array.from(cloned.children) as HTMLElement[];
-    if (blocks.length === 0) {
-      // Single-block fallback: capture the whole thing.
-      blocks.push(cloned);
+// Fetch the server-rendered PDF and trigger a browser download. The
+// server uses PDFKit to emit a real, selectable-text PDF — much more
+// reliable than the previous client-side html2canvas/jsPDF dance, which
+// kept hitting Unicode / page-break / font-context issues. The endpoint
+// requires auth; we send the bearer token explicitly so this works in
+// browsers that block third-party-style cookie reads.
+async function downloadMessagePdf(m: MessageDTO, messageId: string): Promise<void> {
+  const access = tokenStore.getAccess();
+  const url = apiUrl(`/api/chats/${m.chat_id}/messages/${messageId}/pdf`);
+  const res = await fetch(url, {
+    headers: access ? { authorization: `Bearer ${access}` } : {},
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    let detail = `HTTP ${res.status}`;
+    try {
+      const j = (await res.json()) as { detail?: string; error?: string };
+      detail = j.detail || j.error || detail;
+    } catch {
+      // not JSON
     }
-    // For each block that's a prose container with multiple paragraph
-    // children (the Markdown wrapper produces a single div with many
-    // <p>/<h2>/<ul> kids), expand it so each paragraph captures
-    // independently — that's what guarantees no mid-line page break.
-    const flat: HTMLElement[] = [];
-    for (const b of blocks) {
-      if (b.children.length > 1 && b.matches('div, section')) {
-        for (const c of Array.from(b.children) as HTMLElement[]) flat.push(c);
-      } else {
-        flat.push(b);
-      }
-    }
-
-    // Render each block to its own canvas, then place into pages.
-    let cursorY = topMargin;
-    let firstPlacement = true;
-
-    for (const block of flat) {
-      // Skip empty / zero-size blocks.
-      const rect = block.getBoundingClientRect();
-      if (rect.height < 1) continue;
-
-      const canvas = await html2canvas(block, {
-        scale: 2,
-        backgroundColor: '#ffffff',
-        useCORS: true,
-        logging: false,
-      });
-      const imgW = contentW;
-      const imgH = (canvas.height * imgW) / canvas.width;
-      const dataUrl = canvas.toDataURL('image/png');
-
-      // If this block is taller than a single page's content area, we
-      // have to slice it. Slicing happens on canvas pixels — for a
-      // long bullet list this still risks mid-line cuts but is a rare
-      // tail case (most real responses have many small blocks).
-      if (imgH > contentH) {
-        let placedY = 0;
-        while (placedY < imgH) {
-          if (!firstPlacement) {
-            doc.addPage();
-            cursorY = topMargin;
-          }
-          const remaining = imgH - placedY;
-          const sliceH = Math.min(contentH, remaining);
-          // Place the full image at a negative offset so only the slice
-          // we want falls inside the page region; the page implicitly
-          // clips the rest.
-          doc.addImage(dataUrl, 'PNG', sideMargin, topMargin - placedY, imgW, imgH);
-          // Mask above the body region (in case the negative offset
-          // pulled image content into the header band).
-          doc.setFillColor(255, 255, 255);
-          doc.rect(0, 0, pageW, topMargin, 'F');
-          // Mask below the body region.
-          doc.rect(0, topMargin + contentH, pageW, pageH - (topMargin + contentH), 'F');
-          placedY += sliceH;
-          firstPlacement = false;
-          cursorY = topMargin + sliceH;
-        }
-        continue;
-      }
-
-      // Block fits on a page. If it doesn't fit on the *current* page,
-      // start a new one.
-      if (!firstPlacement && cursorY + imgH > topMargin + contentH) {
-        doc.addPage();
-        cursorY = topMargin;
-      }
-      doc.addImage(dataUrl, 'PNG', sideMargin, cursorY, imgW, imgH);
-      cursorY += imgH + 2; // tiny gap between blocks
-      firstPlacement = false;
-    }
-
-    // If we emitted nothing (every block was empty), make sure the PDF
-    // still has at least one page.
-    if (firstPlacement) {
-      doc.setFont('times', 'italic');
-      doc.setFontSize(11);
-      doc.setTextColor(140);
-      doc.text('(empty response)', sideMargin, topMargin + 20);
-    }
-  } finally {
-    document.body.removeChild(printHost);
+    throw new Error(detail);
   }
-
-  // Header + footer on every page, drawn last so they sit on top.
-  const created = new Date(m.created_at).toLocaleString();
-  const headerMeta = `Generated ${created} · model ${m.model_id ?? 'unknown'}${
-    m.cost_usd != null ? ` · cost $${Number(m.cost_usd).toFixed(4)}` : ''
-  }`;
-  const pageCount = doc.getNumberOfPages();
-  for (let p = 1; p <= pageCount; p++) {
-    doc.setPage(p);
-    // Mask header / footer regions so block content can't bleed in.
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 0, pageW, topMargin - 16, 'F');
-    doc.rect(0, pageH - bottomMargin + 14, pageW, bottomMargin, 'F');
-
-    doc.setFont('times', 'bold');
-    doc.setFontSize(14);
-    doc.setTextColor(26);
-    doc.text('Tax research response', sideMargin, sideMargin);
-    doc.setFont('times', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(110);
-    doc.text(headerMeta, sideMargin, sideMargin + 14);
-    doc.setDrawColor(220);
-    doc.line(sideMargin, topMargin - 18, pageW - sideMargin, topMargin - 18);
-
-    doc.setFont('times', 'italic');
-    doc.setFontSize(8);
-    doc.setTextColor(140);
-    doc.text(
-      'Vibe Tax Research · AI-generated; verify all citations before reliance.',
-      sideMargin,
-      pageH - 30,
-    );
-    doc.text(`Page ${p} of ${pageCount}`, pageW - sideMargin, pageH - 30, { align: 'right' });
+  const blob = await res.blob();
+  // Pull the filename out of the Content-Disposition header if present;
+  // otherwise build one from the message id + timestamp.
+  let filename = '';
+  const cd = res.headers.get('content-disposition') ?? '';
+  const match = cd.match(/filename\s*=\s*"?([^";]+)"?/i);
+  if (match) filename = match[1]!;
+  if (!filename) {
+    const stamp = new Date(m.created_at).toISOString().slice(0, 10);
+    filename = `vibe-tax-research-${stamp}-${m.id.slice(0, 8)}.pdf`;
   }
-
-  const slug = (m.id.slice(0, 8) || 'response').toLowerCase();
-  const stamp = new Date(m.created_at).toISOString().slice(0, 10);
-  doc.save(`vibe-tax-research-${stamp}-${slug}.pdf`);
+  const objectUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = objectUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  // Free the blob URL on the next tick — Safari needs the click to
+  // complete before the URL can be revoked.
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
 }
