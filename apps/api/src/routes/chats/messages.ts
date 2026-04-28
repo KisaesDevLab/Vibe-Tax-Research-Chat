@@ -18,6 +18,7 @@ import {
   models,
   skills as skillsTable,
   custom_skills,
+  chat_attachments,
   usage_events,
   SETTING_KEYS,
 } from '@vibe/db/schema';
@@ -124,6 +125,63 @@ messagesRouter.post('/', async (req, res) => {
     .where(eq(messages.chat_id, chatId))
     .orderBy(asc(messages.created_at));
 
+  // 4b. Attachment context. Pull the chat's attachments and build a
+  // preamble that sits at the top of the system prompt. Prefer the
+  // Haiku-generated summary when ready (compact, costs few tokens);
+  // fall back to a per-document text excerpt while the summarize
+  // worker is still catching up. The preamble is bounded so a chat
+  // with many large documents can't blow past the model's input
+  // budget.
+  const attachmentRows = await db
+    .select({
+      id: chat_attachments.id,
+      filename: chat_attachments.filename,
+      mime_type: chat_attachments.mime_type,
+      summary: chat_attachments.summary,
+      full_text: chat_attachments.full_text,
+    })
+    .from(chat_attachments)
+    .where(eq(chat_attachments.chat_id, chatId))
+    .orderBy(asc(chat_attachments.created_at));
+  const ATTACHMENT_PER_DOC_CHARS = 60_000;
+  const ATTACHMENT_TOTAL_CHARS = 180_000;
+  const attachmentPreamble = (() => {
+    if (attachmentRows.length === 0) return '';
+    const parts: string[] = [
+      'The user has attached the following document(s) to this chat. Treat them as primary context the user has shared with you. When the user references "the attached document", "the file", "the PDF", etc., it means the documents below. Quote them verbatim when accuracy matters; cite by filename.',
+      '',
+    ];
+    let total = 0;
+    for (const a of attachmentRows) {
+      const body = (a.summary && a.summary.trim().length > 0 ? a.summary : (a.full_text ?? ''))
+        .toString()
+        .trim();
+      if (!body) {
+        parts.push(`<document filename="${a.filename}" type="${a.mime_type}">`);
+        parts.push('[Empty or unparseable — likely a scanned image without OCR.]');
+        parts.push('</document>');
+        parts.push('');
+        continue;
+      }
+      const remainingBudget = Math.max(0, ATTACHMENT_TOTAL_CHARS - total);
+      if (remainingBudget < 200) {
+        parts.push(
+          `<document filename="${a.filename}">[Skipped — earlier documents filled the context budget.]</document>`,
+        );
+        parts.push('');
+        continue;
+      }
+      const cap = Math.min(ATTACHMENT_PER_DOC_CHARS, remainingBudget);
+      const slice = body.length > cap ? `${body.slice(0, cap)}\n\n[…truncated]` : body;
+      total += slice.length;
+      parts.push(`<document filename="${a.filename}" type="${a.mime_type}">`);
+      parts.push(slice);
+      parts.push('</document>');
+      parts.push('');
+    }
+    return parts.join('\n');
+  })();
+
   // SSE setup. The X-Accel-Buffering header tells nginx (and any well-
   // behaved reverse proxy / Vite-style dev proxy) to disable response
   // buffering for this response, so each SSE write flushes immediately
@@ -222,6 +280,8 @@ messagesRouter.post('/', async (req, res) => {
       user_msg_id: userMsg!.id,
       model_id: modelId,
       attached_skill_count: attached_skill_ids.length,
+      attached_doc_count: attachmentRows.length,
+      attached_doc_chars: attachmentPreamble.length,
       message_chars: parsed.data.content.length,
     },
     'stream start',
@@ -231,7 +291,9 @@ messagesRouter.post('/', async (req, res) => {
     const stream = streamChat({
       chat_id: chatId,
       user_message: parsed.data.content,
-      system_prompt: buildSystemPrompt({}),
+      system_prompt: attachmentPreamble
+        ? `${buildSystemPrompt({})}\n\n${attachmentPreamble}`
+        : buildSystemPrompt({}),
       model_id: modelId,
       attached_skill_ids,
       enable_web_tools: model.web_tools_enabled,

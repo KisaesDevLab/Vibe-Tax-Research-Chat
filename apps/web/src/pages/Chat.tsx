@@ -1,5 +1,5 @@
 // Phase 14-20 — chat page. Composes sidebar + message list + composer + panels.
-import { useState, type FormEvent, useEffect, useMemo } from 'react';
+import { useRef, useState, type FormEvent, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ChatSidebar } from '../components/ChatSidebar';
@@ -9,8 +9,32 @@ import { AuthoritiesPanel } from '../components/panels/AuthoritiesPanel';
 import { CompliancePanel } from '../components/panels/CompliancePanel';
 import { SkillsPanel } from '../components/panels/SkillsPanel';
 import { useChatStream, type StreamingMessage } from '../hooks/useChatStream';
-import { api, apiFetch } from '../lib/api';
+import { api, apiFetch, ApiError } from '../lib/api';
 import type { ChatDTO, MessageDTO } from '@vibe/shared';
+
+interface AttachmentDTO {
+  id: string;
+  filename: string;
+  mime_type: string;
+  size_bytes: number;
+  summary?: string | null;
+  ocr_applied?: boolean;
+  created_at: string;
+}
+
+// File picker accept= filter — mirrors the MIME types the server's parser
+// recognizes (lib/parsers/index.ts). Anything outside this list will still
+// upload and persist, but the parser will produce empty text and the model
+// won't see it. Better to reject up front in the picker.
+const ACCEPT_ATTACHMENT_TYPES =
+  '.pdf,.docx,.txt,.md,.html,.htm,.json,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/html,application/json,image/png,image/jpeg,image/webp';
+const MAX_ATTACHMENT_BYTES = 50 * 1024 * 1024;
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 // The model emits structured authorities + compliance payloads at the end
 // of every research turn so the API can persist them and the panels below
@@ -80,11 +104,29 @@ export function ChatPage() {
 function ChatView({ chatId }: { chatId: string }) {
   const [draft, setDraft] = useState('');
   const { streaming, send, abort, reset } = useChatStream();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  // In-flight uploads. They live in local state until the POST resolves;
+  // on success we refetch the canonical list and drop the temp row, on
+  // failure we keep the row so the user can see what went wrong and
+  // dismiss it.
+  const [uploads, setUploads] = useState<
+    Array<{ tempId: string; filename: string; status: 'uploading' | 'error'; error?: string }>
+  >([]);
+  const [dragOver, setDragOver] = useState(false);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
 
   const { data, refetch } = useQuery<{ chat: ChatDTO; messages: MessageDTO[] }>({
     queryKey: ['chat', chatId],
     queryFn: () => api(`/api/chats/${chatId}`),
   });
+
+  const { data: attachData, refetch: refetchAttachments } = useQuery<{
+    attachments: AttachmentDTO[];
+  }>({
+    queryKey: ['attachments', chatId],
+    queryFn: () => api(`/api/chats/${chatId}/attachments`),
+  });
+  const attachments = attachData?.attachments ?? [];
 
   useEffect(() => {
     if (streaming?.done) {
@@ -92,6 +134,58 @@ function ChatView({ chatId }: { chatId: string }) {
       reset();
     }
   }, [streaming?.done, refetch, reset]);
+
+  async function uploadOne(file: File): Promise<void> {
+    const tempId =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `tmp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    if (file.size > MAX_ATTACHMENT_BYTES) {
+      setUploads((u) => [
+        ...u,
+        {
+          tempId,
+          filename: file.name,
+          status: 'error',
+          error: `File is ${formatBytes(file.size)} — limit is ${formatBytes(MAX_ATTACHMENT_BYTES)}.`,
+        },
+      ]);
+      return;
+    }
+    setUploads((u) => [...u, { tempId, filename: file.name, status: 'uploading' }]);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      // apiFetch handles the auth header + 401-refresh; we deliberately do
+      // NOT route this through api() because that helper forces JSON
+      // content-type and would clobber the multipart boundary.
+      await apiFetch(`/api/chats/${chatId}/attachments`, { method: 'POST', body: fd });
+      setUploads((u) => u.filter((x) => x.tempId !== tempId));
+      await refetchAttachments();
+    } catch (err) {
+      const detail =
+        err instanceof ApiError
+          ? `${err.message} (HTTP ${err.status})`
+          : ((err as Error).message ?? 'Upload failed');
+      setUploads((u) =>
+        u.map((x) => (x.tempId === tempId ? { ...x, status: 'error', error: detail } : x)),
+      );
+    }
+  }
+
+  async function uploadFiles(files: FileList | File[]): Promise<void> {
+    setAttachmentError(null);
+    for (const file of Array.from(files)) await uploadOne(file);
+  }
+
+  async function deleteAttachment(id: string): Promise<void> {
+    try {
+      await api(`/api/chats/${chatId}/attachments/${id}`, { method: 'DELETE' });
+      await refetchAttachments();
+    } catch (err) {
+      setAttachmentError((err as Error).message ?? 'Delete failed');
+    }
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -114,9 +208,36 @@ function ChatView({ chatId }: { chatId: string }) {
     // column with min-h-0 (the magic that lets a flex child actually scroll
     // instead of forcing the parent taller), header and form are
     // shrink-to-content, and only <main> scrolls between them.
-    <div className="grid grid-cols-[260px_1fr] h-screen overflow-hidden bg-paper">
+    <div
+      className="grid grid-cols-[260px_1fr] h-screen overflow-hidden bg-paper"
+      onDragOver={(e) => {
+        // Capture drag-over at the chat-column level so users can drop
+        // anywhere on the page and have the file land on the active chat.
+        if (e.dataTransfer.types.includes('Files')) {
+          e.preventDefault();
+          setDragOver(true);
+        }
+      }}
+      onDragLeave={(e) => {
+        // Only clear when the cursor leaves the outer container; child
+        // enter/leave events fire constantly and would flicker the overlay.
+        if (e.currentTarget === e.target) setDragOver(false);
+      }}
+      onDrop={(e) => {
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          e.preventDefault();
+          setDragOver(false);
+          void uploadFiles(e.dataTransfer.files);
+        }
+      }}
+    >
       <ChatSidebar />
-      <div className="flex flex-col min-h-0">
+      <div className="flex flex-col min-h-0 relative">
+        {dragOver && (
+          <div className="absolute inset-0 z-20 bg-gold/10 border-2 border-dashed border-gold rounded-md grid place-items-center pointer-events-none">
+            <div className="font-display text-xl text-ink/70">Drop to attach to this chat</div>
+          </div>
+        )}
         <header className="shrink-0 px-7 py-4 border-b border-ink/10 flex items-center justify-between">
           <div className="font-display text-lg">{data?.chat.title ?? 'Loading…'}</div>
           <div className="font-mono text-xs text-ink/50">{data?.messages.length ?? 0} messages</div>
@@ -191,7 +312,75 @@ function ChatView({ chatId }: { chatId: string }) {
 
         <form onSubmit={onSubmit} className="shrink-0 px-7 py-4 border-t border-ink/10 bg-paper">
           <div className="max-w-4xl w-full">
+            {(attachments.length > 0 || uploads.length > 0 || attachmentError) && (
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                {attachments.map((a) => (
+                  <AttachmentChip
+                    key={a.id}
+                    filename={a.filename}
+                    sizeBytes={a.size_bytes}
+                    onRemove={() => void deleteAttachment(a.id)}
+                  />
+                ))}
+                {uploads.map((u) => (
+                  <PendingChip
+                    key={u.tempId}
+                    filename={u.filename}
+                    status={u.status}
+                    error={u.error}
+                    onDismiss={() => setUploads((cur) => cur.filter((x) => x.tempId !== u.tempId))}
+                  />
+                ))}
+                {attachmentError && (
+                  <div className="text-xs text-oxblood flex items-center gap-2">
+                    <span>{attachmentError}</span>
+                    <button
+                      type="button"
+                      onClick={() => setAttachmentError(null)}
+                      className="underline"
+                    >
+                      dismiss
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept={ACCEPT_ATTACHMENT_TYPES}
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  void uploadFiles(e.target.files);
+                  // Reset the input so picking the same file twice still fires onChange.
+                  e.target.value = '';
+                }
+              }}
+            />
             <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-3 py-2 border border-ink/20 rounded text-ink/60 hover:text-ink hover:border-ink/40"
+                title="Attach a file (PDF, DOCX, TXT, MD, HTML)"
+              >
+                {/* Inline paperclip — avoids pulling in an icon package for one glyph. */}
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                </svg>
+              </button>
               <textarea
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
@@ -216,10 +405,73 @@ function ChatView({ chatId }: { chatId: string }) {
                 </button>
               )}
             </div>
-            <div className="text-[10px] text-ink/40 mt-1">⌘/Ctrl + Enter to send</div>
+            <div className="text-[10px] text-ink/40 mt-1">
+              ⌘/Ctrl + Enter to send · drop files anywhere to attach
+            </div>
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+function AttachmentChip({
+  filename,
+  sizeBytes,
+  onRemove,
+}: {
+  filename: string;
+  sizeBytes: number;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="inline-flex items-center gap-2 bg-ink/5 border border-ink/10 rounded px-2 py-1 text-xs">
+      <span className="font-mono truncate max-w-[14rem]" title={filename}>
+        {filename}
+      </span>
+      <span className="text-ink/40">{formatBytes(sizeBytes)}</span>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="text-ink/40 hover:text-oxblood ml-0.5"
+        title="Remove attachment"
+        aria-label="Remove attachment"
+      >
+        ×
+      </button>
+    </div>
+  );
+}
+
+function PendingChip({
+  filename,
+  status,
+  error,
+  onDismiss,
+}: {
+  filename: string;
+  status: 'uploading' | 'error';
+  error?: string;
+  onDismiss: () => void;
+}) {
+  if (status === 'error') {
+    return (
+      <div
+        className="inline-flex items-center gap-2 bg-oxblood/5 border border-oxblood/30 rounded px-2 py-1 text-xs text-oxblood"
+        title={error}
+      >
+        <span className="font-mono truncate max-w-[14rem]">{filename}</span>
+        <span className="text-oxblood/70">failed</span>
+        <button type="button" onClick={onDismiss} className="ml-0.5" aria-label="Dismiss">
+          ×
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded px-2 py-1 text-xs">
+      <span className="font-mono truncate max-w-[14rem]">{filename}</span>
+      <span className="text-ink/50">uploading…</span>
     </div>
   );
 }
