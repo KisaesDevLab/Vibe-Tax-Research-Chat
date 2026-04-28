@@ -13,6 +13,8 @@ import { custom_skills } from '@vibe/db/schema';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
 import { audit } from '../../lib/audit.js';
 import { uploadSkillToAnthropic } from '../../lib/anthropic/skills.js';
+import { draftSkillFromDocument, refineSkill } from '../../lib/anthropic/skill-author.js';
+import { parseAttachment } from '../../lib/parsers/index.js';
 import { logger } from '../../lib/logger.js';
 
 export const adminCustomSkillsRouter = Router();
@@ -200,6 +202,120 @@ async function packSkillToTempDir(row: CustomSkillRow): Promise<string> {
   }
   return dir;
 }
+
+// ── Claude-assisted authoring ──────────────────────────────────────────────
+//
+// /draft-from-document: parse an uploaded file, ask Claude (Haiku) to
+// propose a complete skill draft via tool-use, return the draft + the
+// parsed source text. The SPA opens an edit drawer pre-filled from this
+// response and lets the admin tweak before saving. The source text is
+// passed back so the admin can opt to attach it as references/source.md
+// when they save the skill (gives the routed assistant access to the
+// raw document at runtime, not just the distilled body_md).
+//
+// /refine: takes the current in-progress draft and a conversation history,
+// asks Claude to reply with prose AND/OR call propose_skill_update. The
+// SPA renders updates as accept-or-reject diff cards; nothing is persisted
+// server-side until the admin saves.
+
+adminCustomSkillsRouter.post('/draft-from-document', upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    res.status(400).json({ error: 'no_file' });
+    return;
+  }
+  const parsed = await parseAttachment({
+    buffer: req.file.buffer,
+    mime_type: req.file.mimetype,
+    filename: req.file.originalname,
+  });
+  if (!parsed.full_text || parsed.full_text.trim().length < 32) {
+    res.status(422).json({
+      error: 'unparseable_document',
+      detail:
+        'Could not extract text from the upload. For PDFs, this usually means the file is a scanned image — text-only PDFs / DOCX / XLSX / CSV / TXT are supported.',
+    });
+    return;
+  }
+  let draft;
+  try {
+    draft = await draftSkillFromDocument({
+      parsed_text: parsed.full_text,
+      filename: req.file.originalname,
+    });
+  } catch (err) {
+    const msg = (err as Error).message ?? '';
+    logger.error({ err, filename: req.file.originalname }, 'draft-from-document failed');
+    if (msg.toLowerCase().includes('anthropic api key is not configured')) {
+      res.status(412).json({ error: 'anthropic_key_missing' });
+      return;
+    }
+    res.status(502).json({ error: 'draft_failed', detail: msg.slice(0, 500) });
+    return;
+  }
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'admin.custom_skill.draft_from_document',
+    metadata: { filename: req.file.originalname, slug: draft.name },
+    ip: req.ip,
+  });
+  res.json({
+    draft,
+    source: {
+      filename: req.file.originalname,
+      mime_type: req.file.mimetype,
+      // Truncate the echoed source text so the response stays small. The
+      // admin doesn't need every character — they can re-upload to get
+      // the full text into a reference file at save time.
+      preview: parsed.full_text.slice(0, 8000),
+      full_text: parsed.full_text,
+    },
+  });
+});
+
+const refineSchema = z.object({
+  draft: z.object({
+    name: z.string(),
+    display_name: z.string(),
+    description: z.string(),
+    body_md: z.string(),
+    routing_keywords: z.array(z.string()),
+  }),
+  history: z
+    .array(
+      z.object({
+        role: z.enum(['user', 'assistant']),
+        content: z.string(),
+      }),
+    )
+    .max(40),
+  user_message: z.string().min(1).max(8000),
+});
+
+adminCustomSkillsRouter.post('/refine', async (req, res) => {
+  const parsed = refineSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request', detail: parsed.error.flatten() });
+    return;
+  }
+  let result;
+  try {
+    result = await refineSkill({
+      draft: parsed.data.draft,
+      history: parsed.data.history,
+      user_message: parsed.data.user_message,
+    });
+  } catch (err) {
+    const msg = (err as Error).message ?? '';
+    logger.error({ err }, 'refine skill failed');
+    if (msg.toLowerCase().includes('anthropic api key is not configured')) {
+      res.status(412).json({ error: 'anthropic_key_missing' });
+      return;
+    }
+    res.status(502).json({ error: 'refine_failed', detail: msg.slice(0, 500) });
+    return;
+  }
+  res.json(result);
+});
 
 adminCustomSkillsRouter.post('/:id/publish', async (req, res) => {
   if (!uuidSchema.safeParse(req.params.id).success) {
