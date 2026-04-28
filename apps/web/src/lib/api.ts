@@ -72,3 +72,43 @@ export async function api<T = unknown>(
   if (!res.ok) throw new ApiError(res.status, body);
   return body as T;
 }
+
+// Same auth + refresh-on-401 flow as api(), but returns the raw Response
+// so callers can pull a Blob / stream / non-JSON body (PDF download is
+// the canonical case). Throws ApiError on non-2xx responses, mirroring
+// api()'s contract.
+export async function apiFetch(
+  path: string,
+  init: RequestInit & { skipRefresh?: boolean } = {},
+): Promise<Response> {
+  const headers = new Headers(init.headers);
+  const access = tokenStore.getAccess();
+  if (access) headers.set('authorization', `Bearer ${access}`);
+
+  let res = await fetch(apiUrl(path), { ...init, headers, credentials: 'include' });
+  if (res.status === 401 && !init.skipRefresh) {
+    if (await refreshOnce()) {
+      const fresh = new Headers(init.headers);
+      const newAccess = tokenStore.getAccess();
+      if (newAccess) fresh.set('authorization', `Bearer ${newAccess}`);
+      res = await fetch(apiUrl(path), { ...init, headers: fresh, credentials: 'include' });
+    } else {
+      tokenStore.clear();
+    }
+  }
+  if (!res.ok) {
+    let body: unknown = null;
+    const ct = res.headers.get('content-type') ?? '';
+    if (ct.includes('application/json')) {
+      try {
+        body = await res.json();
+      } catch {
+        // ignore
+      }
+    } else {
+      body = await res.text().catch(() => null);
+    }
+    throw new ApiError(res.status, body);
+  }
+  return res;
+}

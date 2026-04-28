@@ -9,8 +9,7 @@ import { AuthoritiesPanel } from '../components/panels/AuthoritiesPanel';
 import { CompliancePanel } from '../components/panels/CompliancePanel';
 import { SkillsPanel } from '../components/panels/SkillsPanel';
 import { useChatStream, type StreamingMessage } from '../hooks/useChatStream';
-import { api, apiUrl } from '../lib/api';
-import { tokenStore } from '../lib/token-store';
+import { api, apiFetch } from '../lib/api';
 import type { ChatDTO, MessageDTO } from '@vibe/shared';
 
 // The model emits structured authorities + compliance payloads at the end
@@ -414,28 +413,12 @@ function buildExportMarkdown(m: MessageDTO): string {
 }
 
 // Fetch the server-rendered PDF and trigger a browser download. The
-// server uses PDFKit to emit a real, selectable-text PDF — much more
-// reliable than the previous client-side html2canvas/jsPDF dance, which
-// kept hitting Unicode / page-break / font-context issues. The endpoint
-// requires auth; we send the bearer token explicitly so this works in
-// browsers that block third-party-style cookie reads.
+// server uses PDFKit to emit a real, selectable-text PDF. apiFetch()
+// handles the same auth + refresh-on-401 flow the rest of the SPA
+// uses — without it, a stale 15-minute access token would 401 here
+// even when the SPA is otherwise authenticated.
 async function downloadMessagePdf(m: MessageDTO, messageId: string): Promise<void> {
-  const access = tokenStore.getAccess();
-  const url = apiUrl(`/api/chats/${m.chat_id}/messages/${messageId}/pdf`);
-  const res = await fetch(url, {
-    headers: access ? { authorization: `Bearer ${access}` } : {},
-    credentials: 'include',
-  });
-  if (!res.ok) {
-    let detail = `HTTP ${res.status}`;
-    try {
-      const j = (await res.json()) as { detail?: string; error?: string };
-      detail = j.detail || j.error || detail;
-    } catch {
-      // not JSON
-    }
-    throw new Error(detail);
-  }
+  const res = await apiFetch(`/api/chats/${m.chat_id}/messages/${messageId}/pdf`);
   const blob = await res.blob();
   // Pull the filename out of the Content-Disposition header if present;
   // otherwise build one from the message id + timestamp.
