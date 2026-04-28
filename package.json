@@ -19,7 +19,9 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
     "db:migrate": "pnpm --filter @vibe/db migrate",
+    "db:migrate:prod": "pnpm --filter @vibe/db migrate:prod",
     "db:seed": "pnpm --filter @vibe/db seed",
+    "db:seed:prod": "pnpm --filter @vibe/db seed:prod",
     "db:studio": "pnpm --filter @vibe/db studio",
     "prepare": "husky"
   },

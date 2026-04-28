@@ -47,9 +47,14 @@ sed -i "s|^GITHUB_WEBHOOK_SECRET=.*|GITHUB_WEBHOOK_SECRET=$(openssl rand -hex 32
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d
-docker compose -f docker-compose.prod.yml exec api pnpm db:migrate
-docker compose -f docker-compose.prod.yml exec api pnpm db:seed
+docker compose -f docker-compose.prod.yml exec api pnpm db:migrate:prod
+docker compose -f docker-compose.prod.yml exec api pnpm db:seed:prod
 ```
+
+> The `:prod` variants run the compiled `dist/migrate.js` / `dist/seed.js`
+> directly with `node`. The plain `pnpm db:migrate` alias goes through
+> `tsx src/migrate.ts`, which is fine for local development but won't
+> work inside the runtime image (it ships only `dist/`, not `src/`).
 
 ## 6. First-run wizard
 
@@ -95,14 +100,14 @@ cd Vibe-Tax-Research-Chat
 git pull
 docker compose -f docker-compose.prod.yml build
 docker compose -f docker-compose.prod.yml up -d
-docker compose -f docker-compose.prod.yml exec api pnpm db:migrate
+docker compose -f docker-compose.prod.yml exec api pnpm db:migrate:prod
 ```
 
 ## Troubleshooting
 
-| Symptom                              | Fix                                                                |
-| ------------------------------------ | ------------------------------------------------------------------ |
-| `docker compose up` exits with 1     | Check `docker compose logs <service>`                              |
+| Symptom                                | Fix                                                              |
+| -------------------------------------- | ---------------------------------------------------------------- |
+| `docker compose up` exits with 1       | Check `docker compose logs <service>`                            |
 | Wizard reports "key validation failed" | Re-check the key; confirm outbound HTTPS to api.anthropic.com    |
-| `/api/health/deep` returns 503       | One of `db` / `redis` is down: `docker compose ps`                 |
-| Skills sync says "no changes" forever | Check `SKILLS_REPO_PIN_VALUE` and that the repo URL is reachable   |
+| `/api/health/deep` returns 503         | One of `db` / `redis` is down: `docker compose ps`               |
+| Skills sync says "no changes" forever  | Check `SKILLS_REPO_PIN_VALUE` and that the repo URL is reachable |

@@ -30,13 +30,13 @@ Roll back by editing the rates manually — there is no automatic rollback.
 
 Admin → Users.
 
-| Action       | Endpoint                                  | Notes                                        |
-| ------------ | ----------------------------------------- | -------------------------------------------- |
-| Invite       | `POST /api/admin/users`                   | One-time password; reset after first login   |
-| Disable      | `PATCH /api/admin/users/:id is_active=false` | Login blocked, chats preserved             |
-| Spend cap    | `PATCH /api/admin/users/:id monthly_spend_cap_usd` | Hard cap; turns blocked when exceeded |
-| Reset password | `POST /api/admin/users/:id/reset-password`  | Returns a one-time link                  |
-| Soft-delete  | `DELETE /api/admin/users/:id`             | `deleted_at` set; audit history preserved    |
+| Action         | Endpoint                                           | Notes                                      |
+| -------------- | -------------------------------------------------- | ------------------------------------------ |
+| Invite         | `POST /api/admin/users`                            | One-time password; reset after first login |
+| Disable        | `PATCH /api/admin/users/:id is_active=false`       | Login blocked, chats preserved             |
+| Spend cap      | `PATCH /api/admin/users/:id monthly_spend_cap_usd` | Hard cap; turns blocked when exceeded      |
+| Reset password | `POST /api/admin/users/:id/reset-password`         | Returns a one-time link                    |
+| Soft-delete    | `DELETE /api/admin/users/:id`                      | `deleted_at` set; audit history preserved  |
 
 ## Backup & restore
 
@@ -55,7 +55,7 @@ The restore script:
 1. `FLUSHALL` on Redis (drains queues + rate limit + cached sessions).
 2. Drops + recreates `vibe_tax`.
 3. `gunzip | psql` the tarball.
-4. Runs `pnpm db:migrate` to catch any schema added since the backup.
+4. Runs `node packages/db/dist/migrate.js` inside the api container to catch any schema added since the backup.
 5. Queues a skills sync dry-run so you can re-acknowledge any drift.
 
 ## Skills sync
