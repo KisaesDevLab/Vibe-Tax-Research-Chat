@@ -422,94 +422,117 @@ function buildExportMarkdown(m: MessageDTO): string {
 // for this export is archiving the response as it appeared, not full-
 // text search.
 async function downloadMessagePdf(m: MessageDTO, messageId: string) {
-  // Find the assistant block in the live DOM. The data attribute is set
-  // on the wrapper around <Markdown> + <AuthoritiesPanel> +
-  // <CompliancePanel> so we capture the prose + sidebar panels but not
-  // the per-message toolbar / cost ledger / skills metadata.
-  const target = document.querySelector<HTMLElement>(
+  // Find the assistant block in the live DOM.
+  const liveTarget = document.querySelector<HTMLElement>(
     `[data-message-id="${CSS.escape(messageId)}"] [data-pdf-target="response"]`,
   );
-  if (!target) throw new Error('could not locate message for export');
+  if (!liveTarget) throw new Error('could not locate message for export');
 
-  const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-    import('jspdf'),
-    import('html2canvas'),
-  ]);
+  const { default: jsPDF } = await import('jspdf');
 
-  const canvas = await html2canvas(target, {
-    scale: 2,
-    backgroundColor: '#ffffff',
-    useCORS: true,
-    logging: false,
-  });
-
+  // Letter, 0.75in margins. The header band sits inside the top margin
+  // and the footer sits inside the bottom margin.
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
-  const margin = 54; // 0.75in
-  const contentW = pageW - margin * 2;
-  const contentH = pageH - margin * 2;
+  const sideMargin = 54;
+  const topMargin = 96; // bigger to leave room for the header band
+  const bottomMargin = 60; // leaves room for the footer
+  const contentW = pageW - sideMargin * 2;
 
-  // Header band rendered once, then again on each subsequent page so
-  // every page is independently archivable.
-  const headerOffset = 36;
+  // Build a stable offscreen clone so the PDF capture isn't affected by
+  // the live element's flex/grid context (the chat scroll column has a
+  // narrow width which makes html2canvas wrap differently than letter
+  // size). The clone is laid out at exactly contentW pixels (1pt = 1px
+  // for jsPDF.html()), with explicit widths on lists / tables / panels
+  // so jsPDF's autoPaging:'text' page-break detector can do its job
+  // without truncating mid-line.
+  const printHost = document.createElement('div');
+  printHost.style.cssText = [
+    'position:fixed',
+    'left:-99999px',
+    'top:0',
+    `width:${contentW}px`,
+    'background:#ffffff',
+    'color:#1a1714',
+    "font-family:'Source Serif 4', Georgia, serif",
+    'font-size:11pt',
+    'line-height:1.55',
+    'padding:0',
+    'z-index:-1',
+  ].join(';');
+  const cloned = liveTarget.cloneNode(true) as HTMLElement;
+  // Strip width-constraining utility classes so the cloned subtree
+  // re-flows to the host's contentW rather than the chat column width.
+  cloned.style.width = '100%';
+  cloned.style.maxWidth = 'none';
+  printHost.appendChild(cloned);
+  document.body.appendChild(printHost);
+
+  try {
+    // jsPDF.html() runs html2canvas internally, but with autoPaging:'text'
+    // it walks the element's text-node bounding boxes and breaks pages
+    // BETWEEN lines instead of slicing mid-text — which fixes the
+    // top/bottom-of-page truncation we were getting from the manual
+    // image-slice path.
+    await new Promise<void>((resolve, reject) => {
+      doc.html(printHost, {
+        callback: () => resolve(),
+        x: sideMargin,
+        y: topMargin,
+        width: contentW,
+        windowWidth: contentW,
+        margin: [topMargin, sideMargin, bottomMargin, sideMargin],
+        autoPaging: 'text',
+        html2canvas: {
+          scale: 1, // 1 because 1px == 1pt at letter; bumping scales blows up width
+          backgroundColor: '#ffffff',
+          useCORS: true,
+          logging: false,
+        },
+      });
+    });
+  } catch (err) {
+    document.body.removeChild(printHost);
+    throw err;
+  }
+  document.body.removeChild(printHost);
+
+  // Header + footer on every page, drawn AFTER pdf.html() so they sit
+  // on top of the rasterized content rather than getting overwritten.
   const created = new Date(m.created_at).toLocaleString();
   const headerMeta = `Generated ${created} · model ${m.model_id ?? 'unknown'}${
     m.cost_usd != null ? ` · cost $${Number(m.cost_usd).toFixed(4)}` : ''
   }`;
-  const drawHeader = () => {
-    doc.setFont('times', 'bold');
-    doc.setFontSize(14);
-    doc.setTextColor(26);
-    doc.text('Tax research response', margin, margin + 4);
-    doc.setFont('times', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(110);
-    doc.text(headerMeta, margin, margin + 18);
-    doc.setDrawColor(220);
-    doc.line(margin, margin + 26, pageW - margin, margin + 26);
-  };
-  drawHeader();
-
-  const bodyTop = margin + headerOffset;
-  const bodyContentH = contentH - headerOffset;
-
-  // Map the captured canvas to PDF points so its width matches contentW.
-  // The full image is then placed once per page at a negative offset so
-  // each page shows the slice we want; the page implicitly clips outside
-  // the body region, and we mask the footer area with a white rect to
-  // clean up bleed-through.
-  const imgW = contentW;
-  const imgH = (canvas.height * imgW) / canvas.width;
-  const dataUrl = canvas.toDataURL('image/png');
-
-  let placedY = 0;
-  let firstPage = true;
-  while (placedY < imgH) {
-    if (!firstPage) {
-      doc.addPage();
-      drawHeader();
-    }
-    doc.addImage(dataUrl, 'PNG', margin, bodyTop - placedY, imgW, imgH);
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, bodyTop + bodyContentH, pageW, pageH - (bodyTop + bodyContentH), 'F');
-    placedY += bodyContentH;
-    firstPage = false;
-  }
-
-  // Footer on every page.
   const pageCount = doc.getNumberOfPages();
   for (let p = 1; p <= pageCount; p++) {
     doc.setPage(p);
+    // White band behind the header so any image bleed-through is hidden.
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, 0, pageW, topMargin - 16, 'F');
+    doc.setFont('times', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(26);
+    doc.text('Tax research response', sideMargin, sideMargin);
+    doc.setFont('times', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(110);
+    doc.text(headerMeta, sideMargin, sideMargin + 14);
+    doc.setDrawColor(220);
+    doc.line(sideMargin, topMargin - 18, pageW - sideMargin, topMargin - 18);
+
+    // White band behind the footer.
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, pageH - bottomMargin + 14, pageW, bottomMargin, 'F');
     doc.setFont('times', 'italic');
     doc.setFontSize(8);
     doc.setTextColor(140);
     doc.text(
       'Vibe Tax Research · AI-generated; verify all citations before reliance.',
-      margin,
+      sideMargin,
       pageH - 30,
     );
-    doc.text(`Page ${p} of ${pageCount}`, pageW - margin, pageH - 30, { align: 'right' });
+    doc.text(`Page ${p} of ${pageCount}`, pageW - sideMargin, pageH - 30, { align: 'right' });
   }
 
   const slug = (m.id.slice(0, 8) || 'response').toLowerCase();
