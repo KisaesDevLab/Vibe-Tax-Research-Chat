@@ -74,56 +74,88 @@ export function useChatStream() {
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      let idx;
-      while ((idx = buffer.indexOf('\n\n')) >= 0) {
-        const chunk = buffer.slice(0, idx);
-        buffer = buffer.slice(idx + 2);
-        const event = parseSse(chunk);
-        if (!event) continue;
-        setStreaming((cur) => {
-          const c = cur ?? {
-            text: '',
-            usage: {},
-            tool_uses: [],
-            done: false,
-            user_message: '',
-            started_at: Date.now(),
-          };
-          switch (event.event) {
-            case 'text':
-              return { ...c, text: c.text + (event.data as { delta: string }).delta };
-            case 'tool_use':
-              return {
-                ...c,
-                tool_uses: [
-                  ...c.tool_uses,
-                  event.data as { id: string; tool_name: string; input: unknown },
-                ],
-              };
-            case 'tool_result': {
-              const r = event.data as { id: string; status: string };
-              return {
-                ...c,
-                tool_uses: c.tool_uses.map((t) => (t.id === r.id ? { ...t, status: r.status } : t)),
-              };
+    let sawDoneEvent = false;
+    let networkError: Error | null = null;
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buffer.indexOf('\n\n')) >= 0) {
+          const chunk = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+          const event = parseSse(chunk);
+          if (!event) continue;
+          if (event.event === 'done' || event.event === 'error') sawDoneEvent = true;
+          setStreaming((cur) => {
+            const c = cur ?? {
+              text: '',
+              usage: {},
+              tool_uses: [],
+              done: false,
+              user_message: '',
+              started_at: Date.now(),
+            };
+            switch (event.event) {
+              case 'text':
+                return { ...c, text: c.text + (event.data as { delta: string }).delta };
+              case 'tool_use':
+                return {
+                  ...c,
+                  tool_uses: [
+                    ...c.tool_uses,
+                    event.data as { id: string; tool_name: string; input: unknown },
+                  ],
+                };
+              case 'tool_result': {
+                const r = event.data as { id: string; status: string };
+                return {
+                  ...c,
+                  tool_uses: c.tool_uses.map((t) =>
+                    t.id === r.id ? { ...t, status: r.status } : t,
+                  ),
+                };
+              }
+              case 'usage':
+                return { ...c, usage: { ...c.usage, ...(event.data as StreamUsage) } };
+              case 'done': {
+                const d = event.data as { cost: number; usage: StreamUsage };
+                return { ...c, done: true, cost: d.cost, usage: { ...c.usage, ...d.usage } };
+              }
+              case 'error':
+                return { ...c, done: true, error: (event.data as { error: string }).error };
+              default:
+                return c;
             }
-            case 'usage':
-              return { ...c, usage: { ...c.usage, ...(event.data as StreamUsage) } };
-            case 'done': {
-              const d = event.data as { cost: number; usage: StreamUsage };
-              return { ...c, done: true, cost: d.cost, usage: { ...c.usage, ...d.usage } };
-            }
-            case 'error':
-              return { ...c, done: true, error: (event.data as { error: string }).error };
-            default:
-              return c;
-          }
-        });
+          });
+        }
       }
+    } catch (err) {
+      // Reader can throw on AbortController.abort() (user clicked Stop)
+      // and on network resets. Either way we want to fall through to
+      // the safety net below — UI must not get stuck on "Drafting".
+      networkError = err as Error;
+    }
+    // Safety net: if the connection ended without a 'done' or 'error'
+    // SSE event (server crash, network drop, browser closed the
+    // underlying socket, etc.), force streaming.done = true so the UI
+    // refetches and the system_note the server wrote becomes visible
+    // — instead of the chat hanging on "Drafting answer" indefinitely.
+    if (!sawDoneEvent) {
+      setStreaming((s) =>
+        s
+          ? {
+              ...s,
+              done: true,
+              error:
+                s.error ??
+                (networkError?.name === 'AbortError'
+                  ? undefined
+                  : 'Connection closed before the assistant finished. Re-send your question to retry.'),
+            }
+          : null,
+      );
     }
     abortRef.current = null;
   }, []);

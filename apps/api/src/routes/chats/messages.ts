@@ -279,8 +279,13 @@ messagesRouter.post('/', async (req, res) => {
           send('usage', ev.usage);
           break;
         case 'message_stop': {
-          // Mark the request as fully completed so the req.on('close')
-          // handler below treats this as a clean finish, not an abort.
+          // Race protection: if req.on('close') already fired (because
+          // the client navigated away just as message_stop arrived) the
+          // partial-save path may already be running; don't double-INSERT.
+          if (completed) {
+            logger.warn({ chat_id: chatId }, 'message_stop after completed=true; skipping');
+            return;
+          }
           completed = true;
           logger.info(
             {
@@ -292,30 +297,38 @@ messagesRouter.post('/', async (req, res) => {
             },
             'stream message_stop',
           );
-          // Persist assistant message + cost
+          // Persist assistant message + cost. NaN-guard every numeric
+          // field so a row with bad rate data doesn't blow up the
+          // INSERT (numeric columns reject NaN and the whole turn
+          // would vanish, leaving a "no reply" thread).
+          const safeNum = (v: unknown, fallback = 0): number => {
+            const n = Number(v);
+            return Number.isFinite(n) ? n : fallback;
+          };
           const cost = computeCost(
             {
-              input_tokens: ev.usage.input_tokens,
-              output_tokens: ev.usage.output_tokens,
-              cache_creation_input_tokens: ev.usage.cache_creation_input_tokens,
-              cache_read_input_tokens: ev.usage.cache_read_input_tokens,
-              web_fetch_calls: ev.usage.web_fetch_calls,
-              web_search_calls: ev.usage.web_search_calls,
+              input_tokens: safeNum(ev.usage.input_tokens),
+              output_tokens: safeNum(ev.usage.output_tokens),
+              cache_creation_input_tokens: safeNum(ev.usage.cache_creation_input_tokens),
+              cache_read_input_tokens: safeNum(ev.usage.cache_read_input_tokens),
+              web_fetch_calls: safeNum(ev.usage.web_fetch_calls),
+              web_search_calls: safeNum(ev.usage.web_search_calls),
             },
             {
               model_id: model.model_id,
               display_name: model.display_name,
-              input_per_mtok: Number(model.input_per_mtok),
-              output_per_mtok: Number(model.output_per_mtok),
-              cache_write_per_mtok: Number(model.cache_write_per_mtok),
-              cache_read_per_mtok: Number(model.cache_read_per_mtok),
-              tokenizer_factor: Number(model.tokenizer_factor),
-              web_fetch_unit_cost: Number(model.web_fetch_unit_cost),
-              web_search_unit_cost: Number(model.web_search_unit_cost),
+              input_per_mtok: safeNum(model.input_per_mtok),
+              output_per_mtok: safeNum(model.output_per_mtok),
+              cache_write_per_mtok: safeNum(model.cache_write_per_mtok),
+              cache_read_per_mtok: safeNum(model.cache_read_per_mtok),
+              tokenizer_factor: safeNum(model.tokenizer_factor, 1),
+              web_fetch_unit_cost: safeNum(model.web_fetch_unit_cost),
+              web_search_unit_cost: safeNum(model.web_search_unit_cost),
               is_active: model.is_active,
               retired_at: model.retired_at?.toISOString() ?? null,
             },
           );
+          const finalCost = Number.isFinite(cost.total_usd) ? cost.total_usd : 0;
 
           // Phase 18 + 19 — extract sidecar JSON before persisting.
           const rawAuthorities = extractAuthorities(assistantText);
@@ -343,7 +356,7 @@ messagesRouter.post('/', async (req, res) => {
               cache_read_input_tokens: ev.usage.cache_read_input_tokens,
               web_fetch_calls: ev.usage.web_fetch_calls,
               web_search_calls: ev.usage.web_search_calls,
-              cost_usd: cost.total_usd.toFixed(6),
+              cost_usd: finalCost.toFixed(6),
               authorities: authorities as unknown as Record<string, unknown>[],
               compliance_check: (compliance ?? null) as Record<string, unknown> | null,
             })
@@ -380,7 +393,7 @@ messagesRouter.post('/', async (req, res) => {
               cache_read_input_tokens: ev.usage.cache_read_input_tokens,
               web_fetch_calls: ev.usage.web_fetch_calls,
               web_search_calls: ev.usage.web_search_calls,
-              cost_usd: cost.total_usd.toFixed(6),
+              cost_usd: finalCost.toFixed(6),
             });
           }
 
@@ -394,7 +407,7 @@ messagesRouter.post('/', async (req, res) => {
             user_message_id: userMsg!.id,
             assistant_message_id: assistantMsg?.id,
             stop_reason: ev.stop_reason,
-            cost: cost.total_usd,
+            cost: finalCost,
             usage: ev.usage,
             authorities,
             compliance_check: compliance,
@@ -403,6 +416,54 @@ messagesRouter.post('/', async (req, res) => {
           return;
         }
       }
+    }
+    // Defensive: the for-await loop exited cleanly but message_stop
+    // never fired. The Anthropic stream sometimes ends without a
+    // terminating message_stop (e.g., upstream connection reset, an
+    // SDK iterator quirk on certain tool_use sequences). Without this
+    // branch the assistant row never gets persisted, the SSE 'done'
+    // event never fires, and the client UI hangs on "Drafting answer".
+    if (!completed) {
+      completed = true;
+      logger.warn(
+        { chat_id: chatId, partial_chars: assistantText.length },
+        'stream ended without message_stop — persisting partial',
+      );
+      try {
+        await db.transaction(async (tx) => {
+          if (assistantText.length > 0) {
+            await tx.insert(messages).values({
+              chat_id: chatId,
+              role: 'assistant',
+              content: assistantText,
+              model_id: modelId,
+              stop_reason: 'incomplete',
+              attached_skill_ids,
+              attached_skill_versions: [],
+            });
+          }
+          await tx.insert(messages).values({
+            chat_id: chatId,
+            role: 'system_note',
+            content:
+              assistantText.length > 0
+                ? '⚠ Stream ended without a final stop signal — the partial answer above was saved. Re-send your question to get a complete reply.'
+                : '⚠ The assistant stream ended before any text was produced. Re-send your question to retry.',
+          });
+        });
+      } catch (writeErr) {
+        logger.error({ err: writeErr, chatId }, 'failed to persist incomplete-stream partial');
+      }
+      send('done', {
+        user_message_id: userMsg!.id,
+        assistant_message_id: undefined,
+        stop_reason: 'incomplete',
+        cost: 0,
+        usage: {},
+        authorities: [],
+        compliance_check: null,
+      });
+      res.end();
     }
   } catch (err) {
     // Mark completed so the req.on('close') handler doesn't ALSO try to
