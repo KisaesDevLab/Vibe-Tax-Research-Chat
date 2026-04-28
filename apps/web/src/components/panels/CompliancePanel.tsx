@@ -1,9 +1,10 @@
-// Phase 19 — compliance disclosure panel (SSTS / Circular 230).
+// Phase 19 — compliance disclosure section (SSTS / Circular 230).
 //
-// The model emits each rule as one of: a boolean (passed/failed), a string
-// (free-text "N/A — no estimates involved"), null (rule not implicated),
-// or a structured `{ok, note}`. We normalize all four to a render-friendly
-// shape so the panel never shows raw JSON.
+// Rendered as a document-style "Compliance" h2 section so it sits in the
+// same vertical rhythm as the rest of the response. The model emits each
+// rule as one of: a boolean, a free-text string ("N/A — no estimates"),
+// null (rule not implicated), or a structured `{ok, note}`. We normalize
+// all four to a single status + optional note shape.
 import type { ComplianceCheck, ComplianceRule } from '@vibe/shared';
 
 interface RuleRow {
@@ -33,7 +34,7 @@ const RULES: RuleRow[] = [
 ];
 
 interface NormalizedRule {
-  state: 'pass' | 'warn' | 'na' | 'fail';
+  state: 'pass' | 'na' | 'fail';
   note?: string;
 }
 
@@ -52,17 +53,18 @@ function normalize(v: ComplianceRule | undefined): NormalizedRule | null {
   return null;
 }
 
-function StateGlyph({ state }: { state: NormalizedRule['state'] }) {
-  switch (state) {
-    case 'pass':
-      return <span className="text-moss font-mono text-xs">✓</span>;
-    case 'fail':
-      return <span className="text-oxblood font-mono text-xs">⚠</span>;
-    case 'warn':
-      return <span className="text-gold font-mono text-xs">⚠</span>;
-    case 'na':
-      return <span className="text-ink/40 font-mono text-xs">—</span>;
-  }
+function StateLabel({ state }: { state: NormalizedRule['state'] }) {
+  const map = {
+    pass: { text: '✓ satisfied', cls: 'text-moss' },
+    fail: { text: '⚠ review', cls: 'text-oxblood' },
+    na: { text: 'n/a', cls: 'text-ink/40' },
+  } as const;
+  const { text, cls } = map[state];
+  return (
+    <span className={`text-xs font-mono uppercase tracking-wider whitespace-nowrap ${cls}`}>
+      {text}
+    </span>
+  );
 }
 
 export function CompliancePanel({ check }: { check?: ComplianceCheck | null }) {
@@ -76,79 +78,79 @@ export function CompliancePanel({ check }: { check?: ComplianceCheck | null }) {
     (f) => f && f.toLowerCase() !== 'none' && f.toLowerCase() !== 'n/a',
   );
 
+  const renderableRules = RULES.map((row) => {
+    const v = check[row.pickKey] ?? (row.altKey ? check[row.altKey] : undefined);
+    const n = normalize(v as ComplianceRule | undefined);
+    return n ? { row, n } : null;
+  }).filter((x): x is { row: RuleRow; n: NormalizedRule } => x !== null);
+
   return (
-    <section className="border border-moss/30 rounded bg-moss/5">
-      <header className="px-4 py-2 border-b border-moss/20 font-display tracking-wide text-sm text-moss flex items-center justify-between">
-        <span>Compliance Check</span>
+    <section>
+      <div className="flex items-baseline justify-between gap-3 mt-8 mb-3">
+        <h2 className="font-display text-xl">Compliance</h2>
         {check.confidence_band && (
-          <span className="text-xs font-mono text-moss/70">{check.confidence_band}</span>
+          <span className="text-xs font-mono text-moss/80 whitespace-nowrap">
+            {check.confidence_band}
+          </span>
         )}
-      </header>
+      </div>
 
       {check.engagement_type && (
-        <div className="px-4 py-2 border-b border-moss/10 text-xs text-ink/70">
-          <span className="uppercase tracking-wider text-ink/40 mr-2">engagement</span>
+        <p className="text-sm leading-relaxed text-ink/80 mb-3">
+          <span className="text-xs uppercase tracking-wider text-ink/40 mr-2">Engagement</span>
           {check.engagement_type}
-        </div>
+        </p>
       )}
 
-      <ul className="divide-y divide-moss/10 text-sm">
-        {RULES.map((row) => {
-          const v = check[row.pickKey] ?? (row.altKey ? check[row.altKey] : undefined);
-          const n = normalize(v as ComplianceRule | undefined);
-          if (!n) return null;
-          return (
-            <li key={row.pickKey} className="px-4 py-2 flex items-start gap-3">
-              <StateGlyph state={n.state} />
-              <div className="flex-1">
-                <div>{row.label}</div>
-                {n.note && <div className="text-xs text-ink/60 mt-0.5">{n.note}</div>}
+      {renderableRules.length > 0 && (
+        <ul className="space-y-2 mb-3">
+          {renderableRules.map(({ row, n }) => (
+            <li key={row.pickKey} className="leading-relaxed">
+              <div className="flex items-baseline justify-between gap-3">
+                <span>{row.label}</span>
+                <StateLabel state={n.state} />
               </div>
+              {n.note && <div className="text-xs text-ink/60 mt-0.5">{n.note}</div>}
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
+      )}
 
       {meaningfulForms.length > 0 && (
-        <div className="px-4 py-2 border-t border-moss/20 text-xs">
-          <span className="font-mono uppercase tracking-wider text-ink/40 mr-2">
-            disclosure forms
+        <p className="text-sm leading-relaxed mb-3">
+          <span className="text-xs uppercase tracking-wider text-ink/40 mr-2">
+            Disclosure forms
           </span>
-          {meaningfulForms.map((f) => (
-            <span
-              key={f}
-              className="inline-block px-2 py-0.5 mr-1 rounded border border-oxblood/30 bg-oxblood/5 text-oxblood font-mono"
-            >
-              {f.startsWith('Form') ? f : `Form ${f}`}
-            </span>
-          ))}
-        </div>
+          {meaningfulForms
+            .map((f) => (f.toLowerCase().startsWith('form') ? f : `Form ${f}`))
+            .join(', ')}
+        </p>
       )}
 
       {(check.negative_treatment_review || check.negative_treatment_review_required) && (
-        <div className="px-4 py-2 border-t border-moss/20 text-xs text-ink/60">
-          <span className="uppercase tracking-wider text-ink/40 mr-2">
-            negative-treatment review
+        <p className="text-sm leading-relaxed text-ink/80 mb-3">
+          <span className="text-xs uppercase tracking-wider text-ink/40 mr-2">
+            Negative-treatment review
           </span>
           {typeof check.negative_treatment_review === 'string'
             ? check.negative_treatment_review
             : check.negative_treatment_review_required
               ? 'Required — verify cited authorities for subsequent history.'
               : 'Not required.'}
-        </div>
+        </p>
       )}
 
       {check.loper_bright_caveat && (
-        <div className="px-4 py-2 border-t border-moss/20 text-xs text-ink/60">
+        <p className="text-sm text-ink/70 italic mb-3">
           Post-Loper Bright: cited Treasury Regulations carry only Skidmore weight.
-        </div>
+        </p>
       )}
 
       {check.notes && (
-        <div className="px-4 py-2 border-t border-moss/20 text-xs text-ink/70">
-          <span className="uppercase tracking-wider text-ink/40 mr-2">notes</span>
+        <p className="text-sm leading-relaxed text-ink/80">
+          <span className="text-xs uppercase tracking-wider text-ink/40 mr-2">Notes</span>
           {check.notes}
-        </div>
+        </p>
       )}
     </section>
   );

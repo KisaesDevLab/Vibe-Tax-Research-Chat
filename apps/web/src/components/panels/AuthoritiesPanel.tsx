@@ -1,52 +1,83 @@
-// Phase 18 — authorities panel.
+// Phase 18 — authorities section.
+//
+// Rendered as a document-style "Authorities" h2 section that matches the
+// vertical rhythm of the rest of the response (Key Details / Planning
+// Notes / etc.). Per-citation rows use the same body type as the prose,
+// with the cite in display face, then a small metadata row, then the
+// source URL — and a single status word in the right margin so readers
+// can scan verification at a glance without the panel feeling like a
+// separate card.
 import type { Authority } from '@vibe/shared';
 
 export function AuthoritiesPanel({ authorities }: { authorities: Authority[] }) {
   if (!authorities || authorities.length === 0) return null;
   return (
-    <section className="border border-ink/10 rounded bg-white">
-      <header className="px-4 py-2 border-b border-ink/10 font-display tracking-wide text-sm flex items-center justify-between">
-        <span>Authorities</span>
-        <span className="text-xs font-mono text-ink/50">{authorities.length} cited</span>
-      </header>
-      <ul className="divide-y divide-ink/5">
+    <section>
+      <h2 className="font-display text-xl mt-8 mb-3">Authorities</h2>
+      <ol className="space-y-3 list-decimal pl-5 marker:text-ink/40">
         {authorities.map((a, i) => (
-          <li key={i} className="px-4 py-3 flex items-start justify-between gap-3 text-sm">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="citation-chip">{a.cite}</span>
-                <span className="text-xs text-ink/50">{a.type}</span>
-                <span className="text-xs text-ink/50">· weight: {a.weight}</span>
-              </div>
-              <div className="text-xs text-ink/60 mt-1 truncate">{a.source}</div>
-              {a.warning && <div className="text-xs text-oxblood mt-1">⚠ {a.warning}</div>}
+          <li key={i} className="leading-relaxed">
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="font-display">{a.cite}</span>
+              <Verification authority={a} />
             </div>
-            <VerificationChip authority={a} />
+            <div className="text-xs text-ink/60 mt-0.5">
+              <span className="capitalize">{a.type}</span>
+              {a.weight && (
+                <>
+                  <span className="mx-1.5 text-ink/30">·</span>
+                  <span>weight: {a.weight}</span>
+                </>
+              )}
+              {a.retrieved_at && (
+                <>
+                  <span className="mx-1.5 text-ink/30">·</span>
+                  <span>retrieved {new Date(a.retrieved_at).toLocaleDateString()}</span>
+                </>
+              )}
+            </div>
+            {a.source && (
+              <div className="text-xs mt-0.5">
+                {/^https?:\/\//.test(a.source) ? (
+                  <a
+                    href={a.source}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-oxblood hover:text-oxblood/80 break-all"
+                  >
+                    {a.source}
+                  </a>
+                ) : (
+                  <span className="text-ink/60 break-all">{a.source}</span>
+                )}
+              </div>
+            )}
+            {a.warning && <div className="text-xs text-oxblood mt-1">⚠ {a.warning}</div>}
           </li>
         ))}
-      </ul>
+      </ol>
     </section>
   );
 }
 
-function VerificationChip({ authority }: { authority: Authority }) {
+function Verification({ authority }: { authority: Authority }) {
   if (authority.verified_this_turn) {
     return (
-      <span className="text-xs px-2 py-0.5 rounded bg-moss/10 text-moss border border-moss/30">
-        ✓ verified this turn
+      <span className="text-xs text-moss font-mono uppercase tracking-wider whitespace-nowrap">
+        ✓ verified
       </span>
     );
   }
   if (authority.cache_age_seconds !== undefined) {
     return (
-      <span className="text-xs px-2 py-0.5 rounded bg-gold/10 text-gold border border-gold/30">
+      <span className="text-xs text-gold font-mono uppercase tracking-wider whitespace-nowrap">
         ⚠ cached
       </span>
     );
   }
   return (
-    <span className="text-xs px-2 py-0.5 rounded bg-oxblood/10 text-oxblood border border-oxblood/30">
-      ✗ unverified
+    <span className="text-xs text-ink/40 font-mono uppercase tracking-wider whitespace-nowrap">
+      unverified
     </span>
   );
 }

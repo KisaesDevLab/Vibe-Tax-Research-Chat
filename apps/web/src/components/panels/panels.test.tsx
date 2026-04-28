@@ -21,11 +21,17 @@ describe('panels', () => {
       />,
     );
     expect(screen.getByText('26 U.S.C. § 199A(c)(1)')).toBeInTheDocument();
-    expect(screen.getByText(/verified this turn/)).toBeInTheDocument();
+    // Document-style render: status word lives in the right margin as
+    // "✓ verified" rather than the previous full chip.
+    expect(screen.getByText(/verified/)).toBeInTheDocument();
   });
 
   it('renders the SSTS rows that are present', () => {
-    render(<CompliancePanel check={{ ssts_1_1: { ok: true }, ssts_2_3: { ok: false, note: 'estimate flag' } }} />);
+    render(
+      <CompliancePanel
+        check={{ ssts_1_1: { ok: true }, ssts_2_3: { ok: false, note: 'estimate flag' } }}
+      />,
+    );
     expect(screen.getByText(/SSTS § 1.1/)).toBeInTheDocument();
     expect(screen.getByText(/estimate flag/)).toBeInTheDocument();
   });
