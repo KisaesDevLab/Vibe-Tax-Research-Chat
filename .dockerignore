@@ -1,0 +1,63 @@
+# Without this, `COPY . .` in the builder stage copies the host's
+# node_modules / dist / etc. into the container and overwrites the
+# Linux-compatible deps installed in the earlier stage. On Windows
+# hosts that means pnpm symlinks like ../../../C:/Users/... arrive
+# inside the container and break tsc / vite / pnpm with
+# "Cannot find module".
+
+node_modules
+**/node_modules
+.pnpm-store
+**/.pnpm-store
+
+# Build outputs (regenerated inside the container)
+dist
+**/dist
+build
+**/build
+.vite
+**/.vite
+.turbo
+**/.turbo
+coverage
+**/coverage
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Local runtime + dev artifacts
+attachments
+backups
+workspaces
+
+# Local env (the prod stack reads its own .env via env_file:)
+.env
+.env.local
+.env.*.local
+
+# Editor / OS noise
+.git
+.github
+.husky
+.vscode
+.idea
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Tests + docs (not needed in runtime image)
+**/*.test.ts
+**/*.test.tsx
+**/test/**
+docs
+DISCLAIMER.md
+QUESTIONS.md
+KICKOFF_PROMPT.md
+BUILD_PLAN.md
+CHANGELOG.md
+README.md
+LICENSE

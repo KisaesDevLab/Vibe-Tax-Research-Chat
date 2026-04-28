@@ -35,9 +35,21 @@ COPY --from=builder /app/apps/api/package.json apps/api/
 COPY --from=builder /app/apps/api/dist apps/api/dist
 COPY --from=builder /app/packages/db/dist packages/db/dist
 COPY --from=builder /app/packages/db/package.json packages/db/
+COPY --from=builder /app/packages/db/drizzle packages/db/drizzle
+COPY --from=builder /app/packages/db/seeds packages/db/seeds
 COPY --from=builder /app/packages/shared/dist packages/shared/dist
 COPY --from=builder /app/packages/shared/package.json packages/shared/
+# pnpm's workspace install puts the actual dep store under
+# /app/node_modules/.pnpm and exposes per-package symlinks at
+# /app/<pkg>/node_modules. Without all four COPY lines node's module
+# resolution from `apps/api/dist/*.js` walks up to /app/apps/api/node_modules
+# and finds nothing for deps declared on the api package — the runtime
+# crashes at import with ERR_MODULE_NOT_FOUND on express-async-errors,
+# pdfkit, cookie-parser, etc.
 COPY --from=builder /app/node_modules node_modules
+COPY --from=builder /app/apps/api/node_modules apps/api/node_modules
+COPY --from=builder /app/packages/db/node_modules packages/db/node_modules
+COPY --from=builder /app/packages/shared/node_modules packages/shared/node_modules
 EXPOSE 4000
 USER node
 CMD ["node", "apps/api/dist/index.js"]
