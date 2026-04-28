@@ -84,13 +84,13 @@ function ChatView({ chatId }: { chatId: string }) {
     <div className="grid grid-cols-[260px_1fr] h-screen overflow-hidden bg-paper">
       <ChatSidebar />
       <div className="flex flex-col min-h-0">
-        <header className="shrink-0 px-8 py-4 border-b border-ink/10 flex items-center justify-between">
+        <header className="shrink-0 px-6 py-4 border-b border-ink/10 flex items-center justify-between">
           <div className="font-display text-lg">{data?.chat.title ?? 'Loading…'}</div>
           <div className="font-mono text-xs text-ink/50">{data?.messages.length ?? 0} messages</div>
         </header>
 
         <main className="flex-1 min-h-0 overflow-y-auto">
-          <div className="px-8 py-6 max-w-4xl mx-auto w-full">
+          <div className="px-6 py-6 max-w-4xl w-full">
             {data?.messages.map((m) => (
               <MessageBlock key={m.id} message={m} />
             ))}
@@ -114,8 +114,8 @@ function ChatView({ chatId }: { chatId: string }) {
           </div>
         </main>
 
-        <form onSubmit={onSubmit} className="shrink-0 px-8 py-4 border-t border-ink/10 bg-paper">
-          <div className="max-w-4xl mx-auto w-full">
+        <form onSubmit={onSubmit} className="shrink-0 px-6 py-4 border-t border-ink/10 bg-paper">
+          <div className="max-w-4xl w-full">
             <div className="flex gap-2">
               <textarea
                 value={draft}
