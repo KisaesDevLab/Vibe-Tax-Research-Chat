@@ -1,7 +1,8 @@
 // Phase 3 — login page.
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../components/AuthProvider';
+import { api } from '../lib/api';
 
 export function LoginPage() {
   const { user, login } = useAuth();
@@ -10,11 +11,30 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Detect a fresh appliance with no admin user yet and route the visitor
+  // to /setup. Without this, the very first login attempt fails as
+  // "invalid_credentials" with no hint of where to go.
+  const [needsSetup, setNeedsSetup] = useState<boolean | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    api<{ admin_exists: boolean }>('/api/setup/status', { skipRefresh: true })
+      .then((r) => {
+        if (!cancelled) setNeedsSetup(!r.admin_exists);
+      })
+      .catch(() => {
+        if (!cancelled) setNeedsSetup(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   if (user) {
-    const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/chat';
+    const from =
+      (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/chat';
     return <Navigate to={from} replace />;
   }
+  if (needsSetup) return <Navigate to="/setup" replace />;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();

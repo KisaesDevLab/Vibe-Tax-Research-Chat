@@ -89,6 +89,14 @@ messagesRouter.post('/', async (req, res) => {
     res.status(400).json({ error: 'unknown_model', model_id: modelId });
     return;
   }
+  // A chat may have pinned a model (chat.default_model_id) or an admin may
+  // have disabled the global default after it was saved — refuse here with
+  // a clear error rather than letting a 401-from-Anthropic surface as a
+  // generic stream failure.
+  if (!model.is_active) {
+    res.status(400).json({ error: 'inactive_model', model_id: modelId });
+    return;
+  }
 
   // 3. Resolve attached skills (heuristic routing)
   const allSkills = await db.select().from(skillsTable).where(eq(skillsTable.is_active, true));

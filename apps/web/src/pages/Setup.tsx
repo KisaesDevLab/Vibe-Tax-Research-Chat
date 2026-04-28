@@ -1,5 +1,5 @@
 // Phase 28 — first-run wizard. Three steps: admin, key, default model + skills sync trigger.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { tokenStore } from '../lib/token-store';
@@ -22,7 +22,24 @@ export function SetupPage() {
   const [defaultModel, setDefaultModel] = useState('claude-sonnet-4-6');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // If an admin already exists, the wizard is closed — bootstrap would 409.
+  // Send the visitor back to /login so they don't fight a form that can't succeed.
+  const [alreadyBootstrapped, setAlreadyBootstrapped] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    api<{ admin_exists: boolean }>('/api/setup/status', { skipRefresh: true })
+      .then((r) => {
+        if (!cancelled && r.admin_exists) setAlreadyBootstrapped(true);
+      })
+      .catch(() => {
+        // Network/API down — let the user try and surface real errors below.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
+  if (alreadyBootstrapped) return <Navigate to="/login" replace />;
   if (step === 'done') return <Navigate to="/chat" replace />;
 
   async function next() {
