@@ -7,6 +7,12 @@ RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 
 # ── deps stage ──────────────────────────────────────────────────────────
 FROM base AS deps
+# bcrypt has no prebuilt binary for Alpine (musl) and falls back to a
+# node-gyp source build, which needs python3 + a C++ toolchain. Without
+# these, `pnpm install` fails the moment the GHA layer cache misses
+# (e.g., after a lockfile change). The packages live in the deps stage
+# only — runtime is a fresh `node:20-alpine` and stays slim.
+RUN apk add --no-cache python3 make g++
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 COPY apps/api/package.json apps/api/
 COPY packages/db/package.json packages/db/
