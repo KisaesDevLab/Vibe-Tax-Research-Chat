@@ -10,6 +10,7 @@ const navItems = [
   { to: '/admin/models', label: 'Models' },
   { to: '/admin/skills', label: 'Skills' },
   { to: '/admin/custom-skills', label: 'Custom skills' },
+  { to: '/admin/references', label: 'References' },
   { to: '/admin/usage', label: 'Usage' },
 ];
 

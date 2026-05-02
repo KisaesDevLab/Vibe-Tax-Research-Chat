@@ -1,0 +1,1 @@
+ALTER TABLE "chats" ADD COLUMN "use_reference_library" boolean DEFAULT true NOT NULL;

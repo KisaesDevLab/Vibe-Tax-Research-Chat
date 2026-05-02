@@ -16,34 +16,37 @@ import { logger } from './lib/logger.js';
 import { env } from './config/env.js';
 
 import { healthRouter } from './routes/health.js';
+import { pingRouter } from './routes/ping.js';
 import { authRouter } from './routes/auth.js';
 import { adminUsersRouter } from './routes/admin/users.js';
 import { adminSettingsRouter } from './routes/admin/settings.js';
 import { adminModelsRouter } from './routes/admin/models.js';
 import { adminSkillsRouter } from './routes/admin/skills.js';
 import { adminCustomSkillsRouter } from './routes/admin/custom-skills.js';
+import { adminReferencesRouter } from './routes/admin/references.js';
 import { adminUsageRouter } from './routes/admin/usage.js';
 import { chatsRouter } from './routes/chats/index.js';
 import { webhooksRouter } from './routes/webhooks/index.js';
 import { setupRouter } from './routes/setup.js';
 import { mountBullBoard } from './routes/admin/bull-board.js';
 import { requireAuth, requireRole } from './middleware/auth.js';
+import { corsOptions } from './lib/cors.js';
 
 export function createApp(): Express {
   const app = express();
 
   app.disable('x-powered-by');
+  // Trust the immediate reverse proxy (Caddy / appliance Caddy / HAProxy
+  // emergency-proxy / nginx). Without this, X-Forwarded-Proto is ignored,
+  // req.secure stays false on TLS connections, and the Secure-cookie
+  // policy in lib/cookies.ts can't tell HTTPS apart from HTTP.
+  app.set('trust proxy', env.TRUST_PROXY);
   app.use(
     helmet({
       contentSecurityPolicy: env.NODE_ENV === 'production' ? undefined : false,
     }),
   );
-  app.use(
-    cors({
-      origin: env.PUBLIC_BASE_URL,
-      credentials: true,
-    }),
-  );
+  app.use(cors(corsOptions()));
   // compression() must NOT compress text/event-stream — it buffers writes
   // and the browser sees deltas in big batches instead of as they arrive,
   // which makes a streaming chat turn look frozen for tens of seconds at
@@ -74,6 +77,7 @@ export function createApp(): Express {
   app.use(pinoHttp({ logger }));
 
   app.use('/api/health', healthRouter);
+  app.use('/api/ping', pingRouter);
   app.use('/api/setup', setupRouter);
   app.use('/api/auth', authRouter);
   app.use('/admin/queues', requireAuth, requireRole('admin'), mountBullBoard().getRouter());
@@ -82,6 +86,7 @@ export function createApp(): Express {
   app.use('/api/admin/models', adminModelsRouter);
   app.use('/api/admin/skills', adminSkillsRouter);
   app.use('/api/admin/custom-skills', adminCustomSkillsRouter);
+  app.use('/api/admin/references', adminReferencesRouter);
   app.use('/api/admin/usage', adminUsageRouter);
   app.use('/api/chats', chatsRouter);
 

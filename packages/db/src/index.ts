@@ -26,3 +26,9 @@ export async function closeDb(): Promise<void> {
 
 export * as schema from './schema/index.js';
 export type Db = PostgresJsDatabase<typeof schema>;
+
+// Re-export the migration runner so the API entrypoint can invoke it
+// inline when MIGRATIONS_AUTO=true. The CLI entrypoint inside migrate.ts
+// only fires when `node dist/migrate.js` is the main module, so plain
+// imports are side-effect-free.
+export { runMigrations } from './migrate.js';

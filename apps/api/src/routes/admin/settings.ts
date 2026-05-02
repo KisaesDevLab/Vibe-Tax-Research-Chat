@@ -10,6 +10,14 @@ import { getSetting, setSetting, deleteSetting } from '../../lib/settings-store.
 import { fingerprint } from '../../lib/crypto.js';
 import { validateKey } from '../../lib/anthropic/client.js';
 import { SETTING_KEYS } from '@vibe/db/schema';
+import {
+  WEB_RESOURCE_SOURCES,
+  MCP_IMPLEMENTED_SOURCES,
+  getWebResourceStrategy,
+  setWebResourceStrategy,
+  type WebResourceMode,
+  type WebResourceSource,
+} from '../../lib/web-resource-strategy.js';
 
 export const adminSettingsRouter = Router();
 adminSettingsRouter.use(requireAuth, requireRole('admin'));
@@ -97,6 +105,61 @@ adminSettingsRouter.post('/default-model', async (req, res) => {
     ip: req.ip,
   });
   res.json({ ok: true });
+});
+
+// ── Phase 36 — per-source web_resource_strategy ──────────────────────────
+const webResourceStrategySchema = z.object({
+  strategy: z.record(z.enum(WEB_RESOURCE_SOURCES), z.enum(['anthropic', 'mcp'])),
+});
+
+adminSettingsRouter.get('/web-resource-strategy', async (_req, res) => {
+  const strategy = await getWebResourceStrategy();
+  res.json({
+    strategy,
+    implemented: MCP_IMPLEMENTED_SOURCES,
+    sources: WEB_RESOURCE_SOURCES,
+  });
+});
+
+adminSettingsRouter.put('/web-resource-strategy', async (req, res) => {
+  const parsed = webResourceStrategySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request', detail: parsed.error.flatten() });
+    return;
+  }
+  // Reject any 'mcp' selection for a source whose authority-mcp impl is
+  // still a stub — flipping an unimplemented source to mcp would just
+  // make Claude burn a turn on a 501-bound tool call.
+  const violators: WebResourceSource[] = [];
+  for (const [src, mode] of Object.entries(parsed.data.strategy) as Array<
+    [WebResourceSource, WebResourceMode]
+  >) {
+    if (mode === 'mcp' && !MCP_IMPLEMENTED_SOURCES.includes(src)) {
+      violators.push(src);
+    }
+  }
+  if (violators.length > 0) {
+    res.status(400).json({
+      error: 'mcp_not_implemented',
+      sources: violators,
+      message:
+        'Selected sources have only stub authority-mcp implementations. ' +
+        'Keep them on anthropic until the real fetcher ships.',
+    });
+    return;
+  }
+  // Fill in unspecified sources with the existing strategy so a partial
+  // PUT doesn't silently revert the rest to the default.
+  const current = await getWebResourceStrategy();
+  const next = { ...current, ...parsed.data.strategy };
+  await setWebResourceStrategy(next, req.auth!.user_id);
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'admin.settings.web_resource_strategy.set',
+    metadata: { strategy: next },
+    ip: req.ip,
+  });
+  res.json({ ok: true, strategy: next });
 });
 
 // ── Generic getter for non-secret settings ───────────────────────────────

@@ -1,0 +1,87 @@
+# Appliance overlay for Vibe-Tax-Research-Chat. Used by the Vibe-Appliance
+# parent stack. Standalone deployments use docker-compose.prod.yml instead.
+#
+# Differences from docker-compose.prod.yml:
+#   - No bundled postgres / redis / nginx — those come from the appliance.
+#   - No published ports — all traffic flows through the parent's Caddy
+#     (primary / Tailscale) and HAProxy emergency proxy on port 5191.
+#   - Joins the external `vibe_net` so the parent can route by service name.
+#   - Reads DATABASE_URL / REDIS_URL / ALLOWED_ORIGIN from env supplied by
+#     the appliance bootstrapper rather than hard-coding compose-internal
+#     hostnames.
+#   - MIGRATIONS_AUTO=true so the API runs `runMigrations()` on startup
+#     before binding the listener; the bootstrapper doesn't need a
+#     separate `docker compose exec` step.
+#
+# Renames the services with the `vibe-tax-` prefix so they don't collide
+# with sibling apps in the parent compose project.
+
+services:
+  vibe-tax-api:
+    image: ghcr.io/kisaesdevlab/vibe-tax-api:${VIBE_TAX_TAG:-latest}
+    networks: [vibe_net]
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${VIBE_TAX_DATABASE_URL}
+      REDIS_URL: ${VIBE_TAX_REDIS_URL}
+      ALLOWED_ORIGIN: ${VIBE_TAX_ALLOWED_ORIGIN}
+      MASTER_KEY: ${VIBE_TAX_MASTER_KEY}
+      JWT_SECRET: ${VIBE_TAX_JWT_SECRET}
+      JWT_REFRESH_SECRET: ${VIBE_TAX_JWT_REFRESH_SECRET}
+      MIGRATIONS_AUTO: 'true'
+      COOKIE_SECURE: ${VIBE_TAX_COOKIE_SECURE:-auto}
+      TRUST_PROXY: ${VIBE_TAX_TRUST_PROXY:-1}
+      LOG_LEVEL: ${VIBE_TAX_LOG_LEVEL:-info}
+      GITHUB_WEBHOOK_SECRET: ${VIBE_TAX_GITHUB_WEBHOOK_SECRET:-}
+    volumes:
+      - vibe-tax-attachments:/app/attachments
+      - vibe-tax-skills:/app/workspaces
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '-', 'http://localhost:4000/api/ping']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      # 60s start_period covers a fresh-DB first boot where MIGRATIONS_AUTO
+      # runs the full migration set before the listener binds. /api/ping
+      # itself is sub-millisecond once the listener is up.
+      start_period: 60s
+
+  vibe-tax-web:
+    image: ghcr.io/kisaesdevlab/vibe-tax-web:${VIBE_TAX_TAG:-latest}
+    networks: [vibe_net]
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '-', 'http://localhost/']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      vibe-tax-api:
+        condition: service_healthy
+
+  # Phase 34 — appliance-side authority cache. Shares the parent's
+  # Postgres (no published ports; the api reaches it at
+  # http://vibe-tax-authority-mcp:4100 over vibe_net). Lives in the same
+  # compose project as the api so it isn't exposed via Caddy.
+  vibe-tax-authority-mcp:
+    image: ghcr.io/kisaesdevlab/vibe-tax-authority-mcp:${VIBE_TAX_TAG:-latest}
+    networks: [vibe_net]
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${VIBE_TAX_DATABASE_URL}
+      LOG_LEVEL: ${VIBE_TAX_LOG_LEVEL:-info}
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '-', 'http://localhost:4100/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  vibe_net:
+    external: true
+
+volumes:
+  vibe-tax-attachments:
+  vibe-tax-skills:

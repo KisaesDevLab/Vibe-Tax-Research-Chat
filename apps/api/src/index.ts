@@ -1,4 +1,5 @@
 // Phase 1 + 25 — entrypoint. Starts Express + BullMQ workers.
+import { runMigrations } from '@vibe/db';
 import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { logger } from './lib/logger.js';
@@ -20,28 +21,46 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-const app = createApp();
-const server = app.listen(env.PORT, () => {
-  logger.info({ port: env.PORT, env: env.NODE_ENV }, 'api listening');
-});
+async function start(): Promise<void> {
+  // Auto-migrate before binding the listener. Default off so the standalone
+  // install flow stays "operator runs db:migrate:prod explicitly"; the
+  // appliance manifest sets MIGRATIONS_AUTO=true so the bootstrapper doesn't
+  // need a separate exec step. Failures here are fatal — a partially-migrated
+  // DB serving traffic is worse than refusing to start.
+  if (env.MIGRATIONS_AUTO) {
+    logger.info('MIGRATIONS_AUTO=true — running migrations before listen');
+    await runMigrations();
+    logger.info('migrations complete');
+  }
 
-if (process.env.WORKERS_ENABLED !== 'false') {
-  startWorkers();
-  logger.info('background workers started');
+  const app = createApp();
+  const server = app.listen(env.PORT, () => {
+    logger.info({ port: env.PORT, env: env.NODE_ENV }, 'api listening');
+  });
+
+  if (process.env.WORKERS_ENABLED !== 'false') {
+    startWorkers();
+    logger.info('background workers started');
+  }
+
+  // Recover any chat threads whose last assistant turn was severed by the
+  // previous process dying mid-stream. We can't catch that case from inside
+  // the SSE handler (req.on('close') doesn't fire when the SERVER goes
+  // away), so we sweep on startup instead and write a system_note into
+  // each affected chat. Runs async; never blocks listening.
+  void recoverOrphanedStreams();
+
+  const shutdown = (signal: string) => {
+    logger.info({ signal }, 'shutting down');
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(1), 10_000).unref();
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
-// Recover any chat threads whose last assistant turn was severed by the
-// previous process dying mid-stream. We can't catch that case from inside
-// the SSE handler (req.on('close') doesn't fire when the SERVER goes
-// away), so we sweep on startup instead and write a system_note into
-// each affected chat. Runs async; never blocks listening.
-void recoverOrphanedStreams();
-
-const shutdown = (signal: string) => {
-  logger.info({ signal }, 'shutting down');
-  server.close(() => process.exit(0));
-  setTimeout(() => process.exit(1), 10_000).unref();
-};
-
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT', () => shutdown('SIGINT'));
+start().catch((err) => {
+  logger.fatal({ err }, 'startup failed');
+  process.exit(1);
+});

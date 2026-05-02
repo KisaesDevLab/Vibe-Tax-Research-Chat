@@ -31,11 +31,22 @@ import { logger } from '../../lib/logger.js';
 import { extractAuthorities, decorateVerification } from '../../lib/parsing/authorities.js';
 import { extractCompliance } from '../../lib/parsing/compliance.js';
 import { chatTitleQueue } from '../../jobs/queues.js';
+import {
+  retrieveReferenceExcerpts,
+  formatExcerptsForPrompt,
+} from '../../lib/references/retrieve.js';
 import { checkSpendCap } from '../../lib/spend-cap.js';
 import { buildResponsePdf } from '../../lib/export/response-pdf.js';
 
 export const messagesRouter = Router({ mergeParams: true });
 messagesRouter.use(requireAuth);
+
+// Concatenate the canonical system prompt with optional add-ons, dropping
+// empties so a chat with no attachments and no firm references still
+// produces clean output (no dangling separator lines).
+function assembleSystemPrompt(base: string, attachments: string, references: string): string {
+  return [base, attachments, references].filter((s) => s && s.trim().length > 0).join('\n\n');
+}
 
 const sendSchema = z.object({
   content: z.string().min(1),
@@ -182,6 +193,16 @@ messagesRouter.post('/', async (req, res) => {
     return parts.join('\n');
   })();
 
+  // Phase 32 — firm reference library retrieval. Best-effort: if Voyage
+  // is unreachable or the index is empty, the chat proceeds without
+  // excerpts. The per-chat toggle (chat.use_reference_library) lets a
+  // researcher disable the library for memo-writing turns where they
+  // want primary-authority-only.
+  const referenceExcerpts = chat.use_reference_library
+    ? await retrieveReferenceExcerpts(parsed.data.content)
+    : [];
+  const referenceBlock = formatExcerptsForPrompt(referenceExcerpts);
+
   // SSE setup. The X-Accel-Buffering header tells nginx (and any well-
   // behaved reverse proxy / Vite-style dev proxy) to disable response
   // buffering for this response, so each SSE write flushes immediately
@@ -291,9 +312,11 @@ messagesRouter.post('/', async (req, res) => {
     const stream = streamChat({
       chat_id: chatId,
       user_message: parsed.data.content,
-      system_prompt: attachmentPreamble
-        ? `${buildSystemPrompt({})}\n\n${attachmentPreamble}`
-        : buildSystemPrompt({}),
+      system_prompt: assembleSystemPrompt(
+        buildSystemPrompt({}),
+        attachmentPreamble,
+        referenceBlock,
+      ),
       model_id: modelId,
       attached_skill_ids,
       enable_web_tools: model.web_tools_enabled,

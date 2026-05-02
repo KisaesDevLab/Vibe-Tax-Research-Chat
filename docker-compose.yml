@@ -1,7 +1,12 @@
 # Local dev stack. Production stack: docker-compose.prod.yml (Phase 28).
 services:
   postgres:
-    image: postgres:16-alpine
+    # pgvector/pgvector:pg16 is postgres:16 with the `vector` extension
+    # baked in. Required for the Phase 32 firm reference library (HNSW
+    # retrieval over voyage-3-large 1024-dim embeddings). Data dir layout
+    # is the standard PostgreSQL 16 PGDATA — fully compatible with any
+    # existing volume from postgres:16-alpine.
+    image: pgvector/pgvector:pg16
     restart: unless-stopped
     environment:
       POSTGRES_USER: vibe
@@ -65,6 +70,31 @@ services:
       - '5179:5173'
     volumes:
       - ./apps/web:/app/apps/web
+      - /app/node_modules
+
+  # Phase 34 — appliance-side authority cache. Talks to upstream sources
+  # (uscode.house.gov, ecfr.gov) on a miss; serves from postgres on a
+  # hit. The api process calls it at http://authority-mcp:4100 over the
+  # docker network. Not exposed to the host in dev; map a port if you
+  # want to curl /tools/list directly.
+  authority-mcp:
+    build:
+      context: .
+      dockerfile: apps/authority-mcp/Dockerfile
+      target: dev
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://vibe:vibe@postgres:5432/vibe_tax
+      PORT: '4100'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '4100:4100'
+    volumes:
+      - ./apps/authority-mcp:/app/apps/authority-mcp
+      - ./packages:/app/packages
       - /app/node_modules
 
 volumes:

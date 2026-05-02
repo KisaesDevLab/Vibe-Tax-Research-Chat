@@ -13,6 +13,7 @@ import { users, auth_refresh_tokens } from '@vibe/db/schema';
 import { audit } from '../lib/audit.js';
 import { signAccess, signRefresh, hashToken } from '../lib/jwt.js';
 import { setupBootstrapLimiter } from '../lib/rate-limit.js';
+import { ACCESS_COOKIE_NAME, accessCookieOptions } from '../lib/cookies.js';
 
 export const setupRouter = Router();
 
@@ -95,13 +96,7 @@ setupRouter.post('/bootstrap', setupBootstrapLimiter, async (req, res) => {
   });
   // Mirror into a cookie too, so /admin/queues (Bull Board) is reachable
   // immediately after bootstrap without a separate login.
-  res.cookie('vibe_at', access_token, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-    maxAge: 15 * 60 * 1000,
-  });
+  res.cookie(ACCESS_COOKIE_NAME, access_token, accessCookieOptions(req));
 
   await audit({
     actor_user_id: inserted.id,

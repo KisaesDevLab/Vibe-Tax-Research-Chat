@@ -182,6 +182,7 @@ const patchSchema = z.object({
   pinned_pack_version: z.string().nullable().optional(),
   default_model_id: z.string().nullable().optional(),
   pii_disclosure_acknowledged: z.boolean().optional(),
+  use_reference_library: z.boolean().optional(),
 });
 
 chatsRouter.patch('/:id', async (req, res) => {
@@ -205,6 +206,8 @@ chatsRouter.patch('/:id', async (req, res) => {
     update.default_model_id = parsed.data.default_model_id;
   if (parsed.data.pii_disclosure_acknowledged !== undefined)
     update.pii_disclosure_acknowledged = parsed.data.pii_disclosure_acknowledged;
+  if (parsed.data.use_reference_library !== undefined)
+    update.use_reference_library = parsed.data.use_reference_library;
 
   const where = isAdmin
     ? eq(chats.id, req.params.id)

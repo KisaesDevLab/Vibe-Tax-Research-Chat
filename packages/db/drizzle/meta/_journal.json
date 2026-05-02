@@ -15,6 +15,20 @@
       "when": 1777349293314,
       "tag": "0001_attachments_uploader_nullable",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777685078212,
+      "tag": "0002_reference_pgvector",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777685450084,
+      "tag": "0003_reference_chat_toggle",
+      "breakpoints": true
     }
   ]
 }

@@ -11,6 +11,10 @@ export const chatTitleQueue = new Queue('chat-title', { connection });
 export const usageRollupQueue = new Queue('usage-rollup', { connection });
 export const attachmentSummarizeQueue = new Queue('attachment-summarize', { connection });
 export const notificationsEmailQueue = new Queue('notifications-email', { connection });
+// Phase 32 — chunk + embed firm-uploaded reference documents. Job payload:
+// { document_id }. The worker walks the document end-to-end so retries
+// are idempotent (it scrubs prior chunks before re-inserting).
+export const referencesIngestQueue = new Queue('references-ingest', { connection });
 
 export const QUEUES = [
   skillsSyncQueue,
@@ -19,4 +23,5 @@ export const QUEUES = [
   usageRollupQueue,
   attachmentSummarizeQueue,
   notificationsEmailQueue,
+  referencesIngestQueue,
 ];

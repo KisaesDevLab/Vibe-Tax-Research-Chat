@@ -1,7 +1,7 @@
 // Phase 14-20 — chat page. Composes sidebar + message list + composer + panels.
 import { useRef, useState, type FormEvent, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChatSidebar } from '../components/ChatSidebar';
 import { Markdown } from '../components/Markdown';
 import { CostLedger } from '../components/CostLedger';
@@ -240,7 +240,12 @@ function ChatView({ chatId }: { chatId: string }) {
         )}
         <header className="shrink-0 px-7 py-4 border-b border-ink/10 flex items-center justify-between">
           <div className="font-display text-lg">{data?.chat.title ?? 'Loading…'}</div>
-          <div className="font-mono text-xs text-ink/50">{data?.messages.length ?? 0} messages</div>
+          <div className="flex items-center gap-4">
+            <ReferenceLibraryToggle chat={data?.chat} onChange={() => void refetch()} />
+            <div className="font-mono text-xs text-ink/50">
+              {data?.messages.length ?? 0} messages
+            </div>
+          </div>
         </header>
 
         <main className="flex-1 min-h-0 overflow-y-auto">
@@ -412,6 +417,52 @@ function ChatView({ chatId }: { chatId: string }) {
         </form>
       </div>
     </div>
+  );
+}
+
+// Phase 32 — per-chat toggle for the firm reference library. Default is
+// on when the chat was created; researchers flip it off for memo-writing
+// turns where they want primary-authority citations only. Hidden until
+// the chat row has loaded so the initial render doesn't flash a default
+// state that contradicts the persisted value.
+function ReferenceLibraryToggle({
+  chat,
+  onChange,
+}: {
+  chat: ChatDTO | undefined;
+  onChange: () => void;
+}) {
+  const qc = useQueryClient();
+  const mutate = useMutation({
+    mutationFn: (next: boolean) =>
+      api(`/api/chats/${chat!.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ use_reference_library: next }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['chat', chat!.id] });
+      onChange();
+    },
+  });
+  if (!chat) return null;
+  const on = chat.use_reference_library;
+  return (
+    <button
+      type="button"
+      onClick={() => mutate.mutate(!on)}
+      disabled={mutate.isPending}
+      title={
+        on
+          ? 'Firm reference library is being consulted on every turn. Click to disable for this chat.'
+          : 'Firm reference library is OFF for this chat. Click to re-enable.'
+      }
+      className={`text-xs px-2 py-1 rounded border transition-colors ${
+        on ? 'border-ink/30 bg-ink/5 text-ink' : 'border-ink/20 text-ink/40 hover:text-ink/60'
+      }`}
+    >
+      <span className="font-mono mr-1">{on ? '●' : '○'}</span>
+      Reference library
+    </button>
   );
 }
 

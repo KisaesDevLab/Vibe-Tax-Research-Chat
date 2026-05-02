@@ -50,6 +50,9 @@ jobs:
           - name: web
             image: vibe-tax-web
             dockerfile: apps/web/Dockerfile
+          - name: authority-mcp
+            image: vibe-tax-authority-mcp
+            dockerfile: apps/authority-mcp/Dockerfile
     steps:
       - uses: actions/checkout@v4
 
@@ -60,6 +63,14 @@ jobs:
         run: |
           OWNER_LC="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
           echo "ref=ghcr.io/$OWNER_LC/${{ matrix.image }}" >> "$GITHUB_OUTPUT"
+
+      # QEMU is required to cross-build linux/arm64 from the amd64 runner.
+      # Without it, buildx falls back to a single-platform build and silently
+      # drops the arm64 image — multi-arch tag inspection then shows only
+      # one digest.
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
 
       - uses: docker/setup-buildx-action@v3
 
@@ -99,10 +110,11 @@ jobs:
           # both legs of the matrix.
           target: runtime
           push: true
-          # GMKtec NucBox M6 (reference appliance hardware) is x86_64.
-          # arm64 cross-build via QEMU adds ~5-10 min and isn't used by
-          # any current deployment target — flip on when a customer asks.
-          platforms: linux/amd64
+          # Two platforms so the same images cover both the GMKtec NucBox M6
+          # (x86_64 reference appliance) and arm64 hosts (Apple Silicon dev
+          # boxes, Raspberry Pi / mini-PC arm appliances, future hardware).
+          # QEMU cross-build adds ~5-10 min per leg.
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |

@@ -10,6 +10,7 @@ import { eq, asc, sql } from 'drizzle-orm';
 import { getRedis } from '../lib/redis.js';
 import { logger } from '../lib/logger.js';
 import { runDryRun } from '../lib/skills/sync.js';
+import { ingestReferenceDocument } from '../lib/references/ingest.js';
 import { skillsSyncQueue, usageRollupQueue } from './queues.js';
 import { env } from '../config/env.js';
 import { getDb } from '@vibe/db';
@@ -68,6 +69,16 @@ export function startWorkers(): void {
   // ── usage-rollup — UPSERT usage_daily from the last 48h of usage_events.
   createWorker('usage-rollup', async () => {
     await rollupUsageDaily();
+  });
+
+  // ── references-ingest — chunk + embed a firm reference document.
+  // Job payload: { document_id }. Idempotent: a retry replaces the prior
+  // chunk set for the same document_id, so transient embedding-API
+  // failures (e.g., Voyage 5xx) recover cleanly.
+  createWorker('references-ingest', async (job) => {
+    const document_id = job.data?.document_id as string | undefined;
+    if (!document_id) return;
+    await ingestReferenceDocument(document_id);
   });
 
   void scheduleCrons();

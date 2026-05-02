@@ -2,7 +2,12 @@
 # Single host. Postgres + Redis + api + web (nginx). No exposed ports beyond 80.
 services:
   postgres:
-    image: postgres:16-alpine
+    # pgvector/pgvector:pg16 is postgres:16 with the `vector` extension
+    # baked in. Required for the Phase 32 firm reference library (HNSW
+    # retrieval over 1024-dim embeddings). PGDATA layout is the standard
+    # PostgreSQL 16 — fully compatible with an existing volume from a
+    # prior postgres:16-alpine deployment, so upgrades are a stop+pull+up.
+    image: pgvector/pgvector:pg16
     restart: unless-stopped
     environment:
       POSTGRES_USER: vibe
@@ -66,6 +71,27 @@ services:
       - '80:80'
     healthcheck:
       test: ['CMD', 'wget', '-q', '-O', '-', 'http://localhost/']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Phase 34 — appliance-side authority cache. Same DB as the api; not
+  # exposed on the host (api reaches it via docker DNS at authority-mcp:4100).
+  authority-mcp:
+    build:
+      context: .
+      dockerfile: apps/authority-mcp/Dockerfile
+      target: runtime
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://vibe:${POSTGRES_PASSWORD}@postgres:5432/vibe_tax
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '-', 'http://localhost:4100/health']
       interval: 30s
       timeout: 5s
       retries: 3

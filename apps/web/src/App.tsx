@@ -10,6 +10,7 @@ import { AdminSettingsPage } from './pages/admin/Settings';
 import { AdminModelsPage } from './pages/admin/Models';
 import { AdminSkillsPage } from './pages/admin/Skills';
 import { AdminCustomSkillsPage } from './pages/admin/CustomSkills';
+import { AdminReferencesPage } from './pages/admin/References';
 import { AdminUsagePage } from './pages/admin/Usage';
 import { RequireAuth, RequireRole } from './components/RequireRole';
 
@@ -32,6 +33,7 @@ export function App() {
             <Route path="models" element={<AdminModelsPage />} />
             <Route path="skills" element={<AdminSkillsPage />} />
             <Route path="custom-skills" element={<AdminCustomSkillsPage />} />
+            <Route path="references" element={<AdminReferencesPage />} />
             <Route path="usage" element={<AdminUsagePage />} />
           </Route>
         </Route>

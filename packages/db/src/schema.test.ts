@@ -22,6 +22,7 @@ const expected = [
   'usage_daily',
   'reference_documents',
   'reference_chunks',
+  'referenceStatusEnum',
   'authority_cache',
 ];
 

@@ -14,6 +14,12 @@ export const chats = pgTable(
     default_model_id: text('default_model_id').references(() => models.model_id),
     pinned_pack_version: text('pinned_pack_version'),
     pii_disclosure_acknowledged: boolean('pii_disclosure_acknowledged').notNull().default(false),
+    // Phase 32 — per-chat toggle for the firm reference library. Default
+    // on so existing chats automatically benefit from any references the
+    // firm admin has uploaded; researchers can flip it off per chat
+    // (e.g., when authoring a memo that should rely solely on primary
+    // authority).
+    use_reference_library: boolean('use_reference_library').notNull().default(true),
     archived_at: timestamp('archived_at', { withTimezone: true }),
     created_at: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updated_at: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

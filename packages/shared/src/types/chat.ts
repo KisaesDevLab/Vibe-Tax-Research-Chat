@@ -3,7 +3,18 @@ export type MessageRole = 'user' | 'assistant' | 'system_note';
 
 export interface Authority {
   cite: string; // e.g. "26 U.S.C. § 199A(c)(1)"
-  type: 'statute' | 'regulation' | 'case' | 'irs_guidance' | 'public_law' | 'state' | 'other';
+  // `firm_reference` was added in Phase 32 for citations that come from the
+  // firm reference library (RAG over uploaded memos), so the AuthoritiesPanel
+  // can visually distinguish them from primary authority.
+  type:
+    | 'statute'
+    | 'regulation'
+    | 'case'
+    | 'irs_guidance'
+    | 'public_law'
+    | 'state'
+    | 'firm_reference'
+    | 'other';
   weight: 'primary' | 'secondary' | 'persuasive';
   source: string; // canonical URL or descriptor
   retrieved_at?: string; // ISO
@@ -86,6 +97,11 @@ export interface ChatDTO {
   default_model_id: string | null;
   pinned_pack_version: string | null;
   pii_disclosure_acknowledged: boolean;
+  // Phase 32 — when true (default), per-turn retrieval injects firm
+  // reference excerpts into the system prompt. Researchers can flip
+  // this off for memo-writing turns where they want primary-authority
+  // citations only.
+  use_reference_library: boolean;
   archived_at: string | null;
   created_at: string;
   updated_at: string;

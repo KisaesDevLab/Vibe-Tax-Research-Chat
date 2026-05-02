@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "slug": "vibe-tax-research",
+  "displayName": "Vibe Tax Research Chat",
+  "description": "AI-augmented tax research with Claude — citations, SSTS / Circular 230 disclosures, and per-firm cost visibility behind one Anthropic API key.",
+  "userFacing": true,
+  "image": {
+    "server": "ghcr.io/kisaesdevlab/vibe-tax-api",
+    "client": "ghcr.io/kisaesdevlab/vibe-tax-web",
+    "defaultTag": "latest"
+  },
+  "ports": { "server": 4000, "client": 80 },
+  "subdomains": [
+    {
+      "name": "tax",
+      "target": "vibe-tax-web:80",
+      "audience": "default",
+      "emergencyPort": 5191
+    }
+  ],
+  "depends": ["postgres", "redis"],
+  "postgresExtensions": ["vector"],
+  "websocket": false,
+  "streaming": "sse",
+  "env": {
+    "required": [
+      { "name": "JWT_SECRET", "generate": "hex64" },
+      { "name": "JWT_REFRESH_SECRET", "generate": "hex64" },
+      { "name": "MASTER_KEY", "generate": "hex32" },
+      {
+        "name": "DATABASE_URL",
+        "from": "shared-postgres-url",
+        "database": "vibe_tax",
+        "user": "vibetax"
+      },
+      {
+        "name": "REDIS_URL",
+        "from": "shared-redis-url",
+        "namespace": "tax-research"
+      },
+      { "name": "ALLOWED_ORIGIN", "from": "subdomain-url-list" }
+    ],
+    "optional": [
+      { "name": "MIGRATIONS_AUTO", "default": "true" },
+      { "name": "COOKIE_SECURE", "default": "auto" },
+      { "name": "TRUST_PROXY", "default": "1" },
+      { "name": "LOG_LEVEL", "default": "info" },
+      { "name": "GITHUB_WEBHOOK_SECRET", "generate": "hex32", "secret": true }
+    ]
+  },
+  "database": { "name": "vibe_tax", "user": "vibetax" },
+  "firstLogin": {
+    "type": "self-register-first-user-becomes-admin",
+    "url": "/setup",
+    "note": "First registered user becomes the firm admin. After login, paste the firm's Anthropic API key in Admin → Settings before researchers start using the app."
+  },
+  "health": "/api/health/deep",
+  "ping": "/api/ping",
+  "migrations": {
+    "command": ["node", "packages/db/dist/migrate.js"],
+    "autoEnvVar": "MIGRATIONS_AUTO"
+  },
+  "backup": {
+    "volumes": ["vibe-tax-attachments", "vibe-tax-skills"],
+    "databases": ["vibe_tax"]
+  }
+}

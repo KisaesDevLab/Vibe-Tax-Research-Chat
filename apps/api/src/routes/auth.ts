@@ -1,5 +1,5 @@
 // Phase 3 — auth routes: /login, /refresh, /logout.
-import { Router, type CookieOptions, type Response } from 'express';
+import { Router, type Request, type Response } from 'express';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { eq, and, isNull } from 'drizzle-orm';
@@ -9,31 +9,13 @@ import { signAccess, signRefresh, verifyRefresh, hashToken } from '../lib/jwt.js
 import { loginLimiter } from '../lib/rate-limit.js';
 import { audit } from '../lib/audit.js';
 import { requireAuth } from '../middleware/auth.js';
-import { env } from '../config/env.js';
+import { ACCESS_COOKIE_NAME, accessCookieOptions } from '../lib/cookies.js';
 
-// httpOnly cookie that mirrors the access token. Used by routes that get
-// hit via plain browser navigation (Bull Board) rather than the SPA's
-// fetch-with-Authorization-header flow. Lifetime mirrors JWT_ACCESS_TTL
-// loosely — re-set on every refresh.
-const COOKIE_NAME = 'vibe_at';
-function cookieOptions(): CookieOptions {
-  return {
-    httpOnly: true,
-    sameSite: 'lax',
-    // In dev (http://localhost) Secure must be off or the browser drops
-    // the cookie. In prod we serve over the appliance's TLS terminator.
-    secure: env.NODE_ENV === 'production',
-    path: '/',
-    // 15-minute window; the SPA refreshes tokens itself, and refresh
-    // updates the cookie too.
-    maxAge: 15 * 60 * 1000,
-  };
+function setAccessCookie(req: Request, res: Response, token: string) {
+  res.cookie(ACCESS_COOKIE_NAME, token, accessCookieOptions(req));
 }
-function setAccessCookie(res: Response, token: string) {
-  res.cookie(COOKIE_NAME, token, cookieOptions());
-}
-function clearAccessCookie(res: Response) {
-  res.clearCookie(COOKIE_NAME, { ...cookieOptions(), maxAge: 0 });
+function clearAccessCookie(req: Request, res: Response) {
+  res.clearCookie(ACCESS_COOKIE_NAME, { ...accessCookieOptions(req), maxAge: 0 });
 }
 
 export const authRouter = Router();
@@ -95,7 +77,7 @@ authRouter.post('/login', loginLimiter, async (req, res) => {
   await db.update(users).set({ last_login_at: new Date() }).where(eq(users.id, user.id));
 
   const access_token = signAccess({ sub: user.id, role: user.role, email: user.email });
-  setAccessCookie(res, access_token);
+  setAccessCookie(req, res, access_token);
   await audit({ actor_user_id: user.id, action: 'auth.login.success', ip: req.ip });
 
   res.json({
@@ -174,7 +156,7 @@ authRouter.post('/refresh', async (req, res) => {
     .where(eq(auth_refresh_tokens.id, newJti));
 
   const access_token = signAccess({ sub: user.id, role: user.role, email: user.email });
-  setAccessCookie(res, access_token);
+  setAccessCookie(req, res, access_token);
   await audit({ actor_user_id: user.id, action: 'auth.refresh', ip: req.ip });
   res.json({ access_token, refresh_token });
 });
@@ -192,7 +174,7 @@ authRouter.post('/logout', requireAuth, async (req, res) => {
       // ignore
     }
   }
-  clearAccessCookie(res);
+  clearAccessCookie(req, res);
   await audit({ actor_user_id: req.auth?.user_id, action: 'auth.logout', ip: req.ip });
   res.status(204).end();
 });
