@@ -12,8 +12,8 @@ applied defaults during the build.
 ## Quick start (dev)
 
 ```bash
-# 1. Tooling: Node 20, pnpm 9, Docker.
-node --version    # >= 20.0.0
+# 1. Tooling: Node 24, pnpm 9, Docker.
+node --version    # >= 24.0.0
 pnpm --version    # >= 9.0.0
 docker --version
 
@@ -56,16 +56,16 @@ Full install guide: `docs/install.md`.
 
 ## Architecture (one-page)
 
-| Layer        | Choice                                               |
-| ------------ | ---------------------------------------------------- |
-| Frontend     | React 18 + TypeScript + Vite + Tailwind + TanStack Query + Zustand |
-| Backend      | Node 20 + Express + TypeScript + Pino                |
-| ORM / DB     | Drizzle ORM + PostgreSQL 16                          |
-| Cache / queue| Redis 7 + BullMQ                                     |
-| AI           | `@anthropic-ai/sdk` with `code-execution-2025-08-25` + `skills-2025-10-02` betas |
-| Streaming    | Server-Sent Events from Express → React              |
-| Editor       | Monaco (skill authoring + diff viewing)              |
-| Distribution | Docker Compose appliance                             |
+| Layer         | Choice                                                                           |
+| ------------- | -------------------------------------------------------------------------------- |
+| Frontend      | React 18 + TypeScript + Vite + Tailwind + TanStack Query + Zustand               |
+| Backend       | Node 24 + Express + TypeScript + Pino                                            |
+| ORM / DB      | Drizzle ORM + PostgreSQL 16                                                      |
+| Cache / queue | Redis 7 + BullMQ                                                                 |
+| AI            | `@anthropic-ai/sdk` with `code-execution-2025-08-25` + `skills-2025-10-02` betas |
+| Streaming     | Server-Sent Events from Express → React                                          |
+| Editor        | Monaco (skill authoring + diff viewing)                                          |
+| Distribution  | Docker Compose appliance                                                         |
 
 See `BUILD_PLAN.md §3` for the full architecture, `BUILD_PLAN.md §4` for the data model,
 and `CLAUDE.md` for the running architecture log.

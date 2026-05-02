@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 # Multi-stage build for the API. Phase 28.
 
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 
@@ -11,7 +11,7 @@ FROM base AS deps
 # node-gyp source build, which needs python3 + a C++ toolchain. Without
 # these, `pnpm install` fails the moment the GHA layer cache misses
 # (e.g., after a lockfile change). The packages live in the deps stage
-# only — runtime is a fresh `node:20-alpine` and stays slim.
+# only — runtime is a fresh `node:24-alpine` and stays slim.
 RUN apk add --no-cache python3 make g++
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 COPY apps/api/package.json apps/api/
@@ -33,7 +33,7 @@ RUN pnpm --filter @vibe/shared build \
  && pnpm --filter @vibe/api build
 
 # ── runtime stage ───────────────────────────────────────────────────────
-FROM node:20-alpine AS runtime
+FROM node:24-alpine AS runtime
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 COPY --from=builder /app/package.json /app/pnpm-workspace.yaml ./

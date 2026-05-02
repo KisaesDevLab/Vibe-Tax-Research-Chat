@@ -4,7 +4,7 @@
 # layout matches the rest of the suite — same pnpm version, same
 # workspace symlink set, same CMD shape.
 
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 
@@ -30,7 +30,7 @@ RUN pnpm --filter @vibe/shared build \
  && pnpm --filter @vibe/authority-mcp build
 
 # ── runtime stage ───────────────────────────────────────────────────────
-FROM node:20-alpine AS runtime
+FROM node:24-alpine AS runtime
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 COPY --from=builder /app/package.json /app/pnpm-workspace.yaml ./
