@@ -56,7 +56,15 @@ services:
     volumes:
       - ./apps/api:/app/apps/api
       - ./packages:/app/packages
+      # Per-package node_modules anon volumes preserve the container's
+      # image-built pnpm symlink tree. Without these, the bind mounts
+      # above shadow the container's node_modules with the host's
+      # (whose pnpm symlinks are absolute host paths — e.g. C:\... on
+      # Windows — and don't resolve inside the Linux container).
       - /app/node_modules
+      - /app/apps/api/node_modules
+      - /app/packages/db/node_modules
+      - /app/packages/shared/node_modules
 
   web:
     build:
@@ -65,12 +73,16 @@ services:
       target: dev
     restart: unless-stopped
     environment:
-      VITE_API_BASE_URL: http://localhost:4000
+      # Vite dev proxy target. Inside the web container, "localhost"
+      # would resolve to the web container itself; use the compose
+      # service hostname so the proxy reaches the api service.
+      VITE_API_BASE_URL: http://api:4000
     ports:
       - '5179:5173'
     volumes:
       - ./apps/web:/app/apps/web
       - /app/node_modules
+      - /app/apps/web/node_modules
 
   # Phase 34 — appliance-side authority cache. Talks to upstream sources
   # (uscode.house.gov, ecfr.gov) on a miss; serves from postgres on a
@@ -96,6 +108,9 @@ services:
       - ./apps/authority-mcp:/app/apps/authority-mcp
       - ./packages:/app/packages
       - /app/node_modules
+      - /app/apps/authority-mcp/node_modules
+      - /app/packages/db/node_modules
+      - /app/packages/shared/node_modules
 
 volumes:
   postgres_data:

@@ -10,9 +10,10 @@ FROM base AS deps
 # bcrypt has no prebuilt binary for Alpine (musl) and falls back to a
 # node-gyp source build, which needs python3 + a C++ toolchain. Without
 # these, `pnpm install` fails the moment the GHA layer cache misses
-# (e.g., after a lockfile change). The packages live in the deps stage
-# only — runtime is a fresh `node:24-alpine` and stays slim.
-RUN apk add --no-cache python3 make g++
+# (e.g., after a lockfile change). git is required at runtime by the
+# skills sync job (simple-git spawns the `git` binary to fetch the
+# skills repo).
+RUN apk add --no-cache python3 make g++ git
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 COPY apps/api/package.json apps/api/
 COPY packages/db/package.json packages/db/
@@ -35,7 +36,10 @@ RUN pnpm --filter @vibe/shared build \
 # ── runtime stage ───────────────────────────────────────────────────────
 FROM node:24-alpine AS runtime
 WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
+# git is required at runtime by the skills sync job (simple-git spawns
+# `git` to fetch the skills repo). Keep the rest of the runtime slim.
+RUN apk add --no-cache git \
+ && corepack enable && corepack prepare pnpm@9.15.9 --activate
 COPY --from=builder /app/package.json /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/apps/api/package.json apps/api/
 COPY --from=builder /app/apps/api/dist apps/api/dist
