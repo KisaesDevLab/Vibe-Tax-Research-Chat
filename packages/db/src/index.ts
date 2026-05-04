@@ -32,3 +32,7 @@ export type Db = PostgresJsDatabase<typeof schema>;
 // only fires when `node dist/migrate.js` is the main module, so plain
 // imports are side-effect-free.
 export { runMigrations } from './migrate.js';
+// Re-export the seed runner for the same reason — appliance bootstraps
+// need the model registry and default settings populated, not just the
+// schema. Idempotent (`onConflictDoNothing`), so safe to run every boot.
+export { runSeed } from './seed.js';

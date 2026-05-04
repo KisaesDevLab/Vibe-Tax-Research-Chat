@@ -190,14 +190,14 @@ own. The Anthropic API key is still entered by the firm admin via the in-app
 
 ### What's different from standalone
 
-| Concern              | Standalone (`docker-compose.prod.yml`)          | Appliance (`docker-compose.appliance.yml`)                           |
-| -------------------- | ----------------------------------------------- | -------------------------------------------------------------------- |
-| Postgres             | Bundled `postgres:16-alpine` service            | Shared, supplied via `VIBE_TAX_DATABASE_URL`                         |
-| Redis                | Bundled `redis:7-alpine` service                | Shared, supplied via `VIBE_TAX_REDIS_URL`                            |
-| Reverse proxy        | Local `web` container on port 80                | Parent Caddy at `tax.<domain>` and HAProxy emergency :5191           |
-| Migrations           | Operator runs `pnpm db:migrate:prod` after `up` | API auto-runs migrations at startup (`MIGRATIONS_AUTO=true`)         |
-| CORS                 | Single `PUBLIC_BASE_URL`                        | List via `VIBE_TAX_ALLOWED_ORIGIN` (primary + Tailscale + emergency) |
-| Cookie `Secure` flag | NODE_ENV-driven                                 | `COOKIE_SECURE=auto` — set per request based on `req.secure`         |
+| Concern              | Standalone (`docker-compose.prod.yml`)                           | Appliance (`docker-compose.appliance.yml`)                           |
+| -------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Postgres             | Bundled `postgres:16-alpine` service                             | Shared, supplied via `VIBE_TAX_DATABASE_URL`                         |
+| Redis                | Bundled `redis:7-alpine` service                                 | Shared, supplied via `VIBE_TAX_REDIS_URL`                            |
+| Reverse proxy        | Local `web` container on port 80                                 | Parent Caddy at `tax.<domain>` and HAProxy emergency :5191           |
+| Migrations + seed    | Operator runs `pnpm db:migrate:prod` + `db:seed:prod` after `up` | API auto-runs migrations + seed at startup (`MIGRATIONS_AUTO=true`)  |
+| CORS                 | Single `PUBLIC_BASE_URL`                                         | List via `VIBE_TAX_ALLOWED_ORIGIN` (primary + Tailscale + emergency) |
+| Cookie `Secure` flag | NODE_ENV-driven                                                  | `COOKIE_SECURE=auto` — set per request based on `req.secure`         |
 
 ### Required appliance env (set by the appliance bootstrapper)
 

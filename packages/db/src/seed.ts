@@ -3,7 +3,7 @@ import { config as loadEnv } from 'dotenv';
 import bcrypt from 'bcrypt';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { getDb, closeDb } from './index.js';
 import { models, users, settings, SETTING_KEYS } from './schema/index.js';
 import { sql } from 'drizzle-orm';
@@ -29,7 +29,10 @@ interface SeedModel {
   notes?: string;
 }
 
-async function main() {
+// Idempotent: every insert is `onConflictDoNothing`, so calling this on every
+// boot (when MIGRATIONS_AUTO=true) is safe — admin-customized rows are not
+// overwritten, and rows that already exist are no-ops.
+export async function runSeed(): Promise<void> {
   const db = getDb();
 
   // 1. Models
@@ -124,11 +127,27 @@ async function main() {
 
   // touch updated_at to silence linter
   void sql;
-  await closeDb();
-  process.exit(0);
 }
 
-main().catch((err) => {
-  console.error('Seed failed:', err);
-  process.exit(1);
-});
+// CLI entrypoint. `node dist/seed.js` (via `pnpm db:seed:prod`) hits this.
+// Importing the module from the API package only sees `runSeed` — the
+// detection block is side-effect-free. `pathToFileURL` handles Windows
+// path separators and percent-encoding correctly across platforms.
+const isMain = (() => {
+  if (!process.argv[1]) return false;
+  try {
+    return import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
+  } catch {
+    return false;
+  }
+})();
+
+if (isMain) {
+  runSeed()
+    .then(() => closeDb())
+    .then(() => process.exit(0))
+    .catch((err) => {
+      console.error('Seed failed:', err);
+      process.exit(1);
+    });
+}

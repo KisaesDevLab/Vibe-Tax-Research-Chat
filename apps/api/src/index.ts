@@ -1,5 +1,5 @@
 // Phase 1 + 25 — entrypoint. Starts Express + BullMQ workers.
-import { runMigrations } from '@vibe/db';
+import { runMigrations, runSeed } from '@vibe/db';
 import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { logger } from './lib/logger.js';
@@ -27,10 +27,18 @@ async function start(): Promise<void> {
   // appliance manifest sets MIGRATIONS_AUTO=true so the bootstrapper doesn't
   // need a separate exec step. Failures here are fatal — a partially-migrated
   // DB serving traffic is worse than refusing to start.
+  //
+  // Seed runs in the same gate: migrations create the empty `models` table,
+  // and without the seed the first-run wizard's default-model step always
+  // 400s with `unknown_or_inactive_model` (no rows match). The seed is
+  // idempotent (`onConflictDoNothing`) so admin-customized rows are
+  // preserved and re-runs are no-ops.
   if (env.MIGRATIONS_AUTO) {
     logger.info('MIGRATIONS_AUTO=true — running migrations before listen');
     await runMigrations();
     logger.info('migrations complete');
+    await runSeed();
+    logger.info('seed complete');
   }
 
   const app = createApp();
