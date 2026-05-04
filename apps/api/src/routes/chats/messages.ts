@@ -84,13 +84,7 @@ messagesRouter.post('/', async (req, res) => {
     return;
   }
 
-  // 1. Persist user message
-  const [userMsg] = await db
-    .insert(messages)
-    .values({ chat_id: chatId, role: 'user', content: parsed.data.content })
-    .returning({ id: messages.id });
-
-  // 2. Resolve model
+  // 1. Resolve model
   const defaultModelId =
     chat.default_model_id ??
     (await getSetting<string>(SETTING_KEYS.DEFAULT_MODEL_ID)) ??
@@ -110,7 +104,7 @@ messagesRouter.post('/', async (req, res) => {
     return;
   }
 
-  // 3. Resolve attached skills (heuristic routing)
+  // 2. Resolve attached skills (heuristic routing)
   const allSkills = await db.select().from(skillsTable).where(eq(skillsTable.is_active, true));
   const allCustom = await db.select().from(custom_skills).where(eq(custom_skills.is_active, true));
   const route = selectSkills({
@@ -129,12 +123,24 @@ messagesRouter.post('/', async (req, res) => {
     .map((slug) => skillSlugToId.get(slug))
     .filter(Boolean) as string[];
 
-  // 4. History
+  // 3. History — fetched BEFORE persisting the new user message so the
+  // streamChat call can append the new turn cleanly. If we queried after
+  // the insert, `history` would already contain the new user message and
+  // chat.ts would duplicate it — Anthropic's Messages API rejects two
+  // consecutive identical user messages (silently 400 in simple cases,
+  // 500 api_error when combined with container.skills + web tools).
   const history = await db
     .select({ role: messages.role, content: messages.content })
     .from(messages)
     .where(eq(messages.chat_id, chatId))
     .orderBy(asc(messages.created_at));
+
+  // 4. Persist the new user message. ID is captured so the lifecycle
+  // log + final 'done' SSE event can reference it.
+  const [userMsg] = await db
+    .insert(messages)
+    .values({ chat_id: chatId, role: 'user', content: parsed.data.content })
+    .returning({ id: messages.id });
 
   // 4b. Attachment context. Pull the chat's attachments and build a
   // preamble that sits at the top of the system prompt. Prefer the

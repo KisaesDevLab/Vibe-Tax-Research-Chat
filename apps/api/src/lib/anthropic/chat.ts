@@ -70,12 +70,17 @@ export async function* streamChat(opts: StreamChatOpts): AsyncIterable<ChatEvent
     tools.push({ type: 'code_execution_20250825', name: 'code_execution' });
   }
   if (opts.enable_web_tools) {
-    // Pin to the current tool revisions Anthropic accepts. The 2025-08-28
-    // versions (named in the original CLAUDE.md scaffolding) were
-    // deprecated and the API now rejects them with an invalid_request_error
-    // listing the valid set. Bump these when Anthropic ships newer.
+    // Pin to the current tool revisions Anthropic accepts. Per the
+    // platform docs, the valid web_fetch versions are 20260209 (latest,
+    // with dynamic filtering) and 20250910 (previous); valid web_search
+    // versions are 20260209 (latest) and 20250305 (previous). Neither
+    // tool requires an anthropic-beta header. Dynamic filtering on the
+    // 20260209 versions needs code_execution in the tools array — which
+    // we already have either explicitly (no skills attached) or via the
+    // skills beta's auto-injection (skills attached). Bump these when
+    // Anthropic ships newer revisions.
     tools.push({
-      type: 'web_fetch_20260309',
+      type: 'web_fetch_20260209',
       name: 'web_fetch',
       max_uses: opts.fetches_per_turn ?? DEFAULT_WEB_BUDGET.fetches_per_turn,
       allowed_domains: WEB_ALLOWLIST_DOMAINS,
@@ -86,6 +91,28 @@ export async function* streamChat(opts: StreamChatOpts): AsyncIterable<ChatEvent
       max_uses: opts.searches_per_turn ?? DEFAULT_WEB_BUDGET.searches_per_turn,
       allowed_domains: WEB_ALLOWLIST_DOMAINS,
     });
+  }
+
+  // Defensive role-alternation. The Messages API requires strict user/
+  // assistant alternation; consecutive same-role messages may 400, or
+  // 500 in tool-heavy configurations. This can happen when a prior turn
+  // was severed mid-stream (orphan user message with no assistant
+  // reply), or if a caller passes history that already includes the
+  // current user message. Collapse consecutive same-role entries by
+  // joining their content so no information is lost and the API gets a
+  // strictly alternating sequence.
+  const rawMessages = [
+    ...opts.history.map((h) => ({ role: h.role, content: h.content })),
+    { role: 'user' as const, content: opts.user_message },
+  ];
+  const normalizedMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
+  for (const m of rawMessages) {
+    const last = normalizedMessages[normalizedMessages.length - 1];
+    if (last && last.role === m.role) {
+      last.content = `${last.content}\n\n${m.content}`;
+    } else {
+      normalizedMessages.push({ ...m });
+    }
   }
 
   // Body uses the typed SDK shape, then casts to add untyped fields
@@ -101,10 +128,7 @@ export async function* streamChat(opts: StreamChatOpts): AsyncIterable<ChatEvent
         cache_control: { type: 'ephemeral' as const },
       },
     ],
-    messages: [
-      ...opts.history.map((h) => ({ role: h.role, content: h.content })),
-      { role: 'user' as const, content: opts.user_message },
-    ],
+    messages: normalizedMessages,
     tools: tools as unknown as Anthropic.Beta.Messages.BetaToolUnion[],
     betas: [...BETAS],
     ...(opts.attached_skill_ids.length
