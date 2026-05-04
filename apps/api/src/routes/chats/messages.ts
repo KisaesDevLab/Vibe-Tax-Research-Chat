@@ -37,6 +37,7 @@ import {
 } from '../../lib/references/retrieve.js';
 import { checkSpendCap } from '../../lib/spend-cap.js';
 import { buildResponsePdf } from '../../lib/export/response-pdf.js';
+import { buildResponseDocx } from '../../lib/export/response-docx.js';
 
 export const messagesRouter = Router({ mergeParams: true });
 messagesRouter.use(requireAuth);
@@ -646,6 +647,67 @@ messagesRouter.get('/:messageId/pdf', async (req, res) => {
   res.setHeader(
     'Content-Disposition',
     `attachment; filename="vibe-tax-research-${stamp}-${slug}.pdf"`,
+  );
+  res.setHeader('Content-Length', String(buf.byteLength));
+  res.end(buf);
+});
+
+// ── DOCX export ───────────────────────────────────────────────────────────
+// GET /api/chats/:id/messages/:messageId/docx
+// Same auth/scope/error semantics as the PDF route. Builds a Word
+// document via the `docx` library — useful for clients who want to
+// edit the assistant's draft (engagement letters, memos) before
+// sending. DOCX uses native Unicode so the WinAnsi-fallback dance the
+// PDF path needs (box-drawing chars, emoji) doesn't apply here.
+messagesRouter.get('/:messageId/docx', async (req, res) => {
+  const chatId = (req.params as unknown as MergedParams).id;
+  const parsed = pdfParamsSchema.safeParse(req.params);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request' });
+    return;
+  }
+  const db = getDb();
+  const [chat] = await db.select().from(chats).where(eq(chats.id, chatId)).limit(1);
+  if (!chat || (chat.user_id !== req.auth!.user_id && req.auth!.role !== 'admin')) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  const [m] = await db
+    .select()
+    .from(messages)
+    .where(and(eq(messages.id, parsed.data.messageId), eq(messages.chat_id, chatId)))
+    .limit(1);
+  if (!m || m.role !== 'assistant') {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+
+  let buf: Buffer;
+  try {
+    buf = await buildResponseDocx({
+      id: m.id,
+      created_at: m.created_at,
+      content: m.content,
+      model_id: m.model_id,
+      cost_usd: m.cost_usd,
+      authorities: m.authorities,
+      compliance_check: m.compliance_check,
+    });
+  } catch (err) {
+    logger.error({ err, message_id: m.id }, 'docx generation failed');
+    res.status(500).json({ error: 'docx_generation_failed', detail: (err as Error).message });
+    return;
+  }
+
+  const stamp = m.created_at.toISOString().slice(0, 10);
+  const slug = m.id.slice(0, 8);
+  res.setHeader(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  );
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="vibe-tax-research-${stamp}-${slug}.docx"`,
   );
   res.setHeader('Content-Length', String(buf.byteLength));
   res.end(buf);
