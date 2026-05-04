@@ -7,8 +7,90 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api, ApiError } from '../../lib/api';
+import { api, apiFetch, ApiError } from '../../lib/api';
 import { Markdown } from '../../components/Markdown';
+
+interface ApplyDoneResult {
+  uploaded: Array<{ slug: string; skill_id: string; version: string }>;
+  failed: Array<{ slug: string; error: string }>;
+  removed: string[];
+}
+
+interface ApplyProgress {
+  total: number;
+  done: number;
+  current: string | null;
+  failures: Array<{ slug: string; error: string }>;
+}
+
+// Read the SSE stream from /api/admin/skills/sync/apply, dispatching
+// per-event callbacks. Resolves with the terminal `done` payload, or
+// rejects on `error` event / network drop. We hand-roll instead of
+// using EventSource because EventSource doesn't support POST — and the
+// run_id has to ride in the request body, not the URL.
+async function streamApply(
+  body: { run_id: string; force?: boolean },
+  hooks: {
+    onProgress: (
+      ev:
+        | { type: 'plan'; total: number; slugs: string[] }
+        | { type: 'skill_start'; slug: string; index: number; total: number }
+        | {
+            type: 'skill_done';
+            slug: string;
+            index: number;
+            total: number;
+            ok: boolean;
+            error?: string;
+          }
+        | { type: 'removed'; slug: string },
+    ) => void;
+  },
+): Promise<ApplyDoneResult> {
+  const res = await apiFetch('/api/admin/skills/sync/apply', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.body) throw new Error('apply: no response body');
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let final: ApplyDoneResult | null = null;
+  let failure: { error: string; detail?: string } | null = null;
+
+  // Each SSE event is a block ending in `\n\n`. Within a block, lines
+  // are `event: <name>` / `data: <json>` / `:` heartbeat. Buffer until
+  // we have a full block, then dispatch.
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let sep: number;
+    while ((sep = buffer.indexOf('\n\n')) !== -1) {
+      const block = buffer.slice(0, sep);
+      buffer = buffer.slice(sep + 2);
+      let event = 'message';
+      const dataLines: string[] = [];
+      for (const line of block.split('\n')) {
+        if (line.startsWith(':')) continue; // heartbeat
+        if (line.startsWith('event: ')) event = line.slice(7).trim();
+        else if (line.startsWith('data: ')) dataLines.push(line.slice(6));
+      }
+      if (dataLines.length === 0) continue;
+      const payload = JSON.parse(dataLines.join('\n'));
+      if (event === 'progress') hooks.onProgress(payload);
+      else if (event === 'done') final = payload as ApplyDoneResult;
+      else if (event === 'error') failure = payload as { error: string; detail?: string };
+    }
+  }
+  if (failure) {
+    const err = new ApiError(failure.error === 'anthropic_key_missing' ? 412 : 502, failure);
+    throw err;
+  }
+  if (!final) throw new Error('apply: stream ended before done');
+  return final;
+}
 
 interface SkillRow {
   skill_id: string;
@@ -139,18 +221,46 @@ export function AdminSkillsPage() {
   // or when Anthropic-side state has drifted (skills deleted upstream,
   // stale skill_ids in the DB, etc.).
   const [forceReupload, setForceReupload] = useState(false);
+  const [progress, setProgress] = useState<ApplyProgress | null>(null);
+  const [applyResult, setApplyResult] = useState<ApplyDoneResult | null>(null);
   const apply = useMutation({
     mutationFn: () =>
-      api('/api/admin/skills/sync/apply', {
-        method: 'POST',
-        body: JSON.stringify({ run_id: diff!.run_id, force: forceReupload }),
-      }),
-    onSuccess: () => {
+      streamApply(
+        { run_id: diff!.run_id, force: forceReupload },
+        {
+          onProgress: (ev) => {
+            setProgress((prev) => {
+              if (ev.type === 'plan') {
+                return { total: ev.total, done: 0, current: null, failures: [] };
+              }
+              if (!prev) return prev;
+              if (ev.type === 'skill_start') {
+                return { ...prev, current: ev.slug };
+              }
+              if (ev.type === 'skill_done') {
+                return {
+                  ...prev,
+                  done: prev.done + 1,
+                  current: null,
+                  failures: ev.ok
+                    ? prev.failures
+                    : [...prev.failures, { slug: ev.slug, error: ev.error ?? 'unknown' }],
+                };
+              }
+              return prev;
+            });
+          },
+        },
+      ),
+    onSuccess: (r) => {
+      setApplyResult(r);
+      setProgress(null);
       setDiff(null);
       setForceReupload(false);
       qc.invalidateQueries({ queryKey: ['admin', 'skills'] });
     },
     onError: (e) => {
+      setProgress(null);
       // Surface 412 / 502 with a friendlier banner. The key-missing case is
       // the most common stumble in first-run setup.
       if (e instanceof ApiError && e.status === 412 && e.message === 'anthropic_key_missing') {
@@ -291,6 +401,66 @@ export function AdminSkillsPage() {
               Cancel
             </button>
           </div>
+        </div>
+      )}
+
+      {progress && (
+        <div className="mb-6 border border-ink/20 bg-white p-4 rounded">
+          <div className="font-display text-sm mb-2">
+            Uploading skills · {progress.done}/{progress.total}
+            {progress.current && (
+              <span className="font-mono text-xs text-ink/60 ml-2">{progress.current}</span>
+            )}
+          </div>
+          <div className="h-2 bg-ink/5 rounded overflow-hidden">
+            <div
+              className="h-full bg-ink transition-all"
+              style={{
+                width: `${progress.total === 0 ? 0 : (progress.done / progress.total) * 100}%`,
+              }}
+            />
+          </div>
+          {progress.failures.length > 0 && (
+            <div className="mt-3 text-xs">
+              <div className="text-oxblood font-display mb-1">
+                {progress.failures.length} failure{progress.failures.length === 1 ? '' : 's'}
+              </div>
+              <ul className="font-mono space-y-0.5 text-ink/70">
+                {progress.failures.slice(-5).map((f, i) => (
+                  <li key={`${f.slug}-${i}`}>
+                    <span className="text-oxblood">{f.slug}</span> — {f.error}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {applyResult && (
+        <div className="mb-6 border border-moss/40 bg-moss/5 p-4 rounded">
+          <div className="flex items-baseline justify-between mb-2">
+            <div className="font-display text-lg">Apply complete</div>
+            <button
+              onClick={() => setApplyResult(null)}
+              className="text-xs underline text-ink/50 hover:text-ink"
+            >
+              Dismiss
+            </button>
+          </div>
+          <div className="text-sm">
+            ✓ {applyResult.uploaded.length} uploaded · ✗ {applyResult.failed.length} failed · −{' '}
+            {applyResult.removed.length} removed
+          </div>
+          {applyResult.failed.length > 0 && (
+            <ul className="mt-3 text-xs font-mono space-y-0.5 text-ink/70">
+              {applyResult.failed.map((f) => (
+                <li key={f.slug}>
+                  <span className="text-oxblood">{f.slug}</span> — {f.error}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 

@@ -106,6 +106,13 @@ export interface ApplyResult {
   removed: string[];
 }
 
+export type ApplyProgressEvent =
+  | { type: 'plan'; total: number; slugs: string[] }
+  | { type: 'skill_start'; slug: string; index: number; total: number }
+  | { type: 'skill_done'; slug: string; index: number; total: number; ok: true }
+  | { type: 'skill_done'; slug: string; index: number; total: number; ok: false; error: string }
+  | { type: 'removed'; slug: string };
+
 export async function applyRun(opts: {
   run_id: string;
   applied_by: string;
@@ -113,6 +120,10 @@ export async function applyRun(opts: {
   // Used to recover when Anthropic-side state has drifted from the DB
   // (skill deleted upstream, partial failure mid-apply, etc.).
   force?: boolean;
+  // Optional progress sink. The route layer wires this to an SSE writer
+  // so the admin UI can show per-skill progress instead of staring at a
+  // spinner for 5+ minutes during a force-reupload of the full pack.
+  onProgress?: (event: ApplyProgressEvent) => void;
 }): Promise<ApplyResult> {
   const db = getDb();
   const [run] = await db
@@ -138,13 +149,26 @@ export async function applyRun(opts: {
   const uploaded: ApplyResult['uploaded'] = [];
   const failed: ApplyResult['failed'] = [];
 
-  for (const p of parsed) {
-    if (
-      !opts.force &&
-      !summary.added.includes(p.local_slug) &&
-      !summary.updated.includes(p.local_slug)
-    )
-      continue;
+  // Pre-compute the work plan so we can emit a `plan` event up-front and
+  // index per-skill events (i/N) for the UI's progress bar.
+  const planned = parsed.filter(
+    (p) =>
+      opts.force || summary.added.includes(p.local_slug) || summary.updated.includes(p.local_slug),
+  );
+  opts.onProgress?.({
+    type: 'plan',
+    total: planned.length,
+    slugs: planned.map((p) => p.local_slug),
+  });
+
+  for (let i = 0; i < planned.length; i++) {
+    const p = planned[i]!;
+    opts.onProgress?.({
+      type: 'skill_start',
+      slug: p.local_slug,
+      index: i,
+      total: planned.length,
+    });
     try {
       const upload = await uploadSkillToAnthropic({
         local_slug: p.local_slug,
@@ -201,10 +225,26 @@ export async function applyRun(opts: {
         skill_id: upload.skill_id,
         version: upload.anthropic_skill_version,
       });
+      opts.onProgress?.({
+        type: 'skill_done',
+        slug: p.local_slug,
+        index: i,
+        total: planned.length,
+        ok: true,
+      });
     } catch (err) {
       // Per-skill failure: record it and keep going. The sync_run row gets
       // result='partial' if anything failed, 'success' otherwise.
-      failed.push({ slug: p.local_slug, error: (err as Error).message.slice(0, 500) });
+      const errMsg = (err as Error).message.slice(0, 500);
+      failed.push({ slug: p.local_slug, error: errMsg });
+      opts.onProgress?.({
+        type: 'skill_done',
+        slug: p.local_slug,
+        index: i,
+        total: planned.length,
+        ok: false,
+        error: errMsg,
+      });
     }
   }
 
@@ -215,6 +255,7 @@ export async function applyRun(opts: {
       .update(skills)
       .set({ is_active: false, retired_at: new Date() })
       .where(eq(skills.local_slug, slug));
+    opts.onProgress?.({ type: 'removed', slug });
   }
 
   await db

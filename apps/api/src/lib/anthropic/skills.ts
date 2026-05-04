@@ -18,6 +18,11 @@ import { logger } from '../logger.js';
 const SKILLS_BETA = 'skills-2025-10-02';
 const ANTHROPIC_VERSION = '2023-06-01';
 const SKILLS_ENDPOINT = 'https://api.anthropic.com/v1/skills';
+// Cap each upload at 120s. Without a timeout, a single stalled upload
+// (network glitch, Anthropic-side hiccup, rate-limit retry burning
+// keepalive) hangs the whole apply loop indefinitely — the admin UI
+// shows "Applying…" forever because the per-skill fetch never resolves.
+const UPLOAD_TIMEOUT_MS = 120_000;
 
 export interface UploadResult {
   skill_id: string;
@@ -88,6 +93,8 @@ export async function uploadSkillToAnthropic(opts: {
     fd.append('files[]', blob, `${folder}/${f.rel_path}`);
   }
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
   let res: Response;
   try {
     res = await fetch(SKILLS_ENDPOINT, {
@@ -100,10 +107,20 @@ export async function uploadSkillToAnthropic(opts: {
         // correct multipart/form-data; boundary header automatically.
       },
       body: fd,
+      signal: controller.signal,
     });
   } catch (err) {
+    if ((err as Error).name === 'AbortError') {
+      logger.error(
+        { slug: opts.local_slug, timeout_ms: UPLOAD_TIMEOUT_MS },
+        'skill upload timed out',
+      );
+      throw new Error(`skill upload ${opts.local_slug} timed out after ${UPLOAD_TIMEOUT_MS}ms`);
+    }
     logger.error({ err, slug: opts.local_slug }, 'skill upload network failure');
     throw err;
+  } finally {
+    clearTimeout(timer);
   }
 
   if (!res.ok) {

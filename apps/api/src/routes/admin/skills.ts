@@ -59,26 +59,59 @@ const applySchema = z.object({
   force: z.boolean().optional(),
 });
 
+// Streamed apply: emits per-skill progress as SSE so the admin UI can
+// show "Applied i/N: <slug>" instead of staring at a spinner for the
+// 5+ minutes a force-reupload of the full pack takes. The terminal
+// `done` event carries the same payload the old JSON response did, so
+// the UI's success-handler logic is unchanged.
 adminSkillsRouter.post('/sync/apply', async (req, res) => {
   const parsed = applySchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: 'bad_request' });
     return;
   }
+
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+  const flush = (res as unknown as { flush?: () => void }).flush;
+  const send = (event: string, data: unknown): void => {
+    if (res.writableEnded) return;
+    res.write(`event: ${event}\n`);
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+    if (typeof flush === 'function') flush.call(res);
+  };
+
+  // Heartbeat keeps reverse proxies (nginx 600s, Caddy default) from
+  // closing the idle connection between slow uploads. SSE comment lines
+  // start with `:` and are ignored by the client reader.
+  const heartbeat = setInterval(() => {
+    if (res.writableEnded) return;
+    res.write(`: keepalive ${Date.now()}\n\n`);
+    if (typeof flush === 'function') flush.call(res);
+  }, 15000);
+  res.on('close', () => clearInterval(heartbeat));
+  res.on('finish', () => clearInterval(heartbeat));
+
   let result;
   try {
     result = await applyRun({
       run_id: parsed.data.run_id,
       applied_by: req.auth!.user_id,
       force: parsed.data.force,
+      onProgress: (event) => send('progress', event),
     });
   } catch (err) {
     const msg = (err as Error).message ?? '';
     if (msg.toLowerCase().includes('anthropic api key is not configured')) {
-      res.status(412).json({ error: 'anthropic_key_missing' });
-      return;
+      send('error', { error: 'anthropic_key_missing' });
+    } else {
+      send('error', { error: 'apply_failed', detail: msg.slice(0, 500) });
     }
-    res.status(502).json({ error: 'apply_failed', detail: msg.slice(0, 500) });
+    clearInterval(heartbeat);
+    res.end();
     return;
   }
   await audit({
@@ -94,8 +127,9 @@ adminSkillsRouter.post('/sync/apply', async (req, res) => {
     },
     ip: req.ip,
   });
-  // Always 200 with the per-skill outcome — the UI renders the partial state.
-  res.json(result);
+  send('done', result);
+  clearInterval(heartbeat);
+  res.end();
 });
 
 const rollbackSchema = z.object({ skill_id: z.string(), version_id: z.string().uuid() });
