@@ -250,8 +250,28 @@ const UNICODE_FALLBACKS: Array<[RegExp, string]> = [
   [/[\u{FE00}-\u{FE0F}\u{200D}\u{200B}\u{200C}]/gu, ''],
 ];
 
-function sanitizeForHelvetica(s: string): string {
-  let out = s;
+// Coerce any value to a string at the sanitizer entry. Authorities and
+// compliance_check are JSONB columns populated from the LLM's sidecar
+// output, which is not strictly schema-validated — a rogue
+// `{"cite": 1234}` or `{"note": {…}}` would otherwise crash the whole
+// PDF with "out.replace is not a function". null/undefined become "",
+// everything else goes through String() so numbers, booleans, and
+// stringified objects render readably instead of vanishing.
+function toRenderString(s: unknown): string {
+  if (typeof s === 'string') return s;
+  if (s == null) return '';
+  if (typeof s === 'object') {
+    try {
+      return JSON.stringify(s);
+    } catch {
+      return '';
+    }
+  }
+  return String(s);
+}
+
+function sanitizeForHelvetica(s: unknown): string {
+  let out = toRenderString(s);
   for (const [re, rep] of UNICODE_FALLBACKS) out = out.replace(re, rep);
   // Collapse runs of whitespace that emoji-stripping may have left behind.
   return out.replace(/[ \t]{2,}/g, ' ').trim();
@@ -261,8 +281,8 @@ function sanitizeForHelvetica(s: string): string {
 // alignment matters in ASCII-art code blocks (decision trees, formula
 // tables, indented snippets). Trailing whitespace is trimmed but
 // internal runs of spaces are kept verbatim.
-function sanitizeForCode(s: string): string {
-  let out = s;
+function sanitizeForCode(s: unknown): string {
+  let out = toRenderString(s);
   for (const [re, rep] of UNICODE_FALLBACKS) out = out.replace(re, rep);
   return out.replace(/\s+$/, '');
 }
@@ -272,10 +292,11 @@ function sanitizeForCode(s: string): string {
 // chew on bold markers. The `continued: true` path through PDFKit's
 // wrapper has stack-overflowed on long inline-emphasis input historically,
 // so we render bold/italic at the block level (whole paragraphs, whole
-// table cells) rather than mid-string.
-function stripInline(s: string): string {
+// table cells) rather than mid-string. Tolerates non-string input via
+// the same coercion sanitizeForHelvetica uses.
+function stripInline(s: unknown): string {
   return sanitizeForHelvetica(
-    s
+    toRenderString(s)
       .replace(/\*\*([^*]+)\*\*/g, '$1')
       .replace(/\*([^*\n]+?)\*/g, '$1')
       .replace(/`([^`]+)`/g, '$1'),
