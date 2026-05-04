@@ -228,6 +228,17 @@ const UNICODE_FALLBACKS: Array<[RegExp, string]> = [
   [/[✗✘☒]/gu, ''],
   [/[⚠]/gu, ''],
   [/[★☆]/gu, '*'],
+  // Box-drawing characters (U+2500-U+257F). Common in ASCII-art tables
+  // / decision trees Claude emits inside fenced code blocks. Map by
+  // shape so a horizontal divider stays a divider, a vertical bar stays
+  // a bar, and corners/intersections collapse to `+`. Without this they
+  // render as garbage glyphs ("%%%%") in WinAnsi-encoded fonts.
+  [/[─━┄┅┈┉╌╍═]/gu, '-'],
+  [/[│┃┆┇┊┋╎╏║]/gu, '|'],
+  [/[┌┍┎┏┐┑┒┓└┕┖┗┘┙┚┛├┝┞┟┠┡┢┣┤┥┦┧┨┩┪┫┬┭┮┯┰┱┲┳┴┵┶┷┸┹┺┻┼┽┾┿╀╁╂╃╄╅╆╇╈╉╊╋╔╗╚╝╠╣╦╩╬]/gu, '+'],
+  // Catch-all for the remaining dotted / dashed / partial glyphs in the
+  // box-drawing block plus the block-elements block (U+2580-U+259F).
+  [/[\u{2500}-\u{259F}]/gu, ''],
   // Emoji + miscellaneous symbol/dingbat blocks. Strip rather than guess.
   [/[\u{1F300}-\u{1FAFF}]/gu, ''],
   [/[\u{1F600}-\u{1F64F}]/gu, ''],
@@ -244,6 +255,16 @@ function sanitizeForHelvetica(s: string): string {
   for (const [re, rep] of UNICODE_FALLBACKS) out = out.replace(re, rep);
   // Collapse runs of whitespace that emoji-stripping may have left behind.
   return out.replace(/[ \t]{2,}/g, ' ').trim();
+}
+
+// Same fallbacks as sanitizeForHelvetica but preserves whitespace, since
+// alignment matters in ASCII-art code blocks (decision trees, formula
+// tables, indented snippets). Trailing whitespace is trimmed but
+// internal runs of spaces are kept verbatim.
+function sanitizeForCode(s: string): string {
+  let out = s;
+  for (const [re, rep] of UNICODE_FALLBACKS) out = out.replace(re, rep);
+  return out.replace(/\s+$/, '');
 }
 
 // Strip inline markdown that we don't try to render specially. Order
@@ -270,6 +291,24 @@ function renderMarkdown(doc: PDFKit.PDFDocument, md: string): void {
     if (line.trim() === '') {
       doc.moveDown(0.5);
       i++;
+      continue;
+    }
+
+    // Fenced code block (``` … ```). Must be detected before the heading
+    // / paragraph branches; otherwise the inline-backtick stripper in
+    // stripInline() chews one pair off the triple-fence and the
+    // paragraph collector joins the body lines with spaces — destroying
+    // the ASCII alignment that makes tax-research decision trees and
+    // formula tables readable.
+    if (/^\s*```/.test(line)) {
+      const codeLines: string[] = [];
+      i++; // skip opening fence
+      while (i < lines.length && !/^\s*```\s*$/.test(lines[i]!)) {
+        codeLines.push(lines[i]!);
+        i++;
+      }
+      if (i < lines.length) i++; // skip closing fence (if present)
+      renderCodeBlock(doc, codeLines);
       continue;
     }
 
@@ -369,6 +408,7 @@ function renderMarkdown(doc: PDFKit.PDFDocument, md: string): void {
         /^---+\s*$/.test(nxt.trim()) ||
         /^(\s*)([*-]|\d+\.)\s+/.test(nxt) ||
         /^>\s+/.test(nxt) ||
+        /^\s*```/.test(nxt) ||
         // Stop the paragraph if a table starts on the next line.
         (lines[j + 1] !== undefined &&
           nxt.includes('|') &&
@@ -394,6 +434,68 @@ function renderMarkdown(doc: PDFKit.PDFDocument, md: string): void {
     doc.moveDown(0.4);
     i = j;
   }
+}
+
+// Fenced code block renderer. Uses Courier (one of PDFKit's bundled 14
+// fonts) so column alignment in decision trees / formula tables is
+// preserved character-by-character. We render line-by-line at absolute
+// coordinates inside a tinted rectangle, with the rectangle measured
+// up-front so we know whether a page break is needed before drawing
+// anything (avoids the row-of-cells-on-the-edge case where the bg fill
+// stops at the page boundary but the text continues on the next page).
+const CODE_FONT_SIZE = 9;
+const CODE_PAD_X = 8;
+const CODE_PAD_Y = 6;
+const CODE_FILL = '#f5efe3';
+
+function renderCodeBlock(doc: PDFKit.PDFDocument, codeLines: string[]): void {
+  doc.moveDown(0.3);
+  const left = doc.page.margins.left;
+  const usable = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+  const innerWidth = usable - CODE_PAD_X * 2;
+
+  doc.font('Courier').fontSize(CODE_FONT_SIZE);
+  const lineH = doc.heightOfString('M', { width: innerWidth });
+  // Pre-measure each line so a long line that wraps in Courier still
+  // contributes its full wrapped height to the block.
+  const heights = codeLines.map((raw) => {
+    const text = sanitizeForCode(raw);
+    if (text.length === 0) return lineH;
+    return doc.heightOfString(text, { width: innerWidth });
+  });
+  const totalContent = heights.reduce((a, b) => a + b, 0);
+  const totalHeight = totalContent + CODE_PAD_Y * 2;
+
+  // Page-break check: if the whole block doesn't fit, push it to a new
+  // page rather than splitting (these blocks are typically short — 5-15
+  // lines — and splitting an ASCII-art tree across pages defeats the
+  // purpose of preserving alignment).
+  const bottomLimit = doc.page.height - doc.page.margins.bottom;
+  if (doc.y + totalHeight > bottomLimit) {
+    doc.addPage();
+  }
+
+  const blockY = doc.y;
+  doc.save();
+  doc.rect(left, blockY, usable, totalHeight).fill(CODE_FILL);
+  doc.restore();
+
+  let y = blockY + CODE_PAD_Y;
+  doc.font('Courier').fontSize(CODE_FONT_SIZE).fillColor('#1a1714');
+  for (let k = 0; k < codeLines.length; k++) {
+    const text = sanitizeForCode(codeLines[k]!);
+    // Empty lines still consume one line of vertical space — pass a
+    // single space so PDFKit advances y without drawing anything.
+    doc.text(text.length === 0 ? ' ' : text, left + CODE_PAD_X, y, {
+      width: innerWidth,
+      lineBreak: true,
+    });
+    y += heights[k]!;
+  }
+
+  doc.y = blockY + totalHeight + 4;
+  doc.x = left;
+  doc.moveDown(0.3);
 }
 
 function sectionHeading(doc: PDFKit.PDFDocument, label: string): void {
