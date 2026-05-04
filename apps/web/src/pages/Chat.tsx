@@ -692,7 +692,14 @@ function MessageActions({ message: m }: { message: MessageDTO }) {
       await downloadMessagePdf(m, messageId);
     } catch (err) {
       console.error('pdf export failed', err);
-      alert(`PDF export failed: ${(err as Error).message}`);
+      // The api returns `{ error: 'pdf_generation_failed', detail: <msg> }`.
+      // ApiError sets .message from `error` only, so the actual diagnostic
+      // (e.g., "Cannot read properties of undefined", "stack overflow")
+      // lives on .body.detail. Surface both so the user can paste the real
+      // message into a bug report.
+      const e = err as Error & { body?: { detail?: string } };
+      const detail = e.body?.detail ? `\n\n${e.body.detail}` : '';
+      alert(`PDF export failed: ${e.message}${detail}`);
     } finally {
       setPdfBusy(false);
     }
