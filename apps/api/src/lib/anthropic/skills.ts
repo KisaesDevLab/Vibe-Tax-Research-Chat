@@ -51,9 +51,21 @@ export async function uploadSkillToAnthropic(opts: {
   display_name: string;
   description: string;
   skill_dir: string;
+  // Repo root that holds a shared/ folder of cross-skill rule files
+  // (compliance.md, citation-discipline.md, follow-up-routing.md, etc.).
+  // The pack-skill SKILL.md files reference these by path; without them in
+  // the bundle the model has nothing to read when an instruction says
+  // "emit the block per shared/follow-up-routing.md" and silently skips.
+  // Optional because custom-skill uploads have no parent repo.
+  repo_dir?: string;
 }): Promise<UploadResult> {
   const { api_key } = await getAnthropic();
-  const files = await collectFiles(opts.skill_dir);
+  const skillFiles = await collectFiles(opts.skill_dir);
+  const sharedFiles = opts.repo_dir ? await collectRepoSharedFiles(opts.repo_dir) : [];
+  // Per-skill files win on collision (defensive — no skill in the pack
+  // currently ships its own shared/, but a future one could).
+  const seen = new Set(skillFiles.map((f) => f.rel_path));
+  const files = [...skillFiles, ...sharedFiles.filter((f) => !seen.has(f.rel_path))];
 
   if (files.length === 0) {
     throw new Error(`skill ${opts.local_slug} has no files to upload`);
@@ -182,6 +194,29 @@ function sanitizeSkillMd(bytes: Buffer): Buffer {
   // but with the cleaned text.
   const dumped = YAML.stringify(parsed, { lineWidth: 0 });
   return Buffer.from(`${openFence}${dumped.trimEnd()}${closeFence}${body}`, 'utf-8');
+}
+
+// Walk <repo_dir>/shared/ and return its files keyed by `shared/<name>` so
+// they land alongside SKILL.md in the upload bundle. Only direct children
+// of shared/ (no nested dirs) — the existing pack only puts flat files
+// there, and a deeper layout would need an explicit decision on bundling
+// rules. Tolerates a missing shared/ for repos that don't ship one.
+async function collectRepoSharedFiles(repo_dir: string): Promise<CollectedFile[]> {
+  const sharedDir = path.join(repo_dir, 'shared');
+  let entries: import('node:fs').Dirent[];
+  try {
+    entries = await fs.readdir(sharedDir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const out: CollectedFile[] = [];
+  for (const e of entries) {
+    if (!e.isFile()) continue;
+    const full = path.join(sharedDir, e.name);
+    const bytes = await fs.readFile(full);
+    out.push({ rel_path: `shared/${e.name}`, bytes });
+  }
+  return out;
 }
 
 async function collectFiles(dir: string, rel = ''): Promise<CollectedFile[]> {

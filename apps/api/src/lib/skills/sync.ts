@@ -175,6 +175,7 @@ export async function applyRun(opts: {
         display_name: p.display_name,
         description: p.description,
         skill_dir: dirs.find((d) => d.endsWith(p.github_path))!,
+        repo_dir: repo.repo_dir,
       });
 
       // Anthropic issues a fresh `skill_id` on every force re-upload (and any
