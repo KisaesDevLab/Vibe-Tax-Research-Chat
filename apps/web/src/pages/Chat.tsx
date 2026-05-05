@@ -8,8 +8,10 @@ import { CostLedger } from '../components/CostLedger';
 import { AuthoritiesPanel } from '../components/panels/AuthoritiesPanel';
 import { CompliancePanel } from '../components/panels/CompliancePanel';
 import { SkillsPanel } from '../components/panels/SkillsPanel';
+import { FollowUpActions } from '../components/panels/FollowUpActions';
 import { useChatStream, type StreamingMessage } from '../hooks/useChatStream';
 import { api, apiFetch, ApiError } from '../lib/api';
+import { extractFollowUpActions, type FollowUpVerb } from '../lib/follow-up';
 import type { ChatDTO, MessageDTO } from '@vibe/shared';
 
 interface AttachmentDTO {
@@ -267,6 +269,7 @@ function ChatView({ chatId }: { chatId: string }) {
                     message={m}
                     priorUserContent={priorUser}
                     onResend={(text) => void send(chatId, text)}
+                    onFollowUp={(verb) => void send(chatId, verb)}
                   />
                 );
               });
@@ -309,6 +312,22 @@ function ChatView({ chatId }: { chatId: string }) {
                   {streaming.error && (
                     <div className="text-oxblood text-sm mt-2">{streaming.error}</div>
                   )}
+                  {streaming.done &&
+                    (() => {
+                      // The persisted message that takes over after refetch
+                      // will render its own chips. This brief render covers
+                      // the gap between `done` flipping and refetch landing,
+                      // so the user never sees an answer without follow-ups.
+                      const actions = extractFollowUpActions(streaming.text);
+                      if (!actions) return null;
+                      return (
+                        <FollowUpActions
+                          verbs={actions.verbs}
+                          conclusionEcho={actions.conclusionEcho}
+                          onPick={(verb) => void send(chatId, verb)}
+                        />
+                      );
+                    })()}
                 </div>
               </>
             )}
@@ -590,10 +609,12 @@ function MessageBlock({
   message: m,
   priorUserContent,
   onResend,
+  onFollowUp,
 }: {
   message: MessageDTO;
   priorUserContent?: string | null;
   onResend?: (text: string) => void;
+  onFollowUp?: (verb: FollowUpVerb) => void;
 }) {
   if (m.role === 'user') {
     return (
@@ -652,6 +673,17 @@ function MessageBlock({
       </div>
       <SkillsPanel skills={m.skills} />
       <CostLedger usage={m.usage} cost_usd={m.cost_usd} model_id={m.model_id} />
+      {(() => {
+        const actions = extractFollowUpActions(m.content);
+        if (!actions || !onFollowUp) return null;
+        return (
+          <FollowUpActions
+            verbs={actions.verbs}
+            conclusionEcho={actions.conclusionEcho}
+            onPick={onFollowUp}
+          />
+        );
+      })()}
     </div>
   );
 }
