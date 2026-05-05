@@ -87,6 +87,40 @@ This skill has no follow-ups.
     expect(r!.verbs).toEqual(['memo']);
   });
 
+  it('matches the paraphrased single-sentence form the model emits in practice', () => {
+    // Real example captured from a tax-research-federal answer (gambling losses)
+    // — model omits the spec heading and inlines the verbs in one sentence.
+    const paraphrased = `
+some long answer body...
+
+---
+
+**What to do next?** Reply with one of: \`memo\` (formal research memo) | \`plan\` (client planning actions) | \`return\` (carry to the 1040 return process) | \`open-point\` (log as open point) | \`workpaper\` (build a workpaper scaffold).
+`;
+    const r = extractFollowUpActions(paraphrased);
+    expect(r).not.toBeNull();
+    expect(r!.verbs).toEqual(['memo', 'open-point', 'plan', 'workpaper', 'return']);
+  });
+
+  it('matches a "Follow-ups:" anchor with inline verbs', () => {
+    const inline = `
+conclusion text.
+
+Follow-ups: \`memo\`, \`open-point\`, or \`plan\`.
+`;
+    const r = extractFollowUpActions(inline);
+    expect(r!.verbs).toEqual(['memo', 'open-point', 'plan']);
+  });
+
+  it('does NOT fire on a stray inline backticked verb without an anchor', () => {
+    const stray = `
+The taxpayer drafted a \`memo\` last year and we should review it.
+
+Conclusion: position is REPORTABLE.
+`;
+    expect(extractFollowUpActions(stray)).toBeNull();
+  });
+
   it('drops the placeholder echo template that uses angle brackets', () => {
     const tmpl = `
 ## Next steps (follow-up routing)
