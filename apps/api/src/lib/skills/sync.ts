@@ -177,6 +177,21 @@ export async function applyRun(opts: {
         skill_dir: dirs.find((d) => d.endsWith(p.github_path))!,
       });
 
+      // Anthropic issues a fresh `skill_id` on every force re-upload (and any
+      // time the upstream skill was deleted and re-created). The conflict
+      // target below is the PK `skill_id`, so a row with the same `local_slug`
+      // but a different (old) `skill_id` would trip the unique-on-local_slug
+      // constraint. Delete it first; the FK on skill_versions cascades, which
+      // is fine because the old skill_id no longer exists on Anthropic's side.
+      const [existing] = await db
+        .select({ skill_id: skills.skill_id })
+        .from(skills)
+        .where(eq(skills.local_slug, p.local_slug))
+        .limit(1);
+      if (existing && existing.skill_id !== upload.skill_id) {
+        await db.delete(skills).where(eq(skills.local_slug, p.local_slug));
+      }
+
       // Mark prior versions superseded
       await db
         .update(skill_versions)
