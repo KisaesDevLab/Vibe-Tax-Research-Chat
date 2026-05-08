@@ -23,6 +23,7 @@ Implement `BUILD_PLAN.md` Phases 1 through 29 sequentially. Tag `v1.0.0` when Ph
    c. Continue. Do not stop. Do not ping the user.
    ```markdown
    ## Phase N — <topic>
+
    **Question:** <ambiguity>
    **Default applied:** <what you did>
    **Rationale:** <one sentence>
@@ -38,7 +39,7 @@ Implement `BUILD_PLAN.md` Phases 1 through 29 sequentially. Tag `v1.0.0` when Ph
 
 - pnpm workspaces: `apps/web`, `apps/api`, `packages/db`, `packages/shared`
 - Frontend: React 18 + TypeScript + Vite + Tailwind + TanStack Query + Zustand
-- Backend: Node 20 + Express + TypeScript + Pino
+- Backend: Node 24 + Express + TypeScript + Pino
 - DB: Drizzle ORM + PostgreSQL 16
 - Cache/queue: Redis 7 + BullMQ
 - AI: `@anthropic-ai/sdk` with `betas: ["code-execution-2025-08-25", "skills-2025-10-02"]`
@@ -60,6 +61,7 @@ Do not introduce other major dependencies (no Next.js, no Prisma, no Yjs, no tRP
 ## Reference data (per BUILD_PLAN.md §6)
 
 The April 2026 Anthropic pricing seed:
+
 - `claude-opus-4-7`: $5 / $25 per MTok, tokenizer factor 1.18
 - `claude-opus-4-6`: $5 / $25 per MTok
 - `claude-sonnet-4-6`: $3 / $15 per MTok (default model)
@@ -74,6 +76,7 @@ The April 2026 Anthropic pricing seed:
 ## Web-resource allowlist (Phase 16)
 
 Locked-domain list for `web_fetch`:
+
 ```
 uscode.house.gov         (USLM, IRC sections, Popular Name Tool, Classification Tables)
 ecfr.gov                 (Treasury Regulations)

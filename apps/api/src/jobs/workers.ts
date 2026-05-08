@@ -27,7 +27,7 @@ type WorkerHandler = (job: Job<any>) => Promise<unknown>;
 
 // Wrap Worker construction so every queue gets uniform error handling. If a
 // job throws, BullMQ marks it failed; we log it and DO NOT let it bubble to
-// process-level unhandledRejection (which Node 20 treats as fatal).
+// process-level unhandledRejection (which modern Node treats as fatal).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function createWorker(name: string, handler: WorkerHandler): Worker<any> {
   const w = new Worker(name, handler, { connection });
