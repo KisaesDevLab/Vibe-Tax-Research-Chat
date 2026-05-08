@@ -87,14 +87,24 @@ function stripSidecars(text: string): string {
 
 export function ChatPage() {
   const { chatId } = useParams<{ chatId?: string }>();
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   if (!chatId) {
     return (
-      <div className="grid grid-cols-[260px_1fr] h-screen overflow-hidden">
-        <ChatSidebar />
-        <div className="grid place-items-center text-ink/50">
-          <div className="text-center">
-            <div className="font-display text-2xl mb-2">Start a new research thread</div>
-            <div className="text-sm">Select &quot;+ New&quot; in the sidebar.</div>
+      <div className="flex h-dvh overflow-hidden bg-paper">
+        <ChatSidebar mobileOpen={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)} />
+        <div className="flex-1 flex flex-col min-h-0">
+          <header className="md:hidden shrink-0 flex items-center px-4 py-3 border-b border-ink/10">
+            <MobileSidebarToggle onOpen={() => setMobileSidebarOpen(true)} />
+            <div className="ml-3 font-display text-lg">Vibe</div>
+          </header>
+          <div className="flex-1 grid place-items-center text-ink/50 px-4">
+            <div className="text-center">
+              <div className="font-display text-2xl mb-2">Start a new research thread</div>
+              <div className="text-sm">
+                Select &quot;+ New&quot; <span className="md:hidden">from the menu</span>
+                <span className="hidden md:inline">in the sidebar</span>.
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -103,8 +113,39 @@ export function ChatPage() {
   return <ChatView chatId={chatId} />;
 }
 
+// Inline hamburger — only rendered behind a `md:hidden` wrapper, so its
+// own classes don't carry that prefix. Kept as its own component so both
+// the empty state and the populated chat view share one icon.
+function MobileSidebarToggle({ onOpen }: { onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="-ml-1 p-1 text-ink/70 hover:text-ink"
+      aria-label="Open chat list"
+    >
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <line x1="3" y1="12" x2="21" y2="12" />
+        <line x1="3" y1="18" x2="21" y2="18" />
+      </svg>
+    </button>
+  );
+}
+
 function ChatView({ chatId }: { chatId: string }) {
   const [draft, setDraft] = useState('');
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { streaming, send, abort, reset } = useChatStream();
   const fileInputRef = useRef<HTMLInputElement>(null);
   // In-flight uploads. They live in local state until the POST resolves;
@@ -205,13 +246,17 @@ function ChatView({ chatId }: { chatId: string }) {
   }, [streaming]);
 
   return (
-    // h-screen + overflow-hidden on the outer grid so the sidebar and chat
-    // column are each capped at the viewport. The chat column is a flex
-    // column with min-h-0 (the magic that lets a flex child actually scroll
-    // instead of forcing the parent taller), header and form are
-    // shrink-to-content, and only <main> scrolls between them.
+    // h-dvh + overflow-hidden so the sidebar and chat column are each
+    // capped at the viewport. h-dvh (vs h-screen / 100vh) tracks the
+    // *visible* viewport on iOS Safari so the composer doesn't get hidden
+    // behind the URL bar. Mobile (<md): sidebar is an off-canvas drawer
+    // and the main column takes the full width. md+: sidebar is inline.
+    // The chat column is a flex column with min-h-0 (the magic that lets
+    // a flex child actually scroll instead of forcing the parent taller),
+    // header and form are shrink-to-content, and only <main> scrolls
+    // between them.
     <div
-      className="grid grid-cols-[260px_1fr] h-screen overflow-hidden bg-paper"
+      className="flex h-dvh overflow-hidden bg-paper"
       onDragOver={(e) => {
         // Capture drag-over at the chat-column level so users can drop
         // anywhere on the page and have the file land on the active chat.
@@ -233,25 +278,49 @@ function ChatView({ chatId }: { chatId: string }) {
         }
       }}
     >
-      <ChatSidebar />
-      <div className="flex flex-col min-h-0 relative">
+      <ChatSidebar mobileOpen={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)} />
+      <div className="flex-1 flex flex-col min-h-0 relative">
         {dragOver && (
           <div className="absolute inset-0 z-20 bg-gold/10 border-2 border-dashed border-gold rounded-md grid place-items-center pointer-events-none">
             <div className="font-display text-xl text-ink/70">Drop to attach to this chat</div>
           </div>
         )}
-        <header className="shrink-0 px-7 py-4 border-b border-ink/10 flex items-center justify-between">
-          <div className="font-display text-lg">{data?.chat.title ?? 'Loading…'}</div>
-          <div className="flex items-center gap-4">
+        <header className="shrink-0 px-4 sm:px-6 md:px-7 py-3 md:py-4 border-b border-ink/10 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setMobileSidebarOpen(true)}
+            className="md:hidden -ml-1 p-1 text-ink/70 hover:text-ink"
+            aria-label="Open chat list"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+          <div className="font-display text-base md:text-lg truncate flex-1 min-w-0">
+            {data?.chat.title ?? 'Loading…'}
+          </div>
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             <ReferenceLibraryToggle chat={data?.chat} onChange={() => void refetch()} />
-            <div className="font-mono text-xs text-ink/50">
+            <div className="font-mono text-xs text-ink/50 hidden sm:block">
               {data?.messages.length ?? 0} messages
             </div>
           </div>
         </header>
 
         <main className="flex-1 min-h-0 overflow-y-auto">
-          <div className="px-7 py-6 max-w-4xl w-full">
+          <div className="px-4 sm:px-6 md:px-7 py-6 max-w-4xl w-full">
             {(() => {
               // Walk the messages forward and remember each system_note's
               // immediately-preceding user message. That's what the
@@ -334,7 +403,10 @@ function ChatView({ chatId }: { chatId: string }) {
           </div>
         </main>
 
-        <form onSubmit={onSubmit} className="shrink-0 px-7 py-4 border-t border-ink/10 bg-paper">
+        <form
+          onSubmit={onSubmit}
+          className="shrink-0 px-4 sm:px-6 md:px-7 py-3 md:py-4 border-t border-ink/10 bg-paper"
+        >
           <div className="max-w-4xl w-full">
             {(attachments.length > 0 || uploads.length > 0 || attachmentError) && (
               <div className="mb-2 flex flex-wrap items-center gap-2">

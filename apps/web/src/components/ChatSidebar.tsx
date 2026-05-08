@@ -6,7 +6,16 @@ import { api } from '../lib/api';
 import { useFontSize } from '../lib/font-size';
 import type { ChatDTO } from '@vibe/shared';
 
-export function ChatSidebar() {
+interface ChatSidebarProps {
+  // Mobile-drawer wiring. On screens < md the sidebar is rendered as a
+  // fixed off-canvas panel; the parent owns the open/close state so the
+  // header's hamburger and the in-sidebar nav links can both flip it.
+  // Desktop (md+) ignores both props and shows the sidebar inline.
+  mobileOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function ChatSidebar({ mobileOpen = false, onClose }: ChatSidebarProps = {}) {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const { chatId } = useParams<{ chatId?: string }>();
@@ -20,6 +29,7 @@ export function ChatSidebar() {
     mutationFn: () => api<{ chat: ChatDTO }>('/api/chats', { method: 'POST' }),
     onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: ['chats'] });
+      onClose?.();
       navigate(`/chat/${r.chat.id}`);
     },
   });
@@ -27,45 +37,63 @@ export function ChatSidebar() {
   const groups = useMemo(() => groupChats(data?.chats ?? []), [data]);
 
   return (
-    <aside className="border-r border-ink/10 w-[260px] h-full flex flex-col bg-paper min-h-0">
-      <div className="p-3 border-b border-ink/10 flex items-center justify-between">
-        <Link to="/chat" className="font-display tracking-tight">
-          Vibe
-        </Link>
-        <button
-          onClick={() => create.mutate()}
-          className="text-xs px-2 py-1 bg-ink text-paper rounded"
-        >
-          + New
-        </button>
-      </div>
-      <div className="overflow-y-auto flex-1">
-        {(['Today', 'Yesterday', 'Earlier'] as const).map((g) => {
-          const items = groups[g];
-          if (!items || items.length === 0) return null;
-          return (
-            <div key={g} className="mt-2">
-              <div className="px-3 text-[10px] uppercase tracking-wider text-ink/40 mb-1">{g}</div>
-              {items.map((c) => (
-                <Link
-                  key={c.id}
-                  to={`/chat/${c.id}`}
-                  className={`block px-3 py-1.5 text-sm truncate hover:bg-ink/5 ${chatId === c.id ? 'bg-ink/10' : ''}`}
-                >
-                  {c.title}
-                </Link>
-              ))}
-            </div>
-          );
-        })}
-      </div>
-      <div className="p-3 border-t border-ink/10 text-xs text-ink/40 space-y-2">
-        <FontSizeSelector />
-        <Link to="/admin" className="underline">
-          Admin
-        </Link>
-      </div>
-    </aside>
+    <>
+      {/* Mobile-only backdrop. md:hidden keeps it out of the desktop layout
+          entirely. Tapping the backdrop closes the drawer. */}
+      <div
+        className={`fixed inset-0 z-20 bg-ink/30 md:hidden transition-opacity duration-200 ${
+          mobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={onClose}
+        aria-hidden
+      />
+      <aside
+        className={`fixed inset-y-0 left-0 z-30 w-[260px] bg-paper border-r border-ink/10 flex flex-col min-h-0 transform transition-transform duration-200 md:static md:flex-none md:translate-x-0 ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
+      >
+        <div className="p-3 border-b border-ink/10 flex items-center justify-between">
+          <Link to="/chat" className="font-display tracking-tight" onClick={onClose}>
+            Vibe
+          </Link>
+          <button
+            onClick={() => create.mutate()}
+            className="text-xs px-2 py-1 bg-ink text-paper rounded"
+          >
+            + New
+          </button>
+        </div>
+        <div className="overflow-y-auto flex-1">
+          {(['Today', 'Yesterday', 'Earlier'] as const).map((g) => {
+            const items = groups[g];
+            if (!items || items.length === 0) return null;
+            return (
+              <div key={g} className="mt-2">
+                <div className="px-3 text-[10px] uppercase tracking-wider text-ink/40 mb-1">
+                  {g}
+                </div>
+                {items.map((c) => (
+                  <Link
+                    key={c.id}
+                    to={`/chat/${c.id}`}
+                    onClick={onClose}
+                    className={`block px-3 py-1.5 text-sm truncate hover:bg-ink/5 ${chatId === c.id ? 'bg-ink/10' : ''}`}
+                  >
+                    {c.title}
+                  </Link>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+        <div className="p-3 border-t border-ink/10 text-xs text-ink/40 space-y-2">
+          <FontSizeSelector />
+          <Link to="/admin" className="underline" onClick={onClose}>
+            Admin
+          </Link>
+        </div>
+      </aside>
+    </>
   );
 }
 

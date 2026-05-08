@@ -85,8 +85,8 @@ export function SetupPage() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center bg-paper">
-      <div className="bg-white border border-ink/10 rounded p-8 w-[480px]">
+    <div className="min-h-screen grid place-items-center bg-paper px-4 py-8">
+      <div className="bg-white border border-ink/10 rounded p-6 sm:p-8 w-full max-w-[480px]">
         <h1 className="font-display text-2xl mb-2">First-run setup</h1>
         <p className="text-ink/60 text-sm mb-6">Three steps. Should take under five minutes.</p>
 

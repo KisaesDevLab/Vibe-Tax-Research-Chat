@@ -50,8 +50,8 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center bg-paper">
-      <div className="w-[380px] bg-white border border-ink/10 rounded-md p-8 shadow-sm">
+    <div className="min-h-screen grid place-items-center bg-paper px-4 py-8">
+      <div className="w-full max-w-[380px] bg-white border border-ink/10 rounded-md p-6 sm:p-8 shadow-sm">
         <h1 className="font-display text-3xl mb-1">Vibe Tax Research</h1>
         <p className="text-ink/60 text-sm mb-6">Sign in to continue.</p>
         <form onSubmit={onSubmit} className="space-y-4">
