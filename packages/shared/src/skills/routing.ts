@@ -53,17 +53,40 @@ const RULES: RoutingRule[] = [
   { match: /\bnotice\s+\d{4}-\d{1,3}\b/i, skill: 'irs-notice-decoder', weight: 8 },
 
   // Predict / qualify / classify keywords
-  { match: /\b(qualif(?:y|ies|ied|ication)|predict|classify)\b/i, skill: 'classification-predictor', weight: 5 },
+  {
+    match: /\b(qualif(?:y|ies|ied|ication)|predict|classify)\b/i,
+    skill: 'classification-predictor',
+    weight: 5,
+  },
 
   // Penalties / interest
-  { match: /\b(penalty|penalt(?:ies)|abatement|first-time)\b/i, skill: 'penalty-abatement', weight: 6 },
-  { match: /\b(interest\s+computation|underpayment\s+interest)\b/i, skill: 'interest-computation', weight: 6 },
+  {
+    match: /\b(penalty|penalt(?:ies)|abatement|first-time)\b/i,
+    skill: 'penalty-abatement',
+    weight: 6,
+  },
+  {
+    match: /\b(interest\s+computation|underpayment\s+interest)\b/i,
+    skill: 'interest-computation',
+    weight: 6,
+  },
 
   // Due dates
-  { match: /\b(due\s+date|extension|deadline|automatic\s+extension)\b/i, skill: 'due-date-calculator', weight: 5 },
+  {
+    match: /\b(due\s+date|extension|deadline|automatic\s+extension)\b/i,
+    skill: 'due-date-calculator',
+    weight: 5,
+  },
 
-  // Treasury Regs
-  { match: /\bTreas(?:ury)?\.?\s*Reg(?:ulation)?s?\.?\s*§?\s*1\./i, skill: 'treas-regs-lookup', weight: 7 },
+  // Treasury Regs. The pack ships this skill as `treas-reg-lookup`
+  // (singular Reg). Prior versions of this file routed to the plural
+  // `treas-regs-lookup`, which doesn't exist in the pack, so the rule
+  // was a no-op.
+  {
+    match: /\bTreas(?:ury)?\.?\s*Reg(?:ulation)?s?\.?\s*§?\s*1\./i,
+    skill: 'treas-reg-lookup',
+    weight: 7,
+  },
 
   // Tax Court / DAWSON
   { match: /\bTax\s+Court\b/i, skill: 'tax-court-research', weight: 7 },
@@ -71,6 +94,52 @@ const RULES: RoutingRule[] = [
 
   // Chevron / Loper Bright
   { match: /\b(Chevron|Loper\s+Bright|Skidmore)\b/i, skill: 'admin-deference-doctrine', weight: 6 },
+
+  // Depreciation / cost-recovery — route to the generic federal research
+  // skill, which carries the conclusion → follow-up routing scaffolding.
+  // Without these, questions like "rules for a farm vehicle exceeding 75%
+  // business use" attach only the always-on dispatcher + compliance skills
+  // and the model omits the follow-up routing block.
+  {
+    match: /\b(depreciation|amortization|cost\s+recovery|MACRS|ACRS)\b/i,
+    skill: 'tax-research-federal',
+    weight: 7,
+  },
+  {
+    match: /\b(?:IRC|26\s*U\.?\s*S\.?\s*C\.?|section)\s*§?\s*(168|179|280F|197)\b/i,
+    skill: 'tax-research-federal',
+    weight: 8,
+  },
+  {
+    // Bare "§168" / "§ 280F". \b doesn't anchor before `§` (non-word on
+    // both sides), so this complements the IRC/section rule above.
+    match: /§\s*(168|179|280F|197)\b/i,
+    skill: 'tax-research-federal',
+    weight: 8,
+  },
+  {
+    match: /\b(bonus\s+depreciation|first[-\s]year\s+expensing|listed\s+property)\b/i,
+    skill: 'tax-research-federal',
+    weight: 8,
+  },
+
+  // Farm / agriculture
+  {
+    match: /\b(farm(?:er|ing|s)?|Schedule\s+F|Pub(?:lication)?\.?\s*225|Form\s+4835)\b/i,
+    skill: 'tax-research-federal',
+    weight: 6,
+  },
+
+  // Business-use vehicles / mileage. "auto" alone is too noisy (autorun,
+  // automatic, autofill), so require "automobile" or a vehicle-context
+  // bigram. "business use" anchors farm/work-vehicle questions even when
+  // the word "vehicle" is absent.
+  {
+    match:
+      /\b(vehicle|automobile|business\s+mile(?:age|s)?|standard\s+mileage|business\/?\s*use)\b/i,
+    skill: 'tax-research-federal',
+    weight: 5,
+  },
 ];
 
 export interface RouteContext {

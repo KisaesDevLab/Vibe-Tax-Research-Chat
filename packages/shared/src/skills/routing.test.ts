@@ -20,6 +20,8 @@ const SAMPLE_AVAILABLE = [
   { local_slug: 'penalty-abatement' },
   { local_slug: 'tax-court-research' },
   { local_slug: 'admin-deference-doctrine' },
+  { local_slug: 'tax-research-federal' },
+  { local_slug: 'treas-reg-lookup' },
 ];
 
 describe('selectSkills', () => {
@@ -70,5 +72,53 @@ describe('selectSkills', () => {
       custom: [{ local_slug: 'firm-cannabis-memo', routing_keywords: ['cannabis', '280E'] }],
     });
     expect(r.slugs).toContain('firm-cannabis-memo');
+  });
+
+  it('routes farm-vehicle / listed-property questions to tax-research-federal', () => {
+    // The exact phrasing of the live chat that surfaced this bug. Without
+    // these rules, only the always-attached dispatcher + compliance
+    // skills load, and the model omits the follow-up routing block.
+    const r = selectSkills({
+      message:
+        'What are the rules for a vehicle used on a farm that exceeds 75% of business/farm usage?',
+      available: SAMPLE_AVAILABLE,
+    });
+    expect(r.slugs).toContain('tax-research-federal');
+  });
+
+  it('routes depreciation / MACRS questions to tax-research-federal', () => {
+    const r = selectSkills({
+      message:
+        'How is MACRS depreciation computed on equipment placed in service late in the year?',
+      available: SAMPLE_AVAILABLE,
+    });
+    expect(r.slugs).toContain('tax-research-federal');
+  });
+
+  it('routes section 179 / 168 / 280F mentions to tax-research-federal', () => {
+    for (const msg of [
+      'Section 179 dollar limit for 2025',
+      'IRC § 168(k) bonus depreciation phase-down',
+      'How does §280F apply to a heavy SUV?',
+    ]) {
+      const r = selectSkills({ message: msg, available: SAMPLE_AVAILABLE });
+      expect(r.slugs).toContain('tax-research-federal');
+    }
+  });
+
+  it('routes bonus depreciation and listed-property terms to tax-research-federal', () => {
+    const r = selectSkills({
+      message: 'Is listed property still subject to bonus depreciation in 2025?',
+      available: SAMPLE_AVAILABLE,
+    });
+    expect(r.slugs).toContain('tax-research-federal');
+  });
+
+  it('Treas. Reg. mentions route to the (correctly-spelled) treas-reg-lookup', () => {
+    const r = selectSkills({
+      message: 'See Treas. Reg. § 1.199A-5 — how does the SSTB carve-out apply?',
+      available: SAMPLE_AVAILABLE,
+    });
+    expect(r.slugs).toContain('treas-reg-lookup');
   });
 });
