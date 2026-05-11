@@ -1,12 +1,14 @@
 // Phase 3 — login page.
 import { useState, useEffect, type FormEvent } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../components/AuthProvider';
 import { api } from '../lib/api';
 
 export function LoginPage() {
   const { user, login } = useAuth();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const resetOk = searchParams.get('reset') === 'ok';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +56,11 @@ export function LoginPage() {
       <div className="w-full max-w-[380px] bg-white border border-ink/10 rounded-md p-6 sm:p-8 shadow-sm">
         <h1 className="font-display text-3xl mb-1">Vibe Tax Research</h1>
         <p className="text-ink/60 text-sm mb-6">Sign in to continue.</p>
+        {resetOk && (
+          <div className="mb-4 text-sm text-moss border border-moss/30 bg-moss/5 rounded p-3">
+            Password reset successfully. Sign in with your new password.
+          </div>
+        )}
         <form onSubmit={onSubmit} className="space-y-4">
           <label className="block">
             <div className="text-xs uppercase tracking-wider text-ink/60 mb-1">Email</div>
@@ -86,6 +93,11 @@ export function LoginPage() {
             {busy ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
+        <div className="mt-4 text-center">
+          <Link to="/forgot" className="text-xs text-ink/60 hover:text-ink underline">
+            Forgot password?
+          </Link>
+        </div>
       </div>
     </div>
   );

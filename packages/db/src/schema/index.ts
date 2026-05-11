@@ -1,6 +1,7 @@
 // Phase 2 — schema barrel.
 export * from './users.js';
 export * from './auth.js';
+export * from './password-reset-tokens.js';
 export * from './audit.js';
 export * from './settings.js';
 export * from './models.js';

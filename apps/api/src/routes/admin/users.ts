@@ -1,12 +1,16 @@
 // Phase 4 — admin user CRUD + spend cap.
+import crypto from 'node:crypto';
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { eq, ilike, or, isNull, and, ne, count } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
-import { users } from '@vibe/db/schema';
+import { users, password_reset_tokens } from '@vibe/db/schema';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
 import { audit } from '../../lib/audit.js';
+import { hashToken } from '../../lib/jwt.js';
+import { buildMailer } from '../../lib/email/index.js';
+import { notificationsEmailQueue } from '../../jobs/queues.js';
 
 export const adminUsersRouter = Router();
 
@@ -220,6 +224,58 @@ adminUsersRouter.post('/:id/set-password', async (req, res) => {
     ip: req.ip,
   });
   res.status(204).end();
+});
+
+// Admin-initiated password reset. Generates a 1h token, persists its hash,
+// enqueues the same reset-email job as the self-service /forgot-password
+// path. Unlike that endpoint, this one returns errors directly (the admin
+// has selected the user and should see whether the action succeeded), and
+// it requires email to be configured.
+adminUsersRouter.post('/:id/send-reset', async (req, res) => {
+  if (!uuidSchema.safeParse(req.params.id).success) {
+    res.status(400).json({ error: 'bad_request', detail: 'invalid id' });
+    return;
+  }
+  const db = getDb();
+  const [target] = await db.select().from(users).where(eq(users.id, req.params.id)).limit(1);
+  if (!target || target.deleted_at) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  if (!target.is_active) {
+    res.status(409).json({ error: 'user_inactive' });
+    return;
+  }
+  const mailer = await buildMailer();
+  if (!mailer) {
+    res.status(400).json({ error: 'email_not_configured' });
+    return;
+  }
+  const token = crypto.randomBytes(32).toString('base64url');
+  const tokenHash = hashToken(token);
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+  await db.insert(password_reset_tokens).values({
+    user_id: target.id,
+    token_hash: tokenHash,
+    expires_at: expiresAt,
+    created_via: 'admin',
+  });
+  await notificationsEmailQueue.add('password-reset', {
+    kind: 'password-reset',
+    user_id: target.id,
+    email: target.email,
+    token,
+    expires_at: expiresAt.toISOString(),
+  });
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'admin.user.send_reset_email',
+    target_type: 'user',
+    target_id: target.id,
+    metadata: { email: target.email },
+    ip: req.ip,
+  });
+  res.json({ ok: true });
 });
 
 adminUsersRouter.delete('/:id', async (req, res) => {

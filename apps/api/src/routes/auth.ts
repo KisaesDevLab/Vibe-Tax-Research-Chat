@@ -1,15 +1,20 @@
 // Phase 3 — auth routes: /login, /refresh, /logout.
+// Phase XX — /forgot-password, /reset-password.
+import crypto from 'node:crypto';
 import { Router, type Request, type Response } from 'express';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { eq, and, isNull } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
-import { users, auth_refresh_tokens } from '@vibe/db/schema';
+import { users, auth_refresh_tokens, password_reset_tokens } from '@vibe/db/schema';
 import { signAccess, signRefresh, verifyRefresh, hashToken } from '../lib/jwt.js';
-import { loginLimiter } from '../lib/rate-limit.js';
+import { loginLimiter, forgotPasswordLimiter, resetPasswordLimiter } from '../lib/rate-limit.js';
 import { audit } from '../lib/audit.js';
+import { logger } from '../lib/logger.js';
 import { requireAuth } from '../middleware/auth.js';
 import { ACCESS_COOKIE_NAME, accessCookieOptions } from '../lib/cookies.js';
+import { buildMailer } from '../lib/email/index.js';
+import { notificationsEmailQueue } from '../jobs/queues.js';
 
 function setAccessCookie(req: Request, res: Response, token: string) {
   res.cookie(ACCESS_COOKIE_NAME, token, accessCookieOptions(req));
@@ -194,4 +199,120 @@ authRouter.get('/me', requireAuth, async (req, res) => {
     monthly_spend_cap_usd: user.monthly_spend_cap_usd ? Number(user.monthly_spend_cap_usd) : null,
     can_override_model: user.can_override_model,
   });
+});
+
+// ── Password reset ───────────────────────────────────────────────────────
+// /forgot-password is intentionally anti-enumeration: response is identical
+// whether or not the email matches an active user, whether or not email is
+// configured, and whether or not the enqueue succeeded. The audit log
+// records what actually happened for the admin's benefit.
+
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1h
+const RESET_TOKEN_BYTES = 32; // 256-bit token → 43-char base64url
+
+const forgotSchema = z.object({ email: z.string().email().toLowerCase() });
+
+authRouter.post('/forgot-password', forgotPasswordLimiter, async (req, res) => {
+  const parsed = forgotSchema.safeParse(req.body);
+  // Always respond ok, even on malformed input, so callers can't probe
+  // for valid-vs-invalid email shapes via the response.
+  if (!parsed.success) {
+    res.json({ ok: true });
+    return;
+  }
+  const { email } = parsed.data;
+  const db = getDb();
+  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  const eligible = Boolean(user && user.is_active && !user.deleted_at);
+
+  await audit({
+    actor_user_id: user?.id ?? null,
+    action: 'auth.forgot_password.request',
+    metadata: { email, eligible },
+    ip: req.ip,
+  });
+
+  if (eligible && user) {
+    const mailer = await buildMailer();
+    if (!mailer) {
+      // Email transport not configured — log it loudly so the admin can
+      // find out via /admin/queues or logs, but don't leak that to the
+      // requester. The user will simply never receive an email.
+      logger.warn({ email }, 'forgot-password requested but email not configured');
+    } else {
+      const token = crypto.randomBytes(RESET_TOKEN_BYTES).toString('base64url');
+      const tokenHash = hashToken(token);
+      const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MS);
+      await db.insert(password_reset_tokens).values({
+        user_id: user.id,
+        token_hash: tokenHash,
+        expires_at: expiresAt,
+        created_via: 'self_service',
+      });
+      await notificationsEmailQueue.add('password-reset', {
+        kind: 'password-reset',
+        user_id: user.id,
+        email: user.email,
+        token,
+        expires_at: expiresAt.toISOString(),
+      });
+    }
+  }
+  res.json({ ok: true });
+});
+
+const resetSchema = z.object({
+  token: z.string().min(20),
+  new_password: z.string().min(8).max(256),
+});
+
+authRouter.post('/reset-password', resetPasswordLimiter, async (req, res) => {
+  const parsed = resetSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request', detail: parsed.error.flatten() });
+    return;
+  }
+  const { token, new_password } = parsed.data;
+  const tokenHash = hashToken(token);
+  const db = getDb();
+  const [row] = await db
+    .select()
+    .from(password_reset_tokens)
+    .where(eq(password_reset_tokens.token_hash, tokenHash))
+    .limit(1);
+  if (!row || row.claimed_at || row.expires_at < new Date()) {
+    res.status(400).json({ error: 'invalid_or_expired_token' });
+    return;
+  }
+  const [user] = await db.select().from(users).where(eq(users.id, row.user_id)).limit(1);
+  if (!user || !user.is_active || user.deleted_at) {
+    res.status(400).json({ error: 'invalid_or_expired_token' });
+    return;
+  }
+
+  const password_hash = await bcrypt.hash(new_password, 12);
+  await db
+    .update(users)
+    .set({ password_hash, updated_at: new Date() })
+    .where(eq(users.id, user.id));
+  await db
+    .update(password_reset_tokens)
+    .set({ claimed_at: new Date() })
+    .where(eq(password_reset_tokens.id, row.id));
+  // Revoke every active refresh token for this user. If their account was
+  // compromised, the attacker's existing sessions are killed; if they
+  // simply forgot the password, this is a minor inconvenience.
+  await db
+    .update(auth_refresh_tokens)
+    .set({ revoked_at: new Date() })
+    .where(and(eq(auth_refresh_tokens.user_id, user.id), isNull(auth_refresh_tokens.revoked_at)));
+  await audit({
+    actor_user_id: user.id,
+    action: 'auth.password_reset.complete',
+    target_type: 'user',
+    target_id: user.id,
+    metadata: { reset_token_id: row.id, created_via: row.created_via },
+    ip: req.ip,
+  });
+  res.json({ ok: true });
 });

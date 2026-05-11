@@ -14,8 +14,17 @@ import { ingestReferenceDocument } from '../lib/references/ingest.js';
 import { skillsSyncQueue, usageRollupQueue } from './queues.js';
 import { env } from '../config/env.js';
 import { getDb } from '@vibe/db';
-import { chats, messages, chat_attachments, usage_events, usage_daily } from '@vibe/db/schema';
+import {
+  chats,
+  messages,
+  chat_attachments,
+  usage_events,
+  usage_daily,
+  SETTING_KEYS,
+} from '@vibe/db/schema';
 import { getAnthropic } from '../lib/anthropic/client.js';
+import { buildMailer, renderResetEmail } from '../lib/email/index.js';
+import { getSetting } from '../lib/settings-store.js';
 
 const connection = getRedis();
 
@@ -79,6 +88,42 @@ export function startWorkers(): void {
     const document_id = job.data?.document_id as string | undefined;
     if (!document_id) return;
     await ingestReferenceDocument(document_id);
+  });
+
+  // ── notifications-email — outbound transactional email.
+  // Today's only job type is `password-reset`. The payload carries the
+  // plaintext token (the DB stores only its hash) and the recipient.
+  // Throwing from the handler marks the job failed in BullMQ — visible
+  // in the admin Queues UI — and the createWorker() wrapper logs it.
+  createWorker('notifications-email', async (job) => {
+    if (job.name !== 'password-reset') {
+      logger.warn({ job_name: job.name }, 'notifications-email: unknown job type');
+      return;
+    }
+    const email = job.data?.email as string | undefined;
+    const token = job.data?.token as string | undefined;
+    const expiresAtIso = job.data?.expires_at as string | undefined;
+    if (!email || !token || !expiresAtIso) {
+      throw new Error('notifications-email: missing required fields');
+    }
+    const mailer = await buildMailer();
+    if (!mailer) {
+      throw new Error('notifications-email: email not configured');
+    }
+    const baseUrl = await getSetting<string>(SETTING_KEYS.APP_BASE_URL);
+    if (!baseUrl) {
+      throw new Error('notifications-email: APP_BASE_URL not set');
+    }
+    const expiresAt = new Date(expiresAtIso);
+    const expiresMinutes = Math.max(1, Math.round((expiresAt.getTime() - Date.now()) / 60_000));
+    const resetUrl = `${baseUrl.replace(/\/+$/, '')}/reset?token=${encodeURIComponent(token)}`;
+    const rendered = renderResetEmail({
+      user_email: email,
+      reset_url: resetUrl,
+      expires_minutes: expiresMinutes,
+    });
+    await mailer.send({ to: email, ...rendered });
+    logger.info({ email, provider: mailer.kind }, 'password-reset email sent');
   });
 
   void scheduleCrons();

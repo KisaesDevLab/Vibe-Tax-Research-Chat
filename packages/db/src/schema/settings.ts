@@ -27,4 +27,14 @@ export const SETTING_KEYS = {
   CHAT_RETENTION_DAYS: 'chat_retention_days',
   SHOW_SKILLS_PANEL: 'show_skills_panel',
   HAIKU_FALLBACK_ROUTING: 'haiku_fallback_routing',
+  // Email + password-reset (added with the email-settings feature). The
+  // SMTP password / Resend API key are stored as separate encrypted rows
+  // so the same encrypt/fingerprint pattern as ANTHROPIC_API_KEY applies.
+  EMAIL_CONFIG: 'email_config',
+  EMAIL_SMTP_PASSWORD: 'email_smtp_password',
+  EMAIL_RESEND_API_KEY: 'email_resend_api_key',
+  // Public base URL used to build password-reset links (e.g.
+  // `https://192.168.1.79/vibe-tax-research`). DB-backed so admins can
+  // change it without redeploying.
+  APP_BASE_URL: 'app_base_url',
 } as const;

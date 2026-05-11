@@ -1,6 +1,8 @@
 // Phase 1 — top-level routes. Real route gating is added in Phase 3 via <RequireRole>.
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/Login';
+import { ForgotPasswordPage } from './pages/ForgotPassword';
+import { ResetPasswordPage } from './pages/ResetPassword';
 import { ChatPage } from './pages/Chat';
 import { SetupPage } from './pages/Setup';
 import { AdminLayout } from './pages/admin/AdminLayout';
@@ -19,6 +21,8 @@ export function App() {
     <Routes>
       <Route path="/setup" element={<SetupPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot" element={<ForgotPasswordPage />} />
+      <Route path="/reset" element={<ResetPasswordPage />} />
 
       <Route element={<RequireAuth />}>
         <Route path="/" element={<Navigate to="/chat" replace />} />

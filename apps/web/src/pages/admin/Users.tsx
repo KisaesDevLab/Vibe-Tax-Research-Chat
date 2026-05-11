@@ -19,6 +19,7 @@ export function AdminUsersPage() {
   const [editing, setEditing] = useState<AdminUserRow | null>(null);
   const [setPwFor, setSetPwFor] = useState<AdminUserRow | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [resetSentFor, setResetSentFor] = useState<string | null>(null);
 
   const { data, isLoading, refetch } = useQuery<{ users: AdminUserRow[] }>({
     queryKey: ['admin', 'users'],
@@ -38,6 +39,19 @@ export function AdminUsersPage() {
   const remove = useMutation({
     mutationFn: (id: string) => api(`/api/admin/users/${id}`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users'] }),
+    onError: (e) => setError(humanizeError(e)),
+  });
+
+  const sendReset = useMutation({
+    mutationFn: (id: string) => api(`/api/admin/users/${id}/send-reset`, { method: 'POST' }),
+    onSuccess: (_data, id) => {
+      const u = data?.users.find((x) => x.id === id);
+      if (u) {
+        setError(null);
+        setResetSentFor(u.email);
+        window.setTimeout(() => setResetSentFor(null), 5000);
+      }
+    },
     onError: (e) => setError(humanizeError(e)),
   });
 
@@ -67,6 +81,11 @@ export function AdminUsersPage() {
           <button onClick={() => setError(null)} className="underline whitespace-nowrap">
             Dismiss
           </button>
+        </div>
+      )}
+      {resetSentFor && (
+        <div className="border border-moss/40 bg-moss/5 text-moss text-sm rounded p-3 mb-4">
+          Reset email sent to <span className="font-mono">{resetSentFor}</span>.
         </div>
       )}
 
@@ -102,6 +121,14 @@ export function AdminUsersPage() {
                   <div className="flex gap-3 justify-end whitespace-nowrap">
                     <button onClick={() => setEditing(u)} className="text-xs underline">
                       edit
+                    </button>
+                    <button
+                      onClick={() => sendReset.mutate(u.id)}
+                      disabled={sendReset.isPending || !u.is_active}
+                      className="text-xs underline disabled:opacity-40 disabled:no-underline"
+                      title={u.is_active ? 'Email a reset link to this user' : 'User is disabled'}
+                    >
+                      send reset
                     </button>
                     <button onClick={() => setSetPwFor(u)} className="text-xs underline">
                       set password
@@ -166,6 +193,10 @@ function humanizeError(e: unknown): string {
     if (e.message === 'cannot_delete_self') return 'Cannot delete your own account.';
     if (e.message === 'cannot_demote_self') return 'Cannot demote your own admin role.';
     if (e.message === 'cannot_disable_self') return 'Cannot disable your own account.';
+    if (e.message === 'email_not_configured')
+      return 'Configure SMTP or Resend on the Settings page before sending reset emails.';
+    if (e.message === 'user_inactive')
+      return 'User is disabled; enable them before sending a reset.';
     return e.message;
   }
   return (e as Error).message;

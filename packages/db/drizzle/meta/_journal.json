@@ -29,6 +29,13 @@
       "when": 1777685450084,
       "tag": "0003_reference_chat_toggle",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778513034952,
+      "tag": "0004_oval_butterfly",
+      "breakpoints": true
     }
   ]
 }
