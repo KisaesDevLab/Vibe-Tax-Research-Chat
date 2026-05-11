@@ -42,7 +42,22 @@ export interface StreamChatOpts {
   history: Array<{ role: 'user' | 'assistant'; content: string }>;
 }
 
-const BETAS = ['code-execution-2025-08-25', 'skills-2025-10-02'] as const;
+// Beta surfaces enabled on every request:
+//   - code-execution-2025-08-25 → enables container.skills + code_execution
+//   - skills-2025-10-02         → enables custom-skill upload + attachment
+//   - extended-cache-ttl-2025-04-11 → ttl: '1h' on cache_control blocks
+//     (default ephemeral TTL is 5 min, which goes cold any time a researcher
+//     steps away from a chat for more than a few minutes; 1h covers a
+//     normal session including coffee breaks)
+//   - token-efficient-tools-2025-02-19 → compact JSON-schema serialization
+//     of tool definitions. The web_fetch allowlist alone is non-trivial in
+//     wire form; this trims input tokens at zero behavior cost.
+const BETAS = [
+  'code-execution-2025-08-25',
+  'skills-2025-10-02',
+  'extended-cache-ttl-2025-04-11',
+  'token-efficient-tools-2025-02-19',
+] as const;
 
 interface AssemblingToolUse {
   id: string;
@@ -115,9 +130,41 @@ export async function* streamChat(opts: StreamChatOpts): AsyncIterable<ChatEvent
     }
   }
 
+  // Cache breakpoint on the last assistant message in history. With the
+  // hierarchy tools → system → messages, the single existing breakpoint
+  // on `system` only caches tools+system; the messages array gets
+  // re-tokenized on every turn. Adding a breakpoint here caches the
+  // entire prior conversation (everything up to and including the last
+  // assistant turn). The fresh user message at the end is not cached,
+  // by design — it's new each request. 1h TTL via the extended-cache-ttl
+  // beta breaks even at 2 cache hits within the hour, easily met for any
+  // active research session.
+  const lastAssistantIdx = (() => {
+    for (let i = normalizedMessages.length - 1; i >= 0; i--) {
+      if (normalizedMessages[i]!.role === 'assistant') return i;
+    }
+    return -1;
+  })();
+  const apiMessages = normalizedMessages.map((m, i) => {
+    if (i !== lastAssistantIdx) return m;
+    // cache_control requires the content-block array form (string content
+    // doesn't carry cache_control). Other messages stay as strings to
+    // keep the wire payload small.
+    return {
+      role: m.role,
+      content: [
+        {
+          type: 'text' as const,
+          text: m.content,
+          cache_control: { type: 'ephemeral' as const, ttl: '1h' as const },
+        },
+      ],
+    };
+  });
+
   // Body uses the typed SDK shape, then casts to add untyped fields
-  // (`container`, untyped tool shapes). When SDK ships these in a stable
-  // release, drop the cast.
+  // (`container`, untyped tool shapes, ttl on cache_control). When the
+  // SDK ships these in a stable release, drop the cast.
   const body = {
     model: opts.model_id,
     max_tokens: 8192,
@@ -125,10 +172,10 @@ export async function* streamChat(opts: StreamChatOpts): AsyncIterable<ChatEvent
       {
         type: 'text' as const,
         text: opts.system_prompt,
-        cache_control: { type: 'ephemeral' as const },
+        cache_control: { type: 'ephemeral' as const, ttl: '1h' as const },
       },
     ],
-    messages: normalizedMessages,
+    messages: apiMessages,
     tools: tools as unknown as Anthropic.Beta.Messages.BetaToolUnion[],
     betas: [...BETAS],
     ...(opts.attached_skill_ids.length
