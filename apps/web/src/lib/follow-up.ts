@@ -3,9 +3,17 @@
 // click-to-route buttons instead of forcing the user to retype them.
 // Spec lives in the skills repo at shared/follow-up-routing.md.
 
-export type FollowUpVerb = 'memo' | 'open-point' | 'plan' | 'workpaper' | 'resolution' | 'return';
+export type FollowUpVerb =
+  | 'memo'
+  | 'open-point'
+  | 'plan'
+  | 'workpaper'
+  | 'resolution'
+  | 'return'
+  | 'client-email'
+  | 'excel-workpaper';
 
-export type FollowUpGroup = 'package' | 'carry';
+export type FollowUpGroup = 'package' | 'carry' | 'deliver';
 
 export interface FollowUpVerbMeta {
   verb: FollowUpVerb;
@@ -51,6 +59,18 @@ export const FOLLOW_UP_VERBS: readonly FollowUpVerbMeta[] = [
     group: 'carry',
     label: 'Return',
     hint: 'Return summary, line explainer, due-date calculation, or election attachment',
+  },
+  {
+    verb: 'client-email',
+    group: 'deliver',
+    label: 'Client email',
+    hint: 'Plain-language email summary suitable to send to a non-CPA client',
+  },
+  {
+    verb: 'excel-workpaper',
+    group: 'deliver',
+    label: 'Excel workpaper',
+    hint: 'Excel calculation worksheet with amounts, tickmarks, and footed totals',
   },
 ];
 

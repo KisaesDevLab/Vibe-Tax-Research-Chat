@@ -822,6 +822,20 @@ function MessageActions({ message: m }: { message: MessageDTO }) {
       setDocxBusy(false);
     }
   };
+  const [xlsxBusy, setXlsxBusy] = useState(false);
+  const onXlsx = async () => {
+    setXlsxBusy(true);
+    try {
+      await downloadMessageXlsx(m, messageId);
+    } catch (err) {
+      console.error('xlsx export failed', err);
+      const e = err as Error & { body?: { detail?: string } };
+      const detail = e.body?.detail ? `\n\n${e.body.detail}` : '';
+      alert(`XLSX export failed: ${e.message}${detail}`);
+    } finally {
+      setXlsxBusy(false);
+    }
+  };
   // exportMd is consumed by onCopy; reference here so TS doesn't flag it
   // as unused-after-refactor when the PDF path moved to the server.
   void exportMd;
@@ -852,6 +866,15 @@ function MessageActions({ message: m }: { message: MessageDTO }) {
         title="Download an editable Word document of this response"
       >
         {docxBusy ? 'Building DOCX…' : 'Download DOCX'}
+      </button>
+      <button
+        type="button"
+        onClick={onXlsx}
+        disabled={xlsxBusy}
+        className="text-ink/50 hover:text-ink underline-offset-2 hover:underline disabled:opacity-50"
+        title="Download an Excel workpaper of this response (calculation worksheet when produced by excel-workpaper-builder; otherwise a prose dump)"
+      >
+        {xlsxBusy ? 'Building XLSX…' : 'Download XLSX'}
       </button>
     </div>
   );
@@ -910,13 +933,17 @@ async function downloadMessageDocx(m: MessageDTO, messageId: string): Promise<vo
   await downloadMessageExport(m, messageId, 'docx');
 }
 
-// Shared PDF/DOCX download helper. Same auth, same content-disposition
-// parsing, same blob-URL cleanup — only the path suffix and the
-// fallback extension differ.
+async function downloadMessageXlsx(m: MessageDTO, messageId: string): Promise<void> {
+  await downloadMessageExport(m, messageId, 'xlsx');
+}
+
+// Shared PDF/DOCX/XLSX download helper. Same auth, same content-
+// disposition parsing, same blob-URL cleanup — only the path suffix
+// and the fallback extension differ.
 async function downloadMessageExport(
   m: MessageDTO,
   messageId: string,
-  kind: 'pdf' | 'docx',
+  kind: 'pdf' | 'docx' | 'xlsx',
 ): Promise<void> {
   const res = await apiFetch(`/api/chats/${m.chat_id}/messages/${messageId}/${kind}`);
   const blob = await res.blob();

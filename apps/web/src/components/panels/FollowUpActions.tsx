@@ -9,9 +9,10 @@ import { FOLLOW_UP_VERBS, type FollowUpGroup, type FollowUpVerb } from '../../li
 const GROUP_LABEL: Record<FollowUpGroup, string> = {
   package: 'Package',
   carry: 'Carry forward',
+  deliver: 'Deliver',
 };
 
-const GROUPS: readonly FollowUpGroup[] = ['package', 'carry'];
+const GROUPS: readonly FollowUpGroup[] = ['package', 'carry', 'deliver'];
 
 export function FollowUpActions({
   verbs,

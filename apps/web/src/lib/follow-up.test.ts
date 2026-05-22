@@ -121,6 +121,36 @@ Conclusion: position is REPORTABLE.
     expect(extractFollowUpActions(stray)).toBeNull();
   });
 
+  it('extracts the new Deliver group verbs (client-email, excel-workpaper)', () => {
+    const withDeliver = `
+## Next steps (follow-up routing)
+
+**Package** the result as:
+- \`memo\` — formal memorandum
+
+**Carry** the conclusion forward into:
+- \`workpaper\` — workpaper scaffold
+
+**Deliver** the result to the client / engagement file:
+- \`client-email\` — plain-language email summary
+- \`excel-workpaper\` — Excel calculation worksheet
+`;
+    const r = extractFollowUpActions(withDeliver);
+    expect(r).not.toBeNull();
+    expect(r!.verbs).toEqual(['memo', 'workpaper', 'client-email', 'excel-workpaper']);
+  });
+
+  it('parses Deliver verbs inside a paraphrased single-sentence form', () => {
+    const paraphrased = `
+conclusion text.
+
+**What to do next?** Reply with one of: \`memo\`, \`client-email\`, or \`excel-workpaper\`.
+`;
+    const r = extractFollowUpActions(paraphrased);
+    expect(r).not.toBeNull();
+    expect(r!.verbs).toEqual(['memo', 'client-email', 'excel-workpaper']);
+  });
+
   it('drops the placeholder echo template that uses angle brackets', () => {
     const tmpl = `
 ## Next steps (follow-up routing)

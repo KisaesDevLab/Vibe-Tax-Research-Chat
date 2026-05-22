@@ -38,6 +38,7 @@ import {
 import { checkSpendCap } from '../../lib/spend-cap.js';
 import { buildResponsePdf } from '../../lib/export/response-pdf.js';
 import { buildResponseDocx } from '../../lib/export/response-docx.js';
+import { buildResponseXlsx } from '../../lib/export/response-xlsx.js';
 
 export const messagesRouter = Router({ mergeParams: true });
 messagesRouter.use(requireAuth);
@@ -708,6 +709,70 @@ messagesRouter.get('/:messageId/docx', async (req, res) => {
   res.setHeader(
     'Content-Disposition',
     `attachment; filename="vibe-tax-research-${stamp}-${slug}.docx"`,
+  );
+  res.setHeader('Content-Length', String(buf.byteLength));
+  res.end(buf);
+});
+
+// ── XLSX export ───────────────────────────────────────────────────────────
+// GET /api/chats/:id/messages/:messageId/xlsx
+// Same auth/scope/error semantics as the PDF / DOCX routes. The
+// excel-workpaper-builder skill emits a `workpaper_data` object inside
+// its JSON sidecar; the buildResponseXlsx helper extracts that payload
+// and renders a styled calculation worksheet (headers, tickmarks,
+// formula support, footed totals, legend / sources / notes). When the
+// message lacks structured workpaper_data (e.g., the user clicked
+// Download XLSX on an ordinary memo), the builder emits a single-sheet
+// prose dump so the button is never broken.
+messagesRouter.get('/:messageId/xlsx', async (req, res) => {
+  const chatId = (req.params as unknown as MergedParams).id;
+  const parsed = pdfParamsSchema.safeParse(req.params);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request' });
+    return;
+  }
+  const db = getDb();
+  const [chat] = await db.select().from(chats).where(eq(chats.id, chatId)).limit(1);
+  if (!chat || (chat.user_id !== req.auth!.user_id && req.auth!.role !== 'admin')) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  const [m] = await db
+    .select()
+    .from(messages)
+    .where(and(eq(messages.id, parsed.data.messageId), eq(messages.chat_id, chatId)))
+    .limit(1);
+  if (!m || m.role !== 'assistant') {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+
+  let buf: Buffer;
+  try {
+    buf = await buildResponseXlsx({
+      id: m.id,
+      created_at: m.created_at,
+      content: m.content,
+      model_id: m.model_id,
+      cost_usd: m.cost_usd,
+      authorities: m.authorities,
+      compliance_check: m.compliance_check,
+    });
+  } catch (err) {
+    logger.error({ err, message_id: m.id }, 'xlsx generation failed');
+    res.status(500).json({ error: 'xlsx_generation_failed', detail: (err as Error).message });
+    return;
+  }
+
+  const stamp = m.created_at.toISOString().slice(0, 10);
+  const slug = m.id.slice(0, 8);
+  res.setHeader(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  );
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="vibe-tax-research-${stamp}-${slug}.xlsx"`,
   );
   res.setHeader('Content-Length', String(buf.byteLength));
   res.end(buf);
