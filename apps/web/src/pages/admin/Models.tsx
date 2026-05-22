@@ -35,8 +35,28 @@ export function AdminModelsPage() {
   });
   const defaultId = defaultSetting?.value ?? null;
 
-  const [diff, setDiff] = useState<unknown>(null);
-  const refresh = useMutation({
+  // The refresh diff shape; mirrors the server-side response. Source
+  // tells us which authority the diff was computed against so the user
+  // knows whether to trust `removed[]` (only meaningful when source =
+  // 'anthropic' — the bundled / upstream paths can't say what's missing).
+  interface RefreshDiff {
+    source: 'anthropic' | 'upstream' | 'bundled';
+    upstream_error?: string;
+    discovery_error?: string;
+    added: Array<{
+      model_id: string;
+      display_name: string;
+      pricing_unknown?: boolean;
+      input_per_mtok?: number;
+      output_per_mtok?: number;
+    }>;
+    updated: Array<{ model_id: string; before: unknown; after: unknown }>;
+    removed: Array<{ model_id: string; display_name: string }>;
+    unchanged_count: number;
+  }
+
+  const [diff, setDiff] = useState<RefreshDiff | null>(null);
+  const refresh = useMutation<RefreshDiff>({
     mutationFn: () => api('/api/admin/models/refresh', { method: 'POST' }),
     onSuccess: (d) => setDiff(d),
     onError: (e) => setError(humanize(e)),
@@ -81,8 +101,9 @@ export function AdminModelsPage() {
           onClick={() => refresh.mutate()}
           disabled={refresh.isPending}
           className="px-3 py-1.5 border border-ink/20 rounded text-sm disabled:opacity-50"
+          title="Calls Anthropic /v1/models with your stored API key; falls back to the bundled pricing seed if the call fails"
         >
-          {refresh.isPending ? 'Fetching…' : 'Refresh from upstream'}
+          {refresh.isPending ? 'Checking Anthropic…' : 'Check Anthropic for new models'}
         </button>
       </div>
 
@@ -97,15 +118,44 @@ export function AdminModelsPage() {
 
       {diff !== null && (
         <div className="mb-6 border border-gold/40 bg-gold/5 p-4 rounded">
-          <div className="font-display text-lg mb-2">Pending changes</div>
+          <div className="flex items-baseline justify-between mb-2">
+            <div className="font-display text-lg">Pending changes</div>
+            <SourceBadge diff={diff} />
+          </div>
+          {diff.source === 'bundled' && diff.discovery_error && (
+            <div className="text-xs text-ink/70 mb-2">
+              Anthropic API discovery failed:{' '}
+              <span className="font-mono">{diff.discovery_error}</span>.
+              {diff.discovery_error === 'anthropic_api_key_not_set' ? (
+                <>
+                  {' '}
+                  Set the API key under <strong>Admin → Settings</strong> to enable live model
+                  discovery.
+                </>
+              ) : (
+                <> Showing diff against the bundled pricing seed only.</>
+              )}
+            </div>
+          )}
+          {diff.added.some((a) => a.pricing_unknown) && (
+            <div className="border border-oxblood/40 bg-oxblood/5 text-oxblood text-xs rounded p-2 mb-2">
+              <strong>Pricing required:</strong> some added models were discovered via the Anthropic
+              API but have no entry in the pricing manifest. Set pricing before applying.
+            </div>
+          )}
           <pre className="font-mono text-xs overflow-auto max-h-64">
             {JSON.stringify(diff, null, 2)}
           </pre>
           <div className="flex gap-2 mt-2">
             <button
               onClick={() => apply.mutate()}
-              disabled={apply.isPending}
+              disabled={apply.isPending || diff.added.some((a) => a.pricing_unknown)}
               className="px-3 py-1.5 bg-ink text-paper rounded text-sm disabled:opacity-50"
+              title={
+                diff.added.some((a) => a.pricing_unknown)
+                  ? 'Set pricing on every added model first'
+                  : undefined
+              }
             >
               {apply.isPending ? 'Applying…' : 'Apply'}
             </button>
@@ -199,7 +249,36 @@ function humanize(e: unknown): string {
       return 'That model is unknown or inactive — enable it first or pick another.';
     if (e.message === 'manifest_unavailable')
       return 'Upstream manifest unreachable; the bundled fallback also failed.';
+    if (e.message === 'pricing_required') {
+      const detail = (e as ApiError & { body?: { detail?: string } }).body?.detail;
+      return detail
+        ? `Pricing required: ${detail}`
+        : 'Some added models need pricing before they can be applied.';
+    }
     return e.message;
   }
   return (e as Error).message;
+}
+
+function SourceBadge({ diff }: { diff: { source: 'anthropic' | 'upstream' | 'bundled' } }) {
+  const labels: Record<typeof diff.source, { text: string; cls: string }> = {
+    anthropic: {
+      text: 'live from Anthropic',
+      cls: 'bg-moss/15 text-moss',
+    },
+    upstream: {
+      text: 'pricing manifest (CDN)',
+      cls: 'bg-gold/15 text-ink/70',
+    },
+    bundled: {
+      text: 'pricing manifest (bundled)',
+      cls: 'bg-ink/10 text-ink/60',
+    },
+  };
+  const l = labels[diff.source];
+  return (
+    <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded ${l.cls}`}>
+      {l.text}
+    </span>
+  );
 }
