@@ -43,6 +43,51 @@ describe('fetchUpstream', () => {
     await expect(fetchUpstream('https://example.com/x')).rejects.toBeInstanceOf(UpstreamFetchError);
   });
 
+  it('wraps a network failure (fetch rejects) as UpstreamFetchError', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new TypeError('fetch failed: ECONNRESET');
+      }),
+    );
+    const { fetchUpstream, UpstreamFetchError } = await import('./http.js');
+    const err = await fetchUpstream('https://example.com/x').catch((e) => e);
+    expect(err).toBeInstanceOf(UpstreamFetchError);
+    // status 0 marks a generic (non-timeout) network failure.
+    expect((err as InstanceType<typeof UpstreamFetchError>).status).toBe(0);
+  });
+
+  it('wraps a timeout abort as UpstreamFetchError with status 504', async () => {
+    // fetch never resolves on its own — only the internal timeout's
+    // controller.abort() rejects it, which is exactly the timeout path.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_url: string, init: RequestInit) =>
+          new Promise((_resolve, reject) => {
+            init.signal?.addEventListener('abort', () => {
+              const e = new Error('The operation was aborted');
+              e.name = 'AbortError';
+              reject(e);
+            });
+          }),
+      ),
+    );
+    const prev = process.env.AUTHORITY_FETCH_TIMEOUT_MS;
+    process.env.AUTHORITY_FETCH_TIMEOUT_MS = '1000'; // schema min
+    vi.resetModules();
+    try {
+      const { fetchUpstream, UpstreamFetchError } = await import('./http.js');
+      const err = await fetchUpstream('https://example.com/slow').catch((e) => e);
+      expect(err).toBeInstanceOf(UpstreamFetchError);
+      expect((err as InstanceType<typeof UpstreamFetchError>).status).toBe(504);
+    } finally {
+      if (prev === undefined) delete process.env.AUTHORITY_FETCH_TIMEOUT_MS;
+      else process.env.AUTHORITY_FETCH_TIMEOUT_MS = prev;
+      vi.resetModules();
+    }
+  });
+
   it('attaches the configured User-Agent', async () => {
     const calls: Array<{ url: string; init: RequestInit }> = [];
     vi.stubGlobal(

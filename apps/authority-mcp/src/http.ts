@@ -23,14 +23,32 @@ export async function fetchUpstream(
   init: RequestInit = {},
 ): Promise<{ text: string; status: number; etag?: string; lastModified?: string }> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), env.AUTHORITY_FETCH_TIMEOUT_MS);
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, env.AUTHORITY_FETCH_TIMEOUT_MS);
   try {
     const headers = new Headers(init.headers);
     if (!headers.has('User-Agent')) headers.set('User-Agent', env.AUTHORITY_FETCH_UA);
     if (!headers.has('Accept')) {
       headers.set('Accept', 'application/xml,application/json,text/html,*/*;q=0.5');
     }
-    const res = await fetch(url, { ...init, headers, signal: controller.signal });
+    let res: Response;
+    try {
+      res = await fetch(url, { ...init, headers, signal: controller.signal });
+    } catch (err) {
+      // fetch() rejects on DNS failure, connection reset, TLS error, or our
+      // own timeout abort. These are expected upstream conditions (federal
+      // endpoints rate-limit and drop connections aggressively), not bugs in
+      // this service — normalize them to UpstreamFetchError so the HTTP layer
+      // maps them to a 502 upstream_failed instead of a 500 internal_error.
+      // status 504 marks a timeout, 0 marks a generic network failure.
+      const reason = timedOut
+        ? `timed out after ${env.AUTHORITY_FETCH_TIMEOUT_MS}ms`
+        : ((err as Error)?.message ?? 'network error');
+      throw new UpstreamFetchError(url, timedOut ? 504 : 0, reason);
+    }
     const text = await res.text();
     if (!res.ok) {
       throw new UpstreamFetchError(url, res.status, text);

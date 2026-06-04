@@ -45,16 +45,45 @@ export function useChatStream() {
     });
 
     const access = tokenStore.getAccess();
-    const res = await fetch(apiUrl(`/api/chats/${chatId}/messages`), {
-      method: 'POST',
-      signal: ac.signal,
-      headers: {
-        'content-type': 'application/json',
-        ...(access ? { authorization: `Bearer ${access}` } : {}),
-        accept: 'text/event-stream',
-      },
-      body: JSON.stringify({ content, model_id }),
-    });
+    let res: Response;
+    try {
+      res = await fetch(apiUrl(`/api/chats/${chatId}/messages`), {
+        method: 'POST',
+        signal: ac.signal,
+        headers: {
+          'content-type': 'application/json',
+          ...(access ? { authorization: `Bearer ${access}` } : {}),
+          accept: 'text/event-stream',
+        },
+        body: JSON.stringify({ content, model_id }),
+      });
+    } catch (err) {
+      // fetch() rejects (before any response) on a dropped connection,
+      // DNS failure, CORS rejection, or a server that's down — and on
+      // AbortController.abort() if the user clicks Stop before the
+      // response arrives. Callers invoke send() as `void send(...)`, so a
+      // throw here would surface as an unhandled rejection and leave the
+      // UI stuck on "Drafting" forever. Finish the stream with an error
+      // instead (mirroring the AbortError convention in the reader loop
+      // below: a deliberate Stop shows no error banner).
+      const aborted = (err as Error)?.name === 'AbortError';
+      setStreaming((s) => ({
+        ...(s ?? {
+          text: '',
+          usage: {},
+          tool_uses: [],
+          done: true,
+          user_message: content,
+          started_at: Date.now(),
+        }),
+        done: true,
+        error: aborted
+          ? undefined
+          : 'Could not reach the server. Check your connection and re-send your question.',
+      }));
+      abortRef.current = null;
+      return;
+    }
     if (!res.ok || !res.body) {
       setStreaming((s) => ({
         ...(s ?? {

@@ -63,10 +63,10 @@ describe('setWebResourceStrategy', () => {
     }));
     const mod = await import('./web-resource-strategy.js');
     await mod.setWebResourceStrategy(
-      // @ts-expect-error - intentional bad mode
       {
         usc: 'mcp',
         cfr: 'anthropic',
+        // @ts-expect-error - intentional bad mode
         irb: 'BOGUS',
         fr: 'anthropic',
         dawson: 'anthropic',

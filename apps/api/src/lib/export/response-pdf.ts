@@ -247,7 +247,11 @@ const UNICODE_FALLBACKS: Array<[RegExp, string]> = [
   [/[\u{2600}-\u{27BF}]/gu, ''],
   [/[\u{1F900}-\u{1F9FF}]/gu, ''],
   // Variation selectors and zero-width joiners left dangling after emoji removal.
-  [/[\u{FE00}-\u{FE0F}\u{200D}\u{200B}\u{200C}]/gu, ''],
+  // The ZWJ (U+200D) is matched via a separate alternative rather than inside
+  // the character class: a joining char in a class trips eslint's
+  // no-misleading-character-class. Behavior is identical — each is a single
+  // code point stripped to ''.
+  [/[\u{FE00}-\u{FE0F}\u{200B}\u{200C}]|\u{200D}/gu, ''],
 ];
 
 // Coerce any value to a string at the sanitizer entry. Authorities and
