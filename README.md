@@ -1,3 +1,5 @@
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I3D3227TTP)
+
 # Vibe Tax Research Chat
 
 > Self-hosted, single-tenant AI chat appliance for U.S. CPAs. The firm owns its Anthropic API
