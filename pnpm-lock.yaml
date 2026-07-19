@@ -68,6 +68,9 @@ importers:
       '@vibe/engine':
         specifier: workspace:*
         version: link:../../packages/engine
+      '@vibe/schema':
+        specifier: workspace:*
+        version: link:../../packages/schema
       '@vibe/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -404,6 +407,22 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@25.6.0)(jsdom@25.0.1)
 
+  packages/schema:
+    dependencies:
+      '@vibe/shared':
+        specifier: workspace:*
+        version: link:../shared
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@25.6.0)(jsdom@25.0.1)
+
   packages/shared:
     devDependencies:
       typescript:
@@ -422,6 +441,9 @@ importers:
         specifier: workspace:*
         version: link:../shared
     devDependencies:
+      '@vibe/schema':
+        specifier: workspace:*
+        version: link:../schema
       typescript:
         specifier: ^5.7.3
         version: 5.9.3

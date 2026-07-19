@@ -19,6 +19,7 @@ import { AdminCustomSkillsPage } from './pages/admin/CustomSkills';
 import { AdminReferencesPage } from './pages/admin/References';
 import { AdminUsagePage } from './pages/admin/Usage';
 import { AdminTableSetsPage } from './pages/admin/TableSets';
+import { AdminReviewQueuePage } from './pages/admin/ReviewQueue';
 import { RequireAuth, RequireRole } from './components/RequireRole';
 import { RequirePlanning } from './components/RequirePlanning';
 import { AppShell } from './components/AppShell';
@@ -69,6 +70,7 @@ export function App() {
             <Route path="references" element={<AdminReferencesPage />} />
             <Route path="usage" element={<AdminUsagePage />} />
             <Route path="table-sets" element={<AdminTableSetsPage />} />
+            <Route path="review-queue" element={<AdminReviewQueuePage />} />
           </Route>
         </Route>
       </Route>

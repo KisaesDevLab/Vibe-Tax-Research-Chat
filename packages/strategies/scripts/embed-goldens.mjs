@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { composeScenario } from '../../engine/dist/index.js';
 import { resolveApply } from '../dist/index.js';
+import { SPEC } from '../spec/tp12-spec.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const tables = JSON.parse(
@@ -193,6 +194,14 @@ const CASES = {
     },
   ],
 };
+
+// TP-12 modeled strategies define their golden cases in the spec file.
+for (const s of SPEC) {
+  if (s.modeled) {
+    if (!s.cases || s.cases.length < 2) throw new Error(`${s.id}: spec needs ≥2 golden cases`);
+    CASES[s.id] = s.cases;
+  }
+}
 
 const contentDir = path.join(root, 'content');
 for (const [id, cases] of Object.entries(CASES)) {

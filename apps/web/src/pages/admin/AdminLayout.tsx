@@ -14,6 +14,7 @@ const navItems = [
   { to: '/admin/references', label: 'References' },
   { to: '/admin/usage', label: 'Usage' },
   { to: '/admin/table-sets', label: 'Table sets' },
+  { to: '/admin/review-queue', label: 'Review queue' },
 ];
 
 export function AdminLayout() {

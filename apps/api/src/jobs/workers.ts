@@ -98,6 +98,17 @@ export function startWorkers(): void {
     await renderDeliverable(deliverable_id);
   });
 
+  // ── strategy-author — TP-12 pipeline draft into the review queue.
+  // Gracefully skips (job succeeds) when no Anthropic key is configured.
+  createWorker('strategy-author', async (job) => {
+    const strategy_id = job.data?.strategy_id as string | undefined;
+    if (!strategy_id) return;
+    const triggered_by =
+      typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'manual';
+    const { draftStrategy } = await import('./handlers/strategy-author.js');
+    return draftStrategy(strategy_id, triggered_by);
+  });
+
   // ── notifications-email — outbound transactional email.
   // Today's only job type is `password-reset`. The payload carries the
   // plaintext token (the DB stores only its hash) and the recipient.

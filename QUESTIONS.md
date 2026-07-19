@@ -206,3 +206,32 @@ FK (plans tables land at TP-6, not TP-8 — the walking skeleton needs them) ·
 JSON records in packages/strategies/content/<id>.json (goldens inline); db seed loads
 idempotently — onConflictDoNothing on (strategy_id, semver), current_version_id set
 only when NULL so admin publishes are never clobbered by re-seeds.
+
+## TP-12 — applied defaults (authoring at scale)
+
+- **entityTypes vocabulary** — the schema validator canonicalizes the vocabulary the
+  TP-6 content already used: `sole-prop`, `single-member-llc`, `s-corp`, `partnership`,
+  `c-corp`, `rental`, `individual`.
+- **Banned-word gate scope** — "loophole/trick/secret/guarantee" is enforced on CLIENT
+  sections only. Advisor prose is exempt because legitimate terms of art ("guaranteed
+  payments" under §707(c)) would false-positive. The reading-level gate (FK ≤ 9) is
+  measured over `client.plainEnglish + client.analogy`; fragment lists are excluded.
+- **Mechanics↔authority mapping** — enforced as: any §-token named in a mechanics bullet
+  must appear in some authority cite. Cites are tokenized leniently so `IRC §§702, 1366`
+  covers both sections.
+- **Structural spec** — everything machine-critical for the 90 new records (classification,
+  applyOrder, inputs schema, suggest rule, interactions, golden cases) lives in
+  `packages/strategies/spec/tp12-spec.mjs`; scaffold + embed scripts stamp it into content.
+  Prose was authored to the schema and validated by `scripts/validate-content.mjs`.
+- **Golden deltas** — computed exclusively through the engine by
+  `scripts/embed-goldens.mjs` (94 new cases). The one intentionally positive delta
+  (bracket-management income acceleration) is declared via `model.mayIncreaseBurden`.
+- **Author-pipeline model pin** — `strategy-author` uses `claude-sonnet-4-5` pinned in the
+  handler; TP-13 centralizes per-job pins/budgets in `jobs-config.ts`. No key → the job
+  logs a skip and succeeds (pipeline idles until credentials arrive).
+- **spouse-payroll modeling** — modeled honestly as near-neutral on payroll tax (employer
+  FICA deducted, employee FICA added to otherTaxes); the record's value story is the
+  benefit doors (§105 MERP, retirement capacity). `mayIncreaseBurden: true`.
+- **c-corp-conversion modeling** — flow-through removed, 21% corp tax surfaced via
+  `corpTaxPaid`, salary + optional qualified dividends on the 1040; QBI forfeiture and
+  second-layer tax called out in notes. `mayIncreaseBurden: true`.

@@ -2,7 +2,10 @@
   "id": "reasonable-comp-study",
   "version": "1.0.0",
   "status": "published",
-  "effectiveTaxYears": { "from": 2026, "to": null },
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
   "lastReviewed": "2026-07-19",
   "reviewedBy": null,
   "changeLog": [
@@ -113,11 +116,11 @@
     "teaser": "The dated, data-backed report that keeps your S-corporation tax savings from being unwound.",
     "headline": "Back your salary with evidence before anyone asks",
     "plainEnglish": [
-      "Owning an S corporation lets you split your pay between a salary and owner distributions, and that split is where your biggest recurring tax savings comes from. The IRS allows it on one condition: the salary must be fair for the work you really do. That word — fair — is where owners get challenged.",
-      "A reasonable compensation study answers the question with data instead of a guess. We list everything you actually do for the business — managing people, selling, doing the hands-on work — and price each part using independent salary data for your industry and area. The result is a written, dated report showing your salary matches what the market pays for that work.",
-      "The report earns its keep twice. Day to day, it sets the right number, so you are not overpaying payroll tax out of caution or underpaying and inviting a challenge. And if the IRS ever asks, you hand over a professional study prepared in advance — not an explanation assembled after the letter arrived."
+      "Owning an S corporation lets you split your pay between a salary and owner distributions. That split is where your biggest recurring tax savings comes from. The IRS allows it on one condition: the salary must be fair for the work you really do. That word — fair — is where owners get challenged.",
+      "A reasonable compensation study answers the question with data instead of a guess. We list everything you actually do for the business — managing people, selling, doing the hands-on work. Then we price each part using real salary data for your industry and area. The result is a written, dated report. It shows your salary matches what the market pays for that work.",
+      "The report earns its keep twice. Day to day, it sets the right number, so you do not overpay payroll tax out of caution or underpay and invite a challenge. And if the IRS ever asks, you hand over a study prepared in advance — not an answer assembled after the letter arrived."
     ],
-    "analogy": "It is a home appraisal for your paycheck — you could guess the number, but a documented appraisal gets it right and ends the argument before it starts.",
+    "analogy": "It is a home appraisal for your paycheck. You could guess the number, but a documented appraisal gets it right and ends the argument before it starts.",
     "benefits": [
       "A salary grounded in real market data — not too high, not too low",
       "Strong written backup for the tax savings your S corporation creates",
@@ -155,7 +158,13 @@
     "feeGuidanceBand": null
   },
   "suggest": {
-    "all": [{ "field": "hasSCorp", "op": "eq", "value": true }],
+    "all": [
+      {
+        "field": "hasSCorp",
+        "op": "eq",
+        "value": true
+      }
+    ],
     "reason": "S-corp owner compensation should be supported by a documented reasonable-comp study."
   },
   "monitoring": {

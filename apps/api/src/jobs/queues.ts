@@ -17,6 +17,9 @@ export const notificationsEmailQueue = new Queue('notifications-email', { connec
 export const referencesIngestQueue = new Queue('references-ingest', { connection });
 // TP-9 — worker-side Chromium rendering. Payload: { deliverable_id }.
 export const pdfRenderQueue = new Queue('pdf-render', { connection });
+// TP-12 — Claude drafts a refreshed strategy record into the review
+// queue. Payload: { strategy_id, triggered_by }. No key → logged skip.
+export const strategyAuthorQueue = new Queue('strategy-author', { connection });
 
 export const QUEUES = [
   skillsSyncQueue,
@@ -27,4 +30,5 @@ export const QUEUES = [
   notificationsEmailQueue,
   referencesIngestQueue,
   pdfRenderQueue,
+  strategyAuthorQueue,
 ];

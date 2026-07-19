@@ -13,10 +13,10 @@ Updated after each phase commit.
 | TP-4  | Tax engine + table sets                      | done    | feat(tp-4)  |
 | TP-5  | Scenario + strategy runtime                  | done    | feat(tp-5)  |
 | TP-6  | First 10 strategies + Planning UI            | done    | feat(tp-6)  |
-| TP-7  | Intake (manual + PDF import)                 | pending | —           |
-| TP-8  | Plan workflow + review gate                  | pending | —           |
-| TP-9  | Deliverables + delivery                      | pending | —           |
-| TP-10 | Engagement loop                              | pending | —           |
+| TP-7  | Intake (manual + PDF import)                 | done    | feat(tp-7)  |
+| TP-8  | Plan workflow + review gate                  | done    | feat(tp-8)  |
+| TP-9  | Deliverables + delivery                      | done    | feat(tp-9)  |
+| TP-10 | Engagement loop                              | done    | feat(tp-10) |
 | TP-12 | Authoring at scale (100 strategies)          | pending | —           |
 | TP-13 | Claude seam upgrade                          | pending | —           |
 | TP-14 | Currency jobs                                | pending | —           |

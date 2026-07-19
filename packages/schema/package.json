@@ -1,5 +1,5 @@
 {
-  "name": "@vibe/strategies",
+  "name": "@vibe/schema",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -12,18 +12,17 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && node scripts/copy-content.mjs",
+    "build": "tsc -p tsconfig.json",
     "lint": "eslint src",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@vibe/engine": "workspace:*",
-    "@vibe/shared": "workspace:*"
+    "@vibe/shared": "workspace:*",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "typescript": "^5.7.3",
-    "vitest": "^2.1.8",
-    "@vibe/schema": "workspace:*"
+    "vitest": "^2.1.8"
   }
 }

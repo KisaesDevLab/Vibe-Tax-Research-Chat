@@ -30,6 +30,7 @@ import { configRouter } from './routes/config.js';
 import { clientsRouter } from './routes/clients/index.js';
 import { archivesRouter } from './routes/archives.js';
 import { adminTableSetsRouter } from './routes/admin/table-sets.js';
+import { adminReviewQueueRouter, adminStrategyDraftRouter } from './routes/admin/review-queue.js';
 import { planningRouter } from './routes/planning/index.js';
 import { dlRouter } from './routes/dl.js';
 import { clientDeliverablesRouter } from './routes/planning/deliverables.js';
@@ -98,6 +99,8 @@ export function createApp(): Express {
   app.use('/api/admin/references', adminReferencesRouter);
   app.use('/api/admin/usage', adminUsageRouter);
   app.use('/api/admin/table-sets', adminTableSetsRouter);
+  app.use('/api/admin/review-queue', adminReviewQueueRouter);
+  app.use('/api/admin/strategies', adminStrategyDraftRouter);
   app.use('/api/chats', chatsRouter);
   app.use('/api/clients', clientsRouter);
   app.use('/api/archives', archivesRouter);

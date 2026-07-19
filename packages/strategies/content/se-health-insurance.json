@@ -62,6 +62,16 @@
         "type": "Admin",
         "cite": "Form 7206 and instructions",
         "note": "The computation form implementing the deduction and its earned-income limit."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1402(a)",
+        "note": "Net earnings from self-employment are computed without subtracting the §162(l) deduction — the benefit is income tax only."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §199A",
+        "note": "The deduction attributable to the business reduces qualified business income, trimming the 20% deduction alongside the income-tax benefit."
       }
     ],
     "requirements": [
