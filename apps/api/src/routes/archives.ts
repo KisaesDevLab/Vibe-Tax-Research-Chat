@@ -8,7 +8,14 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { and, desc, eq, isNull, lte, sql } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
-import { chats, clients, plans, research_archives, type Chat } from '@vibe/db/schema';
+import {
+  chats,
+  clients,
+  plans,
+  plan_research_links,
+  research_archives,
+  type Chat,
+} from '@vibe/db/schema';
 import { requireAuth } from '../middleware/auth.js';
 import { requirePlanning } from '../middleware/planning-flag.js';
 import { audit } from '../lib/audit.js';
@@ -140,6 +147,19 @@ async function freezeArchive(opts: FreezeOpts) {
         ...(opts.clientId ? { client_id: opts.clientId } : {}),
       })
       .where(eq(chats.id, opts.chat.id));
+    // TP-16 — archiving against a plan IS the link (the "Research this"
+    // launcher flow): create the plan_research_links row the review gate
+    // checks, so the elevated-risk gate clears without a second manual
+    // linking step. Explicit linking in the Review tab remains available
+    // for archives created without a plan.
+    if (opts.planId) {
+      await tx.insert(plan_research_links).values({
+        plan_id: opts.planId,
+        strategy_id: opts.strategyId,
+        research_archive_id: row!.id,
+        created_by: opts.actorUserId,
+      });
+    }
     return row!;
   });
 

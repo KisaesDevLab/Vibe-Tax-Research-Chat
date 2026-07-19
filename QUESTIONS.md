@@ -298,3 +298,17 @@ only when NULL so admin publishes are never clobbered by re-seeds.
 - **External infra** (Tailscale, Shield egress policy, ZDR org agreement, Vault/B2
   offsite) is tracked as operator checklist items in docs/deployment-checklist.md —
   the app degrades gracefully while absent.
+
+## TP-16 — rollout notes
+
+- **Walk finding, fixed in this phase**: archiving a research chat WITH a plan selected
+  now auto-creates the `plan_research_links` row (the "Research this" launcher flow
+  satisfies the elevated-risk gate without a second manual linking step). Explicit
+  linking in the Review tab remains for archives created without a plan.
+- **Fresh-DB walk executed with** signed webhook fixtures (real HMAC secrets in env) and
+  a mock licensing server to exercise both entitlement postures (402 fail-closed
+  unlicensed; renders when granted).
+- The build is complete through TP-16. Remaining externally-gated work (T&B sync fields,
+  Connect delivery, OCR provider, real OpenSign/Stripe/licensing endpoints, Shield/ZDR
+  org setup, Vault/B2 offsite) is documented in docs/deployment-checklist.md and QUESTIONS
+  entries above; all have adapter seams and degrade gracefully.
