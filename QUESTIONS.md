@@ -235,3 +235,12 @@ only when NULL so admin publishes are never clobbered by re-seeds.
 - **c-corp-conversion modeling** — flow-through removed, 21% corp tax surfaced via
   `corpTaxPaid`, salary + optional qualified dividends on the 1040; QBI forfeiture and
   second-layer tax called out in notes. `mayIncreaseBurden: true`.
+- **Content items flagged for partner spot-check** (from the authoring pass; all records
+  pass the automated gates, these are substance checks): WOTC 2026 hires are written as
+  reauthorization-contingent (credit lapsed 12/31/2025; extension bills pending) — revisit
+  published status if reauthorization stalls; RSMo §143.022 20% business-income deduction
+  described as having no SSTB/wage limits; Missouri MOST 529 figures and RSMo §§143.113/
+  143.114 cites drawn from memory; a handful of older case cites (Lone Manor Farms, Denman,
+  Pohoski, Nielsen, FedEx W.D. Tenn., Dixie Dairies, Durden, Sanford) pass format lint but
+  merit a cite-check before client-facing use; OZ 2.0 (rolling deferral, rural step-ups)
+  follows post-OBBBA secondary sources pending implementing guidance.

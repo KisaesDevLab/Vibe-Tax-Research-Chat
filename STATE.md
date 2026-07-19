@@ -17,7 +17,7 @@ Updated after each phase commit.
 | TP-8  | Plan workflow + review gate                  | done    | feat(tp-8)  |
 | TP-9  | Deliverables + delivery                      | done    | feat(tp-9)  |
 | TP-10 | Engagement loop                              | done    | feat(tp-10) |
-| TP-12 | Authoring at scale (100 strategies)          | pending | —           |
+| TP-12 | Authoring at scale (100 strategies)          | done    | feat(tp-12) |
 | TP-13 | Claude seam upgrade                          | pending | —           |
 | TP-14 | Currency jobs                                | pending | —           |
 | TP-15 | Hardening + restore drill                    | pending | —           |
@@ -30,3 +30,6 @@ Updated after each phase commit.
 - TABLES_2026 seed figures verified via web research 2026-07 (Rev. Proc. 2025-32, SSA
   wage base, Notice 2025-67, OBBBA parameters) with per-group sourceNotes.
 - Engine: 53 checkpoint tests green; ENGINE_VERSION 1.0.0.
+- TP-12 done bar met: 100/100 records schema-valid with suggest rules; 56/56 modeled with
+  registered apply modules and 112 engine-computed goldens; seed idempotent (double-seed
+  inserts 0); planning API serves 100/56.
