@@ -1,0 +1,283 @@
+{
+  "id": "meals-optimization",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Meals Deduction Optimization",
+  "category": "business-expenses",
+  "modeled": true,
+  "complexity": 1,
+  "riskRating": "low",
+  "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "Most clients do not have a meals problem; they have a chart-of-accounts problem. Post-TCJA, entertainment is nondeductible under §274(a), business meals survive at 50 percent under §274(n), and a short list of categories — company recreational events for rank-and-file employees, food sold to customers, items available to the general public — stays at 100 percent through the §274(e) exceptions. One blended 'Meals & Entertainment' account produces the wrong answer in both directions: fully deductible items get haircut to 50 percent, and nondeductible entertainment leaks into the deduction. The fix is separated accounts, a receipt habit that captures who and why, and a year-end reclassification pass. The model applies the advisor-computed incremental deduction — enter the after-percentage recovery, never gross spend.",
+    "mechanics": [
+      "§274(a)(1) disallows entertainment outright — tickets, golf, club dues, suites — and Reg. §1.274-11 allows the food at an entertainment event only when purchased separately or separately stated on the invoice.",
+      "Business meals hold at 50 percent under §274(n): not lavish, taxpayer or an employee present, provided to a business associate — with Notice 2018-76 and the final regulations confirming client meals survived the TCJA.",
+      "The 100 percent lane runs through the §274(e) exceptions: recreational and social events primarily for non-highly-compensated employees, food and beverages sold to customers for adequate consideration, items available to the general public, and meals treated as W-2 compensation.",
+      "Substantiation follows §274(d) discipline — amount, date, place, business purpose, and the business relationship of attendees; a card statement alone concedes the deduction, while an annotated receipt defends it.",
+      "For amounts paid after 2025, §274(o) makes employer eating-facility and convenience-of-the-employer meal costs nondeductible — on-site meal programs need their own account because their answer changed.",
+      "The modeled amount is the incremental deduction recovered by reclassification and documentation at the correct percentages — the advisor computes it from the actual meal accounts, and the engine deducts it exactly as entered."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §274(a)(1)",
+        "note": "The post-TCJA entertainment disallowance."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §274(n)",
+        "note": "The 50 percent food-and-beverage limitation and its cross-references to the 100 percent exceptions."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §274(e)",
+        "note": "The 100 percent categories: employee recreational events, items sold to customers, public availability, compensation-treated meals."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §§1.274-11, 1.274-12",
+        "note": "The final TCJA regulations: entertainment boundaries, the separately-stated food rule, and the business-meal requirements."
+      },
+      {
+        "type": "Admin",
+        "cite": "Notice 2018-76",
+        "note": "The interim confirmation that client business meals remained 50 percent deductible after the TCJA."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§274(o), 274(d)",
+        "note": "The 2026 eating-facility disallowance, and the substantiation standard the meal file must meet."
+      }
+    ],
+    "requirements": [
+      "Separate ledger accounts for 100 percent, 50 percent, and nondeductible spend (plus eating-facility costs where they exist).",
+      "Receipts annotated with attendees and purpose, captured at the time — a ten-second habit, not a year-end project.",
+      "A bookkeeper briefed on the categories and sample-checked during the year."
+    ],
+    "risks": [
+      "The leading exam pattern is concession by silence: undocumented meals are simply given up, because a §274(d)-style substantiation failure leaves nothing to argue — the annotated receipt is the entire defense.",
+      "Entertainment miscoded as meals draws adjustment plus accuracy penalties, and the separately-stated rule for event food is applied literally.",
+      "The 100 percent employee-event category requires the event to be primarily for non-highly-compensated employees — an owners' dinner does not qualify.",
+      "This strategy recovers deductions on spending that already occurs; presenting it as new savings overstates it — the honest frame is stopping an annual forfeiture.",
+      "On-site meal programs lose their deduction in 2026; budgets built on the old treatment will miss."
+    ],
+    "stateNotes": [
+      "Conformity: federal-conformity states absorb the meal percentages inside federal business income with no separate computation; a handful decouple on specific §274 items, so confirm each filing state.",
+      "PTET interaction: the recovered deduction reduces entity income ahead of any pass-through entity tax computation — the engine sequences PTET after it.",
+      "Missouri: conforms through rolling conformity and its federal starting points (RSMo §143.091, §143.121), so the federal meal percentages carry into the Missouri base unchanged."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["travel-documentation"]
+    },
+    "reviewChecklist": [
+      "Chart of accounts restructured — the trial balance no longer shows a single blended meals line.",
+      "The modeled incremental deduction computed at correct percentages from actual accounts, not estimated from gross spend.",
+      "Receipt-annotation habit confirmed operating by sample test, not just instructed.",
+      "Eating-facility and convenience-meal costs isolated and excluded from the deduction."
+    ]
+  },
+  "client": {
+    "teaser": "Stop giving away meal deductions your books already earned.",
+    "headline": "Get full credit for the meals your business already buys",
+    "plainEnglish": [
+      "The tax rules for meals are fussy. A client lunch is 50 percent deductible. The office holiday party is 100 percent. Sports tickets are zero. Most businesses throw all of it into one pile in their books.",
+      "When everything sits in one pile, the safe move at tax time is to cut it all in half. That means the fully deductible items lose half their value — every single year. And meals with no note about who and why can be lost entirely if the IRS asks.",
+      "The fix is simple and permanent. We split your books into the right categories and give you a ten-second receipt habit: snap a photo, note who you were with and why. At year end we check the coding and claim each category at its full allowed rate."
+    ],
+    "analogy": "It is like sorting your recycling. Toss everything in one bin and the whole load gets treated as trash. Sort it, and each item keeps its full value.",
+    "benefits": [
+      "Full credit for 100 percent items like the company party",
+      "Every meal deduction backed by records that hold up",
+      "A one-time bookkeeping fix that pays off every year",
+      "Ten seconds per receipt is the whole ongoing effort"
+    ],
+    "steps": [
+      "WE reorganize the meal categories in your books.",
+      "WE give you and your bookkeeper a one-page cheat sheet.",
+      "YOU snap the receipt and note who and why, every time.",
+      "WE review the coding at year end and claim each category correctly."
+    ],
+    "clientCommitments": [
+      "Use the receipt habit — photo plus who and why",
+      "Keep the categories separate, and ask us when unsure where something goes"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Quarterly sample test of meal coding",
+      "Year-end reclassification review before the return is prepared"
+    ],
+    "deliverables": [
+      "Restructured meal accounts with a coding cheat sheet",
+      "Year-end reclassification memo supporting each percentage claimed"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 34,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "additionalDeduction": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["additionalDeduction"]
+    },
+    "apply": {
+      "module": "meals-optimization@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasBusiness",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "Better meal documentation typically recovers deductions already being spent."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj Sch C 300k, 6k recovered",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 300000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "additionalDeduction": 6000
+        },
+        "expect": {
+          "totalBurdenDelta": -1252,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "single S-corp 200k/80k, 3k recovered",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 200000,
+              "employeeWages": 0,
+              "ownerWages": 80000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "additionalDeduction": 3000
+        },
+        "expect": {
+          "totalBurdenDelta": -576,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §274", "Reg. §1.274-11 and -12"],
+    "keywords": [
+      "meals deduction",
+      "274(n)",
+      "50 percent meals",
+      "entertainment disallowance",
+      "employer meals 274(o)"
+    ],
+    "reviewTriggers": [
+      "Any change to the meal percentages",
+      "Guidance under the §274(o) disallowance",
+      "New substantiation rulings on meal records"
+    ]
+  }
+}

@@ -1,0 +1,178 @@
+{
+  "id": "annual-gifting-program",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Systematic Gifting (Annual Exclusion + Lifetime Exemption)",
+  "category": "succession-exit",
+  "modeled": false,
+  "complexity": 3,
+  "riskRating": "low",
+  "entityTypes": ["individual"],
+  "typicalSavingsBand": "structural",
+  "advisor": {
+    "summary": "A standing program that layers four transfer channels: per-donee annual exclusion gifts under §2503(b) ($19,000 for 2026, $38,000 per couple), unlimited direct payments of tuition and medical costs under §2503(e), five-year 529 front-loading under §529(c)(2)(B), and deliberate use of the $15M lifetime exemption that OBBBA made permanent and indexed. The arithmetic compounds quietly — a couple with a dozen natural donees can move $456,000 a year without touching exemption — and permanence changes the posture: there is no sunset to race, so asset selection now outranks speed. Every non-cash gift is a basis decision first: §1015 carryover means low-basis holdings of an older client are often worth more inside the estate collecting the §1014 step-up than outside it saving estate tax the client will never owe. The compliance spine is Form 709 — gift-splitting, the 529 election, and adequate disclosure all run through it.",
+    "mechanics": [
+      "Annual exclusion under §2503(b): $19,000 per donor per donee for 2026, present-interest gifts only — a married couple reaches $38,000 per donee from joint funds or via the §2513 gift-splitting election, which itself requires a Form 709.",
+      "Qualified transfers under §2503(e) stack on top without limit: tuition paid directly to the school and medical costs (premiums included) paid directly to the provider are not gifts at all — reimbursing the family member instead of paying the institution forfeits the treatment.",
+      "529 front-loading under §529(c)(2)(B): a donor may elect to spread a lump contribution over five years — up to $95,000 per donor ($190,000 per couple) per beneficiary at 2026 levels — with the election made on Form 709 and the unspread portion pulled back into the estate if the donor dies within the window.",
+      "Exemption gifts under §§2505, 2010(c) consume the $15M shield but freeze value — all post-gift appreciation and income accrue outside the estate; with permanence, the discipline is gifting the right assets, not gifting fast.",
+      "Basis governs asset selection: gifts carry §1015 carryover basis (with any built-in loss trimmed to FMV), while assets held to death take the §1014 step-up — give cash and high-basis growth assets, and keep low-basis holdings of older donors for the reset.",
+      "Adequate disclosure on Form 709 starts the statute of limitations on valuation — unfiled or thin returns leave every gift's value open indefinitely."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §2503(b)",
+        "note": "The annual exclusion — $19,000 per donee for 2026 per Rev. Proc. 2025-32; present-interest gifts only, so trust gifts need withdrawal rights."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §2503(e)",
+        "note": "Unlimited exclusion for tuition and medical amounts paid directly to the institution or provider."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §529(c)(2)(B)",
+        "note": "The five-year ratable-spread election for front-loaded 529 contributions."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §2513",
+        "note": "Gift-splitting — a consenting spouse doubles every exclusion, at the cost of a Form 709."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§2505, 2010(c)",
+        "note": "The $15M lifetime exemption (2026), permanent and indexed under P.L. 119-21 (OBBBA) — timing is a choice, not a deadline."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1015",
+        "note": "Carryover basis for gifts — the donee inherits the gain, and the loss side is capped at FMV."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1014",
+        "note": "The basis step-up at death — the benchmark every proposed gift of appreciated property must beat."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 709 and instructions",
+        "note": "The filing spine — splitting elections, 529 spreads, exemption gifts, and adequate disclosure."
+      }
+    ],
+    "requirements": [
+      "A retention analysis first: the donor keeps comfortably enough for life expectancy, long-term-care risk, and lifestyle — gifts are irrevocable.",
+      "Present-interest delivery — outright, UTMA, 529, or trusts with properly administered withdrawal rights and contemporaneous notices.",
+      "A basis screen on every non-cash asset before it moves.",
+      "Form 709 compliance wherever triggered, with qualified appraisals for hard-to-value interests."
+    ],
+    "risks": [
+      "The leading error post-OBBBA is wrong-asset gifting: moving low-basis assets out of an estate that will never owe estate tax trades a 0% estate-tax problem for a very real capital-gains problem when the donee sells — run the §1014-versus-§1015 comparison before any appreciated gift.",
+      "Overshooting is irreversible: an aggressive program followed by a long-term-care event leaves the donor dependent on the donees' goodwill.",
+      "Trust gifts without real withdrawal rights — or without the notices actually sent — fail the present-interest test and silently consume exemption.",
+      "Gift-splitting and the 529 election both require a Form 709 even when no tax is due — missed filings leave valuations open forever and forfeit elections.",
+      "A donor's death inside a 529 five-year spread pulls the unallocated portion back into the estate."
+    ],
+    "stateNotes": [
+      "Missouri levies no gift tax, and its estate tax (RSMo Chapter 145) is a dormant pick-up tax with no current federal credit to attach to — the program has no Missouri transfer-tax cost; income-tax treatment of gifted assets conforms through the federal starting point (RSMo §143.121).",
+      "No PTET interaction — this is a transfer-tax program; any pass-through interests gifted simply move K-1 income to the donees' returns.",
+      "Missouri-specific: the 529 leg earns a state deduction — up to $8,000 per taxpayer ($16,000 MFJ) for MOST 529 contributions — and donees living in other states should check their own estate or inheritance taxes, which can apply far below the federal exemption."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["flp-gifting", "basis-step-up-planning"]
+    },
+    "reviewChecklist": [
+      "Retention projection on file showing the donor's independence survives the program.",
+      "Every non-cash asset screened for basis, with low-basis holdings of older donors flagged for retention.",
+      "Present-interest mechanics verified — withdrawal notices sent and archived for any trust gifts.",
+      "Form 709 triggers identified for the year (splitting, 529 election, exemption gifts) and calendared.",
+      "Direct-payment discipline confirmed: tuition and medical dollars went to institutions, not family reimbursements."
+    ]
+  },
+  "client": {
+    "teaser": "A calm yearly routine that moves six figures to your family with zero gift tax.",
+    "headline": "Give on schedule — tax-free, every single year",
+    "plainEnglish": [
+      "The tax law lets each person give each recipient up to $19,000 a year. No tax, and no dent in your lifetime allowance. Multiply it out: a couple with twelve children and grandchildren to give to can move $456,000 every year.",
+      "There is more room on top. Tuition and medical bills you pay straight to the school or hospital do not count as gifts at all. And college savings plans let you deposit five years of gifts at once, so the money starts growing sooner.",
+      "One thing matters as much as the amount: which assets you give. Some are smart to hand over now. Others carry a tax break for your heirs only if you keep them for life. We sort every asset into the right pile before anything moves."
+    ],
+    "analogy": "It works like an annual harvest. Each year the law lets you carry a set amount out of the field free and clear — but skip a year, and that year's allowance is gone for good.",
+    "benefits": [
+      "Six-figure yearly transfers with zero gift tax for a typical family",
+      "All future growth on gifted dollars happens outside your estate",
+      "Unlimited extra room for tuition and medical bills paid directly",
+      "Keeps the family's plan simple, repeatable, and on schedule"
+    ],
+    "steps": [
+      "WE map your family into a giving plan and confirm you keep more than enough for life.",
+      "WE sort your assets — what to give now, what to hold for the tax break at death.",
+      "YOU make the gifts on the schedule we set, and pay schools and hospitals directly.",
+      "WE handle any required filings and refresh the numbers each year as limits rise."
+    ],
+    "clientCommitments": [
+      "Treat every gift as final — this only works with money you will not need back",
+      "Pay tuition and medical bills straight to the institution, never as reimbursements",
+      "Loop us in before giving any asset that is not cash"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Annual program review against the indexed exclusion and exemption figures",
+      "Execute and document the year's gifts, with withdrawal notices for trust gifts",
+      "Prepare Form 709 where splitting, 529 elections, or exemption gifts require it"
+    ],
+    "deliverables": [
+      "Donee map and annual gifting calendar",
+      "Asset basis screen — give-now versus hold-for-step-up schedule",
+      "Form 709 filings with adequate-disclosure support where triggered",
+      "Annual program summary for the estate file"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "totalBusinessProfit",
+        "op": "gt",
+        "value": 500000
+      }
+    ],
+    "reason": "Annual-exclusion gifts move appreciation out of the estate at zero transfer-tax cost."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §2503 and annual exclusion inflation adjustments",
+      "IRC §2010(c) exemption legislation"
+    ],
+    "keywords": [
+      "annual exclusion gifts",
+      "gift splitting",
+      "529 front-loading",
+      "lifetime exemption",
+      "Form 709"
+    ],
+    "reviewTriggers": [
+      "Annual inflation updates to the exclusion and exemption",
+      "Any legislation revisiting the $15M exemption or basis rules",
+      "Changes to 529 or qualified-transfer treatment"
+    ]
+  }
+}

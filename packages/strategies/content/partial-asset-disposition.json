@@ -1,0 +1,276 @@
+{
+  "id": "partial-asset-disposition",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Partial Asset Disposition on Renovations",
+  "category": "real-estate",
+  "modeled": true,
+  "complexity": 3,
+  "riskRating": "low",
+  "entityTypes": ["rental", "s-corp", "partnership"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "When a renovation replaces a roof, HVAC system, windows, or another structural component, the tangible property regulations force the new component to be capitalized — while the old one's remaining basis would otherwise keep depreciating inside the building for decades. Reg. §1.168(i)-8(d)(2) offers an election to treat the retirement as a partial disposition: the remaining adjusted basis of the replaced component deducts as a current loss, the related demolition and removal costs deduct under Reg. §1.263(a)-3(g)(2) instead of being capitalized, and the retired basis exits the ledger so it never returns as recapture on sale. The election has no form of its own — it is made simply by claiming the loss on the timely filed original return for the disposition year, which makes the deadline the whole game. The engine models the retired component's remaining basis as a current rental deduction.",
+    "mechanics": [
+      "The trigger is a capitalizable restoration under Reg. §1.263(a)-3(k) — the same event that forces the new component onto the depreciation schedule opens the election on the old one.",
+      "The deduction equals the retired component's remaining adjusted basis; where original cost was never separately stated, Reg. §1.168(i)-8 permits any reasonable method, including discounting the replacement cost to the acquisition date (a Producer Price Index rollback) and applying the depreciation already taken.",
+      "Removal and demolition costs tied to the disposed component are deducted currently under Reg. §1.263(a)-3(g)(2) when a disposition loss is claimed — often as valuable as the basis loss itself.",
+      "The retired basis and its accumulated depreciation leave the fixed-asset ledger, so they never resurface as recapture on a later sale — a character benefit layered on the timing benefit.",
+      "The election is made by reporting the loss under §165 on the timely filed original return (extensions included) for the year of the retirement; it is generally unavailable retroactively once that return is filed.",
+      "The model deducts the retired basis against the rental in the current year; removal costs can be added to the input where quantified."
+    ],
+    "authority": [
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.168(i)-8(d)(2)",
+        "note": "The partial disposition election for retired structural components, with reasonable-method basis determination."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.263(a)-3(k)",
+        "note": "The restoration standard that forces capitalization of the replacement — the event that makes the election available."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.263(a)-3(g)(2)",
+        "note": "Current deduction of removal costs when a disposition loss is realized on the replaced component."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §165",
+        "note": "The loss allowance the retired component’s remaining basis is deducted under."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 4797 and instructions",
+        "note": "Where the disposition loss is reported for the retirement year."
+      }
+    ],
+    "requirements": [
+      "A current-year renovation that retires an identifiable building component — roof, HVAC, windows, plumbing runs, facade.",
+      "A documented, reasonable method for the retired component’s remaining basis (cost records, cost segregation detail, or a PPI-discounted replacement cost).",
+      "The loss claimed on the timely filed original return for the disposition year — that filing is the election.",
+      "The replacement capitalized under the tangible property regulations; this election pairs with capitalization, it does not replace it."
+    ],
+    "risks": [
+      "The deadline is the leading failure mode: this is an annual, return-embedded election with no standalone relief procedure, and a loss not claimed on the timely original return generally stays buried in the building’s basis — the exam issue is valuation, but the malpractice issue is the calendar; no marquee case exists because the fights rarely leave exam.",
+      "Guessed valuations for the old component draw adjustments; a reasonable-method computation with retained math is the defense.",
+      "If the replacement is really a deductible repair under the tangible property regulations, expensing usually beats the election — run the repair analysis first.",
+      "Ledger hygiene matters: the retired basis must actually leave the depreciation schedule or the deduction double-counts.",
+      "Any loss created remains subject to §469 gating for owners without a passive-loss path."
+    ],
+    "stateNotes": [
+      "Conformity: the tangible property regulations are federal method rules, and states conform through their federal starting points — no separate state election exists.",
+      "Missouri conforms via federal AGI (RSMo §143.121); the disposition loss flows to the Missouri return unchanged.",
+      "PTET interaction: for buildings held in an electing pass-through, the loss reduces the PTET base in the renovation year; for directly held rentals there is no PTET interaction."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["repair-vs-capitalization", "cost-segregation"]
+    },
+    "reviewChecklist": [
+      "Renovation inventoried before filing: components retired, removal costs, and replacement capitalization identified.",
+      "Remaining-basis computation documented with the chosen reasonable method.",
+      "Loss reported on the timely original return for the correct year — deadline confirmed.",
+      "Depreciation schedule updated: retired basis removed, replacement added.",
+      "Repair-vs-capitalization analysis run first, with the conclusion memorialized."
+    ]
+  },
+  "client": {
+    "teaser": "Replacing a roof or HVAC? The one you tore out is still worth a deduction.",
+    "headline": "Renovating? Deduct the part you removed",
+    "plainEnglish": [
+      "When you replace a roof or an air system on a rental building, the new one must be deducted slowly over many years. But the old one you removed still has undeducted cost sitting in your tax records. Left alone, that cost keeps dripping out for decades — for a roof in a landfill.",
+      "A special election lets you deduct all of the old part's remaining cost in the year you replace it. The cost of tearing it out and hauling it away becomes deductible right away too. Together, those two pieces can be a large write-off.",
+      "The catch is timing. The election only works on the tax return for the renovation year. Tell us before we file, and we capture it. Tell us two years later, and it is usually gone for good."
+    ],
+    "analogy": "It is like getting trade-in credit for your old equipment — but the store only honors it at the register, not after you drive home.",
+    "benefits": [
+      "Deduct the old component's leftover cost in the replacement year",
+      "Demolition and removal costs become deductible right away",
+      "Lowers the tax bill when you eventually sell the building",
+      "No special application — just the right reporting, on time"
+    ],
+    "steps": [
+      "WE calculate what the removed component was still worth on paper, using accepted methods.",
+      "WE claim the loss on that year's return and clean up your depreciation records.",
+      "WE keep the calculations and invoices as your support file.",
+      "YOU tell us about renovations in the same year they happen — before we file."
+    ],
+    "clientCommitments": [
+      "Report renovations to us in the year of the work, not at a later filing",
+      "Save contractor invoices that show demolition and removal charges separately"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Year-end renovation sweep of all client properties before returns are filed",
+      "Depreciation-ledger cleanup for any retired components"
+    ],
+    "deliverables": [
+      "Retired-component valuation workpaper",
+      "Form 4797 reporting with the timely return",
+      "Updated depreciation schedule reflecting the disposition"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 39,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "remainingBasis": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["remainingBasis"]
+    },
+    "apply": {
+      "module": "partial-asset-disposition@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasRental",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "Replacing a roof or HVAC lets the old component’s remaining basis deduct now — an election that expires with the return."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj landlord writes off 14k of old roof",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 130000,
+          "businesses": [],
+          "rentals": [
+            {
+              "id": "r1",
+              "name": "Rental",
+              "netIncome": 11000,
+              "activeParticipant": true
+            }
+          ],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "remainingBasis": 14000
+        },
+        "expect": {
+          "totalBurdenDelta": -2480,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "single landlord writes off 7k of old HVAC",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 100000,
+          "businesses": [],
+          "rentals": [
+            {
+              "id": "r1",
+              "name": "Rental",
+              "netIncome": 7000,
+              "activeParticipant": true
+            }
+          ],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "remainingBasis": 7000
+        },
+        "expect": {
+          "totalBurdenDelta": -1540,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "Reg. §1.168(i)-8",
+      "Tangible property regulation amendments",
+      "IRS guidance on disposition valuation methods"
+    ],
+    "keywords": [
+      "partial asset disposition",
+      "retired component basis",
+      "removal cost deduction",
+      "renovation write-off timing"
+    ],
+    "reviewTriggers": [
+      "Amendments to the disposition or removal-cost regulations",
+      "New procedural relief for late elections",
+      "Client renovation activity reported mid-year"
+    ]
+  }
+}

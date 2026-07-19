@@ -1,0 +1,295 @@
+{
+  "id": "vehicle-expense-method",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Vehicle Expense Method (Standard vs. Actual)",
+  "category": "business-expenses",
+  "modeled": true,
+  "complexity": 1,
+  "riskRating": "low",
+  "entityTypes": ["sole-prop", "single-member-llc", "s-corp", "partnership"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "A proprietor deducting business use of a personal vehicle chooses between the standard mileage rate — 72.5 cents per mile for the first half of 2026, raised to 76 cents for miles driven July through December — and actual expenses times the business-use percentage. The choice is stickier than clients expect: Rev. Proc. 2019-46 requires the standard rate to be elected in the vehicle's first business year to preserve later flexibility, and claiming accelerated depreciation in year one locks the vehicle into actual expenses for life. Either way the deduction stands on a §274(d) contemporaneous mileage log. The engine applies the advisor-computed incremental deduction — the margin of the better method over the current baseline — as an entity deduction; the method comparison itself is workpaper arithmetic.",
+    "mechanics": [
+      "Standard mileage bundles depreciation, fuel, insurance, and repairs into one per-mile rate — 72.5 cents for January through June 2026 and 76 cents for July through December under the IRS's mid-year adjustment — with parking and tolls deductible on top; it is unavailable for fleets of five or more simultaneous vehicles or after accelerated depreciation was claimed.",
+      "Actual expenses deduct operating costs plus depreciation, multiplied by the business-use percentage (business miles over total miles), with the §280F luxury-auto caps metering depreciation on passenger vehicles.",
+      "Rev. Proc. 2019-46 sets the sequencing rule: standard mileage in year one deems straight-line depreciation and preserves the right to alternate later; claiming MACRS, first-year expensing, or bonus in year one forecloses the standard rate for that vehicle permanently.",
+      "The standard rate's per-mile depreciation component reduces basis every year, so long-time standard-rate users meet unexpected gain at sale or trade-in.",
+      "§274(d) strict substantiation governs: date, mileage, destination, and business purpose recorded at or near the time — reconstructed logs and estimates are disallowed, and commuting to a regular work location is never business mileage (a qualifying home office converts home-to-client trips).",
+      "The model deducts the advisor-computed incremental benefit of the better method over the client's current practice; it does not choose the method — the comparison worksheet does."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §162(a)",
+        "note": "The deduction's statutory home — ordinary and necessary business transportation."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §274(d)",
+        "note": "Strict substantiation for listed property: no contemporaneous log, no deduction."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.274-5T",
+        "note": "The adequate-records standard — a log kept at or near the time of use."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Proc. 2019-46",
+        "note": "The standard-mileage regime: first-year election, deemed depreciation, fleet exclusion, and switching rules."
+      },
+      {
+        "type": "Admin",
+        "cite": "Notice 2026-10",
+        "note": "The 2026 standard mileage rates — 72.5 cents per business mile, adjusted mid-year to 76 cents for July through December 2026."
+      },
+      {
+        "type": "Case",
+        "cite": "Sanford v. Commissioner, 50 T.C. 823 (1968), aff'd, 412 F.2d 201 (2d Cir. 1969)",
+        "note": "Section 274(d) displaces estimation — the reason mileage cases are lost on records, not law."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §280F",
+        "note": "Luxury-auto caps and listed-property rules that shape actual-method depreciation."
+      }
+    ],
+    "requirements": [
+      "A contemporaneous mileage log — app, diary, or spreadsheet — under any method.",
+      "Standard rate: elected in the vehicle's first business year, with fewer than five vehicles in simultaneous use.",
+      "Actual method: cost receipts and a defensible business-use percentage."
+    ],
+    "risks": [
+      "The leading audit theory is the absent log: §274(d) mileage is among the most commonly disallowed deductions in exam, and Sanford v. Commissioner forecloses the estimate that would rescue it — the app is cheaper than the adjustment.",
+      "A defaulted year-one choice of actual-plus-accelerated permanently forecloses the standard rate for that vehicle; the first-year decision deserves a worksheet, not a habit.",
+      "Near-100-percent business-use claims on a household's only vehicle draw scrutiny, and miscounted commuting is the recurring adjustment.",
+      "Standard-rate depreciation quietly consumes basis — expect taxable gain at trade-in after years on the rate.",
+      "If business use of a MACRS-depreciated vehicle drops to half or below, §280F recaptures the excess over straight line."
+    ],
+    "stateNotes": [
+      "Conformity: the deduction rides inside federal business income and conformity states absorb it without adjustment; states do not publish separate mileage rates for this purpose.",
+      "PTET interaction: for entity owners the economics run through an accountable-plan reimbursement, which reduces electing-entity income ahead of any pass-through entity tax; for a Schedule C filer there is no PTET interaction.",
+      "Missouri: conforms through its federal starting point (RSMo §143.121); the Missouri return simply reflects the reduced business income."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": ["heavy-vehicle-179"],
+      "synergiesWith": ["accountable-plan"]
+    },
+    "reviewChecklist": [
+      "Log method in place and producing contemporaneous entries — sample-checked, not assumed.",
+      "First-business-year vehicles: both methods modeled over the expected holding period before filing.",
+      "The modeled incremental deduction computed from the actual comparison worksheet.",
+      "Cumulative standard-rate depreciation tracked against basis in the permanent file.",
+      "Entity-owner vehicles routed through an accountable plan rather than a personal deduction."
+    ]
+  },
+  "client": {
+    "teaser": "Two ways to claim the same driving — we pick the one that pays more.",
+    "headline": "Make every business mile count",
+    "plainEnglish": [
+      "When you use your own car for business, the IRS allows two ways to deduct it. The simple way pays a flat rate per business mile — 72.5 cents early in 2026, and 76 cents for the second half of the year. The detailed way deducts the business share of what the car really costs: gas, insurance, repairs, and wear.",
+      "Which wins depends on your car and your driving. Many miles in an economical car favors the flat rate. An expensive car driven less favors actual costs. The first-year choice can lock you in, so it pays to do the math up front.",
+      "Every option needs one thing: a record of your business trips. A phone app does it automatically. That record is the difference between a deduction that survives questions and one that disappears."
+    ],
+    "analogy": "It is like choosing between a flat per-mile reimbursement and an expense report. Same trips, two ways to count — we run both and hand you the bigger number.",
+    "benefits": [
+      "Turns driving you already do into a real deduction",
+      "Saves income tax and self-employment tax for sole proprietors",
+      "We run the method comparison so nothing is left behind",
+      "A phone app makes the records nearly effortless"
+    ],
+    "steps": [
+      "WE set you up with an easy mileage-tracking app.",
+      "WE compute the deduction both ways and choose the better one.",
+      "WE handle the election and forms with your return.",
+      "YOU let the app log your trips and confirm the business ones."
+    ],
+    "clientCommitments": [
+      "Keep the mileage app running and review trips monthly",
+      "Tell us before buying or replacing a business vehicle — the first-year choice matters"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Annual method comparison with current-year miles and costs",
+      "Split-rate mileage computation when the IRS changes rates mid-year",
+      "Basis tracking for the standard-rate depreciation component"
+    ],
+    "deliverables": [
+      "Method comparison worksheet",
+      "Mileage-log setup and annual mileage summary",
+      "Vehicle basis schedule for the permanent file"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 34,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "incrementalDeduction": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["incrementalDeduction"]
+    },
+    "apply": {
+      "module": "vehicle-expense-method@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasBusiness",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "The better of standard-mileage vs actual-cost is a yearly comparison worth running."
+    },
+    "goldenTests": [
+      {
+        "name": "single Sch C 150k, 4k incremental",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 150000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "incrementalDeduction": 4000
+        },
+        "expect": {
+          "totalBurdenDelta": -1220,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj Sch C 300k, 7k incremental",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 300000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "incrementalDeduction": 7000
+        },
+        "expect": {
+          "totalBurdenDelta": -1461,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "Annual IRS standard mileage rate notices",
+      "IRC §274(d)",
+      "Rev. Proc. 2019-46 successors"
+    ],
+    "keywords": [
+      "standard mileage rate",
+      "actual expense method",
+      "mileage log",
+      "274(d) substantiation",
+      "vehicle deduction"
+    ],
+    "reviewTriggers": [
+      "Annual and mid-year mileage-rate announcements",
+      "Changes to the standard-mileage election rules",
+      "New case law on vehicle substantiation"
+    ]
+  }
+}
