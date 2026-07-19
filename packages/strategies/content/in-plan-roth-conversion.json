@@ -1,0 +1,162 @@
+{
+  "id": "in-plan-roth-conversion",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "In-Plan Roth Conversions",
+  "category": "retirement",
+  "modeled": false,
+  "complexity": 3,
+  "riskRating": "low",
+  "entityTypes": ["individual"],
+  "typicalSavingsBand": "structural",
+  "advisor": {
+    "summary": "Section 402A(c)(4) lets a participant convert vested pre-tax 401(k) balances to a designated Roth account inside the plan — including, since the ATRA expansion, amounts not otherwise distributable. The converted amount is ordinary income in the conversion year at rates that are, post-OBBBA, permanent and known; everything afterward grows tax-free with no lifetime RMDs. The strategy is deliberate bracket-filling: convert exactly enough to use up low brackets in a genuine income valley, or in a year a large deduction — defined benefit funding, cost segregation, a big charitable year — has crushed taxable income. Because TCJA repealed recharacterization, the election is irrevocable; sizing waits for a near-final Q4 projection and must account for the AGI-driven cliffs (SALT-cap phase-down, QBI thresholds, NIIT, IRMAA) that push the true marginal cost above the nominal bracket.",
+    "mechanics": [
+      "The plan must offer designated Roth accounts and permit in-plan conversions; §402A(c)(4)(E) reaches amounts not otherwise distributable, and Notices 2010-84 and 2013-74 supply the operating rules — solo 401(k) documents vary widely, so read before promising anything.",
+      "The converted amount is ordinary income in the conversion year under the §408A(d)(3) framework; no 10% early-distribution penalty applies at conversion, but amounts withdrawn within five years can trigger penalty recapture.",
+      "There is no income limit and no dollar cap — the ceiling is bracket tolerance, so the right size is fill the target bracket and stop.",
+      "The best conversion years are often manufactured: a defined benefit funding year, a cost segregation year, or a genuine income valley lets pre-tax dollars convert at 10–22% instead of 32–37%.",
+      "Conversion income raises AGI, which can phase down the OBBBA SALT cap, squeeze QBI thresholds, expose other income to NIIT, and set IRMAA surcharges two years out — brackets get filled net of these cliffs, not gross.",
+      "Recharacterization is repealed (TCJA), so the election is irrevocable — execute in Q4 against near-final numbers, or split the conversion across December and January to straddle uncertainty."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §402A(c)(4)",
+        "note": "Authorizes in-plan Roth rollovers; subparagraph (E) extends them to otherwise nondistributable amounts."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §408A(d)(3)",
+        "note": "The conversion-inclusion framework (ordinary income above basis) the plan rules incorporate."
+      },
+      {
+        "type": "Admin",
+        "cite": "Notice 2010-84",
+        "note": "Q&A guidance on in-plan Roth rollovers: taxation, withholding, and the five-year recapture rule."
+      },
+      {
+        "type": "Admin",
+        "cite": "Notice 2013-74",
+        "note": "Implements the expansion to nondistributable amounts and states the plan-amendment requirements."
+      },
+      {
+        "type": "IRC",
+        "cite": "P.L. 119-21 (OBBBA)",
+        "note": "Made the TCJA rate structure permanent — conversions now lock in known rates instead of racing a sunset — and created the SALT-cap phase-down that conversion income can trigger."
+      }
+    ],
+    "requirements": [
+      "A plan document with designated Roth accounts and an in-plan conversion feature — amend it in if absent.",
+      "Vested pre-tax balances worth converting, plus cash outside the plan to pay the tax; paying from converted dollars guts the math.",
+      "A reliable year-end projection, because the election cannot be undone.",
+      "A low-bracket year or an offsetting-deduction year to convert into."
+    ],
+    "risks": [
+      "Irrevocability is the headline risk: recharacterization was repealed by the TCJA, so an overshoot is a permanent overpayment — which is why sizing waits for near-final Q4 numbers.",
+      "The AGI cascade can push the true marginal cost far above the nominal bracket: SALT-cap phase-down above the OBBBA MAGI threshold, QBI phase-outs, NIIT on investment income, and IRMAA surcharges for clients 63 and older.",
+      "Paying the conversion tax from plan assets — or with penalty-bearing early money — destroys the arbitrage; outside cash only.",
+      "The five-year recapture rule of Notice 2010-84 surprises under-59½ clients who tap converted amounts early.",
+      "Converting in an ordinary high-income year at 32–37% is usually just prepaying tax at top rates — the value is the timing, not the conversion itself."
+    ],
+    "stateNotes": [
+      "States that conform to federal AGI pick up the conversion income automatically, so a state-level bracket check belongs in the sizing — and a client planning a move to a no-tax state may prefer to defer conversions until after the move.",
+      "No PTET interaction — the conversion is participant-level income, not entity income a pass-through entity tax election could absorb.",
+      "Missouri conforms through RSMo §143.121, so converted amounts are Missouri income in the conversion year; Missouri's comparatively low individual rate keeps the state-side cost of an in-state conversion modest."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["bracket-management", "roth-vs-traditional-split"]
+    },
+    "reviewChecklist": [
+      "Plan document confirmed (or amended) to allow designated Roth accounts and in-plan conversion before any amount is promised.",
+      "Year-end projection includes every planned deduction and the AGI cliffs — SALT phase-down, QBI, NIIT, IRMAA — before the amount is set.",
+      "Outside cash identified for the tax, with Q4 estimates or withholding adjusted to avoid underpayment penalties.",
+      "Client has signed off on irrevocability in writing.",
+      "After execution: 1099-R reconciled and the plan's five-year clocks documented in the file."
+    ]
+  },
+  "client": {
+    "teaser": "Pay tax on retirement money in your cheapest year — then never again.",
+    "headline": "Convert retirement money in a low-tax year and lock in the savings",
+    "plainEnglish": [
+      "Your pre-tax retirement account has a tax bill built in. The IRS just has not collected it yet. Every withdrawal in retirement gets taxed. And in your seventies, the government forces money out on its schedule, not yours.",
+      "A conversion flips the deal. You pick an amount, pay tax on it now, and move it to the tax-free side of your plan. From then on it grows with no tax and no forced withdrawals. The skill is picking the right year — a year your income dips, or a year a big deduction has pushed your rate way down.",
+      "We size the amount with care. Enough to fill your low tax brackets, and not a dollar more. One thing to know going in: once done, it cannot be undone. That is why we run it late in the year, when the numbers are nearly final."
+    ],
+    "analogy": "Your future tax bill is like a debt that must be paid in some year. We choose to pay it in the year it goes on sale.",
+    "benefits": [
+      "Withdrawals from converted money are tax-free for life",
+      "No forced withdrawals later — you control the timing",
+      "Pairs with big-deduction years to convert at bargain rates",
+      "Shrinks the fully-taxed forced withdrawals waiting in your seventies"
+    ],
+    "steps": [
+      "WE spot the low-tax window and confirm your plan allows conversions.",
+      "WE size the exact amount that fills your cheap brackets and stops.",
+      "YOU set aside outside cash for the tax bill — never plan money.",
+      "WE execute late in the year and repeat in each future low-rate year."
+    ],
+    "clientCommitments": [
+      "Keep outside cash ready to pay the conversion tax",
+      "Hold the decision until we have near-final year-end numbers",
+      "Leave converted money in place — early withdrawals can trigger penalties"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Fall bracket projection to test whether this is a conversion year, and at what size",
+      "Q4 execution support with estimated-tax and withholding adjustments",
+      "Post-conversion reconciliation of the 1099-R and five-year clock tracking"
+    ],
+    "deliverables": [
+      "Conversion sizing memo with bracket-fill and AGI-cliff analysis",
+      "Execution checklist with plan paperwork and confirmations",
+      "Multi-year conversion roadmap through the low-rate window"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "hasBusiness",
+        "op": "eq",
+        "value": true
+      }
+    ],
+    "reason": "Low-bracket years are the window to convert pre-tax balances inside the plan."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §402A guidance and in-plan conversion rules",
+      "Annual bracket, IRMAA, and SALT-phase-down parameter updates"
+    ],
+    "keywords": [
+      "in-plan Roth conversion",
+      "Roth rollover",
+      "bracket filling",
+      "402A(c)(4)",
+      "five-year recapture"
+    ],
+    "reviewTriggers": [
+      "Legislation limiting Roth conversions",
+      "Annual inflation adjustments moving bracket and IRMAA thresholds",
+      "Changes to the SALT-cap phase-down mechanics"
+    ]
+  }
+}

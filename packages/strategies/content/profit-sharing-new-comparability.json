@@ -1,0 +1,296 @@
+{
+  "id": "profit-sharing-new-comparability",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "New Comparability Profit Sharing",
+  "category": "retirement",
+  "modeled": true,
+  "complexity": 4,
+  "riskRating": "moderate",
+  "entityTypes": ["s-corp", "partnership", "sole-prop"],
+  "typicalSavingsBand": "25k-100k",
+  "advisor": {
+    "summary": "A cross-tested profit-sharing design under Reg. §1.401(a)(4)-8: allocation classes replace the uniform percentage of pay, and nondiscrimination is tested on the benefit each allocation projects to at retirement rather than on the contribution itself. Because a dollar allocated to a 55-year-old owner has far less time to compound than a dollar allocated to a 30-year-old employee, the owner can take an allocation approaching the §415(c) ceiling while staff receive the gateway minimum — typically 5% of pay. With the right demographics, 85–90% of total plan dollars land in the owner's account and the staff cost is fully deductible. The engine caps the modeled owner allocation at 25% of owner wages (or 20% of self-employment earnings) and the §415(c) limit; it does not model the required staff gateway cost, which must be priced from the census before anything is promised.",
+    "mechanics": [
+      "Participants are grouped into allocation classes — owner, managers, staff, or even one class per person — and each class receives its own contribution rate, set fresh every year.",
+      "Cross-testing under Reg. §1.401(a)(4)-8 converts allocations into equivalent benefit accrual rates at testing age; the plan satisfies §401(a)(4) if projected benefits, not contributions, are nondiscriminatory — the age-leverage engine of the design.",
+      "The gateway is the price of admission: before cross-testing is permitted, each NHCE must receive the lesser of 5% of compensation or one-third of the highest HCE allocation rate — budget roughly 5% of staff pay in every year the owner is funded.",
+      "The owner's allocation is bounded by §415(c) annual additions — $72,000 for 2026, counting deferrals and all employer money — on compensation up to the §401(a)(17) cap of $360,000, and the employer's aggregate deduction by §404(a)(3) at 25% of eligible payroll.",
+      "The engine caps the modeled owner allocation at 25% of owner W-2 wages (or 20% of self-employment earnings) and the §415(c) limit, and does not model the staff gateway cost — the TPA's census-priced illustration supplies the true net numbers.",
+      "The design is usually bolted onto a 401(k): deferral plus safe harbor nonelective plus new comparability is the standard small-plan owner-max stack, and the chassis a cash balance plan can later stack on."
+    ],
+    "authority": [
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.401(a)(4)-8",
+        "note": "Cross-testing: allocations tested as equivalent benefits, plus the minimum-allocation gateway for new comparability designs."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §401(a)(4)",
+        "note": "The underlying nondiscrimination requirement the benefits-basis testing satisfies."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §415(c)",
+        "note": "The per-participant annual-additions cap — $72,000 for 2026, inclusive of deferrals and all employer contributions."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §404(a)(3)",
+        "note": "The employer deduction limit — 25% of aggregate participant compensation; rarely binding in owner-weighted designs but always checked."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §401(a)(17)",
+        "note": "Caps compensation counted per participant at $360,000 for 2026."
+      },
+      {
+        "type": "Admin",
+        "cite": "Notice 2025-67",
+        "note": "The 2026 COLA figures for the §415(c) and §401(a)(17) limits used in this record."
+      }
+    ],
+    "requirements": [
+      "A TPA-administered plan document with class-based allocation language and annual cross-testing.",
+      "Favorable demographics — the owner meaningfully older than the average employee; the design lives on that age gap.",
+      "Cash flow to fund the staff gateway in every year the owner takes an allocation.",
+      "A clean, on-time annual census: ages, hire dates, compensation, and ownership."
+    ],
+    "risks": [
+      "Demographic drift is the recurring failure mode: hiring an older employee or losing a key young one can flip a passing design to failing — testing is annual, not set-and-forget.",
+      "The gateway is unconditional once cross-testing is used: funding the owner while skipping the staff contribution in a tight year is a qualification failure requiring correction.",
+      "§415(c) counts all annual additions — deferrals and safe harbor money shrink the owner's profit-sharing headroom well below the raw $72,000.",
+      "Cross-tested plans with extreme allocations draw IRS attention — use a reputable TPA and keep the annual testing file.",
+      "Late or sloppy census data produces failed tests discovered after funding; corrections under the EPCRS framework (Rev. Proc. 2021-30) are expensive."
+    ],
+    "stateNotes": [
+      "Employer contributions are deductible wherever the state conforms to federal taxable income or starts from federal AGI — the common case; confirm treatment in non-conformity states in the client's footprint.",
+      "PTET interaction: both the staff gateway and the owner allocation reduce pass-through income before a PTET election is computed, so PTET estimates should be re-run once the design study lands.",
+      "Missouri conforms through RSMo §143.121, and for Missouri SALT Parity Act electors (RSMo §143.436) the contributions reduce the PTET base as well."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["cash-balance-stack", "safe-harbor-401k"]
+    },
+    "reviewChecklist": [
+      "Current-year TPA design study in the file showing the owner/staff dollar split on real census data.",
+      "Cross-testing run on final census before the owner's allocation is fully funded.",
+      "Owner's §415(c) headroom computed net of deferrals and safe harbor money — the modeled amount does not exceed it.",
+      "Gateway funding for every eligible NHCE confirmed and budgeted.",
+      "Modeled input matches the design study, and the staff cost is presented to the client separately — the engine does not net it."
+    ]
+  },
+  "client": {
+    "teaser": "Give your team a fair, set amount — and point most plan dollars at your own retirement.",
+    "headline": "A retirement plan design that puts most of the dollars in your account",
+    "plainEnglish": [
+      "Most company plans give everyone the same percent of pay. The law also allows a smarter design. It rests on a simple fact: a dollar saved at 55 has ten years to grow, but a dollar saved at 30 has thirty-five.",
+      "Because of that, an older owner may take a much larger share today. Your employees get a solid, fully deductible amount — usually five percent of pay. The design sends the large remainder to you, often up to the legal cap of $72,000 a year.",
+      "Your team still sees a real benefit, which helps you hire and keep good people. A plan specialist tests the design each year to keep it inside the rules."
+    ],
+    "analogy": "Two people must fill the same size tank by the same deadline. The one who starts later gets the wider hose. This design hands the wider hose to you.",
+    "benefits": [
+      "Direct up to $72,000 a year (2026) into your own account",
+      "With the right team mix, most plan dollars land with the owner",
+      "Staff amounts are a visible benefit and fully deductible",
+      "Amounts can change every year — bigger in good years, smaller in tight ones"
+    ],
+    "steps": [
+      "WE gather your employee roster and have a specialist design the split.",
+      "YOU see the exact owner-versus-team dollar split before committing.",
+      "WE set up or amend the plan and calendar the funding deadlines.",
+      "YOU send the yearly employee census on time so the testing stays clean."
+    ],
+    "clientCommitments": [
+      "Fund the required staff amount in any year you fund your own",
+      "Send accurate employee data — ages, pay, hire dates — on time each year",
+      "Expect the split to shift as your team ages or turns over"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "structural",
+    "annualMaintenance": [
+      "Annual census collection and cross-testing before owner funding",
+      "Allocation resolutions, funding by the return deadline, and Form 5500 filing",
+      "Design re-check as demographics shift, with the cash balance upgrade priced when profits support it"
+    ],
+    "deliverables": [
+      "TPA design study with the owner/staff dollar split",
+      "Plan document or amendment with class-based allocation language",
+      "Annual testing results and funding confirmation for the file"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 52,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "ownerAllocation": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["ownerAllocation"]
+    },
+    "apply": {
+      "module": "profit-sharing-new-comparability@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasEmployees",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "totalBusinessProfit",
+          "op": "gt",
+          "value": 250000
+        }
+      ],
+      "reason": "Cross-tested allocations tilt profit sharing toward older owners while staff minimums stay modest."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj S-corp 500k/200k comp, 50k owner allocation",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 500000,
+              "employeeWages": 120000,
+              "ownerWages": 200000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "ownerAllocation": 50000
+        },
+        "expect": {
+          "totalBurdenDelta": -12000,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj Sch C 400k w/ staff, 60k owner allocation",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 400000,
+              "employeeWages": 90000,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "ownerAllocation": 60000
+        },
+        "expect": {
+          "totalBurdenDelta": -11520,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "Reg. §1.401(a)(4)-8 and cross-testing guidance",
+      "Annual retirement plan COLA notices"
+    ],
+    "keywords": [
+      "new comparability",
+      "cross-tested profit sharing",
+      "allocation gateway",
+      "401(a)(4) testing",
+      "owner-weighted allocation"
+    ],
+    "reviewTriggers": [
+      "IRS guidance tightening cross-tested designs",
+      "Annual §415(c) and §401(a)(17) COLA updates",
+      "Client demographic shifts flagged at census time"
+    ]
+  }
+}

@@ -1,0 +1,295 @@
+{
+  "id": "simple-ira",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "SIMPLE IRA",
+  "category": "retirement",
+  "modeled": true,
+  "complexity": 2,
+  "riskRating": "low",
+  "entityTypes": ["sole-prop", "s-corp", "partnership"],
+  "typicalSavingsBand": "5k-25k",
+  "advisor": {
+    "summary": "A §408(p) Savings Incentive Match Plan for employers with 100 or fewer employees: employee deferrals up to $17,000 for 2026 (plus a $4,000 catch-up at 50 and up) and a mandatory employer contribution — a dollar-for-dollar match up to 3% of compensation or a 2% nonelective for all eligibles. No discrimination testing, no Form 5500, IRA-level administration. The trade-offs are real: lower ceilings than any 401(k)-based design, the exclusive-plan rule barring any other plan in the same year, and a 25% early-withdrawal penalty during a participant's first two years. For an owner-only business a solo 401(k) usually dominates; the SIMPLE earns its keep when there is genuine staff and the owner wants the cheapest compliant plan. The engine models the owner's deferral (capped at the limit and compensation) plus a 3% owner-side match — the required match for eligible employees is a real cost it does not model.",
+    "mechanics": [
+      "Employee deferrals run to $17,000 for 2026, with a $4,000 catch-up at 50 and up; SECURE 2.0 §117 permits roughly 10% higher limits for employers with 25 or fewer employees.",
+      "Employer funding is mandatory under §408(p): a dollar-for-dollar match up to 3% of compensation — reducible to 1% in two of any five years — or a 2% nonelective for every eligible employee.",
+      "The exclusive-plan rule of §408(p)(2)(D) bars maintaining any other qualified plan in the same calendar year — a SIMPLE cannot be stacked with a 401(k), SEP, or cash balance plan.",
+      "Early distributions in a participant's first two years draw a 25% penalty under §72(t)(6) instead of the usual 10% — and rollovers to a non-SIMPLE IRA count as distributions for this purpose.",
+      "Administration is genuinely light: model documents (Forms 5304-SIMPLE or 5305-SIMPLE), an annual 60-day employee notice, no Form 5500, and no nondiscrimination testing; new plans generally must be in place by October 1.",
+      "For a self-employed owner, the deferral and match are above-the-line deductions that also reduce the QBI base but not SE tax; the engine models the owner's deferral plus a 3% owner match and leaves the staff-match cost to be priced separately."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §408(p)",
+        "note": "The SIMPLE framework: the 100-employee limit, the match and nonelective formulas, and the exclusive-plan rule."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §72(t)(6)",
+        "note": "Raises the early-distribution penalty from 10% to 25% during the participant's first two years."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §404(m)",
+        "note": "The employer's deduction for SIMPLE contributions."
+      },
+      {
+        "type": "Admin",
+        "cite": "SECURE 2.0 Act §117 (P.L. 117-328)",
+        "note": "Elevated deferral limits for employers with 25 or fewer employees, with an elect-in path for mid-size employers."
+      },
+      {
+        "type": "Admin",
+        "cite": "Notice 2025-67",
+        "note": "The 2026 limits: $17,000 deferral and $4,000 age-50 catch-up."
+      },
+      {
+        "type": "Admin",
+        "cite": "Forms 5304-SIMPLE / 5305-SIMPLE and instructions",
+        "note": "The model plan documents, the October 1 establishment deadline, and the annual 60-day employee notice."
+      }
+    ],
+    "requirements": [
+      "100 or fewer employees who earned $5,000 or more in the prior year, and no other employer plan maintained in the same calendar year.",
+      "Plan established by October 1 for new plans, with the 60-day employee notice delivered before each plan year.",
+      "Payroll capable of prompt deferral remittance and funding of the required match or nonelective."
+    ],
+    "risks": [
+      "The costliest trap is the exclusive-plan rule: a SIMPLE in place blocks adopting a 401(k)/profit-sharing or cash balance design for the year — plan the graduation, since SECURE 2.0 permits a mid-year conversion to a safe harbor 401(k).",
+      "The §72(t)(6) 25% penalty burns clients who consolidate accounts on their own within the first two years — rollovers to a non-SIMPLE IRA count.",
+      "Employer funding continues in bad years; the 1% match reduction is available only two years in any five.",
+      "The ceilings are low: an owner who could shelter $72,000 in a 401(k)-based design caps out near $21,000 here — re-price the opportunity cost every fall.",
+      "Growing past 100 employees ends eligibility after the two-year grace period."
+    ],
+    "stateNotes": [
+      "Deferrals and employer contributions follow the federal exclusion and deduction in states that conform to federal AGI or federal taxable income — the standard case in the client base.",
+      "PTET interaction: the employer-side contributions (owner match and staff cost) reduce pass-through income before a PTET election is computed; the owner's own deferral is an individual-level exclusion with no PTET effect.",
+      "Missouri conforms through RSMo §143.121, and Missouri SALT Parity Act electors (RSMo §143.436) should fold the employer contributions into the PTET base calculation."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": ["solo-401k", "sep-ira"],
+      "synergiesWith": []
+    },
+    "reviewChecklist": [
+      "Headcount and $5,000-compensation eligibility confirmed, and no other plan maintained this calendar year.",
+      "October 1 establishment and annual 60-day notice deadlines calendared and met.",
+      "Modeled deferral within the $17,000 limit and owner compensation; client told the staff match is an additional cost outside the modeled number.",
+      "Two-year 25% penalty window flagged to the client in writing before any rollover or account consolidation.",
+      "Fall graduation check done: if the owner maxes the SIMPLE, the safe harbor 401(k) upgrade is priced."
+    ]
+  },
+  "client": {
+    "teaser": "A retirement plan so easy it nearly runs itself — and every dollar is deductible.",
+    "headline": "The low-cost, low-hassle retirement plan for a business with a team",
+    "plainEnglish": [
+      "Big-company retirement plans come with lawyers, tests, and yearly government filings. This plan skips nearly all of that. You and your team save from each paycheck, the business adds a small match, and every dollar is deductible.",
+      "For 2026 you can set aside up to $17,000 of your own pay, plus more if you are 50 or older, plus the match. Your employees get the same chance. That makes it a low-cost benefit that helps you keep good people.",
+      "The trade-off is a lower yearly limit than fancier plans. For many owners that is fine. When your profits outgrow it, we move you up to the next plan."
+    ],
+    "analogy": "It is the reliable pickup truck of retirement plans. Not the fastest ride on the road, but cheap to run, hard to break, and it does the job every year.",
+    "benefits": [
+      "Save up to $17,000 of your own pay (2026), plus the match",
+      "Almost no paperwork — no yearly federal filing, no testing",
+      "A low, known cost for the employee match",
+      "Easy to outgrow — we upgrade you when profits climb"
+    ],
+    "steps": [
+      "WE confirm this is the right plan for your size and profit level.",
+      "WE set it up on a short form before the October 1 deadline.",
+      "YOU run savings through payroll and fund the small match.",
+      "WE check each fall whether you have outgrown it."
+    ],
+    "clientCommitments": [
+      "Fund the employee match every year the plan is open",
+      "Send the short notice to employees each year (we prepare it)",
+      "Ask us before moving this money anywhere in the first two years"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Annual 60-day employee notice preparation and delivery",
+      "Match funding verification by the return deadline",
+      "Fall crossover check against a safe harbor 401(k) upgrade"
+    ],
+    "deliverables": [
+      "Executed Form 5304-SIMPLE or 5305-SIMPLE plan document",
+      "Employee notice package and payroll setup instructions",
+      "Annual contribution summary for the return"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 51,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "deferral": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["deferral"]
+    },
+    "apply": {
+      "module": "simple-ira@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasBusiness",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "totalBusinessProfit",
+          "op": "lt",
+          "value": 150000
+        }
+      ],
+      "reason": "For modest profits with staff, SIMPLE beats a 401(k) on cost — below the solo-401(k) crossover."
+    },
+    "goldenTests": [
+      {
+        "name": "single Sch C 90k, full deferral + match",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 90000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "deferral": 17000
+        },
+        "expect": {
+          "totalBurdenDelta": -2255,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj Sch C 120k, 10k deferral",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 120000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "deferral": 10000
+        },
+        "expect": {
+          "totalBurdenDelta": -1305,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §408(p) and SECURE 2.0 small-employer provisions",
+      "Annual SIMPLE limit COLA notices"
+    ],
+    "keywords": [
+      "SIMPLE IRA",
+      "3% match",
+      "exclusive plan rule",
+      "25% penalty",
+      "small employer plan"
+    ],
+    "reviewTriggers": [
+      "Annual SIMPLE deferral COLA updates",
+      "SECURE 2.0 implementation guidance on the §117 higher limits",
+      "Client headcount approaching 100 employees"
+    ]
+  }
+}
