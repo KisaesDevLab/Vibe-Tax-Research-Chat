@@ -118,34 +118,64 @@ export async function runTablesDraft(triggeredBy: string): Promise<void> {
     logger.warn('tables-draft: model returned no usable draft');
     return;
   }
-  const [inserted] = await db
-    .insert(table_sets)
-    .values({
-      tax_year: draft.tax_year,
-      version: 1,
-      status: 'draft',
-      payload: draft.payload,
-      source_notes: (draft.source_notes ?? []) as never,
-    })
-    .onConflictDoNothing()
-    .returning({ id: table_sets.id });
-  if (!inserted) {
-    logger.info({ tax_year: draft.tax_year }, 'tables-draft: draft already exists — skipping');
+  const draftYear = draft.tax_year;
+  // Dedupe on the OPEN review item, not on the table_sets row — a
+  // rejected draft must not block regeneration forever. Legacy items
+  // predate the payload tax_year field, hence the subject fallback.
+  const [openItem] = await db
+    .select({ id: review_queue.id })
+    .from(review_queue)
+    .where(
+      and(
+        eq(review_queue.kind, 'table-draft'),
+        eq(review_queue.status, 'open'),
+        sql`(payload->>'tax_year' = ${String(draftYear)} or payload->>'subject' = ${`TABLES_${draftYear}`})`,
+      ),
+    )
+    .limit(1);
+  if (openItem) {
+    logger.info(
+      { tax_year: draftYear, review_item: openItem.id },
+      'tables-draft: open table-draft review item already exists — skipping',
+    );
     return;
   }
+  // Rejected drafts keep their (tax_year, version) slot in the unique
+  // index, so a regenerated draft takes the next version.
+  const [maxRow] = await db
+    .select({ maxVersion: sql<number | null>`max(${table_sets.version})` })
+    .from(table_sets)
+    .where(eq(table_sets.tax_year, draftYear));
+  const nextVersion = Number(maxRow?.maxVersion ?? 0) + 1;
   const fieldDiff = diffTableFields(current.payload, draft.payload);
-  await db.insert(review_queue).values({
-    kind: 'table-draft',
-    payload: {
-      subject: `TABLES_${draft.tax_year}`,
-      table_set_id: inserted.id,
-      base_table_set_id: current.id,
-      base_tax_year: current.tax_year,
-      field_diff: fieldDiff.slice(0, 400),
-      source_notes: draft.source_notes ?? [],
-      triggered_by: triggeredBy,
-    },
-    created_by: 'job',
+  // Draft row + review item are one atomic unit — an unreferenced draft
+  // row would be invisible to reviewers yet block the version slot.
+  const inserted = await db.transaction(async (tx) => {
+    const [row] = await tx
+      .insert(table_sets)
+      .values({
+        tax_year: draftYear,
+        version: nextVersion,
+        status: 'draft',
+        payload: draft.payload!,
+        source_notes: (draft.source_notes ?? []) as never,
+      })
+      .returning({ id: table_sets.id });
+    await tx.insert(review_queue).values({
+      kind: 'table-draft',
+      payload: {
+        subject: `TABLES_${draftYear}`,
+        tax_year: draftYear,
+        table_set_id: row!.id,
+        base_table_set_id: current.id,
+        base_tax_year: current.tax_year,
+        field_diff: fieldDiff.slice(0, 400),
+        source_notes: draft.source_notes ?? [],
+        triggered_by: triggeredBy,
+      },
+      created_by: 'job',
+    });
+    return row!;
   });
   await audit({
     actor_user_id: null,
@@ -309,6 +339,19 @@ export async function runGoldenRegression(tableSetId: string, triggeredBy: strin
 
 const SEEN_TTL_SECONDS = 180 * 24 * 3600;
 
+/**
+ * A watch hit is only actionable when the model grounded it: a headline
+ * to review and a source to verify. Exported for tests.
+ */
+export function isUsableWatchHit(hit: { headline?: unknown; source?: unknown }): boolean {
+  return (
+    typeof hit.headline === 'string' &&
+    hit.headline.trim().length > 0 &&
+    typeof hit.source === 'string' &&
+    hit.source.trim().length > 0
+  );
+}
+
 const WATCH_INSTRUCTIONS = `You monitor legal developments for a CPA firm's tax-strategy library.
 For the strategy below you get its watch list (authorities + keywords) and last-review date.
 Use web search to check for developments SINCE that date: new cases, IRS guidance, statutory
@@ -372,12 +415,17 @@ export async function runStrategyWatch(triggeredBy: string): Promise<void> {
       continue;
     }
     for (const hit of hits) {
+      if (!isUsableWatchHit(hit)) continue; // ungrounded hit — nothing to review
       const key = `strategy-watch-seen:${crypto
         .createHash('sha256')
         .update(`${row.strategy_id}:${hit.headline}:${hit.source}`)
         .digest('hex')}`;
-      const fresh = await redis.set(key, '1', 'EX', SEEN_TTL_SECONDS, 'NX');
-      if (fresh !== 'OK') continue; // seen within the TTL window
+      // Review item BEFORE the seen-marker: a crash between the two makes
+      // a duplicate review item (harmless), never a suppressed hit. The
+      // GET/SET pair isn't atomic, but the queue runs a single worker and
+      // a duplicate item is the acceptable failure direction.
+      const seen = await redis.get(key);
+      if (seen) continue; // seen within the TTL window
       newHits += 1;
       await db.insert(review_queue).values({
         kind: 'watch-hit',
@@ -389,6 +437,7 @@ export async function runStrategyWatch(triggeredBy: string): Promise<void> {
         },
         created_by: 'job',
       });
+      await redis.set(key, '1', 'EX', SEEN_TTL_SECONDS);
     }
   }
   // Heartbeat even when quiet — silence must be distinguishable from breakage.

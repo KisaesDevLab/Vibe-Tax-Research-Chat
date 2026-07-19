@@ -19,6 +19,26 @@ function bumpMinor(semver: string): string {
   return `${maj ?? 1}.${(min ?? 0) + 1}.0`;
 }
 
+function parseSemver(semver: string): [number, number, number] {
+  const [maj = 0, min = 0, pat = 0] = semver.split('.').map((n) => parseInt(n, 10) || 0);
+  return [maj, min, pat];
+}
+
+/**
+ * Resolve the semver to insert for a new draft. The unique index on
+ * (strategy_id, semver) spans ALL rows — including deprecated ones from
+ * previously rejected drafts — so when the desired version is taken we
+ * bump past the numeric max existing version (minor bump, patch reset)
+ * rather than colliding. Exported for tests.
+ */
+export function resolveDraftSemver(desired: string, existing: string[]): string {
+  if (!existing.includes(desired)) return desired;
+  const [maj, min] = existing
+    .map(parseSemver)
+    .reduce((a, b) => ((b[0] - a[0] || b[1] - a[1] || b[2] - a[2]) > 0 ? b : a));
+  return `${maj}.${min + 1}.0`;
+}
+
 function extractJson(text: string): Record<string, unknown> | null {
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}');
@@ -145,11 +165,23 @@ export async function draftStrategy(strategyId: string, triggeredBy: string): Pr
     return { status: 'validation-failed', errors: validation.errors };
   }
 
-  // Semver: trust the draft's bump when sane, else force a minor bump.
-  const draftVersion =
+  // Semver: trust the draft's bump when sane, else force a minor bump —
+  // then resolve collisions against every existing row (deprecated rows
+  // from rejected drafts still occupy their semver in the unique index).
+  const desiredVersion =
     typeof draft.version === 'string' && /^\d+\.\d+\.\d+$/.test(draft.version)
       ? draft.version
       : bumpMinor(current.semver);
+  const existingSemvers = await db
+    .select({ semver: strategy_versions.semver })
+    .from(strategy_versions)
+    .where(eq(strategy_versions.strategy_id, strategyId));
+  const draftVersion = resolveDraftSemver(
+    desiredVersion,
+    existingSemvers.map((r) => r.semver),
+  );
+  // Keep the content's own version field in step with the row's semver.
+  draft.version = draftVersion;
   const model = draft.model as
     | {
         inputs?: Record<string, unknown>;
@@ -158,28 +190,6 @@ export async function draftStrategy(strategyId: string, triggeredBy: string): Pr
         applyOrder?: number;
       }
     | undefined;
-
-  const [version] = await db
-    .insert(strategy_versions)
-    .values({
-      strategy_id: strategyId,
-      semver: draftVersion,
-      status: 'draft',
-      content: draft,
-      inputs_schema: model?.inputs ?? null,
-      suggest_rule: model?.suggest ?? (draft.suggest as Record<string, unknown>) ?? null,
-      apply_module_ref: model?.apply?.module ?? null,
-      apply_order: model?.applyOrder ?? null,
-      change_note: `pipeline draft (${triggeredBy})`,
-      created_by: 'pipeline',
-    })
-    .onConflictDoNothing()
-    .returning({ id: strategy_versions.id });
-
-  if (!version) {
-    logger.info({ strategyId, draftVersion }, 'strategy-author: version already exists — skipping');
-    return { status: 'draft-created' };
-  }
 
   // TP-14 — a draft that changes the MATH (module ref, apply order, or
   // inputs schema) can't just be approved: the TS module itself must be
@@ -197,18 +207,40 @@ export async function draftStrategy(strategyId: string, triggeredBy: string): Pr
       i: currentModel?.inputs ?? null,
     });
 
-  await db.insert(review_queue).values({
-    kind: 'strategy-draft',
-    payload: {
-      strategy_id: strategyId,
-      version_id: version.id,
-      semver: draftVersion,
-      base_semver: current.semver,
-      validation: { ok: validation.ok, errors: validation.errors },
-      needs_module_change: needsModuleChange,
-      triggered_by: triggeredBy,
-    },
-    created_by: 'job',
+  // Version row + review item are one atomic unit — a version without a
+  // review item is unreachable (nothing publishes outside the queue). A
+  // semver collision here is a real error: resolveDraftSemver already
+  // bumped past every existing row.
+  const version = await db.transaction(async (tx) => {
+    const [inserted] = await tx
+      .insert(strategy_versions)
+      .values({
+        strategy_id: strategyId,
+        semver: draftVersion,
+        status: 'draft',
+        content: draft,
+        inputs_schema: model?.inputs ?? null,
+        suggest_rule: model?.suggest ?? (draft.suggest as Record<string, unknown>) ?? null,
+        apply_module_ref: model?.apply?.module ?? null,
+        apply_order: model?.applyOrder ?? null,
+        change_note: `pipeline draft (${triggeredBy})`,
+        created_by: 'pipeline',
+      })
+      .returning({ id: strategy_versions.id });
+    await tx.insert(review_queue).values({
+      kind: 'strategy-draft',
+      payload: {
+        strategy_id: strategyId,
+        version_id: inserted!.id,
+        semver: draftVersion,
+        base_semver: current.semver,
+        validation: { ok: validation.ok, errors: validation.errors },
+        needs_module_change: needsModuleChange,
+        triggered_by: triggeredBy,
+      },
+      created_by: 'job',
+    });
+    return inserted!;
   });
   await audit({
     actor_user_id: null,

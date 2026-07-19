@@ -67,6 +67,19 @@ describe('matchArchiveKeywords', () => {
   });
 });
 
+describe('isUsableWatchHit', () => {
+  it('requires a non-empty headline and source', async () => {
+    const { isUsableWatchHit } = await import('./currency.js');
+    expect(isUsableWatchHit({ headline: 'New Rev. Proc.', source: 'IRS' })).toBe(true);
+    expect(isUsableWatchHit({ headline: '', source: 'IRS' })).toBe(false);
+    expect(isUsableWatchHit({ headline: '   ', source: 'IRS' })).toBe(false);
+    expect(isUsableWatchHit({ headline: 'New Rev. Proc.', source: '' })).toBe(false);
+    expect(isUsableWatchHit({ headline: 'New Rev. Proc.' })).toBe(false);
+    expect(isUsableWatchHit({ source: 'IRS' })).toBe(false);
+    expect(isUsableWatchHit({ headline: 42, source: 'IRS' })).toBe(false);
+  });
+});
+
 describe('runGoldenCase', () => {
   it('replays an embedded content golden exactly through the DB-shaped runner', async () => {
     const { runGoldenCase } = await import('./currency.js');

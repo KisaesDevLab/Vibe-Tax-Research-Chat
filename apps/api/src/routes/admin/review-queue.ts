@@ -2,15 +2,35 @@
 // The queue is the single funnel for every pipeline-produced change
 // (strategy drafts now; table drafts, watch hits, golden failures in
 // TP-14). Approving a strategy-draft publishes the version and bumps
-// strategies.current_version_id; nothing publishes any other way.
+// strategies.current_version_id; approving a table-draft publishes the
+// table set; nothing publishes any other way.
 import { Router } from 'express';
 import { z } from 'zod';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
-import { review_queue, strategies, strategy_versions } from '@vibe/db/schema';
+import { review_queue, strategies, strategy_versions, table_sets } from '@vibe/db/schema';
+import { listModuleRefs } from '@vibe/strategies';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
 import { audit } from '../../lib/audit.js';
-import { strategyAuthorQueue } from '../../jobs/queues.js';
+import {
+  goldenRegressionQueue,
+  strategyAuthorQueue,
+  strategyRefreshQueue,
+} from '../../jobs/queues.js';
+import { publishTableSet } from './table-sets.js';
+
+const idParam = z.string().uuid();
+
+// Decision failures inside the transaction: throwing rolls everything
+// back; the route maps the code onto an HTTP status.
+class DecisionError extends Error {
+  constructor(
+    readonly httpStatus: number,
+    readonly code: string,
+  ) {
+    super(code);
+  }
+}
 
 export const adminReviewQueueRouter = Router();
 adminReviewQueueRouter.use(requireAuth, requireRole('admin'));
@@ -47,12 +67,13 @@ adminReviewQueueRouter.get('/', async (req, res) => {
 });
 
 adminReviewQueueRouter.get('/:id', async (req, res) => {
+  const id = idParam.safeParse(req.params.id);
+  if (!id.success) {
+    res.status(400).json({ error: 'bad_request' });
+    return;
+  }
   const db = getDb();
-  const [item] = await db
-    .select()
-    .from(review_queue)
-    .where(eq(review_queue.id, req.params.id))
-    .limit(1);
+  const [item] = await db.select().from(review_queue).where(eq(review_queue.id, id.data)).limit(1);
   if (!item) {
     res.status(404).json({ error: 'not_found' });
     return;
@@ -84,19 +105,23 @@ adminReviewQueueRouter.get('/:id', async (req, res) => {
 });
 
 const decisionSchema = z.object({ note: z.string().max(2000).optional() });
+// A draft whose validation failed can still be approved, but only with an
+// explicit override — never by accident.
+const approveSchema = decisionSchema.extend({ force: z.boolean().optional() });
 
 adminReviewQueueRouter.post('/:id/approve', async (req, res) => {
-  const parsed = decisionSchema.safeParse(req.body ?? {});
+  const id = idParam.safeParse(req.params.id);
+  if (!id.success) {
+    res.status(400).json({ error: 'bad_request' });
+    return;
+  }
+  const parsed = approveSchema.safeParse(req.body ?? {});
   if (!parsed.success) {
     res.status(400).json({ error: 'bad_request' });
     return;
   }
   const db = getDb();
-  const [item] = await db
-    .select()
-    .from(review_queue)
-    .where(eq(review_queue.id, req.params.id))
-    .limit(1);
+  const [item] = await db.select().from(review_queue).where(eq(review_queue.id, id.data)).limit(1);
   if (!item) {
     res.status(404).json({ error: 'not_found' });
     return;
@@ -107,66 +132,141 @@ adminReviewQueueRouter.post('/:id/approve', async (req, res) => {
   }
 
   const actor = req.auth!.user_id;
-  if (item.kind === 'strategy-draft') {
-    const { version_id, strategy_id } = item.payload as {
-      version_id?: string;
-      strategy_id?: string;
-    };
-    if (!version_id || !strategy_id) {
-      res.status(422).json({ error: 'malformed_payload' });
-      return;
-    }
-    await db.transaction(async (tx) => {
-      await tx
-        .update(strategy_versions)
-        .set({ status: 'published', reviewed_by: actor })
-        .where(eq(strategy_versions.id, version_id));
-      await tx
-        .update(strategies)
-        .set({ current_version_id: version_id })
-        .where(eq(strategies.id, strategy_id));
-      await tx
-        .update(review_queue)
-        .set({ status: 'approved', decided_by: actor, decided_at: new Date() })
-        .where(eq(review_queue.id, item.id));
-    });
-    await audit({
-      actor_user_id: actor,
-      action: 'strategy.publish',
-      target_type: 'strategy',
-      target_id: strategy_id,
-      metadata: { version_id, via: 'review-queue', note: parsed.data.note ?? null },
-    });
-  } else {
-    // Non-strategy kinds (TP-14) record the decision only; their side
-    // effects (e.g. table publish) run through their own endpoints.
-    await db
+  // Row-guarded decision: two admins clicking approve concurrently must
+  // not both "win" — the guard makes the loser's transaction roll back.
+  const decideOpen = async (tx: Parameters<Parameters<typeof db.transaction>[0]>[0]) => {
+    const [decided] = await tx
       .update(review_queue)
       .set({ status: 'approved', decided_by: actor, decided_at: new Date() })
-      .where(eq(review_queue.id, item.id));
-    await audit({
-      actor_user_id: actor,
-      action: 'review_queue.approve',
-      target_type: 'review_queue',
-      target_id: item.id,
-      metadata: { kind: item.kind, note: parsed.data.note ?? null },
-    });
+      .where(and(eq(review_queue.id, item.id), eq(review_queue.status, 'open')))
+      .returning({ id: review_queue.id });
+    if (!decided) throw new DecisionError(409, 'already_decided');
+  };
+
+  try {
+    if (item.kind === 'strategy-draft') {
+      const { version_id, strategy_id } = item.payload as {
+        version_id?: string;
+        strategy_id?: string;
+      };
+      if (!version_id || !strategy_id) {
+        res.status(422).json({ error: 'malformed_payload' });
+        return;
+      }
+      await db.transaction(async (tx) => {
+        await decideOpen(tx);
+        const [version] = await tx
+          .select()
+          .from(strategy_versions)
+          .where(eq(strategy_versions.id, version_id))
+          .limit(1);
+        // Only a live draft is publishable — a deleted or already
+        // deprecated/published version means the item is stale.
+        if (!version || version.status !== 'draft') {
+          throw new DecisionError(422, 'version_not_draft');
+        }
+        // The math is compiled TS; approving content that points at a
+        // module this build doesn't ship would break compute at runtime.
+        if (version.apply_module_ref && !listModuleRefs().includes(version.apply_module_ref)) {
+          throw new DecisionError(422, 'unknown_apply_module');
+        }
+        const validation = (item.payload as { validation?: { ok?: boolean } }).validation;
+        if (validation?.ok === false && parsed.data.force !== true) {
+          throw new DecisionError(422, 'validation_failed_requires_force');
+        }
+        await tx
+          .update(strategy_versions)
+          .set({ status: 'published', reviewed_by: actor })
+          .where(eq(strategy_versions.id, version_id));
+        await tx
+          .update(strategies)
+          .set({ current_version_id: version_id })
+          .where(eq(strategies.id, strategy_id));
+      });
+      await audit({
+        actor_user_id: actor,
+        action: 'strategy.publish',
+        target_type: 'strategy',
+        target_id: strategy_id,
+        metadata: {
+          version_id,
+          via: 'review-queue',
+          forced: parsed.data.force === true,
+          note: parsed.data.note ?? null,
+        },
+      });
+    } else if (item.kind === 'table-draft') {
+      // Approving a table draft IS the publish — the review queue is the
+      // web UI's only path here. The standalone publish endpoint shares
+      // publishTableSet().
+      const tableSetId = (item.payload as { table_set_id?: string }).table_set_id;
+      if (!tableSetId) {
+        res.status(422).json({ error: 'malformed_payload' });
+        return;
+      }
+      const row = await db.transaction(async (tx) => {
+        await decideOpen(tx);
+        const outcome = await publishTableSet(tx, tableSetId, actor);
+        if (!outcome.ok) {
+          throw new DecisionError(
+            outcome.reason === 'not_found' ? 422 : 409,
+            outcome.reason === 'not_found' ? 'malformed_payload' : outcome.reason,
+          );
+        }
+        return outcome.row;
+      });
+      const job = await goldenRegressionQueue.add('on-publish', {
+        table_set_id: row.id,
+        triggered_by: `review-queue:${actor}`,
+      });
+      await audit({
+        actor_user_id: actor,
+        action: 'table_set.publish',
+        target_type: 'table_set',
+        target_id: row.id,
+        metadata: {
+          tax_year: row.tax_year,
+          version: row.version,
+          via: 'review-queue',
+          golden_regression_job: job.id ?? null,
+          note: parsed.data.note ?? null,
+        },
+      });
+    } else {
+      // Remaining kinds (watch hits, golden failures, …) record the
+      // decision only; any follow-up runs through its own endpoint.
+      await db.transaction(decideOpen);
+      await audit({
+        actor_user_id: actor,
+        action: 'review_queue.approve',
+        target_type: 'review_queue',
+        target_id: item.id,
+        metadata: { kind: item.kind, note: parsed.data.note ?? null },
+      });
+    }
+  } catch (err) {
+    if (err instanceof DecisionError) {
+      res.status(err.httpStatus).json({ error: err.code });
+      return;
+    }
+    throw err;
   }
   res.json({ ok: true });
 });
 
 adminReviewQueueRouter.post('/:id/reject', async (req, res) => {
+  const id = idParam.safeParse(req.params.id);
+  if (!id.success) {
+    res.status(400).json({ error: 'bad_request' });
+    return;
+  }
   const parsed = decisionSchema.safeParse(req.body ?? {});
   if (!parsed.success) {
     res.status(400).json({ error: 'bad_request' });
     return;
   }
   const db = getDb();
-  const [item] = await db
-    .select()
-    .from(review_queue)
-    .where(eq(review_queue.id, req.params.id))
-    .limit(1);
+  const [item] = await db.select().from(review_queue).where(eq(review_queue.id, id.data)).limit(1);
   if (!item) {
     res.status(404).json({ error: 'not_found' });
     return;
@@ -177,18 +277,38 @@ adminReviewQueueRouter.post('/:id/reject', async (req, res) => {
   }
   const actor = req.auth!.user_id;
   const versionId = (item.payload as { version_id?: string }).version_id;
-  await db.transaction(async (tx) => {
-    if (item.kind === 'strategy-draft' && versionId) {
-      await tx
-        .update(strategy_versions)
-        .set({ status: 'deprecated' })
-        .where(and(eq(strategy_versions.id, versionId), eq(strategy_versions.status, 'draft')));
+  const tableSetId = (item.payload as { table_set_id?: string }).table_set_id;
+  try {
+    await db.transaction(async (tx) => {
+      const [decided] = await tx
+        .update(review_queue)
+        .set({ status: 'rejected', decided_by: actor, decided_at: new Date() })
+        .where(and(eq(review_queue.id, item.id), eq(review_queue.status, 'open')))
+        .returning({ id: review_queue.id });
+      if (!decided) throw new DecisionError(409, 'already_decided');
+      if (item.kind === 'strategy-draft' && versionId) {
+        await tx
+          .update(strategy_versions)
+          .set({ status: 'deprecated' })
+          .where(and(eq(strategy_versions.id, versionId), eq(strategy_versions.status, 'draft')));
+      }
+      if (item.kind === 'table-draft' && tableSetId) {
+        // A rejected draft is dead: mark the row so the standalone
+        // publish endpoint refuses it (not_a_draft) and the tables-draft
+        // job knows the version slot is spent.
+        await tx
+          .update(table_sets)
+          .set({ status: 'rejected' })
+          .where(and(eq(table_sets.id, tableSetId), eq(table_sets.status, 'draft')));
+      }
+    });
+  } catch (err) {
+    if (err instanceof DecisionError) {
+      res.status(err.httpStatus).json({ error: err.code });
+      return;
     }
-    await tx
-      .update(review_queue)
-      .set({ status: 'rejected', decided_by: actor, decided_at: new Date() })
-      .where(eq(review_queue.id, item.id));
-  });
+    throw err;
+  }
   await audit({
     actor_user_id: actor,
     action: 'review_queue.reject',
@@ -223,6 +343,23 @@ adminStrategyDraftRouter.post('/:id/draft', async (req, res) => {
     action: 'strategy.draft_requested',
     target_type: 'strategy',
     target_id: strategy.id,
+    metadata: { job_id: job.id ?? null },
+  });
+  res.status(202).json({ ok: true, job_id: job.id });
+});
+
+// ── sweep trigger: POST /api/admin/strategies/refresh-sweep ────────────
+// The strategy-refresh worker sweeps every strategy when the job carries
+// no strategy_id; until now nothing ever enqueued that shape.
+adminStrategyDraftRouter.post('/refresh-sweep', async (req, res) => {
+  const job = await strategyRefreshQueue.add('sweep', {
+    triggered_by: `admin:${req.auth!.user_id}`,
+  });
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'strategy.refresh_sweep_requested',
+    target_type: 'job',
+    target_id: 'strategy-refresh',
     metadata: { job_id: job.id ?? null },
   });
   res.status(202).json({ ok: true, job_id: job.id });

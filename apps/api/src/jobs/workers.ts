@@ -200,7 +200,17 @@ export function startWorkers(): void {
     logger.info({ email, provider: mailer.kind }, 'password-reset email sent');
   });
 
-  void scheduleCrons();
+  // Cron registration talks to Redis; a boot-time blip must not silently
+  // mean "no crons until the next restart". Log the failure and retry
+  // once after 30s — a second failure is logged and left for operators.
+  scheduleCrons().catch((err) => {
+    logger.error({ err }, 'cron registration failed — retrying in 30s');
+    setTimeout(() => {
+      scheduleCrons().catch((retryErr) => {
+        logger.error({ err: retryErr }, 'cron registration retry failed — crons not scheduled');
+      });
+    }, 30_000);
+  });
 }
 
 async function titleChat(chat_id: string): Promise<void> {
@@ -282,7 +292,10 @@ async function rollupUsageDaily(): Promise<void> {
       SUM(input_tokens + output_tokens + cache_creation_input_tokens + cache_read_input_tokens) AS total_tokens,
       SUM(cost_usd) AS total_cost_usd
     FROM usage_events
-    WHERE occurred_at >= NOW() - INTERVAL '2 days'
+    -- Day-aligned window: yesterday 00:00 onward. A sliding 48h window
+    -- would recompute a partially-covered day and overwrite its complete
+    -- rollup with a truncated one.
+    WHERE occurred_at >= date_trunc('day', NOW() - INTERVAL '1 day')
     GROUP BY 1, 2, 3
     ON CONFLICT (day, user_id, model_id) DO UPDATE SET
       message_count = EXCLUDED.message_count,
