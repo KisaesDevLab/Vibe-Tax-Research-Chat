@@ -14,7 +14,7 @@
 // reply. Tool-use also lets Claude propose multiple field changes in a
 // single turn ('shorten the description AND add a routing keyword').
 import type Anthropic from '@anthropic-ai/sdk';
-import { getAnthropic } from './client.js';
+import { callClaude } from './client.js';
 
 export interface SkillDraft {
   name: string;
@@ -28,8 +28,8 @@ export interface SkillDraft {
 // endpoint. We re-state it here so this module is self-contained.
 const SLUG_RE = /^[a-z][a-z0-9-]{2,63}$/;
 
-const DRAFTING_MODEL = 'claude-haiku-4-5';
-const REFINING_MODEL = 'claude-haiku-4-5';
+// Model pins + token budgets live in jobs-config.ts ('skill-author' /
+// 'skill-refine') — the callClaude seam applies them.
 
 const PROPOSE_DRAFT_TOOL: Anthropic.Tool = {
   name: 'propose_skill_draft',
@@ -160,7 +160,6 @@ export async function draftSkillFromDocument(opts: {
   parsed_text: string;
   filename: string;
 }): Promise<SkillDraft> {
-  const { client } = await getAnthropic();
   const truncated =
     opts.parsed_text.length > MAX_DOC_CHARS
       ? `${opts.parsed_text.slice(0, MAX_DOC_CHARS)}\n\n[…truncated]`
@@ -168,9 +167,7 @@ export async function draftSkillFromDocument(opts: {
 
   const userMessage = `Source document: ${opts.filename}\n\n<document>\n${truncated}\n</document>\n\nPropose the skill draft.`;
 
-  const resp = await client.messages.create({
-    model: DRAFTING_MODEL,
-    max_tokens: 4096,
+  const { response: resp } = await callClaude('skill-author', {
     system: SYSTEM_PROMPT_DRAFT,
     tools: [PROPOSE_DRAFT_TOOL],
     tool_choice: { type: 'tool', name: 'propose_skill_draft' },
@@ -246,8 +243,6 @@ export async function refineSkill(opts: {
   history: RefineChatTurn[];
   user_message: string;
 }): Promise<RefineResult> {
-  const { client } = await getAnthropic();
-
   const draftSnapshot = `Current draft:
 - name: ${opts.draft.name}
 - display_name: ${opts.draft.display_name}
@@ -267,9 +262,7 @@ ${opts.draft.body_md}
     },
   ];
 
-  const resp = await client.messages.create({
-    model: REFINING_MODEL,
-    max_tokens: 4096,
+  const { response: resp } = await callClaude('skill-refine', {
     system: SYSTEM_PROMPT_REFINE,
     tools: [PROPOSE_UPDATE_TOOL],
     messages,

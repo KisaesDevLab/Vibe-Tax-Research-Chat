@@ -22,7 +22,7 @@ import {
   usage_daily,
   SETTING_KEYS,
 } from '@vibe/db/schema';
-import { getAnthropic } from '../lib/anthropic/client.js';
+import { callClaude } from '../lib/anthropic/client.js';
 import { buildMailer, renderResetEmail } from '../lib/email/index.js';
 import { getSetting } from '../lib/settings-store.js';
 
@@ -162,10 +162,7 @@ async function titleChat(chat_id: string): Promise<void> {
     .join('\n\n');
   let title = 'Untitled chat';
   try {
-    const { client } = await getAnthropic();
-    const r = await client.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 32,
+    const r = await callClaude('chat-title', {
       messages: [
         {
           role: 'user',
@@ -175,8 +172,7 @@ async function titleChat(chat_id: string): Promise<void> {
         },
       ],
     });
-    const block = r.content.find((c) => c.type === 'text');
-    if (block && block.type === 'text') title = block.text.trim().slice(0, 80);
+    if (r.text.trim()) title = r.text.trim().slice(0, 80);
   } catch (err) {
     logger.warn({ err, chat_id }, 'chat:title generation failed');
     return;
@@ -196,10 +192,7 @@ async function summarizeAttachment(attachment_id: string): Promise<void> {
   const text = att.full_text.slice(0, 80_000);
   let summary = '';
   try {
-    const { client } = await getAnthropic();
-    const r = await client.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 600,
+    const r = await callClaude('attachment-summarize', {
       messages: [
         {
           role: 'user',
@@ -210,8 +203,7 @@ async function summarizeAttachment(attachment_id: string): Promise<void> {
         },
       ],
     });
-    const block = r.content.find((c) => c.type === 'text');
-    if (block && block.type === 'text') summary = block.text.trim();
+    summary = r.text.trim();
   } catch (err) {
     logger.warn({ err, attachment_id }, 'attachment:summarize failed');
     return;

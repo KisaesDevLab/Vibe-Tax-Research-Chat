@@ -18,7 +18,7 @@ Updated after each phase commit.
 | TP-9  | Deliverables + delivery                      | done    | feat(tp-9)  |
 | TP-10 | Engagement loop                              | done    | feat(tp-10) |
 | TP-12 | Authoring at scale (100 strategies)          | done    | feat(tp-12) |
-| TP-13 | Claude seam upgrade                          | pending | —           |
+| TP-13 | Claude seam upgrade                          | done    | feat(tp-13) |
 | TP-14 | Currency jobs                                | pending | —           |
 | TP-15 | Hardening + restore drill                    | pending | —           |
 | TP-16 | Rollout + final verification                 | pending | —           |

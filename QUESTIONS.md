@@ -244,3 +244,18 @@ only when NULL so admin publishes are never clobbered by re-seeds.
   Pohoski, Nielsen, FedEx W.D. Tenn., Dixie Dairies, Durden, Sanford) pass format lint but
   merit a cite-check before client-facing use; OZ 2.0 (rolling deferral, rural step-ups)
   follows post-OBBBA secondary sources pending implementing guidance.
+
+## TP-13 — applied defaults (Claude seam)
+
+- **Seam surface** — streaming keeps `getAnthropic()` (kill switch + Shield routing apply
+  there too); every background job goes through `callClaude(job, request)` with per-job
+  model pins and HARD token budgets in `lib/anthropic/jobs-config.ts` (TP-14 job budgets
+  pre-declared). Retry: 3 attempts, exponential backoff + jitter, on 429/5xx/network only.
+- **Audit** — every `callClaude` writes a `claude.call` audit row with SHA-256 request/
+  response hashes, token usage, and attempt count; payloads are never persisted (tested).
+  Terminal failures also leave an audit row with `failed: true`.
+- **ZDR** — org-level Anthropic account setting, not a request header; carried on the
+  TP-15 deployment checklist instead of code.
+- **Kill switch semantics** — `ANTHROPIC_KILL_SWITCH=1|true|on` blocks before the key is
+  even read; the chat stream surfaces the typed message via its existing error event +
+  system_note path; job handlers treat it like no-key (logged skip).

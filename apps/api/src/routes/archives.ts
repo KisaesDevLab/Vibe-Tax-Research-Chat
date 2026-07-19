@@ -13,7 +13,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { requirePlanning } from '../middleware/planning-flag.js';
 import { audit } from '../lib/audit.js';
 import { logger } from '../lib/logger.js';
-import { getAnthropic } from '../lib/anthropic/client.js';
+import { callClaude } from '../lib/anthropic/client.js';
 import { detectPii } from '../lib/pii/detect.js';
 import { applyRedactions } from '../lib/pii/redact.js';
 import { loadSnapshotSource, snapshotToText } from '../lib/archives/snapshot.js';
@@ -48,26 +48,19 @@ async function draftTitleTags(
     .join('\n\n');
   if (!transcript) return fallback;
   try {
-    const { client } = await getAnthropic();
-    const r = await client.messages.create(
-      {
-        model: 'claude-haiku-4-5',
-        max_tokens: 128,
-        messages: [
-          {
-            role: 'user',
-            content:
-              'This is an archived tax research session. Reply with STRICT JSON only: ' +
-              '{"title": "<3-8 word descriptive title>", "tags": ["<3-6 short topic tags>"]}\n\n' +
-              transcript,
-          },
-        ],
-      },
-      { timeout: 10_000 },
-    );
-    const block = r.content.find((c) => c.type === 'text');
-    if (!block || block.type !== 'text') return fallback;
-    const jsonText = block.text.slice(block.text.indexOf('{'), block.text.lastIndexOf('}') + 1);
+    const r = await callClaude('archive-title-tags', {
+      messages: [
+        {
+          role: 'user',
+          content:
+            'This is an archived tax research session. Reply with STRICT JSON only: ' +
+            '{"title": "<3-8 word descriptive title>", "tags": ["<3-6 short topic tags>"]}\n\n' +
+            transcript,
+        },
+      ],
+    });
+    if (!r.text) return fallback;
+    const jsonText = r.text.slice(r.text.indexOf('{'), r.text.lastIndexOf('}') + 1);
     const parsed = JSON.parse(jsonText) as { title?: unknown; tags?: unknown };
     const title =
       typeof parsed.title === 'string' && parsed.title.trim()

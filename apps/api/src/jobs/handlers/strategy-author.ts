@@ -10,12 +10,9 @@ import { eq, desc } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import { strategies, strategy_versions, review_queue, table_sets } from '@vibe/db/schema';
 import { validateStrategyRecord, type ValidationError } from '@vibe/schema';
-import { getAnthropic } from '../../lib/anthropic/client.js';
+import { callClaude, ClaudeDisabledError } from '../../lib/anthropic/client.js';
 import { audit } from '../../lib/audit.js';
 import { logger } from '../../lib/logger.js';
-
-const AUTHOR_MODEL = 'claude-sonnet-4-5';
-const MAX_TOKENS = 16_000;
 
 function bumpMinor(semver: string): string {
   const [maj, min] = semver.split('.').map((n) => parseInt(n, 10));
@@ -78,14 +75,6 @@ export async function draftStrategy(strategyId: string, triggeredBy: string): Pr
         .limit(1);
   if (!current) throw new Error(`no versions for strategy ${strategyId}`);
 
-  let anthropic;
-  try {
-    anthropic = await getAnthropic();
-  } catch {
-    logger.info({ strategyId }, 'strategy-author: no Anthropic key — skipping (pipeline idle)');
-    return { status: 'skipped-no-key' };
-  }
-
   const [tables] = await db
     .select()
     .from(table_sets)
@@ -108,9 +97,7 @@ export async function draftStrategy(strategyId: string, triggeredBy: string): Pr
           .map((e) => `- [${e.gate}] ${e.path}: ${e.message}`)
           .join('\n')}`
       : '';
-    const r = await anthropic.client.messages.create({
-      model: AUTHOR_MODEL,
-      max_tokens: MAX_TOKENS,
+    const r = await callClaude('strategy-author', {
       messages: [
         {
           role: 'user',
@@ -118,11 +105,23 @@ export async function draftStrategy(strategyId: string, triggeredBy: string): Pr
         },
       ],
     });
-    const block = r.content.find((c) => c.type === 'text');
-    return block && block.type === 'text' ? extractJson(block.text) : null;
+    return extractJson(r.text);
   };
 
-  let draft = await callOnce(null);
+  let draft;
+  try {
+    draft = await callOnce(null);
+  } catch (err) {
+    if (err instanceof ClaudeDisabledError) {
+      logger.info({ strategyId }, 'strategy-author: kill switch on — skipping');
+      return { status: 'skipped-no-key' };
+    }
+    if ((err as Error).message?.includes('not configured')) {
+      logger.info({ strategyId }, 'strategy-author: no Anthropic key — skipping (pipeline idle)');
+      return { status: 'skipped-no-key' };
+    }
+    throw err;
+  }
   let validation = draft
     ? validateStrategyRecord(draft)
     : {
