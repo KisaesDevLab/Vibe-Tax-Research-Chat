@@ -1,0 +1,281 @@
+{
+  "id": "sstb-threshold-management",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "SSTB Threshold Management",
+  "category": "qbi-optimization",
+  "modeled": true,
+  "complexity": 3,
+  "riskRating": "low",
+  "entityTypes": ["sole-prop", "s-corp", "partnership"],
+  "typicalSavingsBand": "5k-25k",
+  "advisor": {
+    "summary": "Owners of specified service businesses lose the §199A deduction as taxable income crosses the threshold — $403,500 MFJ / $201,750 single for 2026 — and phases out across the OBBBA-widened $150,000/$75,000 range, where each incremental dollar both bears tax and strips deduction, pushing effective marginal rates several points above the stated bracket. Because the test runs on taxable income before the QBI deduction, every above-the-line and itemized lever counts: employer retirement contributions, defined benefit funding, HSA dollars, charitable bunching, and income timing. The engine models the chosen compression as a generic above-the-line reduction and reprices the year; the specific lever decides whether the move is permanent saving or deferral that returns later. Even a fully phased-out owner keeps OBBBA's $400 minimum deduction with $1,000 of active QBI — a floor, not a target.",
+    "mechanics": [
+      "The specified-service fields — health, law, accounting, actuarial science, performing arts, consulting, athletics, financial and brokerage services, plus the reputation-or-skill catchall — are defined field by field in Reg. §1.199A-5(b), with the phase-out mechanics in §199A(d)(3).",
+      "Inside the phase-in range the SSTB's QBI, wages, and UBIA all scale down ratably; past the top of the range the deduction is zero — the slope makes the range the most expensive income a service professional earns.",
+      "The threshold measures taxable income computed before the QBI deduction under §199A(e)(2) — so pre-AGI levers (retirement plans, HSA) and itemized levers (bunched charitable gifts under §170) both move the number.",
+      "Lever hierarchy: elective deferrals and employer retirement contributions first, then HSA, then a defined benefit or cash balance plan when the gap is six figures and recurring; deferring December billings suits a one-year spike but merely relocates the problem.",
+      "P.L. 119-21 (OBBBA) made §199A permanent, widened the phase-in to $75,000 single / $150,000 MFJ, and added the indexed $400 minimum deduction for taxpayers with at least $1,000 of active QBI.",
+      "The engine applies the configured reduction as an above-the-line adjustment and recomputes the year deterministically — it shows the current-year effect of compression; the durability of the saving depends on which lever the plan actually uses."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §199A(d)(2), (d)(3)",
+        "note": "The SSTB definition and the phase-out: full denial past the range, ratable scale-down inside it."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.199A-5(b)",
+        "note": "The field-by-field SSTB definitions, including the reputation-or-skill catchall that makes relabeling dangerous."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §199A(e)(2)",
+        "note": "Defines the threshold by reference to taxable income computed before the §199A deduction — the number the levers target."
+      },
+      {
+        "type": "IRC",
+        "cite": "P.L. 119-21 (OBBBA) §70105",
+        "note": "Permanence, the widened 2026 phase-in range, and the $400 minimum deduction for active QBI of $1,000 or more."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §170",
+        "note": "The charitable deduction behind the bunching lever — several years of giving concentrated into the year that needs the taxable-income reduction."
+      }
+    ],
+    "requirements": [
+      "An SSTB owner whose taxable income sits at or modestly above the threshold — compression is dose-dependent, and $200,000 past the range cannot be managed away.",
+      "Plan documents and payroll in place by the applicable deadlines for the chosen levers, plus the cash flow to fund them — this strategy spends real dollars.",
+      "A reliable November/December taxable-income projection; the target is a number, not a mood."
+    ],
+    "risks": [
+      "Recharacterizing the business as a non-SSTB is the exam magnet, and Reg. §1.199A-5(b)'s field definitions with the reputation-or-skill catchall are the controlling authority — manage the income, not the label, unless the facts genuinely support reclassification.",
+      "Deferral relocates the problem: income pushed to next year stacks there unless a recurring lever replaces it — present the year-two picture honestly.",
+      "Retirement contributions that reduce SSTB income also reduce QBI itself, so the net recovery is smaller than the gross deduction; model, do not estimate.",
+      "A defined benefit plan installed for a one-year threshold problem creates multi-year actuarial funding obligations.",
+      "The thresholds and range are indexed — a plan calibrated to 2026 numbers drifts without annual re-tuning."
+    ],
+    "stateNotes": [
+      "Conformity: the federal phase-out has no analogue in most states because §199A is a federal-only deduction; the state value of each lever is whatever the state independently gives it (retirement and charitable conformity vary).",
+      "PTET: a pass-through entity tax election reduces federal flow-through income and thus taxable income against the threshold — a compression lever in its own right — while the PTET deduction also trims QBI; run both effects together.",
+      "Missouri: Missouri's business income deduction (RSMo §143.022) has no SSTB phase-out, so the Missouri-side deduction survives even where the federal one is gone; a Missouri SALT Parity PTET election (RSMo §143.436) can serve double duty as threshold compression."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["defined-benefit-plan", "daf-bunching", "solo-401k"]
+    },
+    "reviewChecklist": [
+      "Year-end projection computed and the gap to the range's top and bottom measured.",
+      "Levers stacked in cost order with funding deadlines confirmed.",
+      "The QBI interaction of each lever modeled (the qbiReduction interplay), not approximated.",
+      "Deferral levers flagged with their year-two add-back.",
+      "SSTB classification itself reviewed — no aggressive relabeling."
+    ]
+  },
+  "client": {
+    "teaser": "Keep your income on the right side of the line where a major deduction disappears.",
+    "headline": "Protect the 20% deduction the tax law phases away",
+    "plainEnglish": [
+      "The tax law gives business owners a deduction of up to 20% of business income. For doctors, lawyers, accountants, consultants, and advisors, it fades out as income passes a set line. Go far enough past it and the deduction is gone.",
+      "The good news: the line is based on taxable income, and we can manage that. Retirement plan funding, the timing of income, and how you bundle charitable gifts can pull your number back toward the line — or under it.",
+      "Most of these moves build your wealth anyway, like funding retirement. Here they do double duty. The contribution is deductible on its own, and it revives the 20% deduction that higher income was taking away."
+    ],
+    "analogy": "It is like a toll that rises with your speed. We are not asking you to drive less — we time and route the trip so you cross at the cheapest moment.",
+    "benefits": [
+      "Rescues a deduction worth up to 20% of business income",
+      "Built from moves worth making anyway — retirement, planned giving",
+      "In the fade-out zone, each dollar of adjustment saves more than a dollar usually would"
+    ],
+    "steps": [
+      "WE project your income before year-end, while there is time to act.",
+      "WE measure your distance from the line and price each option.",
+      "YOU fund the chosen moves — retirement, giving, timing — before the deadlines.",
+      "WE re-check the plan every fall as the line moves."
+    ],
+    "clientCommitments": [
+      "Get us your numbers in the fall — this only works before December 31",
+      "Fund the agreed contributions on schedule",
+      "Accept that deferred income returns next year — we plan for it, not around it"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Fall taxable-income projection and gap measurement",
+      "Annual re-tuning to the indexed thresholds",
+      "Year-two tracking of any deferred income"
+    ],
+    "deliverables": [
+      "Year-end projection with threshold gap analysis",
+      "Lever comparison memo (cost per dollar of deduction recovered)",
+      "Funding calendar with deadlines",
+      "Post-filing recap of the deduction recovered"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 66,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "incomeReduction": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["incomeReduction"]
+    },
+    "apply": {
+      "module": "sstb-threshold-management@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "totalBusinessProfit",
+          "op": "gt",
+          "value": 200000
+        }
+      ],
+      "reason": "SSTB owners near the §199A phase-out can buy the deduction back with deliberate income compression."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj SSTB Sch C 420k, 60k compression",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 420000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": true,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "incomeReduction": 60000
+        },
+        "expect": {
+          "totalBurdenDelta": -11520,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "single SSTB S-corp 260k/100k, 40k compression",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 260000,
+              "employeeWages": 0,
+              "ownerWages": 100000,
+              "sstb": true,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "incomeReduction": 40000
+        },
+        "expect": {
+          "totalBurdenDelta": -14406,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §199A(d)", "Reg. §1.199A-5", "Annual §199A threshold indexing"],
+    "keywords": [
+      "SSTB phase-out",
+      "199A threshold",
+      "specified service business",
+      "QBI deduction rescue"
+    ],
+    "reviewTriggers": [
+      "Annual indexing of the thresholds and phase-in range",
+      "New SSTB classification rulings",
+      "Client income trajectory changes"
+    ]
+  }
+}
