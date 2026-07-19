@@ -30,5 +30,8 @@ workspaces/
 attachments/
 backups/
 
+# reference-only material (MASTER-BUILD-PLAN.md ground rule 4) — never committed
+reference/
+
 # pnpm
 .pnpm-store/

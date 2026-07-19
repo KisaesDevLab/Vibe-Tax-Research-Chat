@@ -112,10 +112,52 @@ export function AdminSettingsPage() {
         {error && <div className="text-oxblood text-sm mt-2">{error}</div>}
       </section>
 
+      <PlanningModuleSection />
       <WebResourceStrategySection />
       <EmailSettingsSection />
       <AppBaseUrlSection />
     </div>
+  );
+}
+
+// ── TP-0 — planning module toggle ──────────────────────────────────────
+// Master switch for the Planning + Clients modules. Reads the effective
+// value from /api/config (same source the shell uses) and writes through
+// the dedicated admin endpoint.
+function PlanningModuleSection() {
+  const qc = useQueryClient();
+  const { data } = useQuery<{ planning_enabled: boolean }>({
+    queryKey: ['config'],
+    queryFn: () => api('/api/config'),
+  });
+
+  const toggle = useMutation({
+    mutationFn: (enabled: boolean) =>
+      api('/api/admin/settings/planning-enabled', {
+        method: 'POST',
+        body: JSON.stringify({ enabled }),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['config'] }),
+  });
+
+  const enabled = data?.planning_enabled ?? false;
+  return (
+    <section className="border border-ink/10 rounded p-6 bg-white max-w-2xl mt-6">
+      <h2 className="font-display text-xl mb-2">Planning module</h2>
+      <p className="text-sm text-ink/60 mb-4">
+        Enables the Planning and Clients modules (client records, plan workflow, research archival).
+        Off by default — the research app is unaffected while disabled.
+      </p>
+      <label className="flex items-center gap-3 text-sm">
+        <input
+          type="checkbox"
+          checked={enabled}
+          disabled={toggle.isPending}
+          onChange={(e) => toggle.mutate(e.target.checked)}
+        />
+        <span>{enabled ? 'Enabled' : 'Disabled'}</span>
+      </label>
+    </section>
   );
 }
 

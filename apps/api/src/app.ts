@@ -26,6 +26,7 @@ import { adminCustomSkillsRouter } from './routes/admin/custom-skills.js';
 import { adminReferencesRouter } from './routes/admin/references.js';
 import { adminUsageRouter } from './routes/admin/usage.js';
 import { chatsRouter } from './routes/chats/index.js';
+import { configRouter } from './routes/config.js';
 import { webhooksRouter } from './routes/webhooks/index.js';
 import { setupRouter } from './routes/setup.js';
 import { mountBullBoard } from './routes/admin/bull-board.js';
@@ -80,6 +81,7 @@ export function createApp(): Express {
   app.use('/api/ping', pingRouter);
   app.use('/api/setup', setupRouter);
   app.use('/api/auth', authRouter);
+  app.use('/api/config', configRouter);
   app.use('/admin/queues', requireAuth, requireRole('admin'), mountBullBoard().getRouter());
   app.use('/api/admin/users', adminUsersRouter);
   app.use('/api/admin/settings', adminSettingsRouter);

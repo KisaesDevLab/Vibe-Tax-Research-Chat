@@ -100,6 +100,7 @@ export async function runSeed(): Promise<void> {
     [SETTING_KEYS.SHOW_SKILLS_PANEL, true],
     [SETTING_KEYS.HAIKU_FALLBACK_ROUTING, false],
     [SETTING_KEYS.CHAT_RETENTION_DAYS, null],
+    [SETTING_KEYS.PLANNING_ENABLED, false],
     [
       SETTING_KEYS.SKILLS_REPO_REF,
       {
