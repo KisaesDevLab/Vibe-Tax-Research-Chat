@@ -30,7 +30,7 @@ export function ChatSidebar({ mobileOpen = false, onClose }: ChatSidebarProps = 
     onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: ['chats'] });
       onClose?.();
-      navigate(`/chat/${r.chat.id}`);
+      navigate(`/research/${r.chat.id}`);
     },
   });
 
@@ -53,7 +53,7 @@ export function ChatSidebar({ mobileOpen = false, onClose }: ChatSidebarProps = 
         }`}
       >
         <div className="p-3 border-b border-ink/10 flex items-center justify-between">
-          <Link to="/chat" className="font-display tracking-tight" onClick={onClose}>
+          <Link to="/research" className="font-display tracking-tight" onClick={onClose}>
             Vibe
           </Link>
           <button
@@ -75,7 +75,7 @@ export function ChatSidebar({ mobileOpen = false, onClose }: ChatSidebarProps = 
                 {items.map((c) => (
                   <Link
                     key={c.id}
-                    to={`/chat/${c.id}`}
+                    to={`/research/${c.id}`}
                     onClick={onClose}
                     className={`block px-3 py-1.5 text-sm truncate hover:bg-ink/5 ${chatId === c.id ? 'bg-ink/10' : ''}`}
                   >

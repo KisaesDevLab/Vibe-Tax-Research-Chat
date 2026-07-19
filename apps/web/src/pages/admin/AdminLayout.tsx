@@ -41,12 +41,12 @@ export function AdminLayout() {
       >
         <div className="font-display text-lg mb-2">Vibe · Admin</div>
         <Link
-          to="/chat"
+          to="/research"
           onClick={closeMobileNav}
           className="text-xs text-ink/60 hover:text-ink underline mb-6"
-          aria-label="Return to chat"
+          aria-label="Return to research"
         >
-          ← Back to chat
+          ← Back to research
         </Link>
         <nav className="flex flex-col gap-1 text-sm">
           {navItems.map((n) => (

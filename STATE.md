@@ -6,7 +6,7 @@ Updated after each phase commit.
 | Phase | Title                                        | Status  | Commit     |
 | ----- | -------------------------------------------- | ------- | ---------- |
 | TP-0  | Repo intake + `planning` flag scaffold       | done    | feat(tp-0) |
-| TP-1  | Module shell (Research / Planning / Clients) | pending | —          |
+| TP-1  | Module shell (Research / Planning / Clients) | done    | feat(tp-1) |
 | TP-2  | Shared client context                        | pending | —          |
 | TP-3  | Clients module (local-only)                  | pending | —          |
 | TP-11 | Chat archival to client                      | pending | —          |

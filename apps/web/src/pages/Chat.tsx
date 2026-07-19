@@ -246,17 +246,17 @@ function ChatView({ chatId }: { chatId: string }) {
   }, [streaming]);
 
   return (
-    // h-dvh + overflow-hidden so the sidebar and chat column are each
-    // capped at the viewport. h-dvh (vs h-screen / 100vh) tracks the
-    // *visible* viewport on iOS Safari so the composer doesn't get hidden
-    // behind the URL bar. Mobile (<md): sidebar is an off-canvas drawer
-    // and the main column takes the full width. md+: sidebar is inline.
-    // The chat column is a flex column with min-h-0 (the magic that lets
-    // a flex child actually scroll instead of forcing the parent taller),
-    // header and form are shrink-to-content, and only <main> scrolls
-    // between them.
+    // h-full + overflow-hidden so the sidebar and chat column are each
+    // capped at the viewport height granted by AppShell (which owns h-dvh
+    // — dvh tracks the *visible* viewport on iOS Safari so the composer
+    // doesn't get hidden behind the URL bar). Mobile (<md): sidebar is an
+    // off-canvas drawer and the main column takes the full width. md+:
+    // sidebar is inline. The chat column is a flex column with min-h-0
+    // (the magic that lets a flex child actually scroll instead of
+    // forcing the parent taller), header and form are shrink-to-content,
+    // and only <main> scrolls between them.
     <div
-      className="flex h-dvh overflow-hidden bg-paper"
+      className="flex h-full overflow-hidden bg-paper"
       onDragOver={(e) => {
         // Capture drag-over at the chat-column level so users can drop
         // anywhere on the page and have the file land on the active chat.

@@ -10,11 +10,14 @@ export interface AppConfig {
 
 const DEFAULT_CONFIG: AppConfig = { planning_enabled: false };
 
-export function useAppConfig(): AppConfig {
-  const { data } = useQuery<AppConfig>({
+// `loading` lets route guards wait for the real value instead of
+// redirecting away from /planning//clients deep links before the first
+// fetch resolves.
+export function useAppConfig(): { config: AppConfig; loading: boolean } {
+  const { data, isLoading } = useQuery<AppConfig>({
     queryKey: ['config'],
     queryFn: () => api('/api/config'),
     staleTime: 5 * 60 * 1000,
   });
-  return data ?? DEFAULT_CONFIG;
+  return { config: data ?? DEFAULT_CONFIG, loading: isLoading };
 }

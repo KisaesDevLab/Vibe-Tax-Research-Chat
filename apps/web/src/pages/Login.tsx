@@ -33,7 +33,7 @@ export function LoginPage() {
 
   if (user) {
     const from =
-      (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/chat';
+      (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/research';
     return <Navigate to={from} replace />;
   }
   if (needsSetup) return <Navigate to="/setup" replace />;
