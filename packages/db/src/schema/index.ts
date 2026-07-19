@@ -6,6 +6,7 @@ export * from './audit.js';
 export * from './settings.js';
 export * from './models.js';
 export * from './skills.js';
+export * from './clients.js';
 export * from './chats.js';
 export * from './messages.js';
 export * from './attachments.js';

@@ -8,6 +8,7 @@ import { requireAuth } from '../../middleware/auth.js';
 import { audit } from '../../lib/audit.js';
 import { messagesRouter } from './messages.js';
 import { attachmentsRouter } from './attachments.js';
+import { findAttachableClient } from '../clients/index.js';
 import type { SkillAttribution } from '@vibe/shared';
 
 // Identifiers the SPA's SkillsPanel uses to colour the chip — kept here
@@ -24,6 +25,9 @@ const uuidSchema = z.string().uuid();
 const createSchema = z.object({
   title: z.string().max(200).optional(),
   default_model_id: z.string().nullable().optional(),
+  // TP-2 — soft link from the active-client chip. Optional and never
+  // required for research.
+  client_id: z.string().uuid().nullable().optional(),
 });
 
 chatsRouter.post('/', async (req, res) => {
@@ -32,12 +36,20 @@ chatsRouter.post('/', async (req, res) => {
     res.status(400).json({ error: 'bad_request' });
     return;
   }
+  if (parsed.data.client_id) {
+    const client = await findAttachableClient(parsed.data.client_id);
+    if (!client) {
+      res.status(400).json({ error: 'unknown_or_merged_client' });
+      return;
+    }
+  }
   const inserted = await getDb()
     .insert(chats)
     .values({
       user_id: req.auth!.user_id,
       title: parsed.data.title ?? 'Untitled chat',
       default_model_id: parsed.data.default_model_id ?? null,
+      client_id: parsed.data.client_id ?? null,
     })
     .returning();
   res.status(201).json({ chat: inserted[0] });
@@ -183,6 +195,8 @@ const patchSchema = z.object({
   default_model_id: z.string().nullable().optional(),
   pii_disclosure_acknowledged: z.boolean().optional(),
   use_reference_library: z.boolean().optional(),
+  // TP-2 — set/clear the soft client link.
+  client_id: z.string().uuid().nullable().optional(),
 });
 
 chatsRouter.patch('/:id', async (req, res) => {
@@ -208,6 +222,16 @@ chatsRouter.patch('/:id', async (req, res) => {
     update.pii_disclosure_acknowledged = parsed.data.pii_disclosure_acknowledged;
   if (parsed.data.use_reference_library !== undefined)
     update.use_reference_library = parsed.data.use_reference_library;
+  if (parsed.data.client_id !== undefined) {
+    if (parsed.data.client_id !== null) {
+      const client = await findAttachableClient(parsed.data.client_id);
+      if (!client) {
+        res.status(400).json({ error: 'unknown_or_merged_client' });
+        return;
+      }
+    }
+    update.client_id = parsed.data.client_id;
+  }
 
   const where = isAdmin
     ? eq(chats.id, req.params.id)

@@ -102,6 +102,8 @@ export interface ChatDTO {
   // this off for memo-writing turns where they want primary-authority
   // citations only.
   use_reference_library: boolean;
+  // TP-2 — soft link to a client record (active-client chip / archival).
+  client_id: string | null;
   archived_at: string | null;
   created_at: string;
   updated_at: string;

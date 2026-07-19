@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMemo } from 'react';
 import { api } from '../lib/api';
 import { useFontSize } from '../lib/font-size';
+import { useActiveClient } from '../lib/active-client';
 import type { ChatDTO } from '@vibe/shared';
 
 interface ChatSidebarProps {
@@ -19,6 +20,7 @@ export function ChatSidebar({ mobileOpen = false, onClose }: ChatSidebarProps = 
   const qc = useQueryClient();
   const navigate = useNavigate();
   const { chatId } = useParams<{ chatId?: string }>();
+  const { activeClient } = useActiveClient();
 
   const { data } = useQuery<{ chats: ChatDTO[] }>({
     queryKey: ['chats'],
@@ -26,7 +28,12 @@ export function ChatSidebar({ mobileOpen = false, onClose }: ChatSidebarProps = 
   });
 
   const create = useMutation({
-    mutationFn: () => api<{ chat: ChatDTO }>('/api/chats', { method: 'POST' }),
+    // TP-2 — new chats soft-link to the active client chip when one is set.
+    mutationFn: () =>
+      api<{ chat: ChatDTO }>('/api/chats', {
+        method: 'POST',
+        body: JSON.stringify(activeClient ? { client_id: activeClient.id } : {}),
+      }),
     onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: ['chats'] });
       onClose?.();
@@ -79,6 +86,12 @@ export function ChatSidebar({ mobileOpen = false, onClose }: ChatSidebarProps = 
                     onClick={onClose}
                     className={`block px-3 py-1.5 text-sm truncate hover:bg-ink/5 ${chatId === c.id ? 'bg-ink/10' : ''}`}
                   >
+                    {c.client_id && (
+                      <span
+                        className="inline-block w-1.5 h-1.5 rounded-full bg-moss mr-1.5 align-middle"
+                        title="Linked to a client"
+                      />
+                    )}
                     {c.title}
                   </Link>
                 ))}
