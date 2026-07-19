@@ -2,7 +2,7 @@
 // mint/revoke signed links.
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, apiFetch } from '../../lib/api';
+import { api, apiFetch, apiUrl, downloadErrorMessage } from '../../lib/api';
 import type { PlanDetail } from './PlanDetailPage';
 
 interface DeliverableRow {
@@ -61,21 +61,43 @@ export function DeliverablesTab({ detail }: { detail: PlanDetail }) {
         { method: 'POST', body: JSON.stringify({ ttl_days: 14 }) },
       ),
     onSuccess: (r) => {
-      setMintedUrl(`${window.location.origin}${r.url}`);
+      setMintedUrl(`${window.location.origin}${apiUrl(r.url)}`);
       qc.invalidateQueries({ queryKey: ['deliverable-links'] });
     },
     onError: (err) => setError((err as Error).message),
   });
 
   async function download(d: DeliverableRow) {
-    const res = await apiFetch(`/api/planning/plans/${plan.id}/deliverables/${d.id}/download`);
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${d.kind}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      const res = await apiFetch(`/api/planning/plans/${plan.id}/deliverables/${d.id}/download`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${d.kind}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setError(null);
+    } catch (err) {
+      setError(downloadErrorMessage(err));
+    }
+  }
+
+  // Fetch the slideshow HTML with the Bearer token (auto-refresh on 401)
+  // instead of a plain <a href>: the anchor rides a 15-minute cookie and
+  // dumps raw 401 JSON in a new tab after idle.
+  async function openSlideshow() {
+    try {
+      const res = await apiFetch(`/api/planning/plans/${plan.id}/deliverables/slideshow-view`);
+      const html = await res.text();
+      const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+      window.open(url, '_blank', 'noopener');
+      // Revoke after the new tab has had time to load the blob.
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      setError(null);
+    } catch (err) {
+      setError(downloadErrorMessage(err));
+    }
   }
 
   const rows = data?.deliverables ?? [];
@@ -93,14 +115,12 @@ export function DeliverablesTab({ detail }: { detail: PlanDetail }) {
             Render {k}
           </button>
         ))}
-        <a
-          href={`/api/planning/plans/${plan.id}/deliverables/slideshow-view`}
-          target="_blank"
-          rel="noreferrer"
+        <button
+          onClick={() => void openSlideshow()}
           className="px-2.5 py-1 text-sm underline text-ink/60"
         >
           Slideshow web view →
-        </a>
+        </button>
       </div>
       {error && <div className="text-oxblood text-sm">{error}</div>}
       {mintedUrl && (

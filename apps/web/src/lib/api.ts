@@ -33,7 +33,7 @@ export function apiUrl(path: string): string {
   return `${base}${path.replace(/^\//, '')}`;
 }
 
-async function refreshOnce(): Promise<boolean> {
+async function doRefresh(): Promise<boolean> {
   const refresh_token = tokenStore.getRefresh();
   if (!refresh_token) return false;
   try {
@@ -49,6 +49,31 @@ async function refreshOnce(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+// Single-flight refresh. Refresh tokens rotate on use, so if N requests
+// 401 at once and each calls the refresh endpoint, all but the first race
+// a now-revoked token and randomly log the user out. Memoize the in-
+// flight refresh at module level so every concurrent 401 awaits the SAME
+// refresh; clear the memo once it settles so a later 401 starts fresh.
+let inflightRefresh: Promise<boolean> | null = null;
+
+function refreshOnce(): Promise<boolean> {
+  if (!inflightRefresh) {
+    inflightRefresh = doRefresh().finally(() => {
+      inflightRefresh = null;
+    });
+  }
+  return inflightRefresh;
+}
+
+// Human message for a failed download/export. HTTP 402 is the licensing
+// gate on client-facing deliverables — surface it as guidance, not JSON.
+export function downloadErrorMessage(err: unknown): string {
+  if (err instanceof ApiError && err.status === 402) {
+    return 'Client-facing deliverables need an active license — see Admin → Settings.';
+  }
+  return err instanceof Error ? err.message : String(err);
 }
 
 export async function api<T = unknown>(

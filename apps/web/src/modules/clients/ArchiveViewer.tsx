@@ -1,13 +1,15 @@
 // TP-11 — read-only archive viewer: frozen transcript with citation links
 // intact, sha256 provenance line, superseded/tombstone badges, PDF export.
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { ArchiveDetailDTO } from '@vibe/shared';
-import { api, apiFetch } from '../../lib/api';
+import { api, apiFetch, downloadErrorMessage } from '../../lib/api';
 import { Markdown } from '../../components/Markdown';
 
 export function ArchiveViewer() {
   const { clientId, archiveId } = useParams<{ clientId: string; archiveId: string }>();
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery<{ archive: ArchiveDetailDTO }>({
     queryKey: ['archive', archiveId],
@@ -20,14 +22,19 @@ export function ArchiveViewer() {
   if (!archive) return <div className="p-8 text-ink/50">Archive not found.</div>;
 
   async function downloadPdf() {
-    const res = await apiFetch(`/api/archives/${archive!.id}/pdf`);
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `archive-${archive!.title.slice(0, 40)}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      const res = await apiFetch(`/api/archives/${archive!.id}/pdf`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `archive-${archive!.title.slice(0, 40)}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setDownloadError(null);
+    } catch (err) {
+      setDownloadError(downloadErrorMessage(err));
+    }
   }
 
   return (
@@ -51,6 +58,7 @@ export function ArchiveViewer() {
           Export PDF
         </button>
       </div>
+      {downloadError && <div className="text-oxblood text-sm mb-2">{downloadError}</div>}
       <div className="text-xs text-ink/50 mb-1 flex flex-wrap gap-x-3">
         <span>Archived {new Date(archive.archived_at).toLocaleString()}</span>
         {archive.topic_tags.length > 0 && <span>{archive.topic_tags.join(' · ')}</span>}

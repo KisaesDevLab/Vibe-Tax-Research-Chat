@@ -5,7 +5,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { PlanStatus } from '@vibe/shared';
-import { api } from '../../lib/api';
+import { api, ApiError } from '../../lib/api';
+import { useAuth } from '../../components/AuthProvider';
 import type { PlanDetail } from './PlanDetailPage';
 
 interface GateResponse {
@@ -38,6 +39,8 @@ interface EngagementDTO {
 
 function EngagementPanel({ planId, onChanged }: { planId: string; onChanged: () => void }) {
   const qc = useQueryClient();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [error, setError] = useState<string | null>(null);
   const { data } = useQuery<{ engagement: EngagementDTO }>({
     queryKey: ['engagement', planId],
@@ -69,19 +72,21 @@ function EngagementPanel({ planId, onChanged }: { planId: string; onChanged: () 
           Payment: <span className="font-medium">{e.payment_status}</span>
         </span>
       </div>
-      <div className="flex flex-wrap gap-2 text-xs">
-        {['letter-sent', 'letter-signed', 'invoice-sent', 'payment-received'].map((step) => (
-          <button
-            key={step}
-            onClick={() => override.mutate(step)}
-            disabled={override.isPending}
-            className="px-2 py-1 border border-ink/20 rounded hover:bg-ink/5 disabled:opacity-50"
-            title="Admin manual override — used when OpenSign/Stripe are not configured"
-          >
-            Record {step}
-          </button>
-        ))}
-      </div>
+      {isAdmin && (
+        <div className="flex flex-wrap gap-2 text-xs">
+          {['letter-sent', 'letter-signed', 'invoice-sent', 'payment-received'].map((step) => (
+            <button
+              key={step}
+              onClick={() => override.mutate(step)}
+              disabled={override.isPending}
+              className="px-2 py-1 border border-ink/20 rounded hover:bg-ink/5 disabled:opacity-50"
+              title="Admin manual override — used when OpenSign/Stripe are not configured"
+            >
+              Record {step}
+            </button>
+          ))}
+        </div>
+      )}
       <p className="text-[11px] text-ink/40 mt-2">
         Signed + paid auto-advances the plan to engaged and unlocks strategy names in client
         deliverables. OpenSign/Stripe webhooks drive this automatically when configured.
@@ -108,11 +113,24 @@ const NEXT_STATUS: Partial<Record<PlanStatus, PlanStatus[]>> = {
   delivered: ['archived'],
 };
 
+interface ReviewersResponse {
+  reviewers: Array<{ id: string; email: string; display_name: string | null }>;
+}
+
 export function ReviewTab({ detail }: { detail: PlanDetail }) {
   const { plan } = detail;
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [memoMarkdown, setMemoMarkdown] = useState<string | null>(null);
+  const [memoError, setMemoError] = useState<string | null>(null);
+
+  const canPickReviewer = plan.status === 'draft' || plan.status === 'in-review';
+  const { data: reviewersData } = useQuery<ReviewersResponse>({
+    queryKey: ['planning-reviewers'],
+    queryFn: () => api('/api/planning/reviewers'),
+    enabled: canPickReviewer,
+  });
 
   const { data: gateData } = useQuery<GateResponse>({
     queryKey: ['plan-gate', plan.id, plan.updated_at],
@@ -159,6 +177,45 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
     onError: (err) => setError((err as Error).message),
   });
 
+  const setReviewer = useMutation({
+    mutationFn: (reviewer_id: string | null) =>
+      api(`/api/planning/plans/${plan.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ reviewer_id }),
+      }),
+    onSuccess: () => {
+      setError(null);
+      invalidate();
+    },
+    onError: (err) => setError((err as Error).message),
+  });
+
+  const memo = useMutation({
+    mutationFn: () =>
+      api<{ memo_markdown: string }>(`/api/planning/plans/${plan.id}/memo`, { method: 'POST' }),
+    onSuccess: (r) => {
+      setMemoError(null);
+      setMemoMarkdown(r.memo_markdown);
+    },
+    onError: (err) => {
+      if (err instanceof ApiError) {
+        if (err.status === 403) {
+          setMemoError('Plan memos are disabled in Admin → Settings.');
+          return;
+        }
+        if (err.status === 409) {
+          setMemoError('Compute the plan first.');
+          return;
+        }
+        if (err.status === 503) {
+          setMemoError('Claude is not configured on this appliance.');
+          return;
+        }
+      }
+      setMemoError((err as Error).message);
+    },
+  });
+
   const launch = useMutation({
     mutationFn: (strategy_id: string) =>
       api<{ chat_id: string }>(`/api/planning/plans/${plan.id}/research-launch`, {
@@ -172,8 +229,38 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
   const checklist = (gateData?.checklist ?? []).filter((c) => c.selected);
   const editable = plan.status === 'in-review';
 
+  const reviewers = reviewersData?.reviewers ?? [];
+  // Keep the current reviewer visible even if the list hasn't loaded (or
+  // no longer contains them) — the server enforces reviewer ≠ preparer at
+  // transition time, so no one is excluded client-side.
+  const reviewerKnown = plan.reviewer_id && reviewers.some((r) => r.id === plan.reviewer_id);
+
   return (
     <div className="max-w-3xl space-y-4">
+      {canPickReviewer && (
+        <div className="flex flex-wrap items-center gap-2">
+          <label htmlFor="reviewing-partner" className="text-sm text-ink/60">
+            Reviewing partner:
+          </label>
+          <select
+            id="reviewing-partner"
+            value={plan.reviewer_id ?? ''}
+            disabled={setReviewer.isPending}
+            onChange={(e) => setReviewer.mutate(e.target.value === '' ? null : e.target.value)}
+            className="px-2 py-1 border border-ink/20 rounded text-sm bg-white disabled:opacity-50"
+          >
+            <option value="">— none —</option>
+            {plan.reviewer_id && !reviewerKnown && (
+              <option value={plan.reviewer_id}>current reviewer</option>
+            )}
+            {reviewers.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.display_name ?? r.email}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm text-ink/60">Lifecycle:</span>
         <span className="text-[11px] uppercase tracking-wider px-2 py-0.5 rounded bg-ink text-paper">
@@ -294,6 +381,32 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
 
       {['presented', 'engaged', 'delivered'].includes(plan.status) && (
         <EngagementPanel planId={plan.id} onChanged={invalidate} />
+      )}
+
+      {plan.status !== 'draft' && (
+        <section className="border border-ink/10 rounded p-4 bg-white">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-display text-lg">Plan memo</h3>
+            <button
+              onClick={() => memo.mutate()}
+              disabled={memo.isPending}
+              className="px-2.5 py-1 border border-ink/20 rounded text-sm hover:bg-ink/5 disabled:opacity-50"
+            >
+              {memo.isPending ? 'Drafting…' : 'Draft memo (Claude)'}
+            </button>
+          </div>
+          {memoError && <div className="text-oxblood text-sm mt-2">{memoError}</div>}
+          {memoMarkdown && (
+            <details open className="mt-2">
+              <summary className="text-xs cursor-pointer text-ink/60">
+                Memo draft (markdown)
+              </summary>
+              <pre className="mt-2 text-xs whitespace-pre-wrap border border-ink/10 rounded p-3 bg-paper overflow-x-auto">
+                {memoMarkdown}
+              </pre>
+            </details>
+          )}
+        </section>
       )}
 
       {linksData && linksData.links.length > 0 && (

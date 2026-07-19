@@ -100,7 +100,7 @@ export function PdfImport({
           if (existing) existing.netProfit = f.value;
           else
             next.businesses.push({
-              id: `b${next.businesses.length + 1}`,
+              id: crypto.randomUUID(),
               name: 'Schedule C business',
               kind: 'schedule-c',
               netProfit: f.value,
@@ -116,7 +116,7 @@ export function PdfImport({
           if (existing) existing.netProfit = f.value;
           else
             next.businesses.push({
-              id: `b${next.businesses.length + 1}`,
+              id: crypto.randomUUID(),
               name: 'Partnership / S-corp K-1',
               kind: 'partnership',
               netProfit: f.value,
@@ -132,7 +132,7 @@ export function PdfImport({
           if (existing) existing.netIncome = f.value;
           else
             next.rentals.push({
-              id: 'r1',
+              id: crypto.randomUUID(),
               name: 'Rental (from return)',
               netIncome: f.value,
               activeParticipant: true,

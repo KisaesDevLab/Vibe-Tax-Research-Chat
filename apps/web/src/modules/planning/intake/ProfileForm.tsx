@@ -207,7 +207,9 @@ function BusinessesEditor({
             onChange([
               ...businesses,
               {
-                id: `b${businesses.length + 1}`,
+                // randomUUID, not a length-based counter — `b${length+1}`
+                // collides after a removal and duplicates React keys.
+                id: crypto.randomUUID(),
                 name: `Business ${businesses.length + 1}`,
                 kind: 'schedule-c',
                 netProfit: 0,
@@ -336,7 +338,7 @@ function RentalsEditor({
             onChange([
               ...rentals,
               {
-                id: `r${rentals.length + 1}`,
+                id: crypto.randomUUID(),
                 name: `Rental ${rentals.length + 1}`,
                 netIncome: 0,
                 activeParticipant: true,

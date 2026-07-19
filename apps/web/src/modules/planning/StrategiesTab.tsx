@@ -1,11 +1,31 @@
 // TP-6 — strategy picker: published strategies with suggest badges, a
 // param form generated from each strategy's inputs schema, and per-
 // scenario selection editing.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { StrategySelection } from '@vibe/shared';
-import { api } from '../../lib/api';
+import { api, ApiError } from '../../lib/api';
 import type { PlanDetail } from './PlanDetailPage';
+
+interface ParamError {
+  strategyId: string;
+  field: string;
+  message: string;
+}
+
+// Server 400 shape for schema-required params that are missing/invalid.
+function parseInvalidParams(err: unknown): ParamError[] | null {
+  if (!(err instanceof ApiError) || err.status !== 400) return null;
+  const body = err.body as { error?: string; detail?: unknown } | null;
+  if (!body || body.error !== 'invalid_params' || !Array.isArray(body.detail)) return null;
+  return body.detail as ParamError[];
+}
+
+// A required param counts as unset when it was never entered or was
+// cleared — 0 and false are deliberate values.
+function isEmptyParam(v: unknown): boolean {
+  return v === undefined || v === null || v === '';
+}
 
 interface StrategyListing {
   id: string;
@@ -31,6 +51,7 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
   const qc = useQueryClient();
   const scenario = scenarios[0] ?? null;
   const [error, setError] = useState<string | null>(null);
+  const [paramErrors, setParamErrors] = useState<ParamError[]>([]);
 
   const { data } = useQuery<{ strategies: StrategyListing[] }>({
     queryKey: ['planning-strategies'],
@@ -58,9 +79,18 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
       }),
     onSuccess: () => {
       setError(null);
+      setParamErrors([]);
       qc.invalidateQueries({ queryKey: ['plan', plan.id] });
     },
-    onError: (err) => setError((err as Error).message),
+    onError: (err) => {
+      const detail = parseInvalidParams(err);
+      if (detail) {
+        setParamErrors(detail);
+        setError(null);
+      } else {
+        setError((err as Error).message);
+      }
+    },
   });
 
   if (!scenario) return <div className="text-ink/50">No scenario on this plan.</div>;
@@ -93,6 +123,11 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
         {strategies.map((s) => {
           const isSelected = selected.has(s.id);
           const suggestReason = suggestions.get(s.id);
+          const required = new Set(s.inputsSchema?.required ?? []);
+          const missingRequired = isSelected
+            ? Array.from(required).filter((k) => isEmptyParam(selected.get(s.id)?.params[k]))
+            : [];
+          const serverErrors = paramErrors.filter((e) => e.strategyId === s.id);
           return (
             <li
               key={s.id}
@@ -140,11 +175,27 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
                           key={key}
                           name={key}
                           prop={prop}
+                          required={required.has(key)}
                           value={selected.get(s.id)?.params[key]}
                           onChange={(v) => setParam(s, key, v)}
                         />
                       ))}
                     </div>
+                  )}
+                  {missingRequired.length > 0 && (
+                    <div className="mt-2 text-xs text-oxblood bg-oxblood/5 border border-oxblood/20 rounded px-2 py-1">
+                      Required parameter{missingRequired.length > 1 ? 's' : ''} missing:{' '}
+                      {missingRequired.join(', ')}
+                    </div>
+                  )}
+                  {serverErrors.length > 0 && (
+                    <ul className="mt-2 text-xs text-oxblood bg-oxblood/5 border border-oxblood/20 rounded px-2 py-1 space-y-0.5">
+                      {serverErrors.map((e, i) => (
+                        <li key={i}>
+                          <span className="font-mono">{e.field}</span>: {e.message}
+                        </li>
+                      ))}
+                    </ul>
                   )}
                 </div>
               </div>
@@ -159,6 +210,7 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
 function ParamField({
   name,
   prop,
+  required,
   value,
   onChange,
 }: {
@@ -170,12 +222,24 @@ function ParamField({
     minimum?: number;
     maximum?: number;
   };
+  required: boolean;
   value: unknown;
   onChange: (v: unknown) => void;
 }) {
+  const labelText = (
+    <>
+      {name}
+      {required && (
+        <span className="text-oxblood" title="Required">
+          {' '}
+          *
+        </span>
+      )}
+    </>
+  );
   const label = (
     <span className="text-xs text-ink/60 block" title={prop.description}>
-      {name}
+      {labelText}
     </span>
   );
   if (prop.enum) {
@@ -207,21 +271,53 @@ function ParamField({
           checked={value === true}
           onChange={(e) => onChange(e.target.checked)}
         />
-        <span className="text-xs text-ink/60">{name}</span>
+        <span className="text-xs text-ink/60">{labelText}</span>
       </label>
     );
   }
   return (
     <label className="block">
       {label}
-      <input
-        type="number"
-        value={(value as number) ?? ''}
-        min={prop.minimum}
-        max={prop.maximum}
-        onChange={(e) => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
-        className="mt-0.5 w-full px-2 py-1 border border-ink/20 rounded text-sm"
+      <NumberParamInput
+        value={value}
+        minimum={prop.minimum}
+        maximum={prop.maximum}
+        onCommit={onChange}
       />
     </label>
+  );
+}
+
+// Number params buffer keystrokes locally and PATCH once on blur —
+// mutating per keystroke raced concurrent PATCHes and let a slow early
+// response clobber a later value.
+function NumberParamInput({
+  value,
+  minimum,
+  maximum,
+  onCommit,
+}: {
+  value: unknown;
+  minimum?: number;
+  maximum?: number;
+  onCommit: (v: unknown) => void;
+}) {
+  const [draft, setDraft] = useState(value === undefined || value === null ? '' : String(value));
+  useEffect(() => {
+    setDraft(value === undefined || value === null ? '' : String(value));
+  }, [value]);
+  return (
+    <input
+      type="number"
+      value={draft}
+      min={minimum}
+      max={maximum}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => {
+        const next = draft === '' ? undefined : Number(draft);
+        if (next !== (value as number | undefined)) onCommit(next);
+      }}
+      className="mt-0.5 w-full px-2 py-1 border border-ink/20 rounded text-sm"
+    />
   );
 }
