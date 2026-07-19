@@ -1,10 +1,14 @@
-// TP-1 — clients module shell (lazy-loaded). TP-3 replaces the placeholder
-// with the client list + detail routes.
+// TP-3 — clients module route table (lazy-loaded behind RequirePlanning).
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { ClientsPage } from './ClientsPage';
+import { ClientDetailPage } from './ClientDetailPage';
+
 export default function ClientsModule() {
   return (
-    <div className="h-full overflow-y-auto p-8">
-      <h1 className="font-display text-3xl mb-2">Clients</h1>
-      <p className="text-ink/60 max-w-xl">Client records arrive in the next phase.</p>
-    </div>
+    <Routes>
+      <Route index element={<ClientsPage />} />
+      <Route path=":clientId/:tab?" element={<ClientDetailPage />} />
+      <Route path="*" element={<Navigate to="." replace />} />
+    </Routes>
   );
 }
