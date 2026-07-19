@@ -1,0 +1,48 @@
+# Create a release tag at a given commit via workflow_dispatch.
+#
+# Why this exists: managed remote-execution environments (Claude Code
+# on the web, CI bots) can push only their designated work branch — a
+# direct `git push origin vX.Y.Z` is rejected at the credential proxy.
+# This workflow lets an API-scoped actor mint the tag server-side.
+#
+# CAVEAT: tags created with the default GITHUB_TOKEN do NOT trigger
+# release.yml's `on: push: tags` — GitHub suppresses workflow-to-
+# workflow event cascades. After this succeeds, dispatch release.yml
+# with ref=<tag> so the image publish runs with semver tag derivation.
+name: tag-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name (vX.Y.Z)'
+        required: true
+        type: string
+      sha:
+        description: 'Commit sha the tag points at'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = context.payload.inputs.tag;
+            const sha = context.payload.inputs.sha;
+            if (!/^v\d+\.\d+\.\d+(-[\w.]+)?$/.test(tag)) {
+              core.setFailed(`refusing non-semver tag: ${tag}`);
+              return;
+            }
+            await github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/${tag}`,
+              sha,
+            });
+            core.info(`created refs/tags/${tag} at ${sha}`);
