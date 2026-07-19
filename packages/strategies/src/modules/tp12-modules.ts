@@ -637,19 +637,33 @@ register(
 
 // bracket-management: positive = defer income out of this year;
 // negative = accelerate income INTO this year (Roth-style bracket fill —
-// intentionally raises the current-year burden).
+// intentionally raises the current-year burden). Timing moves are
+// carry-threaded: what leaves year N arrives in year N+1 (and what is
+// pulled into year N is absent from year N+1) — without the carry the
+// deferral would silently become a permanent recurring exclusion and
+// every projection year would book phantom savings.
 register('bracket-management@1.0.0', (ctx: ApplyContext): ApplyResult => {
-  const { profile, params } = ctx;
+  const { profile, params, carry } = ctx;
   const requested = num(params.deferAmount);
-  const amount = requested >= 0 ? Math.min(requested, Math.max(profile.otherIncome, 0)) : requested;
-  if (amount === 0) return { profile, notes: ['No income timing move configured.'] };
+  const carriedIn = num(carry.deferredIn);
+  const withCarry = { ...profile, otherIncome: profile.otherIncome + carriedIn };
+  const amount =
+    requested >= 0 ? Math.min(requested, Math.max(withCarry.otherIncome, 0)) : requested;
+  if (amount === 0 && carriedIn === 0) {
+    return { profile, notes: ['No income timing move configured.'] };
+  }
+  const notes: string[] = [];
+  if (carriedIn > 0) notes.push(`${usd(carriedIn)} deferred from the prior year lands this year.`);
+  if (carriedIn < 0)
+    notes.push(`${usd(-carriedIn)} was accelerated into the prior year — absent this year.`);
+  if (amount > 0)
+    notes.push(`${usd(amount)} of income deferred into next year (invoice/bonus timing).`);
+  if (amount < 0)
+    notes.push(`${usd(-amount)} of income accelerated into this year to fill the current bracket.`);
   return {
-    profile: { ...profile, otherIncome: profile.otherIncome - amount },
-    notes: [
-      amount > 0
-        ? `${usd(amount)} of income deferred into next year (invoice/bonus timing).`
-        : `${usd(-amount)} of income accelerated into this year to fill the current bracket.`,
-    ],
+    profile: { ...withCarry, otherIncome: withCarry.otherIncome - amount },
+    notes,
+    carryPatch: { deferredIn: amount },
   };
 });
 

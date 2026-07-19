@@ -24,7 +24,8 @@ async function loadPlanWithClient(planId: string) {
   const [plan] = await db.select().from(plans).where(eq(plans.id, planId)).limit(1);
   if (!plan) return null;
   const [client] = await db.select().from(clients).where(eq(clients.id, plan.client_id)).limit(1);
-  return { plan, clientName: client?.name ?? '—' };
+  const clientEmail = client?.contacts.find((c) => c.email)?.email ?? null;
+  return { plan, clientName: client?.name ?? '—', clientEmail };
 }
 
 engagementRouter.get('/', async (req, res) => {
@@ -133,6 +134,7 @@ engagementRouter.post('/send-invoice', async (req, res) => {
       planId,
       planTitle: loaded.plan.title,
       clientName: loaded.clientName,
+      clientEmail: loaded.clientEmail,
       amount,
     });
     await applyEngagementUpdate(
@@ -170,6 +172,14 @@ engagementRouter.post('/override', requireRole('admin'), async (req, res) => {
   const loaded = await loadPlanWithClient(planId);
   if (!loaded) {
     res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  // Same gate as send-letter/send-invoice: engagement state must not be
+  // recorded before the plan clears review. Below presented the plan
+  // advance would silently no-op and a later draft-delete would drop the
+  // row recording a real out-of-band signature/payment.
+  if (!PRESENTED_PLUS.includes(loaded.plan.status)) {
+    res.status(409).json({ error: 'plan_not_presented' });
     return;
   }
   const update =

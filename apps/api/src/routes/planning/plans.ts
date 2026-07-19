@@ -13,7 +13,6 @@ import {
   plan_scenarios,
   plan_results,
   research_archives,
-  strategies as strategiesTable,
   strategy_versions,
   table_sets,
   users,
@@ -231,7 +230,14 @@ plansRouter.patch('/:id', async (req, res) => {
   if (parsed.data.reviewer_id !== undefined) update.reviewer_id = parsed.data.reviewer_id;
   // Editing the profile invalidates review sign-off: what would be
   // presented is no longer what was ticked (ordering-bypass guard).
-  if (plan.status === 'in-review' && parsed.data.baseline_profile !== undefined) {
+  // Swapping the reviewer does too — the ticks are the ASSIGNED
+  // reviewer's attestation; a new reviewer must not inherit them and
+  // present a plan they never reviewed.
+  if (
+    plan.status === 'in-review' &&
+    (parsed.data.baseline_profile !== undefined ||
+      (parsed.data.reviewer_id !== undefined && parsed.data.reviewer_id !== plan.reviewer_id))
+  ) {
     update.review_state = {};
   }
   const [row] = await db.update(plans).set(update).where(eq(plans.id, plan.id)).returning();
@@ -299,25 +305,48 @@ const scenarioSchema = z.object({
     .optional(),
 });
 
-/** Selection params are checked against each strategy's PUBLISHED inputs
- *  schema — a missing required parameter previously computed silently as
- *  $0 and overstated savings. */
-async function validateSelections(selections: StrategySelection[]): Promise<ParamError[]> {
+/** Selection params are checked against the schema of the EXACT version
+ *  the selection pins — not the strategy's current version. A republish
+ *  that tightens the schema must not block edits on a plan pinned to the
+ *  older semver (compute runs the pinned version), and params dropped
+ *  from the current version must still validate against the pinned one.
+ *  Deprecated (superseded) versions stay resolvable: plans pinned to
+ *  them keep computing. Required-ness is enforced only when
+ *  checkRequired is set (compute), never on scenario writes — a missing
+ *  required parameter previously computed silently as $0 and overstated
+ *  savings. */
+async function validateSelections(
+  selections: StrategySelection[],
+  opts: { checkRequired: boolean },
+): Promise<ParamError[]> {
   if (selections.length === 0) return [];
   const db = getDb();
   const ids = Array.from(new Set(selections.map((s) => s.strategyId)));
   const rows = await db
     .select({
       strategy_id: strategy_versions.strategy_id,
+      semver: strategy_versions.semver,
       inputs_schema: strategy_versions.inputs_schema,
     })
     .from(strategy_versions)
-    .innerJoin(strategiesTable, eq(strategiesTable.current_version_id, strategy_versions.id))
-    .where(inArray(strategy_versions.strategy_id, ids));
-  const schemas = new Map(rows.map((r) => [r.strategy_id, r.inputs_schema as InputsSchema]));
-  return selections.flatMap((sel) =>
-    validateParams(sel.strategyId, sel.params ?? {}, schemas.get(sel.strategyId)),
+    .where(
+      and(
+        inArray(strategy_versions.strategy_id, ids),
+        inArray(strategy_versions.status, ['published', 'deprecated']),
+      ),
+    );
+  const schemas = new Map(
+    rows.map((r) => [`${r.strategy_id}@${r.semver}`, r.inputs_schema as InputsSchema]),
   );
+  return selections.flatMap((sel) => {
+    const key = `${sel.strategyId}@${sel.version}`;
+    if (!schemas.has(key)) {
+      return [
+        { strategyId: sel.strategyId, field: 'version', message: 'unknown strategy version' },
+      ];
+    }
+    return validateParams(sel.strategyId, sel.params ?? {}, schemas.get(key), opts);
+  });
 }
 
 /** Any change to what would be presented invalidates review sign-off. */
@@ -343,7 +372,7 @@ plansRouter.post('/:id/scenarios', async (req, res) => {
     return;
   }
   const selections = (parsed.data.selections ?? []) as StrategySelection[];
-  const paramErrors = await validateSelections(selections);
+  const paramErrors = await validateSelections(selections, { checkRequired: false });
   if (paramErrors.length > 0) {
     res.status(400).json({ error: 'invalid_params', detail: paramErrors });
     return;
@@ -385,7 +414,9 @@ plansRouter.patch('/:id/scenarios/:scenarioId', async (req, res) => {
     return;
   }
   if (parsed.data.selections !== undefined) {
-    const paramErrors = await validateSelections(parsed.data.selections as StrategySelection[]);
+    const paramErrors = await validateSelections(parsed.data.selections as StrategySelection[], {
+      checkRequired: false,
+    });
     if (paramErrors.length > 0) {
       res.status(400).json({ error: 'invalid_params', detail: paramErrors });
       return;
@@ -440,10 +471,21 @@ plansRouter.post('/:id/compute', async (req, res) => {
     .from(plan_scenarios)
     .where(eq(plan_scenarios.plan_id, plan.id));
 
-  // Resolve every selected strategy version once.
-  const selectedIds = Array.from(
-    new Set(scenarios.flatMap((s) => s.selections.map((sel) => sel.strategyId))),
-  );
+  // Compute is where required params are enforced: scenario writes accept
+  // incomplete selections (the UI persists first, collects params after),
+  // but running the engine with a missing required param would silently
+  // model $0 and overstate savings.
+  const allSelections = scenarios.flatMap((s) => s.selections);
+  const paramErrors = await validateSelections(allSelections, { checkRequired: true });
+  if (paramErrors.length > 0) {
+    res.status(400).json({ error: 'invalid_params', detail: paramErrors });
+    return;
+  }
+
+  // Resolve every selected strategy version once. Deprecated versions
+  // (superseded by a later publish) stay computable — plans pin the
+  // semver they selected.
+  const selectedIds = Array.from(new Set(allSelections.map((sel) => sel.strategyId)));
   const versions =
     selectedIds.length > 0
       ? await db
@@ -452,7 +494,7 @@ plansRouter.post('/:id/compute', async (req, res) => {
           .where(
             and(
               inArray(strategy_versions.strategy_id, selectedIds),
-              eq(strategy_versions.status, 'published'),
+              inArray(strategy_versions.status, ['published', 'deprecated']),
             ),
           )
       : [];

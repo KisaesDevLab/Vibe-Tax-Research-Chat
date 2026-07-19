@@ -38,6 +38,8 @@ export interface PaymentProvider {
     planId: string;
     planTitle: string;
     clientName: string;
+    /** First contact email, when the client record has one. */
+    clientEmail: string | null;
     /** Whole dollars. */
     amount: number;
   }): Promise<{ invoiceId: string }>;
@@ -71,12 +73,17 @@ export function getSignatureProvider(): SignatureProvider {
 export function getPaymentProvider(): PaymentProvider {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new ProviderNotConfiguredError('stripe');
-  const call = async (path: string, form: Record<string, string>) => {
+  // Every call carries an Idempotency-Key derived from the plan (and
+  // amount, for money-bearing calls): a timeout after Stripe already
+  // processed the request must not mint a second customer or a second
+  // live invoice on retry.
+  const call = async (path: string, form: Record<string, string>, idempotencyKey: string) => {
     const res = await fetch(`https://api.stripe.com${path}`, {
       method: 'POST',
       headers: {
         authorization: `Bearer ${key}`,
         'content-type': 'application/x-www-form-urlencoded',
+        'idempotency-key': idempotencyKey,
       },
       body: new URLSearchParams(form),
       signal: AbortSignal.timeout(10_000),
@@ -89,22 +96,42 @@ export function getPaymentProvider(): PaymentProvider {
       // Stripe invoices require a customer; the amount is an invoice
       // item; metadata.plan_id is what the invoice.paid webhook matches
       // on — without it the round-trip cannot correlate.
-      const customer = await call('/v1/customers', {
-        name: input.clientName,
-        description: `Tax plan client — ${input.planTitle}`,
-      });
-      await call('/v1/invoiceitems', {
-        customer: customer.id,
-        currency: 'usd',
-        amount: String(Math.round(input.amount * 100)),
-        description: input.planTitle,
-      });
-      const invoice = await call('/v1/invoices', {
-        customer: customer.id,
-        description: `${input.planTitle} — ${input.clientName}`,
-        'metadata[plan_id]': input.planId,
-        auto_advance: 'true',
-      });
+      const cents = Math.round(input.amount * 100);
+      const customer = await call(
+        '/v1/customers',
+        {
+          name: input.clientName,
+          ...(input.clientEmail ? { email: input.clientEmail } : {}),
+          description: `Tax plan client — ${input.planTitle}`,
+        },
+        `cust-${input.planId}`,
+      );
+      await call(
+        '/v1/invoiceitems',
+        {
+          customer: customer.id,
+          currency: 'usd',
+          amount: String(cents),
+          description: input.planTitle,
+        },
+        `item-${input.planId}-${cents}`,
+      );
+      // send_invoice (not charge_automatically): a fresh customer has no
+      // payment method on file — Stripe must EMAIL the hosted invoice,
+      // not attempt a doomed automatic charge that instantly fails the
+      // engagement via invoice.payment_failed.
+      const invoice = await call(
+        '/v1/invoices',
+        {
+          customer: customer.id,
+          description: `${input.planTitle} — ${input.clientName}`,
+          'metadata[plan_id]': input.planId,
+          collection_method: 'send_invoice',
+          days_until_due: '30',
+          auto_advance: 'true',
+        },
+        `inv-${input.planId}-${cents}`,
+      );
       return { invoiceId: invoice.id };
     },
   };

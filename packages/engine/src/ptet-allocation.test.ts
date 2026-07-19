@@ -40,7 +40,63 @@ describe('PTET deduction allocation', () => {
     // SE tax must be identical — the whole entity deduction lands on the
     // S corp flow, never the Schedule C.
     expect(withPtet.result.seTax).toBe(withoutPtet.result.seTax);
-    // The deduction still reduces AGI (through the S-corp flow).
-    expect(withPtet.result.agi).toBeLessThan(withoutPtet.result.agi);
+    // The FULL deduction lands on the S-corp flow: an exact delta, so a
+    // regression to an all-positive-flows denominator (which would send
+    // ~84% of the deduction nowhere) cannot pass.
+    expect(withoutPtet.result.agi - withPtet.result.agi).toBe(3_000);
+  });
+
+  it('deepens the S-corp loss in a loss year instead of dropping the deduction', () => {
+    const lossYear = baseProfile({
+      filingStatus: 'mfj',
+      state: { code: 'MO', flatRate: 0.05 },
+      businesses: [
+        {
+          id: 'c1',
+          name: 'Sole prop',
+          kind: 'schedule-c',
+          netProfit: 200_000,
+          employeeWages: 0,
+          ownerWages: 0,
+          sstb: false,
+          qbiEligible: true,
+        },
+        {
+          id: 's1',
+          name: 'S corp',
+          kind: 's-corp',
+          netProfit: -50_000,
+          employeeWages: 0,
+          ownerWages: 0,
+          sstb: false,
+          qbiEligible: true,
+        },
+      ],
+    });
+    const withoutPtet = computeYear(lossYear, tables, EMPTY_CARRYFORWARD, 2026);
+    const withPtet = computeYear(
+      { ...lossYear, ptetPaid: 10_000 },
+      tables,
+      EMPTY_CARRYFORWARD,
+      2026,
+    );
+    // The entity deduction deepens the S-corp loss — AGI drops by the
+    // full PTET amount, the Schedule C SE base is untouched, and the
+    // model says so in a note.
+    expect(withoutPtet.result.agi - withPtet.result.agi).toBe(10_000);
+    expect(withPtet.result.seTax).toBe(withoutPtet.result.seTax);
+    expect(withPtet.result.notes.join(' ')).toMatch(/deepens the pass-through loss/);
+  });
+
+  it('notes the unmodeled deduction when there is no electable entity at all', () => {
+    const noEntity = baseProfile({
+      filingStatus: 'mfj',
+      wages: 150_000,
+      ptetPaid: 5_000,
+    });
+    const { result } = computeYear(noEntity, tables, EMPTY_CARRYFORWARD, 2026);
+    expect(result.notes.join(' ')).toMatch(/no S-corp\/partnership flow/);
+    // Burden still carries the cash out the door.
+    expect(result.totalBurden).toBeGreaterThan(0);
   });
 });

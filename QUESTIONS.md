@@ -335,3 +335,47 @@ are now EXPLICIT deferrals (not silent gaps):
   subsystem enabled per install.
 - **TP-14 suggestion narratives** (Claude-written "why this rule-hit fits this
   client") — deferred; suggest reasons come from the record's template today.
+
+## QA round 2 — applied defaults for review findings
+
+Round-2 adversarial review (five fresh agents over the round-1 diffs plus a self-review
+of the deliverables/ops surface) confirmed 19 findings; all fixed. Decisions applied
+without user interruption:
+
+- **Required-parameter enforcement moved from scenario writes to compute.** The UI
+  persists a selection first and collects params after, so rejecting an incomplete
+  selection made most modeled strategies unselectable (round-1 regression).
+  Type/range/enum checks still reject scenario writes; compute now refuses to run any
+  scenario missing required params (`invalid_params`) — closing the original
+  "missing param silently models $0" hole for legacy rows too.
+- **Selections validate against the pinned version's schema** (published or
+  deprecated), not the strategy's current version — a republish must not block or
+  mis-validate plans pinned to an older semver. Unknown versions are rejected at
+  write time.
+- **Superseded strategy versions are deprecated on approve** (one published row per
+  strategy); compute and validation intentionally keep resolving deprecated semvers
+  so issued plans never break.
+- **PTET in an entity loss year deepens the pass-through loss** rather than silently
+  dropping the federal deduction. Allocation convention: S corp first (no SE-base
+  effect — the conservative choice), else partnership; a note is emitted either way.
+  With no electable entity at all the deduction stays unmodeled and a note says so.
+- **bracket-management is now carry-threaded**: income deferred out of year N lands in
+  year N+1 (and acceleration mirrors). Steady-state projection deltas net to zero
+  after year 1 instead of booking a phantom recurring exclusion.
+- **Stripe invoices are send_invoice (30-day due, hosted invoice email)**, not
+  charge_automatically — a fresh customer has no payment method, so auto-charge
+  guaranteed instant `payment_failed`. All Stripe calls carry plan-derived
+  idempotency keys so timeouts can't double-invoice.
+- **Manual engagement override now requires plan ≥ presented**, matching
+  send-letter/send-invoice — pre-review terminal states were recordable but silently
+  never advanced the plan, and a draft delete would have dropped the row.
+- **Signature-valid webhooks with unresolvable plan_ids are acked `ignored`**
+  (never 500): a poison event must not retry for days or get the endpoint disabled.
+  OpenSign plan_id is accepted top-level or under metadata (round-trip asymmetry);
+  Stripe signature parsing accepts any matching `v1` during secret rotation.
+- **Research links on frozen plans: additions allowed, deletions blocked** — by
+  design. The elevated-risk gate is evaluated at presentation; later additions are
+  supplementary evidence and cannot retroactively satisfy the gate, but deleting a
+  link would destroy the evidence the presentation relied on.
+- **Reviewer swap while in-review clears the checklist** — ticks are the assigned
+  reviewer's attestation and are never inherited.

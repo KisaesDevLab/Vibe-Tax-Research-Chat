@@ -66,15 +66,33 @@ export function computeYear(
   // partnerships) can make it, so the entity deduction is allocated
   // pro-rata across their positive flows only. A Schedule C cannot elect
   // PTET and must never see its SE base shrink from someone else's PTET.
-  const electablePositiveTotal = preFlow
-    .filter((x) => x.b.kind === 's-corp' || x.b.kind === 'partnership')
-    .reduce((a, x) => a + clampMin0(x.flow), 0);
-  const flows = preFlow.map((x) => {
+  const electable = preFlow.filter((x) => x.b.kind === 's-corp' || x.b.kind === 'partnership');
+  const electablePositiveTotal = electable.reduce((a, x) => a + clampMin0(x.flow), 0);
+  let flows = preFlow.map((x) => {
     if (ptetPaid <= 0 || electablePositiveTotal <= 0 || x.flow <= 0 || x.b.kind === 'schedule-c') {
       return x;
     }
     return { ...x, flow: x.flow - Math.round((ptetPaid * x.flow) / electablePositiveTotal) };
   });
+  if (ptetPaid > 0 && electablePositiveTotal <= 0) {
+    if (electable.length > 0) {
+      // Loss-year election: PTET paid by an entity with no positive flow
+      // deepens the pass-through loss — the federal deduction must not
+      // silently vanish. Allocate to an S corp first (an S-corp loss has
+      // no SE-base effect, the conservative choice), else a partnership.
+      const target =
+        electable.find((x) => x.b.kind === 's-corp') ??
+        electable.find((x) => x.b.kind === 'partnership')!;
+      flows = flows.map((x) => (x.b === target.b ? { ...x, flow: x.flow - ptetPaid } : x));
+      notes.push(
+        `PTET deduction allocated to ${target.b.name} despite a loss year — it deepens the pass-through loss.`,
+      );
+    } else {
+      notes.push(
+        'PTET paid but no S-corp/partnership flow to deduct it against — federal entity deduction not modeled.',
+      );
+    }
+  }
   const flowThroughTotal = flows.reduce((a, x) => a + x.flow, 0);
 
   // ── SE tax (Schedule C + partnership flow-through) ──

@@ -150,6 +150,36 @@ describe('nol-planning depletes the carryforward across years', () => {
   });
 });
 
+describe('bracket-management threads the timing move across years', () => {
+  it('steady-state deferral saves in year 1 only; later years net to baseline', () => {
+    const deltas = run(
+      'bracket-management',
+      64,
+      { deferAmount: 50_000 },
+      base({ otherIncome: 200_000 }),
+      3,
+    );
+    // Year 1 defers 50k out. Year 2+ receives the prior deferral back
+    // while deferring anew — net zero, NOT a fresh 50k exclusion.
+    expect(deltas[0]!).toBeLessThan(-5_000);
+    expect(deltas[1]).toBe(0);
+    expect(deltas[2]).toBe(0);
+  });
+
+  it('acceleration costs in year 1 and nets to baseline afterward', () => {
+    const deltas = run(
+      'bracket-management',
+      64,
+      { deferAmount: -30_000 },
+      base({ otherIncome: 100_000 }),
+      3,
+    );
+    expect(deltas[0]!).toBeGreaterThan(0);
+    expect(deltas[1]).toBe(0);
+    expect(deltas[2]).toBe(0);
+  });
+});
+
 describe('recurring strategies still apply every year', () => {
   it('meals-optimization (an annual practice) reduces every year', () => {
     const deltas = run(

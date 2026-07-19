@@ -90,13 +90,21 @@ export function validateParams(
   strategyId: string,
   params: Record<string, unknown>,
   schema: InputsSchema | null | undefined,
+  opts: { checkRequired?: boolean } = {},
 ): ParamError[] {
   if (!schema || typeof schema !== 'object') return [];
   const errors: ParamError[] = [];
   const properties = schema.properties ?? {};
-  for (const field of schema.required ?? []) {
-    if (params[field] === undefined || params[field] === null || params[field] === '') {
-      errors.push({ strategyId, field, message: 'required parameter missing' });
+  // Required-ness is enforced at COMPUTE time, not on scenario writes: the
+  // UI persists a selection first and collects params after, so rejecting
+  // an incomplete selection would make strategies unselectable. Type/
+  // range/enum checks always run — a wrong-typed value is never "not yet
+  // entered".
+  if (opts.checkRequired ?? true) {
+    for (const field of schema.required ?? []) {
+      if (params[field] === undefined || params[field] === null || params[field] === '') {
+        errors.push({ strategyId, field, message: 'required parameter missing' });
+      }
     }
   }
   for (const [field, value] of Object.entries(params)) {
