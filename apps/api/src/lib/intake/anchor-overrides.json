@@ -1,0 +1,32 @@
+[
+  {
+    "vendor": "ultratax",
+    "detect": "UltraTax CS",
+    "anchors": []
+  },
+  {
+    "vendor": "lacerte",
+    "detect": "Lacerte",
+    "anchors": []
+  },
+  {
+    "vendor": "gosystem",
+    "detect": "GoSystem",
+    "anchors": []
+  },
+  {
+    "vendor": "axcess",
+    "detect": "CCH Axcess",
+    "anchors": []
+  },
+  {
+    "vendor": "drake",
+    "detect": "Drake Software",
+    "anchors": []
+  },
+  {
+    "vendor": "proseries",
+    "detect": "ProSeries",
+    "anchors": []
+  }
+]
