@@ -151,17 +151,7 @@ export function startWorkers(): void {
   // strategy-refresh — one strategy per job, or a full sweep when no
   // strategy_id is given (each per-strategy call skips fast without a key).
   createWorker('strategy-refresh', async (job) => {
-    const { draftStrategy } = await import('./handlers/strategy-author.js');
-    const triggered_by =
-      typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'refresh';
-    const one = job.data?.strategy_id as string | undefined;
-    const db = getDb();
-    const { strategies } = await import('@vibe/db/schema');
-    const targets = one ? [{ id: one }] : await db.select({ id: strategies.id }).from(strategies);
-    for (const t of targets) {
-      const result = await draftStrategy(t.id, triggered_by);
-      if (result.status === 'skipped-no-key') return; // no point iterating
-    }
+    await runStrategyRefresh(job.data ?? {});
   });
 
   // ── notifications-email — outbound transactional email.
@@ -211,6 +201,28 @@ export function startWorkers(): void {
       });
     }, 30_000);
   });
+}
+
+// Exported for tests. One bad strategy (bad content, transient db error)
+// must not abort the sweep and silently skip everything after it.
+export async function runStrategyRefresh(jobData: {
+  strategy_id?: unknown;
+  triggered_by?: unknown;
+}): Promise<void> {
+  const { draftStrategy } = await import('./handlers/strategy-author.js');
+  const triggered_by = typeof jobData.triggered_by === 'string' ? jobData.triggered_by : 'refresh';
+  const one = typeof jobData.strategy_id === 'string' ? jobData.strategy_id : undefined;
+  const db = getDb();
+  const { strategies } = await import('@vibe/db/schema');
+  const targets = one ? [{ id: one }] : await db.select({ id: strategies.id }).from(strategies);
+  for (const t of targets) {
+    try {
+      const result = await draftStrategy(t.id, triggered_by);
+      if (result.status === 'skipped-no-key') return; // no point iterating
+    } catch (err) {
+      logger.error({ err, strategy_id: t.id }, 'strategy-refresh: draft failed — continuing sweep');
+    }
+  }
 }
 
 async function titleChat(chat_id: string): Promise<void> {

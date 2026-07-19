@@ -6,11 +6,12 @@
 // table set; nothing publishes any other way.
 import { Router } from 'express';
 import { z } from 'zod';
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, ne, sql } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import { review_queue, strategies, strategy_versions, table_sets } from '@vibe/db/schema';
 import { listModuleRefs } from '@vibe/strategies';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
+import { requirePlanning } from '../../middleware/planning-flag.js';
 import { audit } from '../../lib/audit.js';
 import {
   goldenRegressionQueue,
@@ -32,8 +33,12 @@ class DecisionError extends Error {
   }
 }
 
+// Every review_queue kind is a planning-pipeline artifact (strategy-draft,
+// table-draft, golden-failure, watch-hit, archive-scan-hit), and approving
+// a table-draft publishes the table set — so the whole surface sits behind
+// the planning flag, same as the standalone publish endpoint.
 export const adminReviewQueueRouter = Router();
-adminReviewQueueRouter.use(requireAuth, requireRole('admin'));
+adminReviewQueueRouter.use(requireAuth, requireRole('admin'), requirePlanning);
 
 const listQuery = z.object({
   status: z.enum(['open', 'approved', 'rejected']).default('open'),
@@ -174,6 +179,19 @@ adminReviewQueueRouter.post('/:id/approve', async (req, res) => {
         if (validation?.ok === false && parsed.data.force !== true) {
           throw new DecisionError(422, 'validation_failed_requires_force');
         }
+        // One published version per strategy: demote the outgoing
+        // published row(s) or research-launch and the currency jobs see
+        // stale versions still marked 'published'.
+        await tx
+          .update(strategy_versions)
+          .set({ status: 'deprecated' })
+          .where(
+            and(
+              eq(strategy_versions.strategy_id, strategy_id),
+              eq(strategy_versions.status, 'published'),
+              ne(strategy_versions.id, version_id),
+            ),
+          );
         await tx
           .update(strategy_versions)
           .set({ status: 'published', reviewed_by: actor })

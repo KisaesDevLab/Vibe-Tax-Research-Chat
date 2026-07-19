@@ -388,21 +388,16 @@ planWorkflowRouter.post('/research-launch', async (req, res) => {
     return;
   }
   const db = getDb();
+  // Resolve via strategies.current_version_id: a bare status filter can
+  // match a stale 'published' row and there is exactly one current version.
   const [version] = await db
-    .select({
-      content: strategy_versions.content,
-      current: strategies.current_version_id,
-      id: strategy_versions.id,
-    })
-    .from(strategy_versions)
-    .innerJoin(strategies, eq(strategies.id, strategy_versions.strategy_id))
+    .select({ content: strategy_versions.content })
+    .from(strategies)
+    .innerJoin(strategy_versions, eq(strategy_versions.id, strategies.current_version_id))
     .where(
-      and(
-        eq(strategy_versions.strategy_id, parsed.data.strategy_id),
-        eq(strategy_versions.status, 'published'),
-      ),
+      and(eq(strategies.id, parsed.data.strategy_id), eq(strategy_versions.status, 'published')),
     );
-  if (!version || version.current !== version.id) {
+  if (!version) {
     res.status(404).json({ error: 'strategy_not_found' });
     return;
   }

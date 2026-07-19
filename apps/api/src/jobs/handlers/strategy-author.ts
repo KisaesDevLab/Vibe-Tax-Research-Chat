@@ -6,7 +6,7 @@
 //
 // No Anthropic key configured → the job logs a skip and succeeds. The
 // pipeline is a feature that lights up when credentials arrive.
-import { eq, desc } from 'drizzle-orm';
+import { and, eq, desc, sql } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import { strategies, strategy_versions, review_queue, table_sets } from '@vibe/db/schema';
 import { validateStrategyRecord, type ValidationError } from '@vibe/schema';
@@ -67,9 +67,16 @@ IDENTICAL structure and key set. Rules:
 Return ONLY the JSON object.`;
 
 export interface DraftResult {
-  status: 'skipped-no-key' | 'draft-created' | 'validation-failed';
+  status: 'skipped-no-key' | 'skipped-open-review-item' | 'draft-created' | 'validation-failed';
   version_id?: string;
   errors?: ValidationError[];
+}
+
+// Drizzle wraps the driver error, so the Postgres code can sit on the
+// error itself or on its cause.
+function isUniqueViolation(err: unknown): boolean {
+  const e = err as { code?: string; cause?: { code?: string } };
+  return e?.code === '23505' || e?.cause?.code === '23505';
 }
 
 export async function draftStrategy(strategyId: string, triggeredBy: string): Promise<DraftResult> {
@@ -80,6 +87,28 @@ export async function draftStrategy(strategyId: string, triggeredBy: string): Pr
     .where(eq(strategies.id, strategyId))
     .limit(1);
   if (!strategy) throw new Error(`unknown strategy ${strategyId}`);
+
+  // Dedupe on the OPEN review item (mirrors tables-draft): the semver
+  // resolver always finds a fresh version, so without this every run —
+  // and every refresh-sweep — would park another draft for reviewers.
+  const [openItem] = await db
+    .select({ id: review_queue.id })
+    .from(review_queue)
+    .where(
+      and(
+        eq(review_queue.kind, 'strategy-draft'),
+        eq(review_queue.status, 'open'),
+        sql`payload->>'strategy_id' = ${strategyId}`,
+      ),
+    )
+    .limit(1);
+  if (openItem) {
+    logger.info(
+      { strategyId, review_item: openItem.id },
+      'strategy-author: open strategy-draft review item already exists — skipping',
+    );
+    return { status: 'skipped-open-review-item' };
+  }
 
   const [current] = strategy.current_version_id
     ? await db
@@ -208,40 +237,52 @@ export async function draftStrategy(strategyId: string, triggeredBy: string): Pr
     });
 
   // Version row + review item are one atomic unit — a version without a
-  // review item is unreachable (nothing publishes outside the queue). A
-  // semver collision here is a real error: resolveDraftSemver already
-  // bumped past every existing row.
-  const version = await db.transaction(async (tx) => {
-    const [inserted] = await tx
-      .insert(strategy_versions)
-      .values({
-        strategy_id: strategyId,
-        semver: draftVersion,
-        status: 'draft',
-        content: draft,
-        inputs_schema: model?.inputs ?? null,
-        suggest_rule: model?.suggest ?? (draft.suggest as Record<string, unknown>) ?? null,
-        apply_module_ref: model?.apply?.module ?? null,
-        apply_order: model?.applyOrder ?? null,
-        change_note: `pipeline draft (${triggeredBy})`,
-        created_by: 'pipeline',
-      })
-      .returning({ id: strategy_versions.id });
-    await tx.insert(review_queue).values({
-      kind: 'strategy-draft',
-      payload: {
-        strategy_id: strategyId,
-        version_id: inserted!.id,
-        semver: draftVersion,
-        base_semver: current.semver,
-        validation: { ok: validation.ok, errors: validation.errors },
-        needs_module_change: needsModuleChange,
-        triggered_by: triggeredBy,
-      },
-      created_by: 'job',
+  // review item is unreachable (nothing publishes outside the queue).
+  // resolveDraftSemver bumped past every existing row, so a 23505 here
+  // means a concurrent run won the semver race and parked its own draft.
+  let version;
+  try {
+    version = await db.transaction(async (tx) => {
+      const [inserted] = await tx
+        .insert(strategy_versions)
+        .values({
+          strategy_id: strategyId,
+          semver: draftVersion,
+          status: 'draft',
+          content: draft,
+          inputs_schema: model?.inputs ?? null,
+          suggest_rule: model?.suggest ?? (draft.suggest as Record<string, unknown>) ?? null,
+          apply_module_ref: model?.apply?.module ?? null,
+          apply_order: model?.applyOrder ?? null,
+          change_note: `pipeline draft (${triggeredBy})`,
+          created_by: 'pipeline',
+        })
+        .returning({ id: strategy_versions.id });
+      await tx.insert(review_queue).values({
+        kind: 'strategy-draft',
+        payload: {
+          strategy_id: strategyId,
+          version_id: inserted!.id,
+          semver: draftVersion,
+          base_semver: current.semver,
+          validation: { ok: validation.ok, errors: validation.errors },
+          needs_module_change: needsModuleChange,
+          triggered_by: triggeredBy,
+        },
+        created_by: 'job',
+      });
+      return inserted!;
     });
-    return inserted!;
-  });
+  } catch (err) {
+    if (isUniqueViolation(err)) {
+      logger.warn(
+        { strategyId, semver: draftVersion },
+        'strategy-author: semver taken by a concurrent draft — skipping',
+      );
+      return { status: 'skipped-open-review-item' };
+    }
+    throw err;
+  }
   await audit({
     actor_user_id: null,
     action: 'strategy.pipeline_draft',
