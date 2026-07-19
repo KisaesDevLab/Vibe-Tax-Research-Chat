@@ -326,6 +326,9 @@ importers:
 
   packages/db:
     dependencies:
+      '@vibe/strategies':
+        specifier: workspace:*
+        version: link:../strategies
       drizzle-orm:
         specifier: ^0.38.3
         version: 0.38.4(@types/react@18.3.28)(postgres@3.4.9)(react@18.3.1)
@@ -378,6 +381,22 @@ importers:
         version: 2.1.9(@types/node@25.6.0)(jsdom@25.0.1)
 
   packages/shared:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@25.6.0)(jsdom@25.0.1)
+
+  packages/strategies:
+    dependencies:
+      '@vibe/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@vibe/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       typescript:
         specifier: ^5.7.3

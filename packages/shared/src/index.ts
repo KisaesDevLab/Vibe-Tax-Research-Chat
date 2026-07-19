@@ -5,6 +5,7 @@ export * from './types/clients.js';
 export * from './types/archives.js';
 export * from './types/table-set.js';
 export * from './types/planning.js';
+export * from './planning/suggest.js';
 export * from './types/cost.js';
 export * from './types/skills.js';
 export * from './skills/routing.js';

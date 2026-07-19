@@ -5,8 +5,19 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { getDb, closeDb } from './index.js';
-import { models, users, settings, table_sets, SETTING_KEYS } from './schema/index.js';
+import {
+  models,
+  users,
+  settings,
+  table_sets,
+  strategies,
+  strategy_versions,
+  golden_tests,
+  SETTING_KEYS,
+} from './schema/index.js';
 import type { TableSetPayload, TableSetSourceNote } from '@vibe/shared';
+import { listStrategyRecords } from '@vibe/strategies';
+import { eq, and, isNull } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -158,6 +169,63 @@ export async function runSeed(): Promise<void> {
     console.warn('Table-set seed skipped:', (err as Error).message);
   }
   console.log(`Seeded ${tableSetCount} table set(s).`);
+
+  // 6. TP-5 — strategy content from @vibe/strategies. Idempotent:
+  // onConflictDoNothing on (strategy_id, semver); current_version_id set
+  // only when NULL so an admin publish is never clobbered by a re-seed.
+  const records = listStrategyRecords();
+  let strategySeedCount = 0;
+  for (const record of records) {
+    await db
+      .insert(strategies)
+      .values({ id: record.id })
+      .onConflictDoNothing({ target: strategies.id });
+    const inserted = await db
+      .insert(strategy_versions)
+      .values({
+        strategy_id: record.id,
+        semver: record.version,
+        status: 'published',
+        content: record as unknown as Record<string, unknown>,
+        inputs_schema: record.model?.inputs ?? null,
+        suggest_rule: (record.model?.suggest ?? record.suggest ?? null) as Record<
+          string,
+          unknown
+        > | null,
+        apply_module_ref: record.model ? record.model.apply.module : null,
+        apply_order: record.model?.applyOrder ?? null,
+        effective_from: record.effectiveTaxYears.from,
+        effective_to: record.effectiveTaxYears.to,
+        created_by: 'human',
+        change_note: 'seed',
+      })
+      .onConflictDoNothing({
+        target: [strategy_versions.strategy_id, strategy_versions.semver],
+      })
+      .returning({ id: strategy_versions.id });
+    const versionRow = inserted[0];
+    if (versionRow) {
+      strategySeedCount++;
+      await db
+        .update(strategies)
+        .set({ current_version_id: versionRow.id })
+        .where(and(eq(strategies.id, record.id), isNull(strategies.current_version_id)));
+      for (const g of record.model?.goldenTests ?? []) {
+        await db
+          .insert(golden_tests)
+          .values({
+            strategy_version_id: versionRow.id,
+            name: g.name,
+            profile: g.profile,
+            params: g.params,
+            expected: { totalBurdenDelta: g.expect.totalBurdenDelta },
+            tolerance: String(g.expect.tolerance),
+          })
+          .onConflictDoNothing();
+      }
+    }
+  }
+  console.log(`Seeded ${strategySeedCount} strategy version(s) of ${records.length} record(s).`);
 
   // touch updated_at to silence linter
   void sql;

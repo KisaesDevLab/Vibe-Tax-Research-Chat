@@ -4,6 +4,14 @@
 export const ENGINE_VERSION = '1.0.0';
 
 export { computeYear, type ComputeYearOutput } from './compute-year.js';
+export {
+  composeScenario,
+  type ComposeScenarioInput,
+  type ComposeScenarioOutput,
+  type ScenarioTransform,
+  type ScenarioTransformContext,
+  type ScenarioTransformResult,
+} from './scenario.js';
 export { dollars, toDollars, mulRate, clampMin0 } from './money.js';
 export { netCapital } from './modules/capital.js';
 export {
