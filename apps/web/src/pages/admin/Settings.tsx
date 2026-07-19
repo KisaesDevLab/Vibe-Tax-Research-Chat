@@ -167,6 +167,7 @@ function PlanningModuleSection() {
 // server returns 403 memos_disabled when off.
 function PlanMemosSection() {
   const qc = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
   const { data } = useQuery<{ enabled: boolean }>({
     queryKey: ['admin', 'settings', 'plan-memos-enabled'],
     queryFn: () => api('/api/admin/settings/plan-memos-enabled'),
@@ -178,8 +179,11 @@ function PlanMemosSection() {
         method: 'PUT',
         body: JSON.stringify({ enabled }),
       }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: ['admin', 'settings', 'plan-memos-enabled'] }),
+    onSuccess: () => {
+      setError(null);
+      qc.invalidateQueries({ queryKey: ['admin', 'settings', 'plan-memos-enabled'] });
+    },
+    onError: (err) => setError((err as Error).message),
   });
 
   const enabled = data?.enabled ?? false;
@@ -199,6 +203,7 @@ function PlanMemosSection() {
         />
         <span>{enabled ? 'Enabled' : 'Disabled'}</span>
       </label>
+      {error && <div className="text-oxblood text-sm mt-2">{error}</div>}
     </section>
   );
 }

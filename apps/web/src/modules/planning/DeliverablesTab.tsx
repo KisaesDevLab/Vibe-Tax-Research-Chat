@@ -51,7 +51,9 @@ export function DeliverablesTab({ detail }: { detail: PlanDetail }) {
       setError(null);
       qc.invalidateQueries({ queryKey: ['deliverables', plan.id] });
     },
-    onError: (err) => setError((err as Error).message),
+    // Render-create is a 402 source — the licensing gate on client-facing
+    // kinds — so route through the same mapping as downloads.
+    onError: (err) => setError(downloadErrorMessage(err)),
   });
 
   const mintLink = useMutation({
@@ -64,7 +66,8 @@ export function DeliverablesTab({ detail }: { detail: PlanDetail }) {
       setMintedUrl(`${window.location.origin}${apiUrl(r.url)}`);
       qc.invalidateQueries({ queryKey: ['deliverable-links'] });
     },
-    onError: (err) => setError((err as Error).message),
+    // Mint-link can also 402 on unlicensed client-facing deliverables.
+    onError: (err) => setError(downloadErrorMessage(err)),
   });
 
   async function download(d: DeliverableRow) {
@@ -85,19 +88,29 @@ export function DeliverablesTab({ detail }: { detail: PlanDetail }) {
 
   // Fetch the slideshow HTML with the Bearer token (auto-refresh on 401)
   // instead of a plain <a href>: the anchor rides a 15-minute cookie and
-  // dumps raw 401 JSON in a new tab after idle.
-  async function openSlideshow() {
-    try {
-      const res = await apiFetch(`/api/planning/plans/${plan.id}/deliverables/slideshow-view`);
-      const html = await res.text();
-      const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-      window.open(url, '_blank', 'noopener');
-      // Revoke after the new tab has had time to load the blob.
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
-      setError(null);
-    } catch (err) {
-      setError(downloadErrorMessage(err));
+  // dumps raw 401 JSON in a new tab after idle. The window must open
+  // synchronously — before any await — to keep the user-activation
+  // gesture, or popup blockers kill it. The HTML is written straight into
+  // the opened document; a blob: URL would die on F5 once revoked.
+  function openSlideshow() {
+    const win = window.open('', '_blank');
+    if (!win) {
+      setError('Popup blocked — allow popups to open the slideshow.');
+      return;
     }
+    void (async () => {
+      try {
+        const res = await apiFetch(`/api/planning/plans/${plan.id}/deliverables/slideshow-view`);
+        const html = await res.text();
+        win.document.open();
+        win.document.write(html);
+        win.document.close();
+        setError(null);
+      } catch (err) {
+        win.close();
+        setError(downloadErrorMessage(err));
+      }
+    })();
   }
 
   const rows = data?.deliverables ?? [];
@@ -116,7 +129,7 @@ export function DeliverablesTab({ detail }: { detail: PlanDetail }) {
           </button>
         ))}
         <button
-          onClick={() => void openSlideshow()}
+          onClick={() => openSlideshow()}
           className="px-2.5 py-1 text-sm underline text-ink/60"
         >
           Slideshow web view →

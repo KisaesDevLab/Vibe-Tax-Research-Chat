@@ -105,6 +105,22 @@ function EngagementPanel({ planId, onChanged }: { planId: string; onChanged: () 
   );
 }
 
+// The server enforces reviewer-only checklist ticking and the in-review →
+// presented transition: 403 reviewer_only / 409 no_reviewer_assigned.
+// Map both to prose instead of echoing the raw code.
+function reviewErrorMessage(err: unknown): string {
+  if (err instanceof ApiError) {
+    const code = (err.body as { error?: string } | null)?.error;
+    if (code === 'reviewer_only') {
+      return 'Only the assigned reviewing partner can do this.';
+    }
+    if (code === 'no_reviewer_assigned') {
+      return 'Assign a reviewing partner first — the checklist and sign-off are reviewer-only.';
+    }
+  }
+  return err instanceof Error ? err.message : String(err);
+}
+
 const NEXT_STATUS: Partial<Record<PlanStatus, PlanStatus[]>> = {
   draft: ['in-review'],
   'in-review': ['draft', 'presented'],
@@ -121,6 +137,7 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
   const { plan } = detail;
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [memoMarkdown, setMemoMarkdown] = useState<string | null>(null);
   const [memoError, setMemoError] = useState<string | null>(null);
@@ -154,7 +171,7 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
         body: JSON.stringify({ review_state }),
       }),
     onSuccess: invalidate,
-    onError: (err) => setError((err as Error).message),
+    onError: (err) => setError(reviewErrorMessage(err)),
   });
 
   const transition = useMutation({
@@ -164,7 +181,7 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
         body: JSON.stringify({ to }),
       }),
     onSuccess: invalidate,
-    onError: (err) => setError((err as Error).message),
+    onError: (err) => setError(reviewErrorMessage(err)),
   });
 
   const link = useMutation({
@@ -227,7 +244,10 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
   });
 
   const checklist = (gateData?.checklist ?? []).filter((c) => c.selected);
-  const editable = plan.status === 'in-review';
+  // The server rejects ticks from anyone but the assigned reviewer —
+  // mirror that client-side instead of letting the click 403.
+  const isReviewer = Boolean(plan.reviewer_id) && user?.id === plan.reviewer_id;
+  const editable = plan.status === 'in-review' && isReviewer;
 
   const reviewers = reviewersData?.reviewers ?? [];
   // Keep the current reviewer visible even if the list hasn't loaded (or
@@ -289,6 +309,14 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
         </div>
       )}
 
+      {plan.status === 'in-review' && !isReviewer && checklist.length > 0 && (
+        <div className="text-xs text-ink/50">
+          {plan.reviewer_id
+            ? 'Only the assigned reviewer can tick the checklist.'
+            : 'Assign a reviewing partner to enable the checklist — ticking is reviewer-only.'}
+        </div>
+      )}
+
       {checklist.length === 0 ? (
         <div className="text-ink/50 border border-dashed border-ink/20 rounded p-6 text-center">
           No strategies selected yet — the review checklist builds from the scenario selections.
@@ -332,7 +360,9 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
                       title={
                         blocked
                           ? 'Link an archived research session before checking off this strategy.'
-                          : undefined
+                          : plan.status === 'in-review' && !isReviewer
+                            ? 'Only the assigned reviewer can tick the checklist.'
+                            : undefined
                       }
                       onChange={(e) =>
                         saveState.mutate({ ...plan.review_state, [key]: e.target.checked })

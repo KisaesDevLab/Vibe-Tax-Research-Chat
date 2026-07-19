@@ -3,9 +3,9 @@
 // forms) · Results (baseline vs scenario compare).
 import { useState } from 'react';
 import { Link, NavLink, useParams } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useIsMutating, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { PlanDTO, PlanScenarioDTO, PlanResultDTO } from '@vibe/shared';
-import { api } from '../../lib/api';
+import { api, ApiError } from '../../lib/api';
 import { StrategiesTab } from './StrategiesTab';
 import { ScenarioCompare } from './ScenarioCompare';
 import { ProfileTab } from './ProfileTab';
@@ -21,6 +21,32 @@ export interface PlanDetail {
 const TABS = ['profile', 'strategies', 'results', 'review', 'deliverables'] as const;
 type PlanTab = (typeof TABS)[number];
 
+// Compute 400s with { error: 'invalid_params', detail: [{ strategyId,
+// field, message }] } when a selected strategy is missing required
+// params — render each row as prose, never the raw code.
+function computeErrorMessage(
+  err: unknown,
+  strategies: Array<{ id: string; name: string }>,
+): string {
+  if (err instanceof ApiError && err.status === 400) {
+    const body = err.body as { error?: string; detail?: unknown } | null;
+    if (body?.error === 'invalid_params' && Array.isArray(body.detail)) {
+      const names = new Map(strategies.map((s) => [s.id, s.name]));
+      const rows = body.detail as Array<{ strategyId: string; field: string; message: string }>;
+      const lines = rows.map((d) => {
+        const name = names.get(d.strategyId) ?? d.strategyId;
+        const msg =
+          d.message === 'required parameter missing'
+            ? `${d.field} is required`
+            : `${d.field} ${d.message}`;
+        return `${name}: ${msg}`;
+      });
+      return `Cannot compute — fix strategy parameters first.\n${lines.join('\n')}`;
+    }
+  }
+  return err instanceof Error ? err.message : String(err);
+}
+
 export function PlanDetailPage() {
   const { planId, tab } = useParams<{ planId: string; tab?: string }>();
   const qc = useQueryClient();
@@ -33,13 +59,24 @@ export function PlanDetailPage() {
     enabled: Boolean(planId),
   });
 
+  // Same key StrategiesTab populates — cache-shared, so opening the
+  // strategies tab first costs nothing extra. Needed here to name
+  // strategies in compute invalid_params errors.
+  const { data: strategyData } = useQuery<{ strategies: Array<{ id: string; name: string }> }>({
+    queryKey: ['planning-strategies'],
+    queryFn: () => api('/api/planning/strategies'),
+  });
+
+  // A selection PATCH in flight means compute would run stale selections.
+  const pendingScenarioSaves = useIsMutating({ mutationKey: ['scenario-save', planId] });
+
   const compute = useMutation({
     mutationFn: () => api(`/api/planning/plans/${planId}/compute`, { method: 'POST' }),
     onSuccess: () => {
       setError(null);
       qc.invalidateQueries({ queryKey: ['plan', planId] });
     },
-    onError: (err) => setError((err as Error).message),
+    onError: (err) => setError(computeErrorMessage(err, strategyData?.strategies ?? [])),
   });
 
   if (isLoading) return <div className="p-8 text-ink/50">Loading…</div>;
@@ -62,14 +99,21 @@ export function PlanDetailPage() {
           </div>
         </div>
         <button
-          onClick={() => compute.mutate()}
-          disabled={compute.isPending}
+          onClick={() => {
+            // Live check, not render-time state: the click that triggers a
+            // param field's blur-save lands before this button re-renders
+            // as disabled.
+            if (qc.isMutating({ mutationKey: ['scenario-save', planId] }) > 0) return;
+            compute.mutate();
+          }}
+          disabled={compute.isPending || pendingScenarioSaves > 0}
+          title={pendingScenarioSaves > 0 ? 'Saving scenario changes…' : undefined}
           className="shrink-0 px-3 py-1.5 bg-ink text-paper rounded text-sm disabled:opacity-50"
         >
           {compute.isPending ? 'Computing…' : 'Compute'}
         </button>
       </div>
-      {error && <div className="text-oxblood text-sm mb-3">{error}</div>}
+      {error && <div className="text-oxblood text-sm mb-3 whitespace-pre-wrap">{error}</div>}
 
       <nav className="flex gap-1 border-b border-ink/10 mb-4 text-sm">
         {TABS.map((t) => (

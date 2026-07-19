@@ -1,8 +1,14 @@
 // TP-6 — strategy picker: published strategies with suggest badges, a
 // param form generated from each strategy's inputs schema, and per-
 // scenario selection editing.
-import { useEffect, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
+import {
+  useIsFetching,
+  useIsMutating,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import type { StrategySelection } from '@vibe/shared';
 import { api, ApiError } from '../../lib/api';
 import type { PlanDetail } from './PlanDetailPage';
@@ -53,6 +59,25 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
   const [error, setError] = useState<string | null>(null);
   const [paramErrors, setParamErrors] = useState<ParamError[]>([]);
 
+  // Authoritative selections live in local state (mirrored in a ref for
+  // synchronous reads) — rebuilding each PATCH from the query cache raced
+  // quick blur-commits: the second PATCH omitted the first's not-yet-
+  // refetched value and the input visibly reverted. Server data is
+  // reconciled in only when no save or plan refetch is in flight.
+  const [localSelections, setLocalSelections] = useState<StrategySelection[]>(
+    () => scenario?.selections ?? [],
+  );
+  const selectionsRef = useRef(localSelections);
+  const pendingSaves = useIsMutating({ mutationKey: ['scenario-save', plan.id] });
+  const planFetching = useIsFetching({ queryKey: ['plan', plan.id] });
+  const serverSelections = scenario?.selections;
+  useEffect(() => {
+    if (pendingSaves === 0 && planFetching === 0 && serverSelections) {
+      selectionsRef.current = serverSelections;
+      setLocalSelections(serverSelections);
+    }
+  }, [serverSelections, pendingSaves, planFetching]);
+
   const { data } = useQuery<{ strategies: StrategyListing[] }>({
     queryKey: ['planning-strategies'],
     queryFn: () => api('/api/planning/strategies'),
@@ -72,6 +97,7 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
   );
 
   const save = useMutation({
+    mutationKey: ['scenario-save', plan.id],
     mutationFn: (selections: StrategySelection[]) =>
       api(`/api/planning/plans/${plan.id}/scenarios/${scenario!.id}`, {
         method: 'PATCH',
@@ -94,29 +120,37 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
   });
 
   if (!scenario) return <div className="text-ink/50">No scenario on this plan.</div>;
-  const selected = new Map(scenario.selections.map((s) => [s.strategyId, s]));
+  const selected = new Map(localSelections.map((s) => [s.strategyId, s]));
   const strategies = data?.strategies ?? [];
 
+  // Every commit updates the ref synchronously and PATCHes that exact
+  // array — never a rebuild from the (possibly stale) query cache.
+  function commit(next: StrategySelection[]) {
+    selectionsRef.current = next;
+    setLocalSelections(next);
+    save.mutate(next);
+  }
+
   function toggle(s: StrategyListing) {
-    const next = new Map(selected);
+    const next = new Map(selectionsRef.current.map((x) => [x.strategyId, x]));
     if (next.has(s.id)) next.delete(s.id);
     else next.set(s.id, { strategyId: s.id, version: s.semver, params: {} });
-    save.mutate(Array.from(next.values()));
+    commit(Array.from(next.values()));
   }
 
   function setParam(s: StrategyListing, key: string, value: unknown) {
-    const cur = selected.get(s.id);
-    if (!cur) return;
-    const next = new Map(selected);
-    next.set(s.id, { ...cur, params: { ...cur.params, [key]: value } });
-    save.mutate(Array.from(next.values()));
+    const cur = selectionsRef.current;
+    if (!cur.some((x) => x.strategyId === s.id)) return;
+    commit(
+      cur.map((x) => (x.strategyId === s.id ? { ...x, params: { ...x.params, [key]: value } } : x)),
+    );
   }
 
   return (
     <div className="max-w-3xl">
       {error && <div className="text-oxblood text-sm mb-3">{error}</div>}
       <div className="text-sm text-ink/60 mb-3">
-        Scenario “{scenario.label}” — {scenario.selections.length} strategy(ies) selected. Suggested
+        Scenario “{scenario.label}” — {localSelections.length} strategy(ies) selected. Suggested
         strategies are badged from the profile rules.
       </div>
       <ul className="space-y-2">
