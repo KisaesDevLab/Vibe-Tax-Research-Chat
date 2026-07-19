@@ -20,7 +20,7 @@ Updated after each phase commit.
 | TP-12 | Authoring at scale (100 strategies)          | done    | feat(tp-12) |
 | TP-13 | Claude seam upgrade                          | done    | feat(tp-13) |
 | TP-14 | Currency jobs                                | done    | feat(tp-14) |
-| TP-15 | Hardening + restore drill                    | pending | —           |
+| TP-15 | Hardening + restore drill                    | done    | feat(tp-15) |
 | TP-16 | Rollout + final verification                 | pending | —           |
 
 ## Notes
@@ -33,3 +33,7 @@ Updated after each phase commit.
 - TP-12 done bar met: 100/100 records schema-valid with suggest rules; 56/56 modeled with
   registered apply modules and 112 engine-computed goldens; seed idempotent (double-seed
   inserts 0); planning API serves 100/56.
+- TP-15 restore drill (local mode): backup.sh BACKUP_MODE=local against pg:5439 →
+  restore into scratch DB → verified 100 strategies / 112 goldens / 57 audit rows and
+  both 0012 triggers survive and raise. Procedure: scripts/backup.sh + gunzip|psql,
+  see docs/deployment-checklist.md §4.

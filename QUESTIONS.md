@@ -284,3 +284,17 @@ only when NULL so admin publishes are never clobbered by re-seeds.
 - **needs-module-change** — pipeline strategy drafts whose model block (module ref,
   applyOrder, or inputs schema) differs from the published version are flagged in the
   review payload; the queue decision alone cannot ship a math change.
+
+## TP-15 — applied defaults (hardening)
+
+- **Migration 0012** is hand-written SQL (0002 pattern: journal entry + copied snapshot
+  with re-chained ids; `generate` confirms no drift). Triggers: `plan_results_freeze`
+  (UPDATE/DELETE raise once the owning plan is presented/engaged/delivered/archived —
+  draft/in-review recompute flow untouched) and `audit_log_append_only`. Both verified
+  live and covered by `packages/db/src/triggers.integration.test.ts`, which skips
+  cleanly when no database is reachable.
+- **Backup drill** ran in local mode against the dev stack (see STATE.md note). The
+  compose path is unchanged; `BACKUP_MODE=local` + libpq vars / `PG_URL` is additive.
+- **External infra** (Tailscale, Shield egress policy, ZDR org agreement, Vault/B2
+  offsite) is tracked as operator checklist items in docs/deployment-checklist.md —
+  the app degrades gracefully while absent.
