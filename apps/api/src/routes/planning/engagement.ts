@@ -138,6 +138,15 @@ engagementRouter.post('/send-invoice', async (req, res) => {
   try {
     const provider = getPaymentProvider();
     const engagement = await ensureEngagement(planId);
+    // Fail loud on an already-paid engagement: minting a fresh invoice
+    // would email a client who already paid (a paid invoice can't be
+    // voided), and the monotonic guard would keep status 'paid' while
+    // the route reported success. Out-of-band re-billing goes through
+    // the audited manual override.
+    if (engagement.payment_status === 'paid') {
+      res.status(409).json({ error: 'already_paid' });
+      return;
+    }
     const attempt =
       engagement.events.filter((e) => e.source === 'stripe' && e.kind === 'invoice.sent').length +
       1;

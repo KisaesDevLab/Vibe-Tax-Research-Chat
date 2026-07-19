@@ -444,3 +444,20 @@ residual defects fixed:
 - Stripe's "Email finalized invoices to customers" account setting (default ON)
   is what emails send_invoice invoices at finalization — now called out in the
   operator guide's go-live checklist.
+
+## QA round 6 — final invoice-send guards
+
+- **Send-invoice 409s `already_paid`** when the engagement's payment status is
+  already terminal — minting a fresh invoice would email a client who already
+  paid (a paid invoice can't be voided). Genuine out-of-band re-billing goes
+  through the audited manual override.
+- **A failed void of a superseded invoice is logged loudly** (invoice id +
+  reason) instead of silently swallowed — the operator can void it in the
+  Stripe dashboard.
+- **Accepted residual risk (documented, not fixed):** if a re-send crashes
+  between finalizing the replacement invoice and persisting its id, AND the fee
+  is then changed before retrying, the finalized-but-unpinned invoice is
+  unreachable by the void mechanism (same-fee retries converge via idempotency
+  replay). The window is a mid-request crash followed by a fee change; the
+  round-6 logging makes any such invoice discoverable in Stripe by plan
+  metadata.

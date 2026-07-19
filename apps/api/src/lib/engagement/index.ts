@@ -114,7 +114,16 @@ export function getPaymentProvider(): PaymentProvider {
           `/v1/invoices/${input.previousInvoiceId}/void`,
           {},
           `void-${scope}-${input.previousInvoiceId}`,
-        ).catch(() => undefined);
+        ).catch((err: Error) => {
+          // Proceed, but LOUDLY: a transient void failure (timeout/5xx,
+          // not the benign already-paid/already-voided 400) leaves the
+          // superseded invoice open and payable, and once the pin moves
+          // to the replacement nothing else records the old id.
+          logger.warn(
+            { planId: input.planId, previousInvoiceId: input.previousInvoiceId, err: err.message },
+            'void of superseded invoice failed; it may remain payable — void it in the Stripe dashboard',
+          );
+        });
       }
       // One customer per engagement, pinned on first send: a fresh
       // customer per attempt would strand a failed attempt's invoice
