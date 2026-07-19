@@ -20,6 +20,14 @@ export const pdfRenderQueue = new Queue('pdf-render', { connection });
 // TP-12 — Claude drafts a refreshed strategy record into the review
 // queue. Payload: { strategy_id, triggered_by }. No key → logged skip.
 export const strategyAuthorQueue = new Queue('strategy-author', { connection });
+// TP-14 — currency jobs. All Claude-dependent handlers degrade to a
+// logged skip without a key; golden-regression and archive-scan are
+// pure-local and always run.
+export const tablesDraftQueue = new Queue('tables-draft', { connection });
+export const strategyRefreshQueue = new Queue('strategy-refresh', { connection });
+export const strategyWatchQueue = new Queue('strategy-watch', { connection });
+export const goldenRegressionQueue = new Queue('golden-regression', { connection });
+export const archiveScanQueue = new Queue('archive-scan', { connection });
 
 export const QUEUES = [
   skillsSyncQueue,
@@ -31,4 +39,9 @@ export const QUEUES = [
   referencesIngestQueue,
   pdfRenderQueue,
   strategyAuthorQueue,
+  tablesDraftQueue,
+  strategyRefreshQueue,
+  strategyWatchQueue,
+  goldenRegressionQueue,
+  archiveScanQueue,
 ];

@@ -4,14 +4,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import crypto from 'node:crypto';
 
 const getSetting = vi.fn(async () => 'sk-ant-test-key-000000000000');
-const auditSpy = vi.fn(async () => {});
+const auditSpy = vi.fn(async (_event: unknown) => {});
 const messagesCreate = vi.fn();
 let capturedClientOptions: Record<string, unknown> | null = null;
 
 vi.mock('../settings-store.js', () => ({
   getSetting: (...a: unknown[]) => getSetting(...(a as [])),
 }));
-vi.mock('../audit.js', () => ({ audit: (...a: unknown[]) => auditSpy(...(a as [])) }));
+vi.mock('../audit.js', () => ({ audit: (e: unknown) => auditSpy(e) }));
 vi.mock('../logger.js', () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));

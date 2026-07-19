@@ -19,7 +19,7 @@ Updated after each phase commit.
 | TP-10 | Engagement loop                              | done    | feat(tp-10) |
 | TP-12 | Authoring at scale (100 strategies)          | done    | feat(tp-12) |
 | TP-13 | Claude seam upgrade                          | done    | feat(tp-13) |
-| TP-14 | Currency jobs                                | pending | —           |
+| TP-14 | Currency jobs                                | done    | feat(tp-14) |
 | TP-15 | Hardening + restore drill                    | pending | —           |
 | TP-16 | Rollout + final verification                 | pending | —           |
 

@@ -259,3 +259,28 @@ only when NULL so admin publishes are never clobbered by re-seeds.
 - **Kill switch semantics** — `ANTHROPIC_KILL_SWITCH=1|true|on` blocks before the key is
   even read; the chat stream surfaces the typed message via its existing error event +
   system_note path; job handlers treat it like no-key (logged skip).
+
+## TP-14 — applied defaults (currency jobs)
+
+- **Queues/crons** — tables-draft (Oct 1 annual), strategy-watch (Mon 05:00),
+  archive-scan (Mon 05:30), golden-regression (on table publish), strategy-refresh
+  (on demand; full sweep when no strategy_id, aborting after the first no-key skip).
+- **golden-regression is pure-local** — replays every golden_tests row for currently
+  published strategy versions through the engine against the target table set; drift
+  beyond tolerance opens one review item per affected strategy. Verified live: publish
+  of a payload-identical set ran 112 goldens, 0 failures.
+- **archive-scan is pure-local** — case-insensitive keyword match (keywords ≥ 4 chars)
+  of current-version monitoring.keywords vs active research_archives archived after the
+  record's lastReviewed; open-item dedup per (strategy, archive). Verified live: 6 hits
+  opened once, 0 on re-run.
+- **strategy-watch seen-store** — Redis SETNX with 180-day TTL on
+  sha256(strategy:headline:source); heartbeat audit row (strategy_watch.run) written
+  even when quiet so silence is distinguishable from breakage. Uses the server-side
+  web_search tool (cast through the seam — SDK doesn't type it yet).
+- **Plan memos** — PLAN_MEMOS_ENABLED setting (seeded false); POST
+  /api/planning/plans/:id/memo returns 403 memos_disabled when off, 409 no_results
+  before compute, 503 claude_unavailable without a key, and always prepends a DRAFT
+  banner. Claude narrates engine-computed figures only.
+- **needs-module-change** — pipeline strategy drafts whose model block (module ref,
+  applyOrder, or inputs schema) differs from the published version are flagged in the
+  review payload; the queue decision alone cannot ship a math change.

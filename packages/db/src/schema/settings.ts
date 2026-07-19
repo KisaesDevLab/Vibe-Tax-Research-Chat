@@ -40,4 +40,7 @@ export const SETTING_KEYS = {
   // TP-0 — master switch for the Planning + Clients modules
   // (MASTER-BUILD-PLAN.md). Off = research app behaves exactly as before.
   PLANNING_ENABLED: 'planning_enabled',
+  // TP-14 — allow Claude to draft plan memos (always draft-labeled;
+  // endpoint returns 503 when no key is configured). Off by default.
+  PLAN_MEMOS_ENABLED: 'plan_memos_enabled',
 } as const;

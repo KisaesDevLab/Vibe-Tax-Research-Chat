@@ -11,7 +11,13 @@ import { getRedis } from '../lib/redis.js';
 import { logger } from '../lib/logger.js';
 import { runDryRun } from '../lib/skills/sync.js';
 import { ingestReferenceDocument } from '../lib/references/ingest.js';
-import { skillsSyncQueue, usageRollupQueue } from './queues.js';
+import {
+  skillsSyncQueue,
+  usageRollupQueue,
+  tablesDraftQueue,
+  strategyWatchQueue,
+  archiveScanQueue,
+} from './queues.js';
 import { env } from '../config/env.js';
 import { getDb } from '@vibe/db';
 import {
@@ -107,6 +113,54 @@ export function startWorkers(): void {
       typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'manual';
     const { draftStrategy } = await import('./handlers/strategy-author.js');
     return draftStrategy(strategy_id, triggered_by);
+  });
+
+  // ── TP-14 currency jobs ────────────────────────────────────────────
+  createWorker('tables-draft', async (job) => {
+    const { runTablesDraft } = await import('./handlers/currency.js');
+    await runTablesDraft(
+      typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'cron',
+    );
+  });
+
+  createWorker('golden-regression', async (job) => {
+    const table_set_id = job.data?.table_set_id as string | undefined;
+    if (!table_set_id) return;
+    const { runGoldenRegression } = await import('./handlers/currency.js');
+    await runGoldenRegression(
+      table_set_id,
+      typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'publish',
+    );
+  });
+
+  createWorker('strategy-watch', async (job) => {
+    const { runStrategyWatch } = await import('./handlers/currency.js');
+    await runStrategyWatch(
+      typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'cron',
+    );
+  });
+
+  createWorker('archive-scan', async (job) => {
+    const { runArchiveScan } = await import('./handlers/currency.js');
+    await runArchiveScan(
+      typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'cron',
+    );
+  });
+
+  // strategy-refresh — one strategy per job, or a full sweep when no
+  // strategy_id is given (each per-strategy call skips fast without a key).
+  createWorker('strategy-refresh', async (job) => {
+    const { draftStrategy } = await import('./handlers/strategy-author.js');
+    const triggered_by =
+      typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'refresh';
+    const one = job.data?.strategy_id as string | undefined;
+    const db = getDb();
+    const { strategies } = await import('@vibe/db/schema');
+    const targets = one ? [{ id: one }] : await db.select({ id: strategies.id }).from(strategies);
+    for (const t of targets) {
+      const result = await draftStrategy(t.id, triggered_by);
+      if (result.status === 'skipped-no-key') return; // no point iterating
+    }
   });
 
   // ── notifications-email — outbound transactional email.
@@ -249,5 +303,22 @@ async function scheduleCrons() {
     'hourly',
     {},
     { repeat: { pattern: '5 * * * *' }, jobId: 'cron-usage-rollup-hourly' },
+  );
+  // TP-14 — annual tables draft when the fall Rev. Proc. cycle starts
+  // (Oct 1), weekly watch + archive scans. All degrade without a key.
+  await tablesDraftQueue.add(
+    'annual',
+    { triggered_by: 'cron' },
+    { repeat: { pattern: '0 6 1 10 *' }, jobId: 'cron-tables-draft-annual' },
+  );
+  await strategyWatchQueue.add(
+    'weekly',
+    { triggered_by: 'cron' },
+    { repeat: { pattern: '0 5 * * 1' }, jobId: 'cron-strategy-watch-weekly' },
+  );
+  await archiveScanQueue.add(
+    'weekly',
+    { triggered_by: 'cron' },
+    { repeat: { pattern: '30 5 * * 1' }, jobId: 'cron-archive-scan-weekly' },
   );
 }

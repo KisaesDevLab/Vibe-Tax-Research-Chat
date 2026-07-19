@@ -181,6 +181,22 @@ export async function draftStrategy(strategyId: string, triggeredBy: string): Pr
     return { status: 'draft-created' };
   }
 
+  // TP-14 — a draft that changes the MATH (module ref, apply order, or
+  // inputs schema) can't just be approved: the TS module itself must be
+  // reviewed/shipped. Flag it so the queue makes that unmissable.
+  const currentModel = (current.content as { model?: Record<string, unknown> }).model;
+  const needsModuleChange =
+    JSON.stringify({
+      m: model?.apply?.module ?? null,
+      o: model?.applyOrder ?? null,
+      i: model?.inputs ?? null,
+    }) !==
+    JSON.stringify({
+      m: (currentModel?.apply as { module?: string } | undefined)?.module ?? null,
+      o: currentModel?.applyOrder ?? null,
+      i: currentModel?.inputs ?? null,
+    });
+
   await db.insert(review_queue).values({
     kind: 'strategy-draft',
     payload: {
@@ -189,6 +205,7 @@ export async function draftStrategy(strategyId: string, triggeredBy: string): Pr
       semver: draftVersion,
       base_semver: current.semver,
       validation: { ok: validation.ok, errors: validation.errors },
+      needs_module_change: needsModuleChange,
       triggered_by: triggeredBy,
     },
     created_by: 'job',
