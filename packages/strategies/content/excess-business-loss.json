@@ -1,0 +1,159 @@
+{
+  "id": "excess-business-loss",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Excess Business Loss (§461(l)) Planning",
+  "category": "income-timing",
+  "modeled": false,
+  "complexity": 3,
+  "riskRating": "low",
+  "entityTypes": ["sole-prop", "s-corp", "partnership"],
+  "typicalSavingsBand": "structural",
+  "advisor": {
+    "summary": "Section 461(l), made permanent by OBBBA, caps the aggregate net business loss a noncorporate taxpayer can deduct against nonbusiness income in a single year — $256,000 single and $512,000 on a joint return for 2026, after OBBBA reset the inflation indexing back toward the original TCJA base. The disallowed excess becomes a net operating loss carried to the following year, so the limitation is a one-year timing toll rather than a permanent loss, but the carryover then inherits the §172 80% cap and loses the ability to shelter the current year's wages and portfolio income. W-2 wages are not business income for this computation, which makes the high-salary spouse plus big-loss business the classic trapped-loss fact pattern. The planning levers are elective: size first-year depreciation elections so the loss lands at rather than over the cap, or accelerate business income into the loss year to absorb it currently. The engine does not enforce §461(l) — this record exists so any modeled loss near the threshold is manually sanity-checked before a plan ships.",
+    "mechanics": [
+      "The computation aggregates deductions and income across every trade or business: aggregate business deductions minus aggregate business income and gains, with the excess over the §461(l)(3) threshold disallowed for the year and reported on Form 461. For 2026 the thresholds are $256,000 single / $512,000 MFJ — lower than 2025, because OBBBA reset the indexing base.",
+      "Employee wages are not attributable to a trade or business for this purpose (§461(l)(3), as clarified by the CARES Act, P.L. 116-136) — a household with $700,000 of W-2 wages cannot use them to absorb a $900,000 business loss.",
+      "Ordering matters: basis limits, the §465 at-risk rules, and the §469 passive-activity rules all apply first. A loss must clear all three gates before the excess-business-loss cap is even reached, and the binding constraint is often one of the earlier gates.",
+      "The disallowed amount converts to an NOL carryover the following year under §461(l)(2), where the §172 80%-of-taxable-income limitation takes over — so a trapped loss recovers, but slowly, and never against the loss year's own wages or portfolio income.",
+      "Business capital gains count toward business income only when they arise from the trade itself; portfolio gains do not help absorb the loss.",
+      "The practical levers are elective-deduction sizing — electing out of bonus depreciation by class or moderating first-year expensing so the usable loss lands at the cap — and, where legitimate, accelerating business income into the loss year so the loss is used currently instead of carried."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §461(l), as made permanent by P.L. 119-21 (OBBBA)",
+        "note": "The excess business loss limitation for noncorporate taxpayers — OBBBA removed the sunset and reset the threshold indexing."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §461(l)(2)",
+        "note": "The disallowed excess is treated as an NOL carryover to the following year — the conversion that makes this a timing cost rather than a permanent one."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§465, 469",
+        "note": "At-risk and passive-activity limits apply before §461(l); the review must identify which gate actually binds."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §172",
+        "note": "The converted carryover enters the NOL regime — 80% limitation, no carryback, indefinite carryforward."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Proc. 2025-32",
+        "note": "Sets the 2026 thresholds at $256,000 / $512,000 — the figures this record plans against."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 461 and instructions",
+        "note": "The computation and reporting vehicle for the disallowed amount."
+      },
+      {
+        "type": "Case",
+        "cite": "David E. Watson, P.C. v. United States, 668 F.3d 1008 (8th Cir. 2012)",
+        "note": "The reasonable-compensation boundary: recharacterizing S corporation owner wages to manage the wage/business-income mix cannot cross the comp standards this case enforces."
+      }
+    ],
+    "requirements": [
+      "A projected aggregate business loss near or above the current-year threshold that has already cleared basis, at-risk, and passive-activity gates — otherwise those limits control, not §461(l).",
+      "Accurate classification of every income item as business or nonbusiness; wages are nonbusiness, and only gains from the trade itself count as business income.",
+      "A multi-year projection, because the planning question is where the loss lands, not whether it exists.",
+      "Elective deductions (bonus, first-year expensing) still open to sizing when the plan is built — the levers close once elections are filed."
+    ],
+    "risks": [
+      "The engine does not enforce the §461(l) cap, so a modeled loss above the threshold overstates the current-year benefit — the reviewing advisor must manually cap the number before it reaches a client deliverable.",
+      "Misclassifying wages or portfolio gains as business income to absorb a loss is a computational position the IRS tests directly on Form 461; the statute is young enough that no taxpayer-favorable case law softens it.",
+      "Shifting owner compensation toward K-1 income to improve the mix collides with S corporation reasonable-compensation enforcement — David E. Watson, P.C. v. United States, 668 F.3d 1008 (8th Cir. 2012) is the standard the recharacterization must survive.",
+      "Stacked limitations stretch recovery: a trapped loss becomes an NOL that is itself capped at 80% of taxable income, so full absorption can take several years and the client's cash-flow expectations must be set accordingly.",
+      "The thresholds move every year — a plan sized to last year's figure can strand loss above this year's lower cap."
+    ],
+    "stateNotes": [
+      "States that conform to federal AGI generally inherit the §461(l) limitation automatically, but several states decouple from it or run their own loss caps — confirm each state in the client's footprint before projecting the state-side benefit.",
+      "PTET interaction: a loss year has no pass-through income to elect an entity-level tax on, so time PTET elections to the income years; trapped federal losses do not change the state PTET computation.",
+      "Missouri conforms through its federal-AGI starting point (RSMo §143.121) with no separate Missouri excess-business-loss addback, so the federal disallowance and carryover flow straight into the Missouri return."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["nol-planning"]
+    },
+    "reviewChecklist": [
+      "The aggregate loss is projected against the current-year threshold before any elective depreciation choices are locked in.",
+      "Basis, at-risk, and passive gates are confirmed cleared, so §461(l) is genuinely the binding limit.",
+      "Every modeled plan output that includes a large business loss has been manually capped at the threshold before client presentation.",
+      "Form 461 is prepared and the disallowed amount reconciles into the following year's NOL schedule.",
+      "Elective deductions are sized so no loss is stranded above the cap without a documented reason."
+    ]
+  },
+  "client": {
+    "teaser": "Big write-off years hit a ceiling — we size the loss so none of it gets stuck.",
+    "headline": "Keep a big loss year working for you now",
+    "plainEnglish": [
+      "Some years a business shows a large paper loss. Often it is planned — big equipment or property write-offs. But the tax law caps how much business loss can offset your other income, like wages, in one year. For 2026 the cap is $256,000 for singles and $512,000 for joint filers.",
+      "The cap is lower than it was in 2025, because the 2025 tax law reset the numbers. And a salary does not count as business income here. High-salary households hit the cap sooner than they expect.",
+      "Losses over the cap are not lost. They roll into future years. But waiting is slower and usually worth less than using them now. We size and time the write-offs so the loss does its work this year."
+    ],
+    "analogy": "Think of a drain that takes only so much water per hour. Pour faster and the extra pools up and waits. We pour at the rate the drain can handle, so nothing sits around losing value.",
+    "benefits": [
+      "Big write-off years planned so the deductions actually land now",
+      "No surprise at filing time when part of a loss gets benched",
+      "Anything that carries forward is tracked and aimed at your best future years"
+    ],
+    "steps": [
+      "WE project the year's total loss against the cap before you commit to big purchases.",
+      "WE size the write-off elections — or shift income into the year — so the loss stays usable.",
+      "YOU loop us in before major equipment or property deals close.",
+      "WE file the required form and track anything that carries forward."
+    ],
+    "clientCommitments": [
+      "Check with us before signing big year-end equipment or property deals",
+      "Expect part of a very large loss to pay off over more than one year"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Annual threshold refresh and loss projection before elective deductions are filed",
+      "Form 461 preparation and reconciliation of the carryover into the NOL schedule"
+    ],
+    "deliverables": [
+      "Excess-business-loss projection memo with elective-deduction sizing",
+      "Form 461 filing and the running carryforward schedule"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "totalBusinessProfit",
+        "op": "lt",
+        "value": 0
+      }
+    ],
+    "reason": "Large business losses hit the §461(l) ceiling; the excess becomes an NOL, not a current deduction."
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §461(l)", "Annual inflation-adjustment revenue procedures"],
+    "keywords": ["excess business loss", "461(l)", "Form 461", "loss limitation"],
+    "reviewTriggers": [
+      "New annual threshold figures",
+      "Regulations or technical corrections under §461(l)",
+      "First case law interpreting the limitation"
+    ]
+  }
+}

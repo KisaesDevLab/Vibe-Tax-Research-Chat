@@ -40,7 +40,7 @@ export function SetupPage() {
   }, []);
 
   if (alreadyBootstrapped) return <Navigate to="/login" replace />;
-  if (step === 'done') return <Navigate to="/chat" replace />;
+  if (step === 'done') return <Navigate to="/research" replace />;
 
   async function next() {
     setError(null);

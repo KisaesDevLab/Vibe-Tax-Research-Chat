@@ -13,6 +13,8 @@ const navItems = [
   { to: '/admin/custom-skills', label: 'Custom skills' },
   { to: '/admin/references', label: 'References' },
   { to: '/admin/usage', label: 'Usage' },
+  { to: '/admin/table-sets', label: 'Table sets' },
+  { to: '/admin/review-queue', label: 'Review queue' },
 ];
 
 export function AdminLayout() {
@@ -41,12 +43,12 @@ export function AdminLayout() {
       >
         <div className="font-display text-lg mb-2">Vibe · Admin</div>
         <Link
-          to="/chat"
+          to="/research"
           onClick={closeMobileNav}
           className="text-xs text-ink/60 hover:text-ink underline mb-6"
-          aria-label="Return to chat"
+          aria-label="Return to research"
         >
-          ← Back to chat
+          ← Back to research
         </Link>
         <nav className="flex flex-col gap-1 text-sm">
           {navItems.map((n) => (

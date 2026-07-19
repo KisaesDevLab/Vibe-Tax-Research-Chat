@@ -1,0 +1,155 @@
+{
+  "id": "roth-vs-traditional-split",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Roth vs. Traditional 401(k) Split",
+  "category": "retirement",
+  "modeled": false,
+  "complexity": 2,
+  "riskRating": "low",
+  "entityTypes": ["individual"],
+  "typicalSavingsBand": "structural",
+  "advisor": {
+    "summary": "Every deferral dollar up to the §402(g) limit — $24,500 for 2026 — can be designated traditional (deduct now, taxed later) or Roth (taxed now, never again), and the split is an annual election rather than a permanent identity. The core analysis is marginal rate in the contribution year against expected effective rate in the withdrawal years. OBBBA's permanence of the TCJA rate structure removed the automatic rates-are-going-up argument that had favored Roth by default; the drivers are now client-specific — current bracket, the retirement income floor from RMDs and Social Security, state-of-residence arbitrage, and estate intent. One piece is no longer elective: SECURE 2.0 §603 forces catch-up contributions into Roth for participants whose prior-year FICA wages exceeded $150,000 (2026, indexed). Advisory record — the election shifts when tax is paid; deferral dollars themselves are modeled under the plan strategies.",
+    "mechanics": [
+      "One combined §402(g) limit — $24,500 for 2026 — covers both designations, but equal balances are not equal wealth: Roth dollars arrive with the tax already paid, so a maxed Roth account shelters more real value than a maxed pre-tax one.",
+      "Traditional wins when the contribution-year marginal rate clearly exceeds the projected withdrawal-year rate — the classic peak-earnings case; Roth wins in genuinely low-income years and where existing pre-tax balances already promise heavy RMDs at 73.",
+      "OBBBA (P.L. 119-21) made the TCJA rate structure permanent, so rate risk is now legislative rather than calendared — the client's own income trajectory, not a scheduled sunset, drives the election.",
+      "SECURE 2.0 §603 makes catch-up contributions mandatory Roth for participants with prior-year FICA wages over $150,000 (2026, indexed) — and if the plan offers no Roth feature, those participants get no catch-up at all.",
+      "Designated Roth accounts no longer carry lifetime RMDs (SECURE 2.0 conformed them to Roth IRAs), which strengthens Roth as a longevity and estate asset — heirs still distribute under the 10-year rule, but tax-free.",
+      "The optimum is usually a split revisited each fall against the tax projection — Roth-heavy in valley years, traditional-heavy in spike years — never a one-time identity choice."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §402A",
+        "note": "Designated Roth contributions: included in income currently, with qualified distributions excluded."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §402(g)",
+        "note": "The single combined deferral limit — $24,500 for 2026 — shared by both designations."
+      },
+      {
+        "type": "Admin",
+        "cite": "SECURE 2.0 Act §603 (P.L. 117-328)",
+        "note": "Mandatory Roth treatment for catch-up contributions above the indexed prior-year FICA wage threshold ($150,000 for 2026)."
+      },
+      {
+        "type": "IRC",
+        "cite": "P.L. 119-21 (OBBBA)",
+        "note": "Made the TCJA individual rate structure permanent — removing the scheduled rate snap-back that once tilted the analysis toward Roth."
+      },
+      {
+        "type": "Admin",
+        "cite": "Notice 2025-67",
+        "note": "The 2026 figures: $24,500 deferral, $8,000 and $11,250 catch-ups, and the $150,000 Roth catch-up wage threshold."
+      }
+    ],
+    "requirements": [
+      "A plan document offering designated Roth — and Roth catch-up wherever a high-wage participant must use it.",
+      "A realistic retirement-income projection: RMDs on existing balances grown forward, Social Security, pensions, and the intended state of residence.",
+      "Payroll capable of splitting a single deferral election across the two buckets."
+    ],
+    "risks": [
+      "The main planning failure is all-or-nothing thinking: locking either identity in for decades forfeits the option value of an annual, adjustable split.",
+      "Roth contributions in a 37%-bracket year against modest projected retirement income is simply overpaying — the arithmetic must win, not the ideology.",
+      "Ignoring SECURE 2.0 §603: a high-wage participant over 50 in a plan without a Roth feature loses catch-up capacity entirely — a five-figure annual miss.",
+      "State arbitrage cuts both ways: deducting at zero state tax now and withdrawing in a high-tax state later argues Roth, and the reverse argues traditional — the retirement-state assumption must be explicit, not implied."
+    ],
+    "stateNotes": [
+      "States that conform to federal AGI mirror the federal treatment on both ends — traditional deferrals reduce state wages now and qualified Roth distributions escape state tax later — but the state the client retires into is the variable that matters.",
+      "No PTET interaction — the election concerns employee deferral character, not entity-level deductions a pass-through entity tax could act on.",
+      "Missouri conforms through RSMo §143.121; a client deferring traditional in Missouri and retiring to a no-tax state captures a modest state-side win, while the reverse migration argues for Roth dollars now."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["bracket-management", "in-plan-roth-conversion"]
+    },
+    "reviewChecklist": [
+      "The current split reflects this year's projection, not last year's default.",
+      "Prior-year FICA wages checked against the $150,000 threshold; catch-up routed to Roth where required and the plan document supports it.",
+      "Retirement-year effective-rate projection on file: RMDs grown forward, Social Security, pensions, and the retirement state.",
+      "Coordination checked — a genuine valley year may be better spent on an in-plan Roth conversion than merely flipping the election."
+    ]
+  },
+  "client": {
+    "teaser": "Pay tax on your retirement savings in the cheapest year you will ever have.",
+    "headline": "Roth or traditional? Pick the year your tax rate is lowest",
+    "plainEnglish": [
+      "Every 401(k) dollar comes with a choice. Pay tax on it now, or pay tax on it later. The traditional option gives you a deduction today, and the IRS taxes it in retirement. The Roth option skips today's deduction, and the money is never taxed again.",
+      "Neither one is always right. It depends on your tax rate today versus your likely rate in retirement. In a big-income year, the deduction wins. In a light year, paying a low rate now to lock in tax-free growth is the bargain.",
+      "You do not have to pick a side for life. We can split your savings between the two buckets and adjust the mix every year. One note for higher earners over 50: a newer law sends part of your savings to the Roth bucket no matter what. We plan around it."
+    ],
+    "analogy": "On a road trip, you buy the most gas in the town where it is cheapest. Here, we buy your future tax bill in your cheapest-rate years.",
+    "benefits": [
+      "Each dollar gets taxed at the lowest rate available across your lifetime",
+      "A tax-free bucket later gives you control over your retirement brackets",
+      "The mix adjusts every year as your income moves"
+    ],
+    "steps": [
+      "WE compare your rate today with your projected rate in retirement.",
+      "WE set this year's split and check the special rule for higher earners over 50.",
+      "YOU confirm the election with payroll so the buckets fill as planned.",
+      "WE revisit the mix every fall with your tax projection."
+    ],
+    "clientCommitments": [
+      "Review the split with us each fall instead of setting and forgetting it",
+      "Tell us about income swings early — they change the right answer"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Fall re-projection and re-set of the split for the coming year",
+      "Wage-threshold check for mandatory Roth catch-up treatment",
+      "Coordination review against conversion opportunities in low-income years"
+    ],
+    "deliverables": [
+      "Annual split recommendation memo with rate-now versus rate-later analysis",
+      "Payroll election instructions for the plan"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "filingStatus",
+        "op": "exists"
+      }
+    ],
+    "reason": "The pre-tax vs Roth split is a bracket bet worth revisiting every year."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §402A and SECURE 2.0 §603 implementation guidance",
+      "Annual COLA notices for deferral limits and the catch-up wage threshold"
+    ],
+    "keywords": [
+      "Roth vs traditional",
+      "designated Roth",
+      "mandatory Roth catch-up",
+      "deferral split",
+      "bracket comparison"
+    ],
+    "reviewTriggers": [
+      "Rate-structure legislation",
+      "Indexing changes to the $150,000 catch-up wage threshold",
+      "SECURE 2.0 technical corrections affecting designated Roth accounts"
+    ]
+  }
+}

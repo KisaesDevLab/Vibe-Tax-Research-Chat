@@ -375,6 +375,56 @@ adminSettingsRouter.post('/app-base-url', async (req, res) => {
   res.json({ ok: true });
 });
 
+// ── TP-0 — planning module flag ──────────────────────────────────────────
+// Master switch for the Planning + Clients modules. The web client reads
+// the effective value from GET /api/config; this endpoint is the admin
+// write path.
+const planningEnabledSchema = z.object({ enabled: z.boolean() });
+
+adminSettingsRouter.post('/planning-enabled', async (req, res) => {
+  const parsed = planningEnabledSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request' });
+    return;
+  }
+  await setSetting(SETTING_KEYS.PLANNING_ENABLED, parsed.data.enabled, {
+    updated_by: req.auth!.user_id,
+  });
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'admin.settings.planning_enabled.set',
+    metadata: { enabled: parsed.data.enabled },
+    ip: req.ip,
+  });
+  res.json({ ok: true, enabled: parsed.data.enabled });
+});
+
+// ── TP-14 — plan memos flag (QA round 1: previously unsettable) ─────────
+const planMemosSchema = z.object({ enabled: z.boolean() });
+
+adminSettingsRouter.get('/plan-memos-enabled', async (_req, res) => {
+  const enabled = await getSetting<boolean>(SETTING_KEYS.PLAN_MEMOS_ENABLED);
+  res.json({ enabled: enabled === true });
+});
+
+adminSettingsRouter.put('/plan-memos-enabled', async (req, res) => {
+  const parsed = planMemosSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request' });
+    return;
+  }
+  await setSetting(SETTING_KEYS.PLAN_MEMOS_ENABLED, parsed.data.enabled, {
+    updated_by: req.auth!.user_id,
+  });
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'admin.settings.plan_memos_enabled.set',
+    metadata: { enabled: parsed.data.enabled },
+    ip: req.ip,
+  });
+  res.json({ ok: true, enabled: parsed.data.enabled });
+});
+
 // Keep TS happy — provider is consumed via parsed.data.provider above, but
 // the type import is otherwise just for the EmailConfig signature.
 void (null as unknown as EmailProviderKind);

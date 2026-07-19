@@ -1,0 +1,298 @@
+{
+  "id": "cost-segregation",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Cost Segregation Study",
+  "category": "real-estate",
+  "modeled": true,
+  "complexity": 4,
+  "riskRating": "moderate",
+  "entityTypes": ["rental", "s-corp", "partnership"],
+  "typicalSavingsBand": "25k-100k",
+  "advisor": {
+    "summary": "A cost segregation study re-documents a building's depreciable basis: an engineering analysis separates §1245 personalty (5/7-year), 15-year land improvements, and the §1250 shell, so the short-life components can ride 100% bonus depreciation under §168(k) in the placed-in-service year. Hospital Corp. of America established that component-based lives inside a building are legitimate; the IRS's own Cost Segregation Audit Techniques Guide sets the quality bar a study must meet. For property already in service, the missed depreciation arrives all at once as a §481(a) adjustment on Form 3115 — no amended returns. The whole exercise is a timing-and-character trade: value depends on the client's ability to use the loss currently (REPS, short-term-rental treatment, other passive income), and the accelerated basis returns as recapture on a taxable exit. The engine models the study as a first-year acceleration against rental income, with §469 gating applied downstream.",
+    "mechanics": [
+      "The study allocates acquisition or construction cost among 5/7-year §1245 personal property (flooring, cabinetry, specialty electrical and plumbing, equipment hookups), 15-year land improvements (paving, site utilities, landscaping), and the remaining §1250 building shell on its 27.5- or 39-year straight line.",
+      "Everything moved to a 20-year-or-shorter life is qualified property for 100% bonus under §168(k), so the reclassified slice — commonly 15–35% of depreciable basis depending on property type — deducts in the placed-in-service year.",
+      "For buildings already in service, Rev. Proc. 2015-13's automatic method-change procedures deliver the entire catch-up as a one-year §481(a) adjustment via Form 3115 filed with a timely return — prior years stay closed.",
+      "Whether the resulting loss is usable is a separate §469 question: real estate professional status, short-term-rental treatment, other passive income, or the $25,000 active-participation allowance are the paths; absent one, the loss suspends and carries forward.",
+      "The model applies the study’s first-year acceleration against the rental activity and nothing else — recapture, later-year depreciation give-back, and the study fee are handled in the plan narrative, not the engine."
+    ],
+    "authority": [
+      {
+        "type": "Case",
+        "cite": "Hospital Corp. of America v. Commissioner, 109 T.C. 21 (1997)",
+        "note": "Sustained component-based recovery lives for building elements — the doctrinal foundation of every modern study."
+      },
+      {
+        "type": "Case",
+        "cite": "Whiteco Industries, Inc. v. Commissioner, 65 T.C. 664 (1975)",
+        "note": "The six-factor permanence test that separates tangible personal property from structural components."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §168(k)",
+        "note": "The 100% bonus on reclassified 5/7/15-year property — the engine of the first-year deduction, permanent under OBBBA for post-January 19, 2025 acquisitions."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§1245, 1250",
+        "note": "Character of the reclassified components on disposition: ordinary recapture on personalty, 25%-rate unrecaptured gain on the shell."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §469",
+        "note": "Passive activity gating — decides whether the accelerated loss deducts now or suspends."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §481(a)",
+        "note": "The one-year catch-up adjustment that lets an in-service building take all missed depreciation currently."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Proc. 2015-13",
+        "note": "Automatic-consent method-change procedures under which the Form 3115 catch-up is filed."
+      },
+      {
+        "type": "Admin",
+        "cite": "IRS Cost Segregation Audit Techniques Guide (exam guidance)",
+        "note": "The Service’s quality standard: engineering-based studies with documented takeoffs outrank residual and rule-of-thumb allocations."
+      }
+    ],
+    "requirements": [
+      "Depreciable building basis owned by the taxpayer — land never qualifies, and the land/building split should be defensible before the study prices components.",
+      "An engineering-based study meeting the Audit Techniques Guide standard, with the workpapers retained.",
+      "A current-year path to use the loss (REPS, short-term-rental treatment, passive income, or the active-participation allowance) — confirmed before the fee is spent.",
+      "For in-service property, Form 3115 filed with a timely return for the year of change."
+    ],
+    "risks": [
+      "The leading audit theory is allocation quality: percentage guesses and aggressive personalty splits are re-worked at exam under the Audit Techniques Guide, and Hospital Corp. of America protects the method, not any particular number.",
+      "Losses trapped by §469 turn an expensive study into a deferred benefit — screening the loss path comes before commissioning the study.",
+      "Acceleration returns at exit: §1245 recapture at ordinary rates on the personalty and unrecaptured §1250 gain at 25% on the rest — the exit plan (hold, 1031, step-up at death) belongs in the file.",
+      "Study fees of several thousand dollars must clear the modeled benefit at the client’s actual marginal rate.",
+      "State decoupling from bonus depreciation can leave the state benefit on a much slower schedule than the federal one."
+    ],
+    "stateNotes": [
+      "Conformity: confirm each state in the footprint conforms to §168(k) before quoting a combined benefit — decoupled states add back the bonus and recover it over their own schedules.",
+      "Missouri conforms to federal depreciation through its federal-AGI starting point (RSMo §143.121), so the accelerated deduction carries into the Missouri return without addback.",
+      "PTET interaction: where the property sits in a pass-through with a PTET election, the accelerated deduction shrinks the PTET base — sequence the projection so the state tax and the federal deduction are not double-counted."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": [
+        "bonus-depreciation",
+        "str-loophole",
+        "reps-qualification",
+        "partial-asset-disposition"
+      ]
+    },
+    "reviewChecklist": [
+      "Passive-loss path confirmed and documented before the study was ordered.",
+      "Study is engineering-based, from a reputable firm, and the allocation percentages are within observed ranges for the property type.",
+      "Land/building allocation reconciled with the study so land value is not depreciated.",
+      "In-service properties: Form 3115 prepared, §481(a) adjustment computed, and the filing calendared with the timely return.",
+      "Modeled first-year acceleration ties to the study report, and recapture exposure is noted in the client’s permanent file."
+    ]
+  },
+  "client": {
+    "teaser": "An engineering study can move years of property deductions into this year.",
+    "headline": "Find the fast write-offs hiding inside your building",
+    "plainEnglish": [
+      "A building is deducted slowly — over 27 to 39 years. But much of what you paid for is not really 'building.' Carpet, cabinets, wiring for equipment, parking lots, and landscaping all count as faster assets under the tax rules.",
+      "A cost segregation study is an engineering report that finds those pieces and prices them. Once identified, most of them can be deducted right away under current law. The result is often a very large deduction in one year instead of small ones for decades.",
+      "It even works on buildings you already own. A special catch-up filing collects the missed deductions in one year, with no amended returns. First, though, we check that you can actually use the deduction now — that depends on your other income and how you run the property."
+    ],
+    "analogy": "It is like sorting a moving box labeled 'house' and finding tools, rugs, and appliances inside — each one can be claimed on its own faster schedule.",
+    "benefits": [
+      "A large first-year deduction, often 15% to 35% of the building's cost",
+      "Works on buildings you already own through a one-time catch-up filing",
+      "Frees up cash now to reinvest or pay down debt",
+      "The study report doubles as your audit support"
+    ],
+    "steps": [
+      "WE confirm your tax picture lets you use the deduction this year — before you spend a dollar.",
+      "WE engage the engineering firm and review their allocation report.",
+      "WE file the return, plus the catch-up form if the building is already in service.",
+      "YOU provide closing statements, construction invoices, and property access for the study."
+    ],
+    "clientCommitments": [
+      "Share purchase and construction records with the engineers",
+      "Keep the study report with your permanent tax records",
+      "Talk to us before selling the property — the deductions affect the tax on a sale"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Update depreciation schedules for the study's component lives each year",
+      "Re-test the passive-loss path annually before layering further accelerations",
+      "Track recapture exposure in the permanent file as basis burns down"
+    ],
+    "deliverables": [
+      "Cost segregation feasibility memo with modeled benefit and fee comparison",
+      "Engineering study report and reconciled depreciation schedules",
+      "Form 3115 with §481(a) computation for in-service property"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 37,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "firstYearAcceleration": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["firstYearAcceleration"]
+    },
+    "apply": {
+      "module": "cost-segregation@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasRental",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "Reclassifying building components to 5/7/15-year lives front-loads depreciation — most potent with STR or REPS treatment."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj wages 180k, rental study 90k (passive-limited)",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 180000,
+          "businesses": [],
+          "rentals": [
+            {
+              "id": "r1",
+              "name": "Rental",
+              "netIncome": 10000,
+              "activeParticipant": true
+            }
+          ],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "firstYearAcceleration": 90000
+        },
+        "expect": {
+          "totalBurdenDelta": -2200,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj wages 120k, rental study 60k, allowance in play",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 120000,
+          "businesses": [],
+          "rentals": [
+            {
+              "id": "r1",
+              "name": "Rental",
+              "netIncome": 5000,
+              "activeParticipant": true
+            }
+          ],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "firstYearAcceleration": 60000
+        },
+        "expect": {
+          "totalBurdenDelta": -2400,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §168(k)",
+      "IRS Cost Segregation Audit Techniques Guide revisions",
+      "Tax Court opinions on component depreciation and study quality"
+    ],
+    "keywords": [
+      "cost segregation",
+      "481(a) catch-up",
+      "component depreciation",
+      "5/7/15-year reclassification",
+      "bonus depreciation on real estate"
+    ],
+    "reviewTriggers": [
+      "Changes to bonus depreciation rates or qualified-property definitions",
+      "New ATG revisions or IRS directives on study standards",
+      "Case law adjusting allocation methodologies"
+    ]
+  }
+}

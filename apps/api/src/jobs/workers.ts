@@ -11,7 +11,13 @@ import { getRedis } from '../lib/redis.js';
 import { logger } from '../lib/logger.js';
 import { runDryRun } from '../lib/skills/sync.js';
 import { ingestReferenceDocument } from '../lib/references/ingest.js';
-import { skillsSyncQueue, usageRollupQueue } from './queues.js';
+import {
+  skillsSyncQueue,
+  usageRollupQueue,
+  tablesDraftQueue,
+  strategyWatchQueue,
+  archiveScanQueue,
+} from './queues.js';
 import { env } from '../config/env.js';
 import { getDb } from '@vibe/db';
 import {
@@ -22,7 +28,7 @@ import {
   usage_daily,
   SETTING_KEYS,
 } from '@vibe/db/schema';
-import { getAnthropic } from '../lib/anthropic/client.js';
+import { callClaude } from '../lib/anthropic/client.js';
 import { buildMailer, renderResetEmail } from '../lib/email/index.js';
 import { getSetting } from '../lib/settings-store.js';
 
@@ -90,6 +96,64 @@ export function startWorkers(): void {
     await ingestReferenceDocument(document_id);
   });
 
+  // ── pdf-render — deliverable rendering via PDFKit (server-side).
+  createWorker('pdf-render', async (job) => {
+    const deliverable_id = job.data?.deliverable_id as string | undefined;
+    if (!deliverable_id) return;
+    const handout_strategy_id = job.data?.handout_strategy_id as string | undefined;
+    const { renderDeliverable } = await import('./handlers/pdf-render.js');
+    await renderDeliverable(deliverable_id, handout_strategy_id);
+  });
+
+  // ── strategy-author — TP-12 pipeline draft into the review queue.
+  // Gracefully skips (job succeeds) when no Anthropic key is configured.
+  createWorker('strategy-author', async (job) => {
+    const strategy_id = job.data?.strategy_id as string | undefined;
+    if (!strategy_id) return;
+    const triggered_by =
+      typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'manual';
+    const { draftStrategy } = await import('./handlers/strategy-author.js');
+    return draftStrategy(strategy_id, triggered_by);
+  });
+
+  // ── TP-14 currency jobs ────────────────────────────────────────────
+  createWorker('tables-draft', async (job) => {
+    const { runTablesDraft } = await import('./handlers/currency.js');
+    await runTablesDraft(
+      typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'cron',
+    );
+  });
+
+  createWorker('golden-regression', async (job) => {
+    const table_set_id = job.data?.table_set_id as string | undefined;
+    if (!table_set_id) return;
+    const { runGoldenRegression } = await import('./handlers/currency.js');
+    await runGoldenRegression(
+      table_set_id,
+      typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'publish',
+    );
+  });
+
+  createWorker('strategy-watch', async (job) => {
+    const { runStrategyWatch } = await import('./handlers/currency.js');
+    await runStrategyWatch(
+      typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'cron',
+    );
+  });
+
+  createWorker('archive-scan', async (job) => {
+    const { runArchiveScan } = await import('./handlers/currency.js');
+    await runArchiveScan(
+      typeof job.data?.triggered_by === 'string' ? job.data.triggered_by : 'cron',
+    );
+  });
+
+  // strategy-refresh — one strategy per job, or a full sweep when no
+  // strategy_id is given (each per-strategy call skips fast without a key).
+  createWorker('strategy-refresh', async (job) => {
+    await runStrategyRefresh(job.data ?? {});
+  });
+
   // ── notifications-email — outbound transactional email.
   // Today's only job type is `password-reset`. The payload carries the
   // plaintext token (the DB stores only its hash) and the recipient.
@@ -126,7 +190,39 @@ export function startWorkers(): void {
     logger.info({ email, provider: mailer.kind }, 'password-reset email sent');
   });
 
-  void scheduleCrons();
+  // Cron registration talks to Redis; a boot-time blip must not silently
+  // mean "no crons until the next restart". Log the failure and retry
+  // once after 30s — a second failure is logged and left for operators.
+  scheduleCrons().catch((err) => {
+    logger.error({ err }, 'cron registration failed — retrying in 30s');
+    setTimeout(() => {
+      scheduleCrons().catch((retryErr) => {
+        logger.error({ err: retryErr }, 'cron registration retry failed — crons not scheduled');
+      });
+    }, 30_000);
+  });
+}
+
+// Exported for tests. One bad strategy (bad content, transient db error)
+// must not abort the sweep and silently skip everything after it.
+export async function runStrategyRefresh(jobData: {
+  strategy_id?: unknown;
+  triggered_by?: unknown;
+}): Promise<void> {
+  const { draftStrategy } = await import('./handlers/strategy-author.js');
+  const triggered_by = typeof jobData.triggered_by === 'string' ? jobData.triggered_by : 'refresh';
+  const one = typeof jobData.strategy_id === 'string' ? jobData.strategy_id : undefined;
+  const db = getDb();
+  const { strategies } = await import('@vibe/db/schema');
+  const targets = one ? [{ id: one }] : await db.select({ id: strategies.id }).from(strategies);
+  for (const t of targets) {
+    try {
+      const result = await draftStrategy(t.id, triggered_by);
+      if (result.status === 'skipped-no-key') return; // no point iterating
+    } catch (err) {
+      logger.error({ err, strategy_id: t.id }, 'strategy-refresh: draft failed — continuing sweep');
+    }
+  }
 }
 
 async function titleChat(chat_id: string): Promise<void> {
@@ -143,10 +239,7 @@ async function titleChat(chat_id: string): Promise<void> {
     .join('\n\n');
   let title = 'Untitled chat';
   try {
-    const { client } = await getAnthropic();
-    const r = await client.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 32,
+    const r = await callClaude('chat-title', {
       messages: [
         {
           role: 'user',
@@ -156,8 +249,7 @@ async function titleChat(chat_id: string): Promise<void> {
         },
       ],
     });
-    const block = r.content.find((c) => c.type === 'text');
-    if (block && block.type === 'text') title = block.text.trim().slice(0, 80);
+    if (r.text.trim()) title = r.text.trim().slice(0, 80);
   } catch (err) {
     logger.warn({ err, chat_id }, 'chat:title generation failed');
     return;
@@ -177,10 +269,7 @@ async function summarizeAttachment(attachment_id: string): Promise<void> {
   const text = att.full_text.slice(0, 80_000);
   let summary = '';
   try {
-    const { client } = await getAnthropic();
-    const r = await client.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 600,
+    const r = await callClaude('attachment-summarize', {
       messages: [
         {
           role: 'user',
@@ -191,8 +280,7 @@ async function summarizeAttachment(attachment_id: string): Promise<void> {
         },
       ],
     });
-    const block = r.content.find((c) => c.type === 'text');
-    if (block && block.type === 'text') summary = block.text.trim();
+    summary = r.text.trim();
   } catch (err) {
     logger.warn({ err, attachment_id }, 'attachment:summarize failed');
     return;
@@ -216,7 +304,10 @@ async function rollupUsageDaily(): Promise<void> {
       SUM(input_tokens + output_tokens + cache_creation_input_tokens + cache_read_input_tokens) AS total_tokens,
       SUM(cost_usd) AS total_cost_usd
     FROM usage_events
-    WHERE occurred_at >= NOW() - INTERVAL '2 days'
+    -- Day-aligned window: yesterday 00:00 onward. A sliding 48h window
+    -- would recompute a partially-covered day and overwrite its complete
+    -- rollup with a truncated one.
+    WHERE occurred_at >= date_trunc('day', NOW() - INTERVAL '1 day')
     GROUP BY 1, 2, 3
     ON CONFLICT (day, user_id, model_id) DO UPDATE SET
       message_count = EXCLUDED.message_count,
@@ -238,5 +329,22 @@ async function scheduleCrons() {
     'hourly',
     {},
     { repeat: { pattern: '5 * * * *' }, jobId: 'cron-usage-rollup-hourly' },
+  );
+  // TP-14 — annual tables draft when the fall Rev. Proc. cycle starts
+  // (Oct 1), weekly watch + archive scans. All degrade without a key.
+  await tablesDraftQueue.add(
+    'annual',
+    { triggered_by: 'cron' },
+    { repeat: { pattern: '0 6 1 10 *' }, jobId: 'cron-tables-draft-annual' },
+  );
+  await strategyWatchQueue.add(
+    'weekly',
+    { triggered_by: 'cron' },
+    { repeat: { pattern: '0 5 * * 1' }, jobId: 'cron-strategy-watch-weekly' },
+  );
+  await archiveScanQueue.add(
+    'weekly',
+    { triggered_by: 'cron' },
+    { repeat: { pattern: '30 5 * * 1' }, jobId: 'cron-archive-scan-weekly' },
   );
 }

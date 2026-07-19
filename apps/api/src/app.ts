@@ -26,6 +26,15 @@ import { adminCustomSkillsRouter } from './routes/admin/custom-skills.js';
 import { adminReferencesRouter } from './routes/admin/references.js';
 import { adminUsageRouter } from './routes/admin/usage.js';
 import { chatsRouter } from './routes/chats/index.js';
+import { configRouter } from './routes/config.js';
+import { clientsRouter } from './routes/clients/index.js';
+import { archivesRouter } from './routes/archives.js';
+import { adminTableSetsRouter } from './routes/admin/table-sets.js';
+import { adminReviewQueueRouter, adminStrategyDraftRouter } from './routes/admin/review-queue.js';
+import { planningRouter } from './routes/planning/index.js';
+import { dlRouter } from './routes/dl.js';
+import { clientDeliverablesRouter } from './routes/planning/deliverables.js';
+import { requirePlanning } from './middleware/planning-flag.js';
 import { webhooksRouter } from './routes/webhooks/index.js';
 import { setupRouter } from './routes/setup.js';
 import { mountBullBoard } from './routes/admin/bull-board.js';
@@ -74,12 +83,28 @@ export function createApp(): Express {
   // UI mounted at /admin/queues) gets authenticated, since browsers
   // don't attach Authorization headers to plain link clicks.
   app.use(cookieParser());
-  app.use(pinoHttp({ logger }));
+  // Signed deliverable links carry a bearer-capability token in the PATH
+  // (/api/dl/:token). The DB stores only sha256(token); the request log
+  // must not undo that, so the req serializer masks the token segment.
+  app.use(
+    pinoHttp({
+      logger,
+      serializers: {
+        req(req: { url?: string } & Record<string, unknown>) {
+          if (typeof req.url === 'string' && req.url.startsWith('/api/dl/')) {
+            req.url = '/api/dl/[REDACTED]';
+          }
+          return req;
+        },
+      },
+    }),
+  );
 
   app.use('/api/health', healthRouter);
   app.use('/api/ping', pingRouter);
   app.use('/api/setup', setupRouter);
   app.use('/api/auth', authRouter);
+  app.use('/api/config', configRouter);
   app.use('/admin/queues', requireAuth, requireRole('admin'), mountBullBoard().getRouter());
   app.use('/api/admin/users', adminUsersRouter);
   app.use('/api/admin/settings', adminSettingsRouter);
@@ -88,7 +113,17 @@ export function createApp(): Express {
   app.use('/api/admin/custom-skills', adminCustomSkillsRouter);
   app.use('/api/admin/references', adminReferencesRouter);
   app.use('/api/admin/usage', adminUsageRouter);
+  app.use('/api/admin/table-sets', adminTableSetsRouter);
+  app.use('/api/admin/review-queue', adminReviewQueueRouter);
+  app.use('/api/admin/strategies', adminStrategyDraftRouter);
   app.use('/api/chats', chatsRouter);
+  app.use('/api/clients', clientsRouter);
+  app.use('/api/archives', archivesRouter);
+  app.use('/api/planning', planningRouter);
+  // TP-9 — public signed-link downloads (token IS the credential) and the
+  // client Documents tab feed.
+  app.use('/api/dl', dlRouter);
+  app.use('/api/clients/:id/deliverables', requireAuth, requirePlanning, clientDeliverablesRouter);
 
   // 404
   app.use((req, res) => {

@@ -1,0 +1,271 @@
+{
+  "id": "qsbs-1202",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "QSBS §1202 Exclusion",
+  "category": "income-timing",
+  "modeled": true,
+  "complexity": 5,
+  "riskRating": "moderate",
+  "entityTypes": ["c-corp", "individual"],
+  "typicalSavingsBand": "100k-plus",
+  "advisor": {
+    "summary": "Section 1202 excludes gain on qualified small business stock — original-issuance C corporation shares in an active qualified business — and OBBBA split the regime in two. Stock acquired after July 4, 2025 earns a tiered exclusion (50% at a three-year hold, 75% at four, 100% at five or more) under a $15 million or 10-times-basis per-issuer cap and a $75 million gross-asset ceiling; stock acquired before July 5, 2025 keeps the old rules — a strict five-year cliff, a $10 million/10x cap, and a $50 million ceiling, with 100% exclusion for post-September 27, 2010 acquisitions. Partial tiers carry a 7% AMT preference and 28%-rate tax on the included portion, so the headline percentage overstates the tier's value. The controlling reality is evidentiary: qualification is fixed at issuance and tested years later at exam, so the proof file is built at the front, not the exit. The model removes the eligible amount from recognized long-term gain up to the $15 million cap and does not compute the tiers, the AMT preference, or the 28%-rate remainder.",
+    "mechanics": [
+      "Qualification is set at issuance: a domestic C corporation whose aggregate gross assets stay at or under the ceiling ($75M for post-OBBBA issuances; $50M for pre-July 5, 2025 stock) at and immediately after issuance, with the shares acquired at original issuance for money, property, or services (§1202(c), (d)) — secondary-market purchases never qualify.",
+      "The active-business test of §1202(e) requires at least 80% of assets used in a qualified trade for substantially all the holding period, with the excluded service fields — health, law, accounting, consulting, financial services, hospitality, farming — litigated at the margins.",
+      "Holding-period tiers: post-July 4, 2025 stock earns 50% exclusion at three years, 75% at four, and 100% at five or more; pre-July 5, 2025 stock faces a five-year cliff with no partial credit — 100% if acquired after September 27, 2010, 75% or 50% for older vintages.",
+      "The per-issuer cap under §1202(b) is the greater of the dollar cap ($15M for post-OBBBA stock, indexed after 2026; $10M for older stock) or ten times the aggregate adjusted basis of stock sold that year — the 10x arm rewards high-basis property contributions at incorporation.",
+      "Partial tiers are not free: 7% of the excluded gain is an AMT preference under §57(a)(7), and the included portion is taxed as 28%-rate gain rather than ordinary LTCG — the effective saving runs well below the headline percentage.",
+      "§1202(h) treats gift and death transferees as original holders with tacked holding periods, which is the foundation for multiplying per-taxpayer caps through genuine, well-in-advance gifts to family members or non-grantor trusts; §1045 permits a 60-day rollover into replacement QSBS when a sale arrives before the tier is reached.",
+      "The model applies the exclusion by removing the eligible amount from recognized long-term gain, clamped at the $15M cap — the entered figure must already be the post-tier excludable amount, because tiers, AMT preference, and the 28%-rate remainder are outside the transform."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §1202, as amended by P.L. 119-21 (OBBBA)",
+        "note": "The two-regime exclusion: 50/75/100% tiers at 3/4/5-year holds, $15M (indexed)/10x cap, and $75M asset ceiling for post-July 4, 2025 issuances; prior law preserved for older stock."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1202(b)",
+        "note": "The per-issuer limitation — greater of the dollar cap or 10x the basis of stock disposed of during the year."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1202(c), (d), (e)",
+        "note": "Original-issuance requirement, the gross-asset ceiling at issuance, and the 80% active qualified business test with its excluded service fields."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1202(h)",
+        "note": "Gift and death transfers preserve qualification and tack the holding period — the statutory basis of cap multiplication."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §57(a)(7)",
+        "note": "7% of excluded gain is an AMT preference on the partial (50%/75%) tiers."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1045",
+        "note": "The 60-day rollover into replacement QSBS when a sale lands before the exclusion tier is reached."
+      }
+    ],
+    "requirements": [
+      "Original-issuance C corporation stock with contemporaneous documentation — issuance records, a gross-assets balance sheet at the issuance date, and the capitalization history.",
+      "The corporation satisfies the active-business and non-excluded-field tests for substantially all of the holding period, with no disqualifying redemptions around issuance.",
+      "The holding period met lot by lot at sale — three, four, or five years for post-OBBBA stock, a strict five for older stock.",
+      "Era, tier, and per-issuer cap computed per taxpayer, per issuer, per year before any exit modeling is shared."
+    ],
+    "risks": [
+      "The leading failure mode is proof, not law: qualification is tested at issuance but examined years later, and a missing gross-assets balance sheet from the issuance date is the most common way the exclusion dies — there is no marquee taxpayer-victory case to lean on, so the file is the defense.",
+      "Excluded-field characterization is contested at the margins — consulting-adjacent and professional-services-adjacent businesses need a hard, documented look at §1202(e)(3) before the exclusion is promised.",
+      "Cap multiplication through gifts draws step-transaction and donative-intent scrutiny; gifts completed while a sale process is underway are the fact pattern that fails.",
+      "Two regimes now coexist, and mixing up a client's pre- versus post-July 5, 2025 lots misstates both the tier and the cap.",
+      "Partial tiers carry the 7% AMT preference and 28%-rate tax on the included portion — modeled benefits that ignore them are overstated, and this engine does not compute either.",
+      "Significant issuer redemptions around the issuance window can disqualify the stock retroactively."
+    ],
+    "stateNotes": [
+      "State conformity is the swing variable: several states — California most prominently — do not conform to §1202 at all, so the state tax can be the entire bill; the founder's state of residence at sale matters as much as the holding period.",
+      "No PTET interaction — the exclusion applies to an individual's capital gain on stock, outside any entity-level tax election.",
+      "Missouri is fully favorable: it conforms through the federal-AGI starting point (RSMo §143.121), so excluded gain never reaches the Missouri return, and the 2025 individual capital-gains subtraction (HB 594) removes any taxable remainder for Missouri residents."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["c-corp-conversion"]
+    },
+    "reviewChecklist": [
+      "Each lot's era is determined (pre- vs. post-July 5, 2025) with the matching ceiling, cap, and tier schedule.",
+      "The issuance-date proof file exists — gross-assets balance sheet, board records, QSBS representation letter — or is commissioned now, years before any exit.",
+      "The per-issuer, per-taxpayer cap is computed and the modeled eligible gain equals the post-tier excludable amount within it.",
+      "The active-business and excluded-field analysis is documented for the full holding period, including any redemption history.",
+      "Any cap-multiplication gifting is vetted with estate counsel and completed well before a sale process opens.",
+      "State exposure is priced for nonconforming states, especially for founders contemplating a move before sale."
+    ]
+  },
+  "client": {
+    "teaser": "The right startup stock can make millions of gain free of federal tax.",
+    "headline": "Startup stock that can be tax-free when you sell",
+    "plainEnglish": [
+      "The tax law rewards early bets on small American companies. If you got shares straight from a small company — not bought from someone else — and you hold them long enough, a huge part of your profit can be free of federal tax when you sell.",
+      "For shares issued after July 2025, the break phases in. Hold three years and half the profit is tax-free. Four years, three quarters. Five years, all of it — up to a cap of $15 million or more per company. Older shares follow the old rule: a full five years, with a $10 million cap.",
+      "The hard part is proof and patience. The company had to qualify when you got the shares, and proving that years later is tough. We build the proof file early, track each block's dates, and time the sale to land on the best tier."
+    ],
+    "analogy": "It works like a savings bond that matures in stages. Cash out early and you leave most of the prize behind. Wait for full maturity and the whole gain can be yours, free of federal tax.",
+    "benefits": [
+      "Up to 100% of the profit on qualifying shares free of federal tax",
+      "Caps of $15 million or more per company — life-changing money, not a rounding error",
+      "Sale timing planned around the three-, four-, and five-year milestones",
+      "Advanced options can spread the cap across family members"
+    ],
+    "steps": [
+      "WE confirm whether each block of shares qualifies and assemble the proof file.",
+      "WE calendar the holding-period milestones for every block you own.",
+      "YOU hold to the plan — selling even a little early can cost most of the break.",
+      "WE model each sale date in dollars and handle the special reporting when you sell."
+    ],
+    "clientCommitments": [
+      "Save every issuance document now — proof gets harder every year",
+      "Talk to us before any sale, secondary offer, or company buyback of shares"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "structural",
+    "annualMaintenance": [
+      "Annual active-business and redemption monitoring with the company",
+      "Lot calendar updates as tier dates approach",
+      "Pre-exit re-verification of era, tier, and cap before any sale process"
+    ],
+    "deliverables": [
+      "QSBS qualification file — issuance balance sheet, representation letter, cap table history",
+      "Lot-by-lot tier and cap schedule",
+      "Exit modeling memo showing each sale date in dollars"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 65,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "eligibleGain": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["eligibleGain"]
+    },
+    "apply": {
+      "module": "qsbs-1202@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "longTermCapGain",
+          "op": "gt",
+          "value": 500000
+        }
+      ],
+      "reason": "Original-issue C-corp stock held five years can exclude gain up to the §1202 ceiling."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj 2M QSBS gain fully excluded",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 200000,
+          "businesses": [],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 2000000,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "eligibleGain": 2000000
+        },
+        "expect": {
+          "totalBurdenDelta": -451805,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "single 800k of 1M gain qualifies",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 150000,
+          "businesses": [],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 1000000,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "eligibleGain": 800000
+        },
+        "expect": {
+          "totalBurdenDelta": -179820,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §1202 post-OBBBA two-regime rules",
+      "§1202(e) qualified business guidance and case law"
+    ],
+    "keywords": [
+      "QSBS",
+      "1202",
+      "qualified small business stock",
+      "exclusion tiers",
+      "per-issuer cap"
+    ],
+    "reviewTriggers": [
+      "Indexing of the $15M cap and $75M asset ceiling",
+      "New guidance or cases on the excluded service fields",
+      "Any legislative change to the exclusion percentages or holding periods"
+    ]
+  }
+}

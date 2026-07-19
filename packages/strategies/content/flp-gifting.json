@@ -1,0 +1,186 @@
+{
+  "id": "flp-gifting",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Family Limited Partnership Valuation Discounts",
+  "category": "succession-exit",
+  "modeled": false,
+  "complexity": 5,
+  "riskRating": "elevated",
+  "entityTypes": ["partnership", "rental"],
+  "typicalSavingsBand": "structural",
+  "advisor": {
+    "summary": "Senior family members contribute a business, real estate, or an investment portfolio to a family limited partnership or LLC and gift non-controlling interests to children or their trusts. Valued as what they are — minority, illiquid, restriction-bound — those interests support combined lack-of-control and lack-of-marketability discounts commonly in the 20–35% range, so each $19,000 annual exclusion or dollar of $15M exemption moves materially more underlying value, and all post-gift growth accrues outside the estate. The countervailing force is §2036: retained enjoyment or retained control pulls the contributed assets back into the estate at full undiscounted value, as Estate of Powell demonstrated even for rights held in conjunction with others, unless the bona fide sale exception articulated in Estate of Bongard — a legitimate, significant nontax purpose — is satisfied and actually lived. Chapter 14 (§2701, §2704) constrains the drafting; a qualified appraisal and an adequately disclosed Form 709 start the statute running. Elevated risk, earned honestly: this structure fails on facts, not on law.",
+    "mechanics": [
+      "Formation: the senior generation contributes assets for managing and non-managing interests; the entity owns the assets, and the agreement restricts transfer and control of the non-managing interests — the features the appraisal will price.",
+      "Gift valuation: a gifted limited interest is valued as the interest itself, not a pro-rata slice of the assets — a willing buyer discounts for lack of control and lack of marketability, typically 20–35% combined depending on asset mix and agreement terms.",
+      "Leverage: at a 30% combined discount, a $19,000 annual-exclusion gift under §2503(b) moves roughly $27,000 of underlying value, and the $15M exemption reaches on the order of $21M — with every dollar of later appreciation compounding outside the estate.",
+      "§2036(a) is the kill switch: retained possession or income, or the retained right — alone or with others — to control enjoyment, pulls the full date-of-death value of the contributed assets back in; the escape is the bona fide sale for full consideration exception, read by the case law as a legitimate and significant nontax purpose plus proportionate interests.",
+      "Chapter 14 drafting limits: keep interests plain and pro-rata to stay outside §2701, and keep liquidation restrictions no tighter than state-law defaults or §2704 disregards them in valuing family transfers.",
+      "Income tax follows the interests: post-gift K-1 income lands at the donees' rates, and gifted interests take §1015 carryover basis — the forfeited step-up must be priced before appreciated assets go in."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §2036(a)",
+        "note": "Retained enjoyment or control pulls contributed assets back into the gross estate at full value — the statute every FLP file is built to survive."
+      },
+      {
+        "type": "Case",
+        "cite": "Estate of Powell v. Commissioner, 148 T.C. 392 (2017)",
+        "note": "Deathbed FLP; the court applied §2036(a)(2) to the decedent's ability, with others, to dissolve the partnership — full-value inclusion, and the modern warning on retained control."
+      },
+      {
+        "type": "Case",
+        "cite": "Estate of Bongard v. Commissioner, 124 T.C. 95 (2005)",
+        "note": "Articulates the bona fide sale exception: a legitimate and significant nontax purpose with proportionate interests received."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §2704",
+        "note": "Disregards lapsing rights and liquidation restrictions tighter than state-law default in family-transfer valuations."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §2701",
+        "note": "The special valuation rules that punish preferred or frozen senior-generation interests — avoided with plain pro-rata equity."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §2503(b)",
+        "note": "The $19,000 (2026) annual exclusion each discounted gift leverages; present-interest support matters for restricted interests."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1015",
+        "note": "Carryover basis for the gifted interests — the step-up cost side of the ledger."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Rul. 59-60",
+        "note": "The valuation framework the qualified appraisal must follow."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §301.6501(c)-1(f)",
+        "note": "Adequate disclosure on Form 709 — the filing that starts the three-year clock on valuation."
+      }
+    ],
+    "requirements": [
+      "A legitimate, documentable nontax purpose — centralized management, succession governance, creditor protection — recited in the documents and actually true in operation.",
+      "Full entity formalities: state filing, EIN, bank account, capital accounts, pro-rata distributions, annual 1065s and K-1s.",
+      "The senior generation retains ample assets outside the entity — never the residence, never the spending money.",
+      "A qualified appraisal of each gifted interest, attached to a timely, adequately disclosed Form 709.",
+      "Seasoning: fund the entity and let it operate before gifting — never on a deathbed."
+    ],
+    "risks": [
+      "The leading audit theory is §2036 inclusion, and Estate of Powell v. Commissioner, 148 T.C. 392 (2017) is its modern template: deathbed funding, substantially all assets contributed, personal use of partnership property, disproportionate distributions, or no real nontax purpose — any one can forfeit the entire discount and more.",
+      "Aggressive discounts on pure marketable-securities partnerships draw exam attention, with substantial- and gross-valuation-understatement penalties behind a failed appraisal.",
+      "Liquidation restrictions drafted tighter than state-law defaults are disregarded under §2704 — the discount evaporates while the restrictions remain.",
+      "Carryover basis is a real cost: for low-basis assets in estates safely under the exemption, discounting appreciation out of the estate can raise the family's total tax once the forfeited step-up is priced.",
+      "Post-formation sloppiness — commingling, skipped K-1s, non-pro-rata cash pulls — retroactively poisons the structure; administration is the audit defense, every year."
+    ],
+    "stateNotes": [
+      "Missouri imposes no gift or estate tax, and the income side conforms through the federal starting point (RSMo §143.121) — the K-1 income shifted to donees lands on their Missouri returns at their rates.",
+      "PTET interaction: an FLP with business income is an eligible pass-through for Missouri's PTET election (RSMo §143.436), but the election is incidental to the transfer-tax design — model it separately for the donees who now hold the K-1s.",
+      "Missouri-specific: form under Missouri's limited partnership or LLC statutes with §2704 in mind — restrictions no tighter than the state-law defaults — and calendar Missouri registered-agent and annual-filing obligations as part of the formalities file."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["annual-gifting-program", "idgt-installment-sale"]
+    },
+    "reviewChecklist": [
+      "The §2036 screen is passed and documented: real nontax purpose, ample retained assets outside, no personal-use property inside, no deathbed timing.",
+      "Governance drafted with Powell in mind — the senior generation cannot, alone or with others, control dissolution or distributions in ways that read as retained enjoyment.",
+      "Qualified appraisal in hand for the entity and each gifted interest, from a credentialed appraiser on Rev. Rul. 59-60 lines.",
+      "Form 709 adequate-disclosure package assembled so the three-year statute actually starts.",
+      "Annual administration verified — 1065s, K-1s, pro-rata distributions, minutes for major decisions."
+    ]
+  },
+  "client": {
+    "teaser": "A family structure that lets each gifted dollar carry more value than the gift-tax meter shows.",
+    "headline": "Move family assets sooner — at a discount the tax rules respect",
+    "plainEnglish": [
+      "When you give a share of a family partnership instead of the assets themselves, the tax rules value what the recipient actually got: a minority piece they cannot control and cannot easily sell. Appraisers routinely find such a share is worth 20% to 35% less than the assets behind it.",
+      "That discount is leverage. A gift that uses $19,000 of your annual allowance can move closer to $27,000 of real value. Applied to your lifetime exemption, the same math shelters millions more — and all future growth lands on your kids' side of the ledger.",
+      "The IRS has beaten this plan in court when families treated it as a paper game — putting in everything, still living off the assets, skipping the records. Done with real purpose, real records, and a professional appraisal, it remains one of the strongest estate tools for larger families."
+    ],
+    "analogy": "A share of a family partnership is like one seat in a car you cannot drive and cannot sell. A fair buyer pays less for that seat than for the car — and the tax rules agree.",
+    "benefits": [
+      "Each gift moves 20–35% more real value than its gift-tax cost",
+      "Future growth of gifted shares happens outside your taxable estate",
+      "Family assets stay under one steady set of managers",
+      "Heirs receive interests they cannot lose to an impulsive sale"
+    ],
+    "steps": [
+      "WE confirm the fit — the right assets, a real purpose, and plenty kept outside for your lifestyle.",
+      "WE coordinate the attorney who forms the partnership, and help fund and run it properly.",
+      "YOU approve the appraisal and sign the gift documents each round.",
+      "WE file the gift-tax returns and keep the annual records audit-ready."
+    ],
+    "clientCommitments": [
+      "Live off assets kept outside the partnership — never treat it as your checkbook",
+      "Follow the formalities every year: meetings, records, pro-rata distributions",
+      "Start early — this structure cannot be built at the last minute"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "structural",
+    "annualMaintenance": [
+      "Annual entity administration review — 1065/K-1s, distributions, minutes",
+      "Periodic reappraisal before each new round of gifts",
+      "Standing §2036 hygiene check: retained-asset sufficiency and no personal use of entity property"
+    ],
+    "deliverables": [
+      "FLP/LLC design memo with the §2036 screen and nontax-purpose documentation",
+      "Qualified appraisal coordination for the entity and gifted interests",
+      "Form 709 filings with adequate-disclosure packages",
+      "Annual administration checklist and compliance file"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "any": [
+      {
+        "field": "rentals.length",
+        "op": "gt",
+        "value": 1
+      },
+      {
+        "field": "totalBusinessProfit",
+        "op": "gt",
+        "value": 750000
+      }
+    ],
+    "reason": "Minority and marketability discounts compress the transfer-tax value of gifted interests."
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §2036 case law", "IRC §2704 regulatory projects"],
+    "keywords": [
+      "family limited partnership",
+      "valuation discount",
+      "2036 inclusion",
+      "lack of marketability",
+      "FLP gifting"
+    ],
+    "reviewTriggers": [
+      "New §2036 or §2704 case law and regulations",
+      "Exemption legislation changing the estate-tax stakes",
+      "Client liquidity or health changes affecting the retained-asset screen"
+    ]
+  }
+}

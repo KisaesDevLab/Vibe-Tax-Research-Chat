@@ -1,0 +1,304 @@
+{
+  "id": "bracket-management",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Income Acceleration / Deferral (Bracket Management)",
+  "category": "income-timing",
+  "modeled": true,
+  "complexity": 2,
+  "riskRating": "low",
+  "entityTypes": ["sole-prop", "s-corp", "partnership", "individual"],
+  "typicalSavingsBand": "5k-25k",
+  "advisor": {
+    "summary": "Bracket management is the deliberate placement of income on one side or the other of December 31. A cash-method owner who controls billing dates, bonus declarations, and closing dates controls which year's rate table the income meets, and the value is the marginal-rate spread between the two years plus a year of payment deferral. Post-OBBBA, the cliffs are frequently worth more than the brackets: the §199A phase-in, the SALT-cap phase-down band above $505,000 of MAGI, the NIIT thresholds, and the child tax credit phase-out each create effective rates the rate table never shows. The move runs in both directions — a low year is a reason to accelerate income in, not just to defer it out — which is why the model is allowed to increase the current-year burden. The engine transforms only the current year; the receiving year must be projected on its own before the plan is presented.",
+    "mechanics": [
+      "A cash-method taxpayer includes income in the year it is actually or constructively received under §451(a). Holding late-December billings so payment arrives in January moves the income into the following year without changing what the client ultimately collects.",
+      "Constructive receipt is the boundary line: Reg. §1.451-2 taxes income that is credited, set apart, or otherwise available without substantial limitation. The timing decision must therefore happen at the billing stage — a check in hand at year-end is income now, whenever it is deposited.",
+      "The expense side runs on §461(a): prepaying deductible costs or timing accrual items moves taxable income from the deduction direction, and pairs naturally with the income-side move in the same plan.",
+      "The bracket spread is often the smaller prize. For 2026, the §199A(b)(3) wage-and-SSTB limitation phases in above the taxable-income threshold, the §164 SALT cap ($40,400 MFJ) phases down by 30% of MAGI over $505,000 toward a $10,000 floor, the 3.8% net investment income tax of §1411 attaches at $200,000/$250,000 of MAGI, and the §24(b) child tax credit phases out $50 per $1,000 of MAGI over the threshold. Landing just under a cliff can beat any pure rate play.",
+      "Deferral is a two-year trade, not free money: the shifted income lands in the following year and is taxed there. The engine models the current-year side only — it shifts the profile's other-income figure and caps a deferral at the amount actually present — so the receiving year's rate and cliff position must be verified in a separate projection before the benefit is quoted."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §451(a)",
+        "note": "The general rule fixing the year of inclusion — the statutory basis for moving income by controlling when it is received."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.451-2",
+        "note": "Constructive receipt: income credited or made available without substantial limitation cannot be deferred, which is why timing decisions happen before the money is available."
+      },
+      {
+        "type": "Case",
+        "cite": "Hornung v. Commissioner, 47 T.C. 428 (1967)",
+        "note": "The teaching case on constructive receipt — availability without substantial limitation, not physical possession, controls the year of inclusion."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §461(a)",
+        "note": "The deduction-year counterpart: prepayment and accrual timing are the expense-side levers for the same target."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §199A(b)(3)",
+        "note": "The QBI wage/SSTB limitation phases in above the taxable-income threshold — a first-order cliff that income timing can manage."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §164, as amended by P.L. 119-21 (OBBBA)",
+        "note": "The 2026 SALT cap ($40,400 MFJ) phases down 30% of MAGI over $505,000 with a $10,000 floor, creating a punishing effective marginal rate inside the phase-down band."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1411",
+        "note": "The 3.8% NIIT thresholds ($200k/$250k MAGI, unindexed) — another line income timing can keep the client under."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §24(b)",
+        "note": "Child tax credit phase-out over the MAGI threshold — a cliff for families that timing can protect."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Proc. 2025-32",
+        "note": "The 2026 inflation-adjusted brackets and thresholds the projection is computed against."
+      }
+    ],
+    "requirements": [
+      "Genuine control over income timing — cash-method billing practices, bonus declaration dates, distribution elections, or sale closings — exercised before the income is made available.",
+      "A quantified rate or cliff differential between the two years; deferral into an equal-or-higher-rate year loses money once time value is netted.",
+      "A fourth-quarter projection built on year-to-date actuals that covers both years, including SE tax, QBI, the SALT phase-down, NIIT, and credit phase-outs.",
+      "Acceptable customer credit strength for any receivable that will be billed late — the January payment still has to arrive."
+    ],
+    "risks": [
+      "Constructive receipt is the leading audit theory: a check received in December is December income however long it sits in a drawer, and Hornung v. Commissioner, 47 T.C. 428 (1967) frames the availability test examiners apply. Only unbilled or unearned amounts can be deferred.",
+      "Rate risk: the planned low year can turn out high — an income surprise or a statutory change flips the differential, and the give-back year then costs more than the deferral saved.",
+      "Deferred billings carry real collection risk; a customer who fails in January converts a tax play into a bad debt.",
+      "Stacking deferred income into the receiving year can trip the very cliffs being managed — SALT phase-down band, NIIT, §199A phase-in — so both years must be modeled together, not in isolation.",
+      "Accrual-method taxpayers have far less room: §451(b) ties inclusion to financial-statement revenue for many items, and aggressive re-timing there invites method-of-accounting exposure."
+    ],
+    "stateNotes": [
+      "Most states conform to federal timing by starting the state return at federal AGI, so a dollar deferred federally is deferred for state purposes as well; confirm any decoupled state in the client's footprint before quoting a combined number.",
+      "PTET interaction: deferring pass-through income shrinks the base an entity's PTET election is computed on, so the deferral plan and the entity's PTET estimates must be set together — otherwise the election-year payment is overpaid and stranded.",
+      "Missouri conforms through its federal-AGI starting point (RSMo §143.121), so the shift moves Missouri tax in step with federal; with Missouri's single-rate structure there is no state bracket play — the Missouri benefit is timing only."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["prepaid-expenses", "daf-bunching"]
+    },
+    "reviewChecklist": [
+      "Both years are projected and the rate/cliff differential is documented — not just the current-year saving the engine shows.",
+      "No constructive-receipt problem: the deferral operates at the billing or declaration stage, and no received checks are being held.",
+      "The client's position against each cliff (§199A threshold, SALT phase-down band, NIIT, CTC phase-out) is mapped for both years.",
+      "The deferred amount actually exists in the profile's other-income figure the model shifts; Schedule C invoice timing with its SE-tax effect is modeled separately if that is the real lever.",
+      "Receiving-year estimated payments and safe harbors are reset so the shifted income does not generate an underpayment penalty."
+    ]
+  },
+  "client": {
+    "teaser": "Moving income a few weeks on the calendar can land it in a cheaper tax year.",
+    "headline": "Time your income so it lands in the cheaper year",
+    "plainEnglish": [
+      "Tax rates climb in steps. The more you earn in one year, the higher the rate on your last dollars. Two even years almost always cost less total tax than one big year next to one small year.",
+      "If you control when money arrives, you control which year it is taxed in. Sending an invoice in January instead of December moves that income to next year. A bonus date or a sale closing can shift the same way. The income is the same. Only the year changes.",
+      "There are also hidden lines in the tax law. Cross one and a deduction or credit shrinks or vanishes. We map where those lines sit for you. Then we tell you how much to move, and in which direction, before the year closes."
+    ],
+    "analogy": "It works like off-peak power pricing. The same laundry costs less run at night. The same income can cost less taxed in the right year.",
+    "benefits": [
+      "The same income taxed at lower rates, just by moving the date",
+      "Keeps deductions and credits that disappear above income cut-offs",
+      "Part of the tax bill arrives a full year later — your money works longer",
+      "Repeats every year the timing is in your hands"
+    ],
+    "steps": [
+      "WE project both years each fall and compute the exact amount worth moving.",
+      "WE flag the income lines where a credit or deduction would disappear.",
+      "YOU adjust the timing — hold or send invoices, set the bonus date, pick the closing date.",
+      "YOU never hold a check already received; the timing happens before the money is available."
+    ],
+    "clientCommitments": [
+      "Tell us about year-end money moves before they happen, not after",
+      "Follow the plan at the billing stage — a check you have received already counts",
+      "Accept that the moved income is taxed next year; this is a shift, not an erase"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Fourth-quarter projection with year-to-date actuals to set the timing target",
+      "January re-check to plan the receiving year and reset estimated payments",
+      "Annual refresh of bracket, SALT phase-down, and credit-threshold figures"
+    ],
+    "deliverables": [
+      "Two-year bracket and cliff projection memo",
+      "Year-end action list with amounts, dates, and the thresholds not to cross"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 62,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "deferAmount": {
+          "type": "number"
+        }
+      },
+      "required": ["deferAmount"]
+    },
+    "apply": {
+      "module": "bracket-management@1.0.0"
+    },
+    "mayIncreaseBurden": true,
+    "suggest": {
+      "all": [
+        {
+          "field": "hasBusiness",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "Invoice and bonus timing can hold income inside the current bracket — or fill it deliberately."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj Sch C 300k + 40k other income deferred",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 300000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 40000,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "deferAmount": 40000
+        },
+        "expect": {
+          "totalBurdenDelta": -7864,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "single Sch C 150k, 20k accelerated in",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 150000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "deferAmount": -20000
+        },
+        "expect": {
+          "totalBurdenDelta": 3886,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §451 and §461 timing guidance",
+      "Annual inflation-adjustment revenue procedures"
+    ],
+    "keywords": [
+      "constructive receipt",
+      "income deferral",
+      "bracket management",
+      "SALT cap phase-down",
+      "199A threshold"
+    ],
+    "reviewTriggers": [
+      "New annual bracket, SALT phase-down, and credit-threshold figures",
+      "Any statutory change to the §164 phase-down or §199A thresholds",
+      "New constructive-receipt or §451(b) guidance affecting billing-timing plans"
+    ]
+  }
+}

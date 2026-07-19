@@ -52,6 +52,7 @@ services:
         condition: service_healthy
     volumes:
       - attachments:/app/attachments
+      - deliverables:/app/storage/deliverables
       - ./workspaces:/app/workspaces
     healthcheck:
       test: ['CMD', 'wget', '-q', '-O', '-', 'http://localhost:4000/api/health']
@@ -100,3 +101,4 @@ volumes:
   postgres_data:
   redis_data:
   attachments:
+  deliverables:

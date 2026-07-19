@@ -1,0 +1,299 @@
+{
+  "id": "cash-balance-stack",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Cash Balance Stacked on 401(k)/Profit Sharing",
+  "category": "retirement",
+  "modeled": true,
+  "complexity": 5,
+  "riskRating": "moderate",
+  "entityTypes": ["sole-prop", "s-corp", "partnership"],
+  "typicalSavingsBand": "100k-plus",
+  "advisor": {
+    "summary": "For a high-income owner in their fifties, the maximum-deduction retirement architecture is three coordinated layers: a 401(k) elective deferral ($24,500 for 2026 plus catch-up), an employer profit-sharing allocation deliberately held to 6% of compensation, and an actuarially determined cash balance pay credit that routinely runs $100,000–$250,000 or more. The 6% ceiling is statutory, not stylistic — §404(a)(7) caps combined defined-contribution deductions at 6% of compensation whenever a defined benefit plan is also maintained, with elective deferrals excluded from the cap. Properly designed, an owner in their late fifties can exceed $300,000 of combined annual deductions, but the ceiling is set by the actuary, not by a table. The engine models the stack as a single owner-level pre-tax contribution capped at owner compensation; it computes neither the §404(a)(7) coordination nor the required staff cost, so no client number ships without a signed combined design study.",
+    "mechanics": [
+      "Layer one is the §402(g) elective deferral — $24,500 for 2026, plus an $8,000 catch-up at 50 or $11,250 at ages 60–63 — and deferrals do not count against the combined-deduction cap.",
+      "Layer two is employer profit sharing held to 6% of eligible compensation, because §404(a)(7) limits combined defined-contribution deductions to 6% of compensation when a defined benefit plan is also maintained; a legacy 25% profit-sharing formula must be amended down in the adoption year.",
+      "Layer three is the cash balance pay credit, actuarially sized under §404(o) toward the §415(b) maximum benefit — a $290,000 annual annuity for 2026 — and because the target is age-driven, the credit grows as the owner nears retirement.",
+      "Once adopted, the cash balance layer carries mandatory minimum funding under §§412, 430 — the contribution is compulsory every year, good revenue year or bad.",
+      "Combined nondiscrimination testing under Reg. §1.401(a)(4)-8 typically prices required staff benefits around 7.5% of NHCE pay (the 5% gateway plus cash balance minimums, design-dependent) — the admission price for the owner's six-figure stack.",
+      "Owner compensation must carry the design: an S corporation owner's W-2 wage is the base for both the pay credit and the 6% layer, so reasonable-compensation planning precedes adoption — and the engine likewise caps the modeled contribution at owner wages or self-employment profit.",
+      "The engine applies the whole stack as one combined pre-tax owner contribution; it does not compute the §404(a)(7) coordination, the staff cost, or the actuarial ceiling, so quote clients only from the design study."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §404(a)(7)",
+        "note": "The combined DB/DC deduction limit that forces the 6% profit-sharing design; elective deferrals are excluded from the cap."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §402(g)",
+        "note": "The elective deferral limit — $24,500 for 2026 — that defines layer one."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§415(b), 415(c)",
+        "note": "The per-layer ceilings: a $290,000 maximum DB annuity and $72,000 of DC annual additions for 2026."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §404(o)",
+        "note": "The cash-balance deduction follows the actuarial funding target, not a percent-of-pay cap — the engine of the six-figure layer."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§412, 430",
+        "note": "Minimum funding standards: the cash balance contribution is mandatory each year once the plan exists."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.401(a)(4)-8",
+        "note": "Cross-testing and gateway rules that govern the combined-plan nondiscrimination math and set the staff cost."
+      },
+      {
+        "type": "Admin",
+        "cite": "Notice 2025-67",
+        "note": "2026 COLA figures relied on here: $24,500/$8,000/$11,250 deferrals, $72,000 §415(c), $290,000 §415(b), $360,000 compensation cap."
+      }
+    ],
+    "requirements": [
+      "Consistent income comfortably above the target deduction — the cash balance layer is a mandatory multi-year funding commitment, not an annual election.",
+      "A single actuary/TPA team engaged to run both plan documents and the combined testing as one design.",
+      "Owner W-2 wages or self-employment earnings large enough to support the pay credit and the 6% profit-sharing base.",
+      "With employees: budget roughly 7.5% or more of eligible staff payroll for required benefits in every funded year."
+    ],
+    "risks": [
+      "The leading failure mode is blowing the §404(a)(7) cap: running an unamended 25% profit-sharing formula alongside a new cash balance plan creates nondeductible contributions subject to the §4972 10% excise tax — the DC formula must be amended in the adoption year.",
+      "Mandatory funding meets a bad year: a missed minimum contribution triggers §4971 excise taxes, and freezing shortly after adoption invites disqualification arguments under the permanency requirement of Reg. §1.401-1(b)(2).",
+      "Demographic drift — an aging staff or the departure of young employees — can flip passing combined testing to failing from one census to the next.",
+      "Administration is real: two plan documents, two Forms 5500, Schedule SB actuarial certification, and PBGC premiums when staff are covered — typically $5,000–$10,000 a year against the deduction.",
+      "This record already contains the DB layer: selecting the standalone defined-benefit-plan strategy in the same scenario double-counts (the records are marked as conflicting)."
+    ],
+    "stateNotes": [
+      "States that conform to federal taxable income or start from federal AGI allow the full stacked deduction with no addback; verify conformity in any separate-computation states in the client's footprint.",
+      "PTET interaction: entity-side contributions (profit sharing, staff cost, and entity-funded cash balance credits) shrink the pass-through income base a PTET election is computed on, so state PTET estimates should be re-run once the design is adopted.",
+      "Missouri conforms through its federal starting point (RSMo §143.121), and the Missouri SALT Parity Act PTET (RSMo §143.436) is computed on the post-contribution income base — coordinate fourth-quarter PTET estimates with the funding decision."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": ["defined-benefit-plan"],
+      "synergiesWith": ["solo-401k", "profit-sharing-new-comparability"]
+    },
+    "reviewChecklist": [
+      "Signed combined design study in the file showing the §404(a)(7) coordination, the priced staff cost, and the owner's certified numbers — never quote from the model alone.",
+      "Existing 401(k)/profit-sharing document amended to a 6%-compatible formula effective in the adoption year.",
+      "Owner compensation supports the pay credit and carries reasonable-compensation documentation (S corporation owners).",
+      "Client has acknowledged in writing that cash balance funding is mandatory across a multi-year period.",
+      "The standalone defined-benefit-plan strategy is not also selected in this scenario.",
+      "Modeled contribution matches the design study and does not exceed owner compensation."
+    ]
+  },
+  "client": {
+    "teaser": "Three retirement limits stacked into one design — often $300,000 a year for the owner.",
+    "headline": "Stack three retirement plans into one very large deduction",
+    "plainEnglish": [
+      "Most owners know the 401(k). Fewer know the law lets your business run a 401(k) and a pension-style plan at the same time. Each plan has its own limit, and the limits add together.",
+      "Layer one is your own 401(k) money. Layer two is a company profit-sharing amount. Layer three is the big one: a pension-style account sized by a specialist. The older you are, the larger it gets. For owners in their fifties, that layer alone is often six figures a year. Together, the three layers can top $300,000 in deductions.",
+      "This design asks a lot in return. The pension layer must be funded every year, for several years. Your team gets real contributions too. Specialists check the numbers each year. So we only build it when your income is strong and steady."
+    ],
+    "analogy": "One savings bucket has a small lid. This design gives you three buckets with three lids — and the biggest lid opens wider every year you get older.",
+    "benefits": [
+      "Deductions that can pass $300,000 a year for an owner in their fifties",
+      "Three legal limits working together instead of one",
+      "Packs decades of retirement saving into your best-earning years",
+      "Your team gets a visible benefit that helps you keep good people"
+    ],
+    "steps": [
+      "WE order a design study from a pension specialist, built on your age, pay, and team.",
+      "WE show you the full picture first — your number, the staff cost, and the multi-year commitment.",
+      "WE coordinate your current 401(k) so all three layers fit the legal limits.",
+      "YOU fund the required amounts each year and keep the design in place for several years."
+    ],
+    "clientCommitments": [
+      "Fund the pension layer every year — it is required, not optional",
+      "Keep your salary at the level the design needs",
+      "Send the employee census to the specialists on time each year",
+      "Plan on keeping the design in place for several years"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "structural",
+    "annualMaintenance": [
+      "Annual actuarial valuation and combined nondiscrimination testing on a fresh census",
+      "Both Forms 5500 (with Schedule SB) prepared and filed; PBGC premiums paid where staff are covered",
+      "Year-end reset of owner compensation, PTET estimates, and the funding target before the funding decision"
+    ],
+    "deliverables": [
+      "Combined design study with the owner/staff dollar split and multi-year funding schedule",
+      "Plan documents and amendments (401(k) formula amendment plus cash balance adoption)",
+      "Annual funding certification package and deduction support for the return"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 54,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "totalContribution": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["totalContribution"]
+    },
+    "apply": {
+      "module": "cash-balance-stack@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "totalBusinessProfit",
+          "op": "gt",
+          "value": 500000
+        }
+      ],
+      "reason": "Stacking a cash balance plan on a 401(k) can shelter $200k–$400k+ for older high earners."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj Sch C 800k, 250k stacked",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 800000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "totalContribution": 250000
+        },
+        "expect": {
+          "totalBurdenDelta": -99885,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj S-corp 700k/300k comp, 200k stacked",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 700000,
+              "employeeWages": 0,
+              "ownerWages": 300000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "totalContribution": 200000
+        },
+        "expect": {
+          "totalBurdenDelta": -63611,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §§404(a)(7), 415(b), 430 and annual COLA notices",
+      "Reg. §1.401(a)(4)-8 cross-testing guidance and combined-plan examination activity"
+    ],
+    "keywords": [
+      "cash balance plan",
+      "combined plan deduction limit",
+      "404(a)(7)",
+      "cross-tested combo plan",
+      "pay credit"
+    ],
+    "reviewTriggers": [
+      "Annual retirement COLA notice (§415 and compensation limits)",
+      "New IRS guidance or litigation on cash balance and combo-plan testing",
+      "PBGC premium or coverage changes"
+    ]
+  }
+}

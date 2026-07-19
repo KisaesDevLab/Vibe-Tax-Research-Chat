@@ -1,0 +1,177 @@
+{
+  "id": "holding-management-company",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Holding / Management Company Fee Structures",
+  "category": "entity-structure",
+  "modeled": false,
+  "complexity": 4,
+  "riskRating": "elevated",
+  "entityTypes": ["s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "structural",
+  "advisor": {
+    "summary": "A management company earns its deductions the hard way: by actually managing. When a central entity employs the shared executives and back-office staff of a multi-entity group and charges each operating company an arm's-length fee for identifiable services, the fees are ordinary §162 expenses to the payors and the consolidated income becomes a clean platform for owner compensation, group benefit plans, PTET placement, and succession. When the same structure is built backwards — fees sized to strip OpCo profit, split by ownership percentage, papered at year-end — the Eighth Circuit's Aspro decision shows exactly how it ends: deductions disallowed as disguised dividends, with §482 standing behind the Commissioner as reallocation authority among commonly controlled entities. This is a documentation-first, elevated-risk structure whose tax benefit is real but derivative; the services, agreements, invoices, and pricing support have to exist before the deduction does, and the added entity's overhead has to be beaten by the group-level planning it unlocks.",
+    "mechanics": [
+      "The architecture: owners hold a management entity that employs the shared executives and staff; each operating company pays it a fee under a written services agreement, deductible under §162(a) only to the extent it is reasonable compensation for services actually rendered — every element of that standard gets litigated in management-fee cases.",
+      "Pricing must be defensible as arm's-length: a cost build-up with a modest markup allocated by time or usage is the sustainable pattern, benchmarked against what an unrelated management firm would charge under Reg. §1.162-7 reasonableness principles; a fee that zeroes out OpCo profit or tracks ownership percentages is the losing fact pattern.",
+      "§482 gives the Service explicit authority to reallocate income and deductions among commonly controlled businesses to clearly reflect income — the backstop that makes sloppy intercompany pricing unwinnable even where some services exist.",
+      "Recharacterization is asymmetric pain: the payor loses the deduction while the recipient has already reported the income — in a C corporation group the payment becomes a nondeductible dividend under §§301 and 316 — so a failed fee is worse than no fee.",
+      "The legitimate payoffs run through aggregation, not around it: one payroll and benefits platform, retirement plans tested across the §414(b), (c), and (m) controlled and affiliated service group rules, a single home for owner reasonable compensation across ventures, deliberate PTET election placement, and an employment platform for successor generations.",
+      "Character consequences must be modeled, not assumed: fee income is services income bearing payroll tax at the management company, and a management operation is consulting-flavored for §199A purposes, so the group's QBI position can deteriorate even as the structure tidies everything else."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §162(a)",
+        "note": "The deduction standard the fees must satisfy: ordinary, necessary, reasonable in amount, and paid for services actually performed."
+      },
+      {
+        "type": "Case",
+        "cite": "Aspro, Inc. v. Commissioner, 32 F.4th 673 (8th Cir. 2022)",
+        "note": "Management fees to shareholders disallowed as disguised dividends: no written agreements, no pricing support, year-end lump sums proportional to ownership. Decided in the authoring firm’s own circuit — the controlling cautionary template."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §482",
+        "note": "Commissioner’s authority to reallocate income and deductions among commonly controlled entities — the structural backstop behind every intercompany-fee exam."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.162-7",
+        "note": "Reasonable-compensation principles applied as the measuring stick for related-party service pricing."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§301, 316",
+        "note": "The recharacterization destination in a C corporation group: a nondeductible dividend, taxed without a matching deduction."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §414(b), (c), (m)",
+        "note": "Controlled-group and affiliated-service-group aggregation — benefit plans cannot be enriched for owners by splitting employees among related entities."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §199A",
+        "note": "The QBI character consequence: management-fee income is consulting-flavored, so the group’s §199A posture must be re-modeled after the fees."
+      }
+    ],
+    "requirements": [
+      "Real, identifiable services — management, accounting, HR, treasury, marketing — performed by management-company personnel for each paying entity; if the shared functions do not exist, neither does the strategy.",
+      "Written intercompany services agreements in place before fees are paid, stating services, pricing methodology, and payment terms.",
+      "Arm's-length pricing support retained in the file: cost build-up with markup, time or usage allocations, or comparable third-party pricing.",
+      "Regular invoicing and actual payment on a monthly or quarterly cycle — never a year-end true-up that erases OpCo profit.",
+      "Books that match the story: the payroll, fee income, and expenses genuinely run through the management company."
+    ],
+    "risks": [
+      "The leading audit theory is disguised distribution, and Aspro, Inc. v. Commissioner, 32 F.4th 673 (8th Cir. 2022), is its blueprint: fees proportional to ownership, no written agreements, and lump-sum timing produced full disallowance plus the income staying taxed where received — the double-inclusion worst case.",
+      "§482 reallocation does not require bad faith — merely non-arm's-length pricing between commonly controlled entities — so thin documentation loses even sympathetic facts.",
+      "Benefit-plan aggregation under §414 defeats the fantasy of a rich owners-only plan at the management company while OpCo employees are excluded; test before promising plan outcomes.",
+      "The structure adds an entity, a payroll, a return, and intercompany accounting; groups without genuinely shared functions pay the overhead and collect none of the benefit.",
+      "Intercompany fees can create state nexus, gross-receipts tax, and apportionment consequences the federal analysis never sees — screen the state footprint before implementation."
+    ],
+    "stateNotes": [
+      "Conformity: Missouri conforms to the federal treatment of the fees through its federal starting point, so a federal disallowance flows straight into the Missouri returns of both entities.",
+      "PTET interaction: deliberate placement is one of the structure's genuine uses — Missouri SALT Parity Act elections (RSMo §143.436) are made entity by entity, and routing income to the entity where the election works best is legitimate planning once the fees themselves are defensible.",
+      "Missouri: intercompany fees crossing state lines can pull the management company into other states' filing obligations even when all owners sit in Missouri; run the nexus screen alongside the federal design."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["multi-entity-structuring"]
+    },
+    "reviewChecklist": [
+      "Shared functions inventoried with named personnel — the services are real before any fee is set.",
+      "Written services agreements executed for every payor before the first invoice, with the pricing methodology stated.",
+      "Pricing file contains the cost build-up or comparables, refreshed for the current year.",
+      "Invoices issue monthly or quarterly and payments actually move; no year-end true-ups that zero out OpCo income.",
+      "§414 aggregation tested before any benefit-plan design is promised.",
+      "Group §199A and PTET positions re-modeled with the fees in place, and the net benefit exceeds the added compliance cost."
+    ]
+  },
+  "client": {
+    "teaser": "One central company runs the others, gets paid fairly for it, and becomes the home base for your best planning.",
+    "headline": "A head office for your group of companies",
+    "plainEnglish": [
+      "If you own several businesses, you already share things among them: your time, a bookkeeper, software, an office. A management company makes that official. One central company employs the shared people and does the shared work. It then bills each business a fair fee.",
+      "Those fees are normal deductible costs for each business. The income lands in one place, and that opens real planning room. One payroll for you. One benefits program. One home for retirement plans, state tax elections, and handing things to the next generation.",
+      "One rule towers over the rest: the fees must be honest. Real work, priced the way an outside firm would charge, billed monthly, and paid on time. The IRS hunts for fees that just move profit around. So we build the contracts, invoices, and pricing file from day one."
+    ],
+    "analogy": "Think of it as the head office of your own small group. Each location pays head office for the help it truly uses. And head office is where you, the payroll, and the long-term plans live.",
+    "benefits": [
+      "Shared staff and overhead organized once instead of duplicated in every company",
+      "One payroll and one benefits program for you and your key people",
+      "A natural home base for retirement plans, state tax elections, and succession",
+      "Cleaner books in every operating business"
+    ],
+    "steps": [
+      "WE map what your companies already share and price the services the way an outside firm would.",
+      "WE form the management company and put written service agreements in place before any fee is paid.",
+      "YOU move the shared staff onto its payroll and pay the monthly invoices like any vendor bill.",
+      "WE re-check the fees against real costs every year and keep the file exam-ready."
+    ],
+    "clientCommitments": [
+      "Only charge for services that actually happen — no fees invented to move profit",
+      "Pay the invoices monthly, from the right accounts, every time",
+      "Give us a heads-up before adding entities, owners, or benefit plans so the group stays coordinated"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "structural",
+    "annualMaintenance": [
+      "Annual pricing refresh: rebuild the cost-plus support against actual services performed",
+      "Review invoicing and payment discipline across the group",
+      "Re-test controlled-group and affiliated-service-group status before plan changes",
+      "Re-model the group QBI and PTET positions with current-year fees"
+    ],
+    "deliverables": [
+      "Group structure design memo with services inventory",
+      "Intercompany services agreements for each operating entity",
+      "Arm's-length pricing study (cost build-up and allocation schedule)",
+      "Annual fee-review memo for the permanent file"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "totalBusinessProfit",
+        "op": "gt",
+        "value": 500000
+      }
+    ],
+    "reason": "Multi-entity groups can centralize management — with arm’s-length fees and real services."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §482 and management-fee case law (Aspro line)",
+      "IRC §414 aggregation guidance"
+    ],
+    "keywords": [
+      "management fees",
+      "intercompany services",
+      "disguised dividend",
+      "section 482 reallocation",
+      "controlled group",
+      "management company"
+    ],
+    "reviewTriggers": [
+      "New appellate or Tax Court decisions on related-party management fees",
+      "Changes to §414 aggregation or benefit-plan testing rules",
+      "State nexus or gross-receipts developments affecting intercompany fees"
+    ]
+  }
+}

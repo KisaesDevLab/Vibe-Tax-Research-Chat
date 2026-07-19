@@ -1,0 +1,303 @@
+{
+  "id": "wotc",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Work Opportunity Tax Credit",
+  "category": "credits-incentives",
+  "modeled": true,
+  "complexity": 2,
+  "riskRating": "low",
+  "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "5k-25k",
+  "advisor": {
+    "summary": "The §51 Work Opportunity Tax Credit pays employers for hiring from targeted groups — veterans, SNAP recipients, the long-term unemployed, ex-felons, vocational-rehab referrals, and others — generally 40% of the first $6,000 of first-year wages ($2,400 per hire), rising to $9,600 for certain disabled veterans and up to $9,000 over two years for long-term family assistance hires. The entire benefit hangs on process: Form 8850 pre-screening signed by the offer date and filed with the state workforce agency within 28 calendar days of the start date, with no reasonable-cause relief for missing it. The complication for 2026 is authorization: the statutory hiring deadline was December 31, 2025, and as of mid-2026 the credit sits in a lapse pending reauthorization (a five-year extension is pending in Congress), with agencies logging but not certifying 2026-start applications. Historical practice — screen and file through every hiatus, because renewals have been retroactive — is the professional standard, and it is how this engagement is run. The engine applies 40% to the entered certified wages; the caps, hour tiers, and §280C(a) wage-deduction reduction are handled in the input and at the return.",
+    "mechanics": [
+      "The credit is 40% of qualified first-year wages when the certified employee works at least 400 hours, 25% at 120–399 hours, and nothing below 120 hours; the engine multiplies the entered certified-wage figure by 40%, so the input must already reflect the correct tier and the per-group wage caps.",
+      "Wage caps vary by group under §51: $6,000 generally (maximum $2,400), up to $24,000 for certain qualified veterans (maximum $9,600), $3,000 for summer youth, and a two-year structure worth up to $9,000 for long-term family assistance recipients under §51(e).",
+      "Certification is the credit: §51(d)(13) requires Form 8850, signed by both employer and applicant on or before the job-offer date, submitted to the state workforce agency within 28 calendar days after the start date, together with ETA Form 9061 or 9062 — self-attestation without agency certification claims nothing.",
+      "Statutory authorization ran through hires beginning work by December 31, 2025 under P.L. 116-260; for 2026 start dates the program is in lapse pending reauthorization, state agencies are accepting but holding applications, and the discipline is to keep screening and filing so retroactive renewal — the historical pattern — captures the pipeline.",
+      "§280C(a) reduces the employer's wage deduction by the credit claimed, the same wages cannot drive overlapping employment credits, and the credit is claimed on Form 5884 into the §38 general business credit with §39 carryovers."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §51",
+        "note": "The credit: targeted groups, per-group wage caps, the 400/120-hour tiers, and the certification requirement."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §51(d)(13)",
+        "note": "The pre-screening and certification mechanics — Form 8850 to the state workforce agency within 28 days of the start date, the deadline that decides most claims."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §51(e)",
+        "note": "The two-year, up-to-$9,000 structure for long-term family assistance hires."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §280C(a)",
+        "note": "Wage deduction reduced by the credit — the no-double-benefit adjustment carried on the return."
+      },
+      {
+        "type": "IRC",
+        "cite": "P.L. 116-260 (Consolidated Appropriations Act, 2021)",
+        "note": "The extension that authorized WOTC through December 31, 2025 — the source of the current-lapse posture for 2026 hires."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 8850 and instructions",
+        "note": "The pre-screening notice; with ETA Forms 9061/9062 it is the filing package the 28-day clock governs."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 5884 and instructions",
+        "note": "Credit computation, flowing to Form 3800."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§38, 39",
+        "note": "General business credit stacking, nonrefundability, and the 1-year carryback / 20-year carryforward for unused amounts."
+      }
+    ],
+    "requirements": [
+      "New hires certified by the state workforce agency as targeted-group members — rehires and related parties under §51(i) do not qualify.",
+      "Form 8850 signed by the offer date and filed within 28 calendar days of each start date, embedded in onboarding so no eligible hire slips through.",
+      "Hour tracking to the 120- and 400-hour thresholds, with first-year qualified wages isolated per certified employee in payroll.",
+      "For 2026-start hires: written client acknowledgment that the credit is contingent on congressional reauthorization."
+    ],
+    "risks": [
+      "Authorization is the front-of-mind risk: the statute lapsed for hires beginning work after December 31, 2025, and while renewals have historically been retroactive, a 2026-start credit cannot be treated as earned until Congress acts — model it as contingent and say so in the plan.",
+      "The 28-day Form 8850 window is the leading cause of lost credits in ordinary times; there is no reasonable-cause relief, so the screening process must live inside onboarding, not in the tax file.",
+      "Certifications routinely take months, which pushes credits onto amended returns or holds them past the original filing — set that expectation early.",
+      "Forgetting the §280C(a) wage-deduction reduction, or double-counting the same wages toward other employment credits, are the recurring return-level errors.",
+      "The credit is nonrefundable; low-liability years strand it in carryforward the model does not track."
+    ],
+    "stateNotes": [
+      "Conformity: the credit is federal-only, but states conforming to federal taxable income — Missouri included through its federal starting point — inherit the smaller wage deduction §280C(a) leaves behind.",
+      "PTET interaction: none directly; the credit flows to owners federally while the slightly higher entity income from the reduced wage deduction feeds any pass-through entity tax base.",
+      "Missouri: there is no state piggyback WOTC, so the federal credit is the whole benefit; Missouri hires are certified through the state's workforce agency (the Division of Employment Security intake for WOTC), and the 28-day clock runs from each Missouri start date like anywhere else."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": []
+    },
+    "reviewChecklist": [
+      "Screening is embedded in onboarding — Form 8850 page one at application or offer, page two at hire — and a per-hire 28-day calendar exists.",
+      "Certified wages in the model reflect agency certifications on hand, correct hour tiers, and per-group caps — not projected or self-attested eligibility.",
+      "2026-start hires are flagged as authorization-contingent in the client deliverable.",
+      "§280C(a) reduction and no-overlap check completed on the return claiming Form 5884.",
+      "Certification-pending hires tracked for amended-return or carryover treatment."
+    ]
+  },
+  "client": {
+    "teaser": "Some of the people you already hire can earn you a tax credit — if a short form goes in within 28 days.",
+    "headline": "Turn everyday hiring into tax credits",
+    "plainEnglish": [
+      "The government rewards employers who hire people facing barriers to work. That includes veterans, people out of work a long time, and people on certain assistance programs. The reward is a credit — usually $2,400 per qualifying hire, and up to $9,600 for some veterans.",
+      "Many employers already make hires that qualify and never collect a dime. The rule is strict: a short screening form must reach the state within 28 days of the start date. Miss the window and the credit is gone for good.",
+      "One honest caveat right now: Congress let this program lapse at the end of 2025 and is working on renewing it. Renewals have almost always been backdated. So we keep screening and filing for every hire — that way, when renewal comes, your credits are already in line."
+    ],
+    "analogy": "It is like a rebate slip attached to certain new hires — worth real money, but only if it is mailed within 28 days of their first day.",
+    "benefits": [
+      "Typically $2,400 per qualifying hire, and up to $9,600 for certain veterans",
+      "Cuts your tax bill dollar for dollar",
+      "No change to who you hire — just one screening step in onboarding",
+      "Scales with your hiring volume year after year"
+    ],
+    "steps": [
+      "WE add a two-minute screening form to your new-hire paperwork.",
+      "YOU have every new hire complete it by the offer date — no exceptions.",
+      "WE file with the state inside the 28-day window and track each certification.",
+      "WE claim the credit for every certified hire on your return."
+    ],
+    "clientCommitments": [
+      "Make the screening form a required part of every job offer",
+      "Send us each new hire's start date right away so the 28-day clock is never missed",
+      "Understand that credits for 2026 hires depend on Congress renewing the program"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Audit the onboarding flow so the screening form is completed for every hire",
+      "Track certifications, hour thresholds, and qualified wages per certified employee",
+      "Monitor reauthorization status and convert held applications when Congress acts",
+      "Reconcile the wage-deduction reduction on the filed return"
+    ],
+    "deliverables": [
+      "WOTC screening kit embedded in the new-hire packet",
+      "Per-hire filing and certification tracker with 28-day deadlines",
+      "Form 5884 computation workpapers",
+      "Authorization-status memo for 2026-and-later hires"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 71,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "qualifiedFirstYearWages": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["qualifiedFirstYearWages"]
+    },
+    "apply": {
+      "module": "wotc@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasEmployees",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "Hiring from targeted groups earns up to 40% of first-year wages — if Form 8850 is timely."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj S-corp 400k/120k, 18k certified wages",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 400000,
+              "employeeWages": 160000,
+              "ownerWages": 120000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "qualifiedFirstYearWages": 18000
+        },
+        "expect": {
+          "totalBurdenDelta": -7200,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "single Sch C 150k, 6k certified wages",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 150000,
+              "employeeWages": 40000,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "qualifiedFirstYearWages": 6000
+        },
+        "expect": {
+          "totalBurdenDelta": -2400,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §51 reauthorization activity in Congress",
+      "DOL/ETA and state workforce agency WOTC processing guidance"
+    ],
+    "keywords": [
+      "work opportunity tax credit",
+      "WOTC",
+      "Form 8850",
+      "28-day deadline",
+      "targeted groups",
+      "WOTC reauthorization"
+    ],
+    "reviewTriggers": [
+      "Congressional action extending or modifying WOTC (retroactivity terms especially)",
+      "DOL guidance changing hiatus processing of held applications",
+      "Any change to targeted-group definitions or wage caps"
+    ]
+  }
+}

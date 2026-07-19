@@ -112,10 +112,99 @@ export function AdminSettingsPage() {
         {error && <div className="text-oxblood text-sm mt-2">{error}</div>}
       </section>
 
+      <PlanningModuleSection />
+      <PlanMemosSection />
       <WebResourceStrategySection />
       <EmailSettingsSection />
       <AppBaseUrlSection />
     </div>
+  );
+}
+
+// ── TP-0 — planning module toggle ──────────────────────────────────────
+// Master switch for the Planning + Clients modules. Reads the effective
+// value from /api/config (same source the shell uses) and writes through
+// the dedicated admin endpoint.
+function PlanningModuleSection() {
+  const qc = useQueryClient();
+  const { data } = useQuery<{ planning_enabled: boolean }>({
+    queryKey: ['config'],
+    queryFn: () => api('/api/config'),
+  });
+
+  const toggle = useMutation({
+    mutationFn: (enabled: boolean) =>
+      api('/api/admin/settings/planning-enabled', {
+        method: 'POST',
+        body: JSON.stringify({ enabled }),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['config'] }),
+  });
+
+  const enabled = data?.planning_enabled ?? false;
+  return (
+    <section className="border border-ink/10 rounded p-6 bg-white max-w-2xl mt-6">
+      <h2 className="font-display text-xl mb-2">Planning module</h2>
+      <p className="text-sm text-ink/60 mb-4">
+        Enables the Planning and Clients modules (client records, plan workflow, research archival).
+        Off by default — the research app is unaffected while disabled.
+      </p>
+      <label className="flex items-center gap-3 text-sm">
+        <input
+          type="checkbox"
+          checked={enabled}
+          disabled={toggle.isPending}
+          onChange={(e) => toggle.mutate(e.target.checked)}
+        />
+        <span>{enabled ? 'Enabled' : 'Disabled'}</span>
+      </label>
+    </section>
+  );
+}
+
+// ── Plan memos (Claude-drafted) toggle ─────────────────────────────────
+// Gates the "Draft memo (Claude)" action on the plan review screen. The
+// server returns 403 memos_disabled when off.
+function PlanMemosSection() {
+  const qc = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
+  const { data } = useQuery<{ enabled: boolean }>({
+    queryKey: ['admin', 'settings', 'plan-memos-enabled'],
+    queryFn: () => api('/api/admin/settings/plan-memos-enabled'),
+  });
+
+  const toggle = useMutation({
+    mutationFn: (enabled: boolean) =>
+      api('/api/admin/settings/plan-memos-enabled', {
+        method: 'PUT',
+        body: JSON.stringify({ enabled }),
+      }),
+    onSuccess: () => {
+      setError(null);
+      qc.invalidateQueries({ queryKey: ['admin', 'settings', 'plan-memos-enabled'] });
+    },
+    onError: (err) => setError((err as Error).message),
+  });
+
+  const enabled = data?.enabled ?? false;
+  return (
+    <section className="border border-ink/10 rounded p-6 bg-white max-w-2xl mt-6">
+      <h2 className="font-display text-xl mb-2">Plan memos (Claude)</h2>
+      <p className="text-sm text-ink/60 mb-4">
+        Lets staff draft a plan memo with Claude from the review screen once a plan is in review.
+        Each draft is an Anthropic API call billed to the configured key.
+      </p>
+      <label className="flex items-center gap-3 text-sm">
+        <input
+          type="checkbox"
+          checked={enabled}
+          disabled={toggle.isPending}
+          onChange={(e) => toggle.mutate(e.target.checked)}
+        />
+        <span>{enabled ? 'Enabled' : 'Disabled'}</span>
+      </label>
+      {error && <div className="text-oxblood text-sm mt-2">{error}</div>}
+    </section>
   );
 }
 

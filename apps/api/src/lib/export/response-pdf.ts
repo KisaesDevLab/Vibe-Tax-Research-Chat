@@ -274,7 +274,7 @@ function toRenderString(s: unknown): string {
   return String(s);
 }
 
-function sanitizeForHelvetica(s: unknown): string {
+export function sanitizeForHelvetica(s: unknown): string {
   let out = toRenderString(s);
   for (const [re, rep] of UNICODE_FALLBACKS) out = out.replace(re, rep);
   // Collapse runs of whitespace that emoji-stripping may have left behind.

@@ -1,0 +1,185 @@
+{
+  "id": "esop-exit",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "ESOP Exit with §1042 Rollover",
+  "category": "succession-exit",
+  "modeled": false,
+  "complexity": 5,
+  "riskRating": "moderate",
+  "entityTypes": ["s-corp", "c-corp"],
+  "typicalSavingsBand": "structural",
+  "advisor": {
+    "summary": "An ESOP buys the owner out at appraised fair market value, and §1042 lets a C-corporation seller defer 100% of the gain by reinvesting in qualified replacement property within the window running three months before to twelve months after the sale, provided the ESOP holds at least 30% afterward. The deferred gain embeds in the QRP's basis under §1042(d); held to death, the §1014 step-up converts deferral into permanent exclusion. A second, separate engine applies post-transaction: an S corporation owned by its ESOP pays no federal income tax on the ESOP's share of earnings, because §512(e)(3) exempts ESOP-held S-corp stock from UBIT — but §1042 requires C-corp stock, so the two benefits must be chosen between or sequenced. The anti-abuse perimeter is strict: §409(n) bars allocations to the seller and family, §409(p) polices S-corp concentration with the §4979A excise behind both, and §401(a)(28)(C) requires annual independent appraisal. A structural exit for companies with real scale — advisory throughout.",
+    "mechanics": [
+      "§1042 nonrecognition: the seller of qualified employer securities — domestic C-corp stock with no public market, held three-plus years — elects deferral to the extent proceeds land in qualified replacement property inside the statutory window, with the ESOP owning 30% or more immediately after the sale.",
+      "QRP means stock or bonds of active domestic operating companies; many sellers hold long-maturity floating-rate notes as permanent QRP and borrow against them, keeping the deferral intact while restoring liquidity — §1042(d) carries the deferred gain into QRP basis, and death converts deferral to exclusion via the §1014 step-up.",
+      "Election mechanics under Reg. §1.1042-1T are unforgiving: a statement of election with the timely return, corporate consent to the excise regime, and a notarized statement of purchase for each QRP item.",
+      "§409(n) prohibits allocating the §1042 shares to the seller, 25%-plus shareholders, and their families, and §4979A backs the prohibition with a 50% excise tax.",
+      "The S-corp engine: §512(e)(3) exempts ESOP-held S-corp stock from UBIT, so a 100% ESOP-owned S corporation pays no federal income tax on operating earnings — with §409(p) testing every year to keep disqualified-person concentration, counting synthetic equity, under the line.",
+      "§401(a)(28)(C) requires an annual independent appraisal of the stock — the recurring compliance backbone, and the number the repurchase obligation is priced against."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §1042",
+        "note": "The gain-deferral election, the 30% test, the QRP window, and the §1042(d) basis carryover."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.1042-1T",
+        "note": "The election paperwork — statement of election, corporate consent, notarized statements of purchase."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §512(e)",
+        "note": "UBIT on S-corp interests held by exempt organizations — with the §512(e)(3) ESOP carve-out that makes the 100% ESOP-owned S corp federally income-tax-free."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §409(n)",
+        "note": "The allocation bar on §1042 shares for the seller, large shareholders, and family."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §409(p)",
+        "note": "The S-corp anti-abuse regime policing disqualified-person concentration and synthetic equity."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §4979A",
+        "note": "The 50% excise enforcing both allocation regimes."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §401(a)(28)(C)",
+        "note": "Annual independent appraisal of non-traded employer securities."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1014",
+        "note": "The step-up that converts §1042 deferral into permanent exclusion when QRP is held to death."
+      }
+    ],
+    "requirements": [
+      "For §1042: domestic C-corp stock held three-plus years, not acquired from a qualified plan or compensatory option; the 30% post-sale ESOP stake; QRP purchased in the window; the election filed correctly.",
+      "A company that can carry the structure: ESOP debt service, ongoing administration, annual appraisals, and a permanent repurchase obligation, all from future cash flow.",
+      "An independent trustee and appraiser establishing that the ESOP paid no more than fair market value.",
+      "A workforce with enough scale for a qualified plan to make sense — ESOPs rarely pencil below roughly 20–25 employees.",
+      "For the S-corp exemption: annual §409(p) testing that counts options, SARs, and deferred comp as synthetic equity."
+    ],
+    "risks": [
+      "Valuation is the leading exam and litigation theory — IRS and DOL both police ESOPs that overpaid, and the adequate-consideration file built by a genuinely independent trustee and appraiser is the defense; skimp there and the transaction itself is at risk.",
+      "The repurchase obligation compounds quietly: the company must buy back shares from every departing participant at appraised value, indefinitely — unfunded, it sinks mature ESOPs.",
+      "The C/S tension is structural: §1042 needs C-corp stock while the income-tax exemption needs S status; the common sell-then-elect sequence works but drags the §1374 built-in-gains period and plan design into the timeline.",
+      "A §409(p) failure is catastrophic — deemed distributions and the 50% excise on prohibited allocations — and management equity grants are the usual cause; test before granting, not after.",
+      "Disposing of QRP recognizes the deferred gain, and gifts do not escape it — portfolio flexibility inside QRP is limited by design.",
+      "All-in transaction costs — feasibility, trustee, appraisal, counsel, lending — run well into six figures; this is a tool for real enterprise value, not a small exit."
+    ],
+    "stateNotes": [
+      "Missouri conforms to the federal deferral through its federal-AGI starting point (RSMo §143.121): gain §1042 keeps off the federal return stays off Missouri's.",
+      "PTET interaction: once the ESOP owns the S corporation, the shareholder is tax-exempt and a Missouri pass-through entity tax election (RSMo §143.436) generally has no one left to benefit — treat PTET as inapplicable post-transaction and unwind any standing election deliberately.",
+      "Missouri-specific: Missouri offers its own incentive — a subtraction for a portion of the capital gain on qualifying sales of employer securities to a Missouri ESOP (RSMo §143.114) — worth modeling for sellers who recognize gain rather than electing §1042."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["buy-sell-agreement", "c-corp-conversion"]
+    },
+    "reviewChecklist": [
+      "Feasibility study on file: valuation range, debt capacity, repurchase-obligation forecast, and the §1042-versus-S-exemption decision made explicitly.",
+      "Independent trustee and appraiser engaged, with the adequate-consideration process documented.",
+      "§1042 paperwork verified — election statement, corporate consent, notarized QRP purchases, window dates.",
+      "§409(n) allocation restrictions coded into plan administration; §409(p) testing calendared annually if S status is in the plan.",
+      "Annual appraisal and Form 5500 cycle calendared, with a repurchase-obligation study every two to three years."
+    ]
+  },
+  "client": {
+    "teaser": "Sell your company to your own team, defer the tax — maybe for good — and keep the legacy intact.",
+    "headline": "Sell to your employees, defer the tax, keep the legacy",
+    "plainEnglish": [
+      "When you sell your company, capital gains tax usually takes a big bite at closing. An employee ownership trust is a different kind of buyer. You sell at a price set by an independent appraiser, and a special rule lets you roll the proceeds into stocks and bonds without paying capital gains tax on the sale.",
+      "That tax bill is not just delayed. Hold the replacement investments for the rest of your life, and under current law the deferred gain is wiped out when your estate passes to your heirs.",
+      "There is a second prize. Once the company is fully owned by the employee trust and set up the right way, it generally stops paying federal income tax on its profits. That cash helps pay off the buyout — and your employees end up owning where they work."
+    ],
+    "analogy": "It is like trading your company for a diversified portfolio in a way the tax system treats as no sale at all — and if you hold that portfolio for life, the meter never restarts.",
+    "benefits": [
+      "Full appraised value for your company, paid to you",
+      "Capital gains tax deferred — and wiped out if you hold the replacement investments for life",
+      "The company can become largely free of federal income tax, powering the buyout",
+      "Your employees become owners; the business and jobs stay put"
+    ],
+    "steps": [
+      "WE run a feasibility study — value, financing, and whether your company fits.",
+      "WE assemble the independent trustee, appraiser, and counsel who protect the price.",
+      "YOU close the sale, and WE reinvest your proceeds within the required window.",
+      "WE handle the tax elections and run the annual compliance calendar."
+    ],
+    "clientCommitments": [
+      "Commit to the annual appraisal and plan administration for the long haul",
+      "Hold the replacement investments as planned — selling them restarts the tax",
+      "Loop us in before any management equity or bonus plan is added later"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "structural",
+    "annualMaintenance": [
+      "Annual independent appraisal and Form 5500 cycle coordination",
+      "§409(p) testing before any equity or synthetic-equity grants in S-corp years",
+      "Repurchase-obligation study every two to three years and QRP portfolio review"
+    ],
+    "deliverables": [
+      "ESOP feasibility study and structure decision memo (§1042 versus S-exemption sequencing)",
+      "§1042 election package — statements, consents, notarized QRP purchases",
+      "Annual compliance calendar: appraisal, testing, filings",
+      "Repurchase-obligation forecast for the board"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "hasEmployees",
+        "op": "eq",
+        "value": true
+      },
+      {
+        "field": "totalBusinessProfit",
+        "op": "gt",
+        "value": 750000
+      }
+    ],
+    "reason": "Selling C-corp stock to an ESOP can defer the entire gain under §1042."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §1042 and ESOP legislative proposals",
+      "DOL adequate-consideration rulemaking"
+    ],
+    "keywords": [
+      "ESOP",
+      "1042 rollover",
+      "qualified replacement property",
+      "409(p) testing",
+      "employee ownership"
+    ],
+    "reviewTriggers": [
+      "DOL valuation or adequate-consideration guidance",
+      "Legislation expanding §1042 to S-corp stock",
+      "Annual appraisal results moving the repurchase forecast"
+    ]
+  }
+}

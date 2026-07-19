@@ -1,0 +1,313 @@
+{
+  "id": "section-105-merp",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Section 105 Medical Reimbursement Plan (Spouse Employee)",
+  "category": "health-fringe",
+  "modeled": true,
+  "complexity": 3,
+  "riskRating": "moderate",
+  "entityTypes": ["sole-prop"],
+  "typicalSavingsBand": "5k-25k",
+  "advisor": {
+    "summary": "The long-standing sole-proprietor design: employ the spouse as a bona fide W-2 employee and adopt a written §105 plan covering employees and their families. Family coverage sweeps in the owner as the employee's spouse, so household medical costs — premiums, deductibles, dental, vision — become Schedule C deductions that reduce both income tax and SE tax, the layer the §162(l) deduction never reaches. Rev. Rul. 71-588 blesses the architecture; the litigation is entirely about whether the spouse's employment is real, with Shellito and Haeder marking the two ends of the proof spectrum. With the spouse as the only participant, the plan sits inside the §9831(a)(2) exemption from the ACA market reforms. The engine deducts reimbursed medical costs against Schedule C profit, so the modeled delta already includes the SE-tax layer.",
+    "mechanics": [
+      "The spouse performs genuine services for the Schedule C business as a W-2 employee; a written plan reimburses medical expenses of employees, their spouses, and dependents — the family definition that carries the owner's own costs into the plan.",
+      "Reimbursements of §213(d) expenses are excluded from the spouse's income under §105(b), are not FICA wages, and are deducted on Schedule C — reducing net earnings from self-employment and with them the SE-tax base.",
+      "Rev. Rul. 71-588 is the controlling administrative blessing of the spouse-employee, family-coverage structure.",
+      "The design outranks §162(l) for the same dollars: the self-employed health insurance deduction is income-tax-only and premiums-only, while the §105 plan converts premiums plus out-of-pockets into business deductions with SE-tax savings — never claim the same premium under both.",
+      "With fewer than two current-employee participants the plan is exempt from the ACA market reforms under §9831(a)(2); hiring non-family employees ends that exemption and triggers §105(h) eligibility analysis.",
+      "The engine models the reimbursement as a Schedule C deduction capped at business profit; the payroll cost of the spouse's wages belongs to the spouse-payroll strategy and is not double-counted here."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §105(b)",
+        "note": "Excludes employer reimbursements of medical expenses of the employee, spouse, and dependents — the family sweep that carries the owner."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.105-5",
+        "note": "Defines an accident or health plan: a plan for employees is required; it need not be insured, but it must exist before benefits are paid."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Rul. 71-588",
+        "note": "The controlling ruling: a sole proprietor's spouse-employee covered by the business medical plan; reimbursements, including for the owner as a family member, excludable and deductible."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §162(a), (l)",
+        "note": "The business deduction for plan reimbursements, and the premiums-only, income-tax-only alternative the plan outperforms — never both on the same dollars."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §9831(a)(2)",
+        "note": "Exempts plans with fewer than two current-employee participants from the ACA market reforms."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §105(h)",
+        "note": "Self-insured nondiscrimination — live the moment non-family employees are excluded from the plan."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §213(d)",
+        "note": "Defines the medical expenses the plan may reimburse."
+      },
+      {
+        "type": "Case",
+        "cite": "Shellito v. Commissioner, T.C. Memo 2010-41",
+        "note": "The bona fide employment battleground: the Tax Court initially disallowed where the spouse had done identical work unpaid for years; the Tenth Circuit vacated and the deductions ultimately survived — the proof file decides these cases."
+      },
+      {
+        "type": "Case",
+        "cite": "Haeder v. Commissioner, T.C. Memo 2001-7",
+        "note": "Denied a plan built on paper-only spousal employment: no real duties, no records, no actual wage payments."
+      }
+    ],
+    "requirements": [
+      "A Schedule C or farm proprietorship — the structure fails for S corporation families because >2% shareholder attribution reaches the spouse.",
+      "Bona fide employment: real duties, contemporaneous time records, and reasonable W-2 wages actually paid through payroll (Forms 941, 940, W-2).",
+      "A written plan adopted before any reimbursement, covering employees and their families, with an annual cap.",
+      "Actual reimbursement mechanics — spouse submits receipts, the business account pays, a log is retained.",
+      "If other employees exist, the plan covers them per its terms and §105(h) testing applies."
+    ],
+    "risks": [
+      "Bona fide employment is the whole exam: Shellito v. Commissioner, T.C. Memo 2010-41 shows the government pressing hardest where the spouse's duties predate the payroll, and Haeder v. Commissioner, T.C. Memo 2001-7 shows paper-only employment losing outright — time records, real duties, and actually-paid wages decide these cases.",
+      "A plan document adopted after reimbursements start protects nothing — pre-adoption payments are simply taxable.",
+      "Non-family employees change the economics: excluding them invites §105(h) discrimination taxation; covering them raises the cost of every reimbursement dollar.",
+      "The owner cannot be the direct participant — a proprietor is not their own employee; every benefit must route through the spouse's employment.",
+      "Claiming the same premiums under both the plan and §162(l) is a recurring preparer error."
+    ],
+    "stateNotes": [
+      "Conformity: the Schedule C deduction and the spouse's exclusion both ride the federal computation into any state starting from federal AGI.",
+      "PTET: no PTET interaction — Missouri's and most states' pass-through entity taxes cover S corporations and partnerships, not Schedule C proprietorships.",
+      "Missouri: conforms through RSMo §143.121; the reduced Schedule C profit flows straight to the Missouri return with no addback."
+    ],
+    "interactions": {
+      "requires": ["spouse-payroll"],
+      "conflictsWith": ["hra-c-corp"],
+      "synergiesWith": ["se-health-insurance"]
+    },
+    "reviewChecklist": [
+      "Employment file complete: job description, time log, benchmarked wage, payroll filings current.",
+      "Plan document executed and dated before the first reimbursement; annual cap set.",
+      "Reimbursement log ties receipts to business-account payments.",
+      "No §162(l) claim on premiums running through the plan.",
+      "Participant count still inside the market-reform exemption; §105(h) analysis refreshed if employees were added."
+    ]
+  },
+  "client": {
+    "teaser": "Your family's medical bills can become business deductions — including the self-employment-tax layer.",
+    "headline": "Turn family medical costs into a business deduction",
+    "plainEnglish": [
+      "If you run your own unincorporated business and your spouse truly works in it, the business can adopt a medical plan for its employees and their families. Your spouse is the employee. The family is you and your kids.",
+      "That means bills your family already pays — premiums, deductibles, dental, vision, copays — can be repaid by the business and deducted. And this deduction cuts your self-employment tax too, which most health write-offs cannot touch.",
+      "It has to be real. Your spouse must truly work, get real paychecks, and the written plan must exist before any money moves. Done right, the IRS has accepted this setup for over fifty years. Done sloppy, it is the first thing an auditor pulls apart. We do the paperwork right."
+    ],
+    "analogy": "Most medical bills get paid after tax takes its bite. This plan lets the business pay them first — before the income-tax bite and the self-employment-tax bite.",
+    "benefits": [
+      "Family medical costs become business deductions",
+      "Cuts self-employment tax as well as income tax",
+      "Covers what insurance misses — deductibles, dental, vision",
+      "A structure the IRS has recognized for decades"
+    ],
+    "steps": [
+      "WE document your spouse's real role and set up proper payroll.",
+      "WE put the written plan in place before any reimbursement.",
+      "YOU have your spouse submit the family's medical receipts; the business repays them from its account.",
+      "WE take the deduction and keep the file audit-ready."
+    ],
+    "clientCommitments": [
+      "Your spouse really works the hours — and logs them",
+      "Every reimbursement has a receipt and is paid from the business account",
+      "Tell us before hiring anyone else — it changes the plan's rules"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Refresh the employment file: hours log, duties, wage reasonableness",
+      "Reconcile the reimbursement log to receipts and bank records",
+      "Confirm the participant count still fits the market-reform exemption"
+    ],
+    "deliverables": [
+      "Written §105 plan document with effective date and annual cap",
+      "Spouse employment package: job description, wage memo, payroll setup",
+      "Reimbursement log and receipt templates",
+      "Annual reconciliation memo"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 32,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "reimbursedMedical": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["reimbursedMedical"]
+    },
+    "apply": {
+      "module": "section-105-merp@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasScheduleC",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "filingStatus",
+          "op": "eq",
+          "value": "mfj"
+        }
+      ],
+      "reason": "A bona fide spouse-employee lets family medical costs become a business deduction that also reduces SE tax."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj Sch C 200k, 15k family medical reimbursed",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 200000,
+              "employeeWages": 12000,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "reimbursedMedical": 15000
+        },
+        "expect": {
+          "totalBurdenDelta": -4550,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj Sch C 120k, 8k reimbursed",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 120000,
+              "employeeWages": 10000,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "reimbursedMedical": 8000
+        },
+        "expect": {
+          "totalBurdenDelta": -1844,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §105 and Reg. §1.105-5",
+      "Tax Court memoranda on spouse-employee medical plans"
+    ],
+    "keywords": [
+      "section 105 plan",
+      "spouse employee",
+      "medical reimbursement",
+      "Rev. Rul. 71-588",
+      "bona fide employment"
+    ],
+    "reviewTriggers": [
+      "New case law on spousal employment substance",
+      "ACA market-reform changes touching one-participant plans",
+      "Client hiring beyond the family"
+    ]
+  }
+}

@@ -37,4 +37,10 @@ export const SETTING_KEYS = {
   // `https://192.168.1.79/vibe-tax-research`). DB-backed so admins can
   // change it without redeploying.
   APP_BASE_URL: 'app_base_url',
+  // TP-0 — master switch for the Planning + Clients modules
+  // (MASTER-BUILD-PLAN.md). Off = research app behaves exactly as before.
+  PLANNING_ENABLED: 'planning_enabled',
+  // TP-14 — allow Claude to draft plan memos (always draft-labeled;
+  // endpoint returns 503 when no key is configured). Off by default.
+  PLAN_MEMOS_ENABLED: 'plan_memos_enabled',
 } as const;

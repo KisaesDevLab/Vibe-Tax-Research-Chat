@@ -1,0 +1,157 @@
+{
+  "id": "wellness-reimbursements",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Wellness Program Reimbursements",
+  "category": "health-fringe",
+  "modeled": false,
+  "complexity": 2,
+  "riskRating": "elevated",
+  "entityTypes": ["s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "Two very different products travel under the wellness label, and this record exists mainly to hold the line between them. Legitimate: employer benefits that are actual medical care — screenings, immunizations, smoking-cessation and disease-management programs — excludable under §105(b) and §106 through a compliant plan, plus trivial perks under §132(e); modest, unglamorous, real. Illegitimate: the heavily marketed fixed-indemnity wellness schemes that route pay through pre-tax premiums and return it as supposedly untaxed cash. CCA 202323006 answers those directly: cash paid without regard to unreimbursed medical expenses is wages, subject to income and employment tax. The advisory posture is caution-first — implement the legitimate design, decline the scheme in writing, and protect the client's broader plan from the taint.",
+    "mechanics": [
+      "Genuine wellness benefits that are medical care under §213(d) — biometric screenings, flu shots, cessation and disease-management programs — are excludable under §105(b) and §106 when delivered through a plan that clears the same ACA market-reform analysis as any reimbursement arrangement.",
+      "General-health perks are not medical care: gym memberships, fitness trackers, and wellness stipends are taxable wages in the ordinary case, with only trivial items fitting the §132(e) de minimis exclusion.",
+      "The marketed scheme's anatomy: pre-tax salary reductions buy a fixed-indemnity wellness policy whose cash benefits — paid for watching videos or completing checklists — roughly return the premium, with promoters claiming the round trip erases FICA.",
+      "CCA 202323006 holds that fixed-indemnity payments made without regard to actual unreimbursed §213(d) expenses are not excludable under §105(b): they are wages subject to withholding and FICA, and the promised savings are simply unpaid employment tax.",
+      "An honest design routes real medical care through the group plan or a compliant HRA, puts taxable perks on the W-2, and documents the decision to decline indemnity pitches — the client file should show the pitch was evaluated and refused."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §§105(b), 106",
+        "note": "The legitimate exclusion: employer-provided medical care, including preventive and wellness services that qualify as medical care under a compliant plan."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §213(d)",
+        "note": "Defines medical care — the line gym memberships and general-wellness stipends fail."
+      },
+      {
+        "type": "Admin",
+        "cite": "CCA 202323006",
+        "note": "Fixed-indemnity wellness payments made without regard to unreimbursed medical expenses are wages subject to income and employment taxes — the direct answer to the marketed schemes."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §132(e)",
+        "note": "The de minimis fringe — the narrow home for trivial wellness perks."
+      },
+      {
+        "type": "Admin",
+        "cite": "Notice 2013-54",
+        "note": "The market-reform framework any wellness reimbursement arrangement must clear if it is a group health plan."
+      }
+    ],
+    "requirements": [
+      "Excludable benefits limited to actual §213(d) medical care delivered under a written, ACA-compliant plan.",
+      "Taxable perks — gym stipends, fitness gear — included in W-2 wages.",
+      "No arrangement whose economics depend on pre-tax premiums returning to employees as untaxed cash.",
+      "Documentation linking each reimbursement to a specific medical service or unreimbursed expense."
+    ],
+    "risks": [
+      "The wellness-indemnity schemes are the headline risk and CCA 202323006 is the controlling ruling: participating employers owe back FICA and withholding, deposit and accuracy penalties, and W-2 corrections — and promoter reliance is thin protection when the promoter's own materials advertise the tax result.",
+      "Even legitimate reimbursement features are group health plans; a standalone non-compliant design faces the §4980D excise at $100 per employee per day.",
+      "Misclassified perks — gym stipends kept off the W-2 — seed small, pervasive payroll errors across years.",
+      "Preparer exposure is real: signing returns reflecting a known indemnity scheme implicates preparer penalties and Office of Professional Responsibility standards, which is why the firm's declination should be in writing."
+    ],
+    "stateNotes": [
+      "Conformity: states following federal wage definitions tax the scheme payments exactly as the CCA describes, and state employment-tax bases stack on the federal problem.",
+      "PTET: no PTET interaction — this record is about payroll characterization, not entity income; any legitimate benefit deduction simply reduces the pass-through base before a PTET computation.",
+      "Missouri: conforms through RSMo §143.121, and Missouri withholding and unemployment contributions follow the federal wage recharacterization — a failed scheme creates state payroll exposure alongside the federal."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": []
+    },
+    "reviewChecklist": [
+      "Inventory of every wellness dollar completed: medical care, taxable perk, or scheme.",
+      "Any indemnity-style program identified, quantified, and scheduled for unwind.",
+      "Written declination memo issued for any active pitch.",
+      "Taxable perks confirmed on the W-2 prospectively; prior years assessed for materiality.",
+      "Legitimate benefits mapped to a compliant plan design."
+    ]
+  },
+  "client": {
+    "teaser": "The wellness pitch landing in your inbox has a tax problem — here is the version that holds up.",
+    "headline": "Wellness benefits: the real version, not the sales pitch",
+    "plainEnglish": [
+      "You may have been offered a program that sounds magical. Employees join a wellness plan, do a few easy tasks, and everyone saves big on payroll taxes at no real cost. The IRS has publicly rejected that exact idea. The savings are just unpaid payroll tax, and employers who join owe it later, with penalties.",
+      "We would rather you hear that from us than from an auditor. When a program promises free money through payroll paperwork, it is not planning. It is a bill that has not arrived yet.",
+      "The honest version is worth doing at the right size. Your business can offer real health benefits — screenings, flu shots, counseling, help quitting smoking — tax-free through a proper plan. Gym perks are great too; they are simply taxable pay, and we report them cleanly so they never become a problem."
+    ],
+    "analogy": "A machine that turns payroll taxes into free cash is not a machine — it is a loan from a future audit. Real wellness benefits are a good pair of boots: modest, useful, built to last.",
+    "benefits": [
+      "Real health benefits delivered tax-free the right way",
+      "A documented reason to say no to the schemes being marketed to you",
+      "Clean payroll treatment of perks, so no surprises later"
+    ],
+    "steps": [
+      "WE review every wellness dollar you spend and any pitch you have received.",
+      "WE set up the tax-free benefits properly and put taxable perks on the W-2.",
+      "YOU forward us the next wellness pitch before signing anything.",
+      "WE unwind any problem program before it grows."
+    ],
+    "clientCommitments": [
+      "Run wellness vendor pitches past us before enrolling",
+      "Report gym and fitness perks through payroll, not around it"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Annual wellness-spend inventory and W-2 classification check",
+      "Renewal-season review of vendor pitches",
+      "Confirmation that any unwound program stayed unwound"
+    ],
+    "deliverables": [
+      "Wellness benefit classification memo",
+      "Written scheme-declination letter for the file",
+      "Payroll treatment instructions for taxable perks"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "hasEmployees",
+        "op": "eq",
+        "value": true
+      }
+    ],
+    "reason": "Legitimate wellness benefits exist — and the marketed double-dip schemes should be declined in writing."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRS Chief Counsel Advice on fixed-indemnity arrangements",
+      "IRC §105(b) and §213(d) guidance"
+    ],
+    "keywords": [
+      "wellness indemnity",
+      "CCA 202323006",
+      "fixed indemnity FICA",
+      "wellness program taxation"
+    ],
+    "reviewTriggers": [
+      "New IRS enforcement or guidance on indemnity wellness schemes",
+      "OPR or preparer-penalty developments",
+      "Client receipt of a new vendor pitch"
+    ]
+  }
+}

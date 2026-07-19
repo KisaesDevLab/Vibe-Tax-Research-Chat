@@ -1,0 +1,164 @@
+{
+  "id": "inventory-methods",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Inventory Method Planning (LIFO/FIFO, UNICAP)",
+  "category": "business-expenses",
+  "modeled": false,
+  "complexity": 4,
+  "riskRating": "moderate",
+  "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "5k-25k",
+  "advisor": {
+    "summary": "For inventory-carrying businesses the costing method is a standing tax lever with two very different handles. LIFO under §472 charges the newest, most expensive purchases to cost of goods sold, deferring the inflation embedded in inventory for as long as levels hold — elected on Form 970 and priced by the §472(c) book-conformity rule, which puts LIFO's lower earnings in front of lenders. Separately, small-business taxpayers under the §448(c) receipts test ($32 million average for 2026) can exit UNICAP under §263A(i) and replace full inventory accounting with the §471(c) options, often collecting a favorable catch-up on the way out. Advisory because the payoff is a function of inventory levels, cost inflation, and method history — a workpaper computation, not an engine transform.",
+    "mechanics": [
+      "LIFO (§472) moves current, higher costs into cost of goods sold and leaves older, cheaper layers on the balance sheet; the deferral equals the LIFO reserve and persists while inventory levels are maintained — liquidating a layer recaptures the old costs into income.",
+      "The election is made on Form 970 with the first LIFO-year return, and §472(c) book conformity bars reporting income to owners and creditors on any other basis — the lender conversation comes before the election, not after.",
+      "Dollar-value LIFO under Reg. §1.472-8 pools inventory by dollars, and the IPIC submethod prices pools with published BLS indexes — the practical compliance path for distributors and retailers.",
+      "A C corporation with a LIFO reserve that elects S status picks the reserve up into income over four years under §1363(d) — sequence entity strategies and inventory methods deliberately.",
+      "UNICAP (§263A) makes larger taxpayers capitalize indirect costs into inventory; §263A(i) exempts small-business taxpayers, and those that were capitalizing voluntarily can file an automatic change and take the favorable §481(a) catch-up.",
+      "§471(c) lets exempt taxpayers treat inventory as non-incidental materials and supplies — deducted as used or consumed — or mirror their books, replacing tax inventory accounting with records the client already maintains."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §472",
+        "note": "The LIFO election and the book-conformity condition that sets its price."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.472-8",
+        "note": "Dollar-value pooling and the IPIC index method built on published BLS indexes."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§263A, 448(c)",
+        "note": "UNICAP capitalization and the aggregated receipts test — $32 million for 2026 — that switches on the small-business exemption."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §471(c)",
+        "note": "The small-business inventory options: non-incidental materials and supplies, or book conformity."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1363(d)",
+        "note": "LIFO recapture on a C-to-S conversion — the sequencing trap with entity planning."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §481(a)",
+        "note": "The catch-up adjustment that monetizes a method exit."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 970 and Rev. Proc. 2015-13",
+        "note": "The LIFO election filing and the automatic method-change procedures for the exemption-based switches."
+      }
+    ],
+    "requirements": [
+      "Material inventory balances — the deferral scales with dollars on the shelf and cost inflation.",
+      "For LIFO: rising costs, stable or growing levels, and financial-statement users who can accept LIFO earnings.",
+      "For the small-business exits: aggregated three-year receipts at or below the indexed ceiling.",
+      "Records able to carry the chosen method — pools and indexes for dollar-value LIFO, usage tracking for materials-and-supplies treatment."
+    ],
+    "risks": [
+      "LIFO's deferral reverses on layer liquidation: supply-chain dips, downsizing, or an exit event pulls years of cheap layers into income, typically in the worst possible year — the reserve is a loan, and liquidation is the call.",
+      "Book conformity puts LIFO's lower earnings on the statements lenders and sureties read; covenant math first, election second.",
+      "Falling replacement costs make LIFO worthless or harmful — the cost-inflation thesis is the whole case.",
+      "A planned S election with a LIFO reserve triggers the §1363(d) pickup — coordinate with any entity strategy in the same plan.",
+      "Growth past the receipts ceiling ends the UNICAP and §471(c) exemptions and forces positive catch-up adjustments on the way back in.",
+      "LIFO compliance is an annual carrying cost — pools, indexes, and computations every year the election lives."
+    ],
+    "stateNotes": [
+      "Conformity: states computing from federal taxable income conform to the federal inventory method and its §481(a) adjustments; no state runs a separate LIFO regime, but confirm addback rules in each filing state.",
+      "PTET interaction: method-driven income deferral shrinks the base of any pass-through entity tax election, so PTET estimates should be reset in the adoption year.",
+      "Missouri: conforms through rolling IRC conformity (RSMo §143.091) and its federal starting points, and a Missouri SALT Parity Act (RSMo §143.436) electing entity computes on the post-method income."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["cash-vs-accrual"]
+    },
+    "reviewChecklist": [
+      "First-year LIFO benefit quantified (inventory balance times observed inflation) against the recurring compliance cost.",
+      "Lender and surety impact of book conformity cleared in writing before the election.",
+      "Any entity-conversion plan checked for §1363(d) recapture sequencing.",
+      "Receipts-ceiling test documented for exemption-based changes, with the growth path reviewed.",
+      "Form 970 or Form 3115 filings prepared for the correct first year."
+    ]
+  },
+  "client": {
+    "teaser": "How you count what's on your shelves can quietly cut what you owe.",
+    "headline": "Make your inventory count work for you at tax time",
+    "plainEnglish": [
+      "If your business carries inventory, the tax law makes you pick a method for deciding which costs count against this year's sales. When prices keep rising, one method — called LIFO — counts your newest, priciest purchases first. Higher costs now means lower paper profit now, which means less tax now.",
+      "The savings stay parked as long as you keep normal inventory levels. Sell the shelves down and some of it comes back. It is a deferral, and a strong one when prices climb year after year.",
+      "Smaller businesses — under $32 million in sales — also qualify for a simpler deal. They can skip the most burdensome inventory bookkeeping rules and use methods that match how they already track things. Businesses that never claimed that relief are often owed a one-time catch-up deduction for switching.",
+      "The right answer depends on your numbers: inventory size, cost trends, and what your bank needs to see. We run that math before recommending anything."
+    ],
+    "analogy": "Picture a stack of identical goods bought at rising prices. When one sells, which receipt counts against the sale — the cheap one from years ago, or last month's? Choosing the recent one shrinks today's taxable profit.",
+    "benefits": [
+      "Tax deferral that grows with inflation in your costs",
+      "Simpler bookkeeping options for qualifying businesses",
+      "A possible one-time catch-up deduction when switching methods",
+      "Savings that repeat while the method fits"
+    ],
+    "steps": [
+      "WE measure what each method would save using your actual inventory numbers.",
+      "WE check the fit with your bank and financial statements.",
+      "WE file the elections and forms that make the change official.",
+      "YOU maintain year-end counts and tell us before big inventory drawdowns."
+    ],
+    "clientCommitments": [
+      "Keep year-end inventory counts accurate and on time",
+      "Tell us before big drawdowns, an entity change, or a sale of the business"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "structural",
+    "annualMaintenance": [
+      "Annual LIFO index and layer computation where elected",
+      "Year-end inventory-level review to protect layers",
+      "Annual receipts-ceiling re-test for exemption-based methods"
+    ],
+    "deliverables": [
+      "Method analysis memo with quantified alternatives",
+      "Form 970 or Form 3115 filings",
+      "Annual LIFO reserve and layer schedule"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "totalBusinessProfit",
+        "op": "gt",
+        "value": 250000
+      }
+    ],
+    "reason": "Inventory-heavy businesses can defer income through method elections."
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §472", "IRC §263A", "IRC §471(c) guidance"],
+    "keywords": ["LIFO", "inventory method", "UNICAP", "471(c)", "LIFO recapture S election"],
+    "reviewTriggers": [
+      "Legislative proposals to repeal or limit LIFO",
+      "Annual §448(c) ceiling indexing",
+      "New §471(c) regulations or guidance"
+    ]
+  }
+}

@@ -1,0 +1,274 @@
+{
+  "id": "prepaid-expenses",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Prepaid Expense Safe Harbor (12-Month Rule)",
+  "category": "business-expenses",
+  "modeled": true,
+  "complexity": 2,
+  "riskRating": "low",
+  "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "Under the 12-month rule of Reg. §1.263(a)-4(f), a payment creating a right or benefit that ends by the earlier of twelve months or the close of the following tax year need not be capitalized — so a cash-method business that prepays next year's insurance, rent, or subscriptions in December deducts the entire payment now. The Ninth Circuit blessed the pattern for prepaid rent in Zaninovich. The honest core of the strategy is that it accelerates once: year one deducts roughly twenty-four months of these costs, every later year deducts a normal twelve, and stopping the practice produces a lean year. The model deducts the prepaid amount in the modeled year; the steady-state and unwind consequences are advisor disclosure, not engine output.",
+    "mechanics": [
+      "The 12-month rule (Reg. §1.263(a)-4(f)) removes the capitalization objection where the right or benefit ends by the earlier of twelve months after first realization or the end of the following tax year — a December payment for a calendar-year policy qualifies; an eighteen-month contract does not.",
+      "For a cash-method taxpayer, Reg. §1.461-1(a)(1) then completes the deduction on payment — actually paid by December 31, not merely accrued or promised.",
+      "Good candidates: business insurance, rent capped at twelve months, software subscriptions, maintenance contracts, dues; prepaid interest is excluded by §461(g), and inventory is never a prepaid expense.",
+      "Accrual-method taxpayers need more: economic performance under the §461(h)(3) recurring-item exception (Reg. §1.461-5) — the clean version of this play is cash-method.",
+      "The acceleration happens once: the adoption year holds roughly twenty-four months of deductions, later years replace what they borrowed, and skipping a December prepayment creates a year with almost none — model the exit before recommending the entrance.",
+      "Consistent prepayment treatment is a method of accounting; a taxpayer that previously capitalized these items changes over with an automatic Form 3115 under the Rev. Proc. 2015-13 procedures."
+    ],
+    "authority": [
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.263(a)-4(f)",
+        "note": "The 12-month rule that excuses capitalization of short-lived rights and benefits."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.461-1(a)(1)",
+        "note": "Cash-method timing — deductible when paid, once capitalization is off the table."
+      },
+      {
+        "type": "Case",
+        "cite": "Zaninovich v. Commissioner, 616 F.2d 429 (9th Cir. 1980)",
+        "note": "Prepaid rent for a period not exceeding one year deductible by a cash-method taxpayer — the one-year rule the regulations later codified."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §461(g), (h)(3)",
+        "note": "Prepaid interest must be spread; the recurring-item exception is the accrual-method path."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Proc. 2015-13",
+        "note": "Automatic method-change procedures where prior practice capitalized these prepayments."
+      }
+    ],
+    "requirements": [
+      "A cash-method taxpayer (accrual requires the recurring-item analysis).",
+      "Payments actually out the door by December 31, with contract terms in the file proving the benefit period.",
+      "December cash sufficient to prepay without straining operations.",
+      "Consistency going forward — this is a method, not an annual toggle."
+    ],
+    "risks": [
+      "The recurring dispute is the benefit period: contracts running past the 12-month window fail entirely and must be capitalized — the window is a cliff, not a proration.",
+      "Clients hear 'savings' and expect it to repeat; it will not — year one is the whole show, and that expectation belongs in writing.",
+      "Unwinding creates a doubled-up income year: a cash-poor December with no prepayment means a year with almost no deduction for those items.",
+      "Rate arbitrage can run backwards — pulling deductions into a 24 percent year that would have offset 35 percent income next year destroys value; check the bracket path first.",
+      "Prepaid interest and inventory misclassified as qualifying prepaids invite routine adjustment."
+    ],
+    "stateNotes": [
+      "Conformity: federal-conformity states absorb the deduction through the federal starting point with no separate state computation.",
+      "PTET interaction: the accelerated deduction reduces electing-entity income before the pass-through entity tax is computed — reset the PTET estimate in the adoption year.",
+      "Missouri: conforms via rolling conformity and its federal starting points (RSMo §143.091, §143.121); a Missouri SALT Parity Act (RSMo §143.436) electing entity computes on the post-prepayment income."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["equipment-timing", "bracket-management"]
+    },
+    "reviewChecklist": [
+      "Each prepaid contract's benefit period verified against the 12-month/following-year test.",
+      "Bracket path confirmed — the acceleration lands in a year taxed at or above next year's rate.",
+      "Payment proof (checks cleared, cards charged) dated on or before December 31.",
+      "Client acknowledgment on file that the benefit is one-time and the practice must repeat.",
+      "Form 3115 evaluated where prior years capitalized the same items."
+    ]
+  },
+  "client": {
+    "teaser": "A one-time calendar move that gives this year's return an extra year of deductions.",
+    "headline": "Pay January's bills in December — and deduct them a year early",
+    "plainEnglish": [
+      "The tax law has a friendly rule for regular business bills. Pay up to twelve months ahead on things like insurance, rent, or software, and the whole payment is deductible now — in the year you paid it.",
+      "The first year you do this, the effect is powerful. Your return holds roughly two years of those costs: the normal year, plus the year you prepaid. That can take a real bite out of a high-income year.",
+      "Here is the honest part: the boost happens once. After that, each December's prepayment simply replaces the deduction you moved up. It is a timing tool, best used in a year when your income and your tax rate are unusually high."
+    ],
+    "analogy": "It is like doing January's grocery run in late December. The December budget takes one bigger hit, and after that every month looks normal again.",
+    "benefits": [
+      "Deduct next year's known costs on this year's return",
+      "Most powerful in an unusually high-income year",
+      "Uses spending you were committed to anyway",
+      "Usually no new forms — just payment timing"
+    ],
+    "steps": [
+      "WE list which of your regular costs qualify.",
+      "WE confirm this is the right year for the move.",
+      "YOU make the payments before December 31 from the list we give you.",
+      "YOU keep the contracts and payment proof with your records."
+    ],
+    "clientCommitments": [
+      "Make the payments before year end — a promise to pay does not count",
+      "Plan to repeat the prepayment each December so no lean year sneaks in"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "December prepayment list refreshed and payment deadlines tracked",
+      "Fall bracket check to confirm the practice still points the right way"
+    ],
+    "deliverables": [
+      "Qualifying-prepayment schedule with contract benefit periods",
+      "Payment-proof file and adoption-year memo",
+      "Form 3115 where prior practice capitalized these items"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 35,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "prepaidAmount": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["prepaidAmount"]
+    },
+    "apply": {
+      "module": "prepaid-expenses@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasBusiness",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "Cash-method businesses can accelerate a year of insurance, rent, and subscriptions."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj Sch C 300k, 15k prepaid",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 300000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "prepaidAmount": 15000
+        },
+        "expect": {
+          "totalBurdenDelta": -3131,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "single Sch C 150k, 6k prepaid",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 150000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "prepaidAmount": 6000
+        },
+        "expect": {
+          "totalBurdenDelta": -1830,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": ["Reg. §1.263(a)-4", "IRC §461"],
+    "keywords": ["prepaid expenses", "12-month rule", "cash method prepayment", "Zaninovich"],
+    "reviewTriggers": [
+      "Amendments to the capitalization regulations",
+      "New rulings on prepaid-expense benefit periods"
+    ]
+  }
+}

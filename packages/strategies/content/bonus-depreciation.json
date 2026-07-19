@@ -1,0 +1,302 @@
+{
+  "id": "bonus-depreciation",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Bonus Depreciation Election (and Opt-Out Analysis)",
+  "category": "real-estate",
+  "modeled": true,
+  "complexity": 3,
+  "riskRating": "low",
+  "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp", "rental"],
+  "typicalSavingsBand": "25k-100k",
+  "advisor": {
+    "summary": "OBBBA (P.L. 119-21) restored 100% bonus depreciation under §168(k) for qualified property acquired and placed in service after January 19, 2025, and made it permanent — so the default for nearly every equipment, land-improvement, and QIP addition is a full year-one write-off. Bonus applies automatically; the professional work is the annual election-out analysis under §168(k)(7), run class by class, for years when an immediate deduction would be wasted or mispriced: losses suspended under §469, business losses limited by §461(l), NOL years, temporarily low brackets, and taxable-income targets for the QBI deduction. Because the election out covers an entire MACRS class and is generally irrevocable once the return is filed, the both-ways projection has to happen before filing, not after. Acceleration is a timing play — basis deducted today is gone from every later year — and the model reflects exactly that: a year-one deduction against the selected rental or business activity, with passive-loss gating applied by the engine.",
+    "mechanics": [
+      "Qualified property under §168(k)(2) is MACRS property with a recovery period of 20 years or less — 5- and 7-year personalty, 15-year land improvements and QIP — plus certain software; used property qualifies when acquired by purchase from an unrelated party.",
+      "For property acquired and placed in service after January 19, 2025, the applicable percentage is 100% and permanent under P.L. 119-21; acquisition-date and placed-in-service mechanics follow Reg. §1.168(k)-2, and a pre-existing binding contract can strand an asset at the old phase-down rates.",
+      "Bonus is the default — no election is needed to take it. Electing out under §168(k)(7) is annual, made class by class on a timely filed return (extensions count), and is generally irrevocable without IRS consent; there is no asset-by-asset cherry-pick inside a class — that is §179's role.",
+      "The election-out screen: deductions that would create a loss suspended under §469, a business loss limited by §461(l), or an NOL in a low-bracket year usually cost more future value than they return currently; the same is true where current taxable income is needed to support the QBI deduction or the §179 income limit.",
+      "Where the asset lives controls the collateral effects: a Schedule C asset reduces SE income, a K-1 asset flows through the entity, and a rental asset lands on Schedule E — the model applies the elected deduction to the chosen rental or business activity and lets the engine handle the passive gating."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §168(k)",
+        "note": "The 100% first-year allowance and its qualified-property definition in (k)(2); the class-by-class election out lives in (k)(7)."
+      },
+      {
+        "type": "IRC",
+        "cite": "P.L. 119-21 (OBBBA) — permanent 100% bonus depreciation",
+        "note": "Restores the 100% rate for property acquired and placed in service after January 19, 2025 and removes the TCJA phase-down."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.168(k)-2",
+        "note": "Operative acquisition-date, binding-contract, and placed-in-service rules for post-2017 bonus, including the used-property purchase tests."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §461(l)",
+        "note": "The excess business loss limitation — a leading reason to elect out, since a limited loss converts to an NOL carryforward rather than a current benefit."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §469",
+        "note": "Passive activity rules — bonus on a rental asset produces no current benefit when the resulting loss is suspended."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §179",
+        "note": "The asset-by-asset expensing alternative; most plans use §179 for precision and bonus for volume, so the two analyses run together."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 4562 and instructions",
+        "note": "Where depreciation and any §168(k)(7) election-out statement are reported with the timely filed return."
+      }
+    ],
+    "requirements": [
+      "Qualified property actually acquired and placed in service during the year — acquisition after January 19, 2025 for the permanent 100% rate, with binding-contract dates checked.",
+      "For used assets, purchase from an unrelated party and no prior use by the taxpayer or a predecessor.",
+      "A both-ways projection (full bonus vs. elect-out by class) completed before the return is filed — the election out cannot be added later without consent.",
+      "A realistic path to absorb the deduction currently: taxable income, or losses not trapped by §469 or §461(l)."
+    ],
+    "risks": [
+      "The leading exam theory is eligibility, not concept: acquisition date, binding-contract timing, and the used-property related-party tests of §168(k)(2) are where adjustments happen — there is no signature case because the disputes are factual.",
+      "Wasted acceleration: bonus that manufactures a §469-suspended rental loss or a §461(l)-limited business loss burns future depreciation for no current benefit.",
+      "Rate arbitrage can run backwards — a 100% deduction absorbed in a low-bracket year strips deductions from future top-bracket years.",
+      "The election out binds the entire MACRS class; a partial-class preference belongs in §179, and confusing the two forfeits flexibility.",
+      "Full expensing sets up §1245 ordinary-income recapture on disposition, and it reduces QBI dollar-for-dollar in the deduction year."
+    ],
+    "stateNotes": [
+      "Conformity is the first screen: a large minority of states decouple from §168(k) and require an addback with a multi-year recovery schedule, so the state benefit can lag the federal one substantially.",
+      "Missouri conforms — its individual starting point is federal AGI (RSMo §143.121) with no bonus-depreciation addback, so the full federal deduction flows through to the Missouri return.",
+      "PTET interaction: bonus reduces the entity income on which a pass-through entity tax election is computed, so the PTET accrual should be re-projected after the depreciation decision — the engine sequences PTET after this deduction."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["cost-segregation", "qip-bonus", "section-179-expensing"]
+    },
+    "reviewChecklist": [
+      "Acquisition and placed-in-service dates verified against invoices and binding contracts; post-January 19, 2025 status confirmed for the 100% rate.",
+      "Used-property purchases screened for related-party and prior-use disqualifiers.",
+      "Both-ways projection (bonus vs. §168(k)(7) elect-out by class) is in the file, including §469, §461(l), QBI, and state addback effects.",
+      "Interaction with §179 elections resolved — the class-level and asset-level choices tell one coherent story.",
+      "Modeled deduction ties to the fixed-asset additions schedule, and the chosen target (rental vs. business) matches where the assets actually sit."
+    ]
+  },
+  "client": {
+    "teaser": "Big purchases can be deducted in full the year you buy them — when the timing works for you.",
+    "headline": "Deduct 100% of qualifying purchases in year one",
+    "plainEnglish": [
+      "When your business buys equipment or makes certain property upgrades, the normal rule spreads the deduction over many years. Current law lets you deduct the full cost right away, in the year the asset goes to work. This applies to new and used equipment alike.",
+      "Faster is usually better, but not always. In a low-income year, or when the deduction would create a loss you cannot use, taking it all now can waste it. The law lets you opt out for a year and save those deductions for higher-tax years.",
+      "So each year we run your numbers both ways. Full write-off now, or the slower schedule. We pick the path that saves the most over time, then file the right election with your return."
+    ],
+    "analogy": "It is like a gift card you can spend all at once or bit by bit. We help you spend it in the years when it buys the most.",
+    "benefits": [
+      "Deduct the entire cost of qualifying purchases in year one",
+      "Works for used equipment, not just new",
+      "A yearly opt-out lets us bank deductions for higher-tax years",
+      "More cash kept in the year you invest in the business"
+    ],
+    "steps": [
+      "WE inventory what you bought this year and confirm what qualifies.",
+      "WE project your taxes both ways — full write-off versus the slower schedule.",
+      "WE file the return with the right election, on time.",
+      "YOU send us purchase invoices and closing dates as big buys happen, before year-end."
+    ],
+    "clientCommitments": [
+      "Tell us about major purchases before December, not at tax time",
+      "Keep invoices and delivery records so dates can be proven"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Annual election-out analysis by asset class before the return is filed",
+      "Reconcile the fixed-asset additions schedule to invoices and in-service dates",
+      "Re-check state addback schedules for any nonconforming state in the footprint"
+    ],
+    "deliverables": [
+      "Bonus vs. elect-out projection memo for the year",
+      "Fixed-asset schedule with class-by-class bonus treatment",
+      "Election-out statements filed with the return where chosen"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 37,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "deductionAmount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "target": {
+          "type": "string",
+          "enum": ["rental", "business"]
+        }
+      },
+      "required": ["deductionAmount"]
+    },
+    "apply": {
+      "module": "bonus-depreciation@1.0.0"
+    },
+    "suggest": {
+      "any": [
+        {
+          "field": "hasRental",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "hasBusiness",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "100% bonus is back for post-January 19, 2025 acquisitions — electing out is now the analysis."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj Sch C 300k, 80k equipment bonus",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 300000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "deductionAmount": 80000,
+          "target": "business"
+        },
+        "expect": {
+          "totalBurdenDelta": -16277,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj landlord, 40k bonus absorbs rental income, rest suspends",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 180000,
+          "businesses": [],
+          "rentals": [
+            {
+              "id": "r1",
+              "name": "Rental",
+              "netIncome": 12000,
+              "activeParticipant": true
+            }
+          ],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "deductionAmount": 40000,
+          "target": "rental"
+        },
+        "expect": {
+          "totalBurdenDelta": -2640,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §168(k)",
+      "Reg. §1.168(k)-2 amendments and proposed regulations",
+      "State bonus-depreciation conformity legislation"
+    ],
+    "keywords": [
+      "bonus depreciation",
+      "168(k)",
+      "election out by class",
+      "qualified property acquisition date",
+      "OBBBA full expensing"
+    ],
+    "reviewTriggers": [
+      "Any statutory change to the §168(k) percentage or qualified-property definition",
+      "New regulations or procedural guidance on acquisition-date or election mechanics",
+      "State conformity changes in a client-footprint state"
+    ]
+  }
+}

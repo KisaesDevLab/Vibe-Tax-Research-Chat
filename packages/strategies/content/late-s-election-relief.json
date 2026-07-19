@@ -1,0 +1,167 @@
+{
+  "id": "late-s-election-relief",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Late S-Election Relief (Rev. Proc. 2013-30)",
+  "category": "entity-structure",
+  "modeled": false,
+  "complexity": 2,
+  "riskRating": "low",
+  "entityTypes": ["sole-prop", "single-member-llc", "s-corp"],
+  "typicalSavingsBand": "5k-25k",
+  "advisor": {
+    "summary": "Rev. Proc. 2013-30 is the repair kit for one of the most common inherited defects in small-business practice: the client who has operated, filed, and been taxed 'as an S corporation' without a valid election on file. The streamlined procedure — no user fee, no ruling request — treats a late Form 2553 as timely when the entity intended S status from the intended effective date, failed solely because the form was late or missing, shows reasonable cause with diligent correction, and every affected return (entity and all shareholders) was filed consistently with S status. The general window runs three years and 75 days from the intended effective date, the same filing also cures companion entity-classification elections for LLCs, and the fallback outside the window is a slow, expensive letter ruling under §1362(b)(5). Relief validates the election, not the history: retroactive S years still need reasonable compensation addressed, and the state layer is separate. The screening rule is simple — every new-client onboarding pulls the IRS record before assuming the S status the prior preparer assumed.",
+    "mechanics": [
+      "The deadline being repaired is §1362(b)'s: Form 2553 is due by the fifteenth day of the third month of the year the election takes effect; missed, the election defaults to the following year unless relief applies.",
+      "§1362(b)(5) authorizes the Service to treat a late election as timely on a showing of reasonable cause; Rev. Proc. 2013-30 is the streamlined administrative implementation, consolidating and superseding the earlier relief procedures.",
+      "The substantive tests: intended S status as of the effective date; failure caused solely by the missing or late election; reasonable cause and diligent action once discovered, stated under penalties of perjury; and consistent S-status reporting by the entity and every shareholder for all affected years — with shareholder statements attached.",
+      "The general window is three years and 75 days from the intended effective date, with a narrow no-time-limit exception for corporations meeting additional consistency tests; relief is claimed by filing the completed Form 2553 with the required statements, legended 'FILED PURSUANT TO REV. PROC. 2013-30,' either attached to a Form 1120-S or filed separately.",
+      "An LLC that intended S status files only Form 2553 — the corporate classification election is deemed made — and the same procedure reaches late ESBT, QSST, and QSub elections; outside the procedure, the only path is a private letter ruling under §1362(b)(5), with its user fee and queue.",
+      "Eligibility under §1361 must have been continuously satisfied from the intended effective date — eligible shareholders, one class of stock, the shareholder limit — because the procedure cures paperwork, never substantive defects."
+    ],
+    "authority": [
+      {
+        "type": "Admin",
+        "cite": "Rev. Proc. 2013-30",
+        "note": "The streamlined relief: eligibility tests, the 3-year-75-day window, required statements, and the no-user-fee filing mechanics."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1362(b)(5)",
+        "note": "The statutory authority to treat a late election as timely on reasonable cause — and the PLR fallback when the streamlined route is unavailable."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1362(a), (b)",
+        "note": "Election mechanics and the two-month-fifteen-day deadline the client missed."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1361",
+        "note": "The eligibility requirements that must have held continuously — relief cures the form, not an ineligible shareholder or a second class of stock."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 2553 and instructions",
+        "note": "The election form, completed with the Rev. Proc. 2013-30 legend, reasonable-cause statement, and shareholder consistency statements."
+      }
+    ],
+    "requirements": [
+      "Continuous S eligibility from the intended effective date under §1361 — eligible shareholders, one class of stock, within the shareholder limit.",
+      "Consistent reporting for every affected year: 1120-S filings (or no C return), and every shareholder picking up pass-through income.",
+      "A reasonable-cause narrative with diligence facts, signed under penalties of perjury, plus shareholder statements.",
+      "Filing within three years and 75 days of the intended effective date, absent the narrow exception."
+    ],
+    "risks": [
+      "Consistency is the usual deal-breaker: one year filed as a C corporation, or one shareholder who reported inconsistently, closes the streamlined door and leaves only the letter-ruling route with its cost and delay.",
+      "Relief validates the election, not the payroll: retroactive S years still carry reasonable-compensation exposure for owner work performed without wages, so the cleanup engagement must address employment tax, not just the legend on Form 2553.",
+      "An eligibility defect in any covered year — an ineligible trust, an entity shareholder, a side agreement creating a second class of stock — sinks the entire retroactive period, not just the defective year.",
+      "A bare 'we forgot' reasonable-cause statement invites rejection; the narrative needs surrounding diligence facts, and the exposure if relief fails is C corporation treatment of every open year."
+    ],
+    "stateNotes": [
+      "Conformity: most states, Missouri included, key S status to the valid federal election, so securing federal relief generally restores the intended state treatment for the same years — but each state's practice on retroactivity should be confirmed, and some states require their own election or notice.",
+      "PTET interaction: a validated S election reopens the pass-through entity tax option — in Missouri, the SALT Parity Act election (RSMo §143.436) — for current and future years; check each election year's timing rules before assuming retroactive PTET benefits.",
+      "Missouri: no separate Missouri S election exists; the corporation simply files MO-1120S consistent with the federal status once relief is granted, making the federal fix the whole fix for a Missouri-only group."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["s-corp-election"]
+    },
+    "reviewChecklist": [
+      "IRS account transcript (or Business & Specialty line confirmation) in the file establishing what election, if any, exists and the intended effective date.",
+      "Window computed: filing lands inside three years and 75 days, or the narrow exception is documented.",
+      "Every affected year's returns — entity and all shareholders — verified consistent with S status before filing.",
+      "Reasonable-cause statement reviewed for diligence facts; shareholder statements signed under penalties of perjury.",
+      "Retroactive reasonable-compensation exposure assessed and the payroll cleanup scoped in parallel.",
+      "State treatment confirmed for each state where the entity files."
+    ]
+  },
+  "client": {
+    "teaser": "If the S corporation form was never filed — or filed late — the IRS has an official fix that works backwards.",
+    "headline": "Missed the S corporation deadline? It can usually be repaired",
+    "plainEnglish": [
+      "The S corporation status that saves many owners thousands each year depends on one short form, filed early in the year with the IRS. It is one of the most commonly missed filings in small business. Sometimes it was never sent. Sometimes it was lost. Often the owner has no idea.",
+      "The good news: the IRS has an official forgiveness process. If you always meant to be an S corporation, have a reasonable explanation, and you and the company filed your taxes as if the status were in place, the IRS will generally honor the election back to the intended date. There is no filing fee, and the fix reaches back about three years.",
+      "Without the fix, the IRS could tax those years under much harsher rules. We confirm what is actually on file, prepare the explanation and signed statements, and file the repair so the treatment you assumed becomes the treatment you have."
+    ],
+    "analogy": "It is like finding out your warranty card was never mailed — and the maker agrees to honor it anyway, backdated, because you clearly bought the product and acted in good faith all along.",
+    "benefits": [
+      "Locks in the tax status you thought you already had, back to the intended date",
+      "Avoids the IRS re-doing past years under costlier rules",
+      "No IRS fee under the forgiveness process",
+      "Clears the path for the yearly savings the structure was chosen for"
+    ],
+    "steps": [
+      "WE pull the IRS record to confirm whether a valid election exists.",
+      "WE verify you qualify and draft the explanation the IRS requires.",
+      "YOU and any co-owners sign the statements confirming how past years were filed.",
+      "WE file the repair package and clean up any related payroll items so the past years hold."
+    ],
+    "clientCommitments": [
+      "Sign the statements about how past returns were filed — accuracy matters, they are made under penalty of perjury",
+      "Address any back-pay payroll items we identify for the repaired years"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Confirm the accepted election appears on the IRS record and in the permanent file",
+      "Onboarding-style election verification whenever a new entity or shareholder change occurs"
+    ],
+    "deliverables": [
+      "Election status memo with IRS transcript evidence",
+      "Completed Form 2553 relief package (legend, reasonable-cause statement, shareholder statements)",
+      "Retroactive reasonable-compensation exposure assessment",
+      "State filing conformity checklist"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "hasBusiness",
+        "op": "eq",
+        "value": true
+      },
+      {
+        "not": {
+          "field": "hasSCorp",
+          "op": "eq",
+          "value": true
+        }
+      }
+    ],
+    "reason": "A missed S-election deadline is usually repairable back to the intended date."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "Rev. Proc. 2013-30 and any successor consolidated relief procedure",
+      "IRS processing guidance on late S elections"
+    ],
+    "keywords": [
+      "late S election",
+      "Rev. Proc. 2013-30",
+      "Form 2553",
+      "reasonable cause",
+      "retroactive S status"
+    ],
+    "reviewTriggers": [
+      "Any successor revenue procedure changing the relief tests or window",
+      "IRS processing-time or transcript-practice changes affecting verification"
+    ]
+  }
+}

@@ -1,0 +1,290 @@
+{
+  "id": "str-loophole",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Short-Term Rental Strategy",
+  "category": "real-estate",
+  "modeled": true,
+  "complexity": 4,
+  "riskRating": "elevated",
+  "entityTypes": ["rental", "individual"],
+  "typicalSavingsBand": "25k-100k",
+  "advisor": {
+    "summary": "Reg. §1.469-1T(e)(3)(ii)(A) excludes a property from the §469 definition of 'rental activity' when the average period of customer use is seven days or less — the per-se passive label never attaches, and no real estate professional status is required. The activity is then tested like any business: material participation under Reg. §1.469-5T(a) makes the losses non-passive against W-2 and business income, which is what lets a high earner pair a short-term rental with cost segregation and 100% bonus depreciation for a large first-year offset. The boundaries are just as mechanical: substantial hotel-like services push the activity onto Schedule C and into self-employment tax under Reg. §1.1402(a)-4, excess personal use trips the §280A vacation-home caps, and the average-stay computation re-runs every year. Pohoski shows both edges — material participation carried some properties and failed others on the hour evidence. The engine models qualification by moving the rental's result out of the passive bucket.",
+    "mechanics": [
+      "The average-stay test divides total guest-occupied days by the number of stays; an average of seven days or less takes the property outside the rental definition under Reg. §1.469-1T(e)(3)(ii)(A), and a thirty-day average with significant personal services is a second, narrower doorway.",
+      "Outside the rental definition, ordinary material participation applies under Reg. §1.469-5T(a): 500 hours, substantially-all participation, or more than 100 hours and more than any other individual — counting cleaners, co-hosts, and managers on the other side of the ledger.",
+      "Self-management is the practical requirement: a full-service management company usually out-participates the owner and defeats the more-than-anyone-else test.",
+      "The strategy’s engine is pairing: reclassified 5/7/15-year components from a cost segregation study take 100% bonus under §168(k), producing a first-year non-passive loss against high W-2 income.",
+      "Without substantial services — daily cleaning during stays, meals, concierge — the activity stays on Schedule E and outside self-employment tax under Reg. §1.1402(a)-4; hotel-like services move it to Schedule C and the SE tax base.",
+      "Personal use beyond the greater of 14 days or 10% of rental days triggers the §280A vacation-home limits — a second cap independent of §469."
+    ],
+    "authority": [
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.469-1T(e)(3)(ii)(A)",
+        "note": "Average customer use of seven days or less takes the activity outside the per-se rental definition — the doorway."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.469-5T(a)",
+        "note": "The material participation tests; short-term-rental owners typically rely on 500 hours, substantially-all, or more-than-100-and-most."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §469(c)",
+        "note": "The passive-loss regime and the per-se rental rule being sidestepped."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §168(k)",
+        "note": "100% bonus on reclassified short-life components — the engine of the first-year loss."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.1402(a)-4",
+        "note": "Rental real estate is excluded from self-employment income unless substantial services are rendered to occupants — the Schedule C tripwire."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §280A",
+        "note": "Vacation-home rules: excess personal use caps deductions regardless of the passive-loss answer."
+      },
+      {
+        "type": "Case",
+        "cite": "Pohoski v. Commissioner, T.C. Memo 1998-17",
+        "note": "Short-term condo rentals tested under material participation — the taxpayers prevailed where the hour evidence held and lost where it did not."
+      },
+      {
+        "type": "Admin",
+        "cite": "IRS Passive Activity Loss Audit Technique Guide (exam guidance)",
+        "note": "The exam framework for average-stay computation and participation-hour scrutiny."
+      }
+    ],
+    "requirements": [
+      "Average guest stay of seven days or less, computed and documented from booking records.",
+      "Material participation by the owner or spouse under a specific §1.469-5T(a) test, with contemporaneous hour logs for the owner and all service providers.",
+      "Substantially self-managed operations: guest communication, pricing, and turnovers arranged by the owner.",
+      "Personal use kept within the §280A limits to avoid a second loss cap."
+    ],
+    "risks": [
+      "Hour substantiation is the leading audit theory: under the more-than-100-hours-and-more-than-anyone-else test the IRS counts cleaners’ and co-hosts’ hours against the owner, and Pohoski v. Commissioner, T.C. Memo 1998-17, split property by property on exactly that evidence — contemporaneous logs for the owner and every vendor are the defense.",
+      "Substantial services flip the activity to Schedule C and self-employment tax, eroding the benefit — the service menu is a tax decision, not just hospitality.",
+      "The average-stay test is annual: one winter of month-long tenants can flip the property back to per-se passive.",
+      "Acceleration is borrowed, not free — later-year depreciation shrinks and recapture follows on sale.",
+      "Local ordinances, permits, and lodging taxes are a parallel compliance layer the income tax analysis does not cover."
+    ],
+    "stateNotes": [
+      "Conformity: states inherit the federal passive-loss result through their federal starting points, but bonus-depreciation decoupling in some states slows the paired deduction at the state level — screen both rules together.",
+      "Missouri conforms on both fronts through its federal-AGI starting point (RSMo §143.121); note separately that Missouri short-term rentals owe state and local lodging taxes as an operational matter.",
+      "PTET interaction: none in the standard structure — a directly held short-term rental sits outside any PTET regime; the analysis changes only if the activity runs through an electing entity."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": ["reps-qualification"],
+      "synergiesWith": ["cost-segregation", "bonus-depreciation"]
+    },
+    "reviewChecklist": [
+      "Average stay computed from actual booking data and documented for the year.",
+      "Material participation test identified, with owner and vendor hour logs sampled for quality.",
+      "Service menu reviewed against the substantial-services line and the Schedule E position confirmed.",
+      "Personal-use days tracked against the §280A limits.",
+      "Paired cost segregation and bonus amounts consistent with the loss the client can actually absorb."
+    ]
+  },
+  "client": {
+    "teaser": "Short-term rentals play by different rules — their losses can offset your paycheck.",
+    "headline": "A short-term rental can shelter your W-2 income",
+    "plainEnglish": [
+      "Rental losses are normally locked away from your salary. The main exception requires real estate to be your primary career, which rules out most people with full-time jobs.",
+      "Short-term rentals follow different rules. If guests stay an average of seven days or less — the typical vacation-rental pattern — the tax law does not treat the property as a rental at all. It is treated like a business. Run it yourself, and its losses can offset your regular income.",
+      "Pair that with a study that front-loads the property’s depreciation, and a new short-term rental can create a large first-year deduction against a large salary. You do have to run the property — bookings, guests, turnovers — and log your hours as you go."
+    ],
+    "analogy": "It is a different door into the same room the full-time real estate pros use — open to you when guests check out within about a week and you are the one running the show.",
+    "benefits": [
+      "Losses can offset salary and business income — no career change needed",
+      "Pairs with accelerated depreciation for a large first-year deduction",
+      "Works with a single property",
+      "The property remains a real income-producing investment"
+    ],
+    "steps": [
+      "WE confirm the booking pattern qualifies — average stay of seven days or less.",
+      "WE coordinate the depreciation study and claim the first-year write-off.",
+      "WE watch the details that could change the treatment — services, personal use, stay lengths.",
+      "YOU run the property hands-on and log your hours as they happen."
+    ],
+    "clientCommitments": [
+      "Self-manage the property, at least in the loss year",
+      "Log your hours and keep vendor invoices showing their hours",
+      "Keep personal use within the limits we set",
+      "Keep guest services simple — no hotel-style daily service without talking to us first"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "structural",
+    "annualMaintenance": [
+      "Annual average-stay computation from booking data",
+      "Hour-log review before the return is filed",
+      "Personal-use and service-level check against the treatment claimed"
+    ],
+    "deliverables": [
+      "Qualification memo (average stay, participation test, service level)",
+      "Hour-tracking template for owner and vendors",
+      "Coordinated depreciation schedule with the cost segregation study"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 42,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "rentalId": {
+          "type": "string"
+        }
+      },
+      "required": []
+    },
+    "apply": {
+      "module": "str-loophole@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasRental",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "Average stays of seven days or less plus material participation take an STR out of §469 without REPS."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj wages 250k, STR loss 45k unlocked",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 250000,
+          "businesses": [],
+          "rentals": [
+            {
+              "id": "r1",
+              "name": "Rental",
+              "netIncome": -45000,
+              "activeParticipant": true
+            }
+          ],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {},
+        "expect": {
+          "totalBurdenDelta": -10028,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "single wages 180k, STR loss 30k unlocked",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 180000,
+          "businesses": [],
+          "rentals": [
+            {
+              "id": "r1",
+              "name": "Rental",
+              "netIncome": -30000,
+              "activeParticipant": true
+            }
+          ],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {},
+        "expect": {
+          "totalBurdenDelta": -7200,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "Reg. §1.469-1T(e)(3)",
+      "Tax Court memoranda on short-term rental material participation",
+      "IRS Passive Activity Loss Audit Technique Guide revisions"
+    ],
+    "keywords": [
+      "short-term rental",
+      "seven day average stay",
+      "material participation",
+      "nonpassive rental loss",
+      "self-employment tax substantial services"
+    ],
+    "reviewTriggers": [
+      "New case law or guidance on the short-term rental exception",
+      "Changes to bonus depreciation affecting the paired strategy",
+      "Client booking-pattern or management changes"
+    ]
+  }
+}

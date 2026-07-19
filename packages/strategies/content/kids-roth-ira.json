@@ -1,0 +1,154 @@
+{
+  "id": "kids-roth-ira",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Roth IRA Funded by Kids' Earned Income",
+  "category": "payroll-family",
+  "modeled": false,
+  "complexity": 1,
+  "riskRating": "low",
+  "entityTypes": ["individual"],
+  "typicalSavingsBand": "structural",
+  "advisor": {
+    "summary": "A child with earned income can fund a Roth IRA up to the lesser of compensation or the annual limit — $7,500 for 2026 per Notice 2025-67 — and §408A imposes no minimum age; the only gate is compensation, which the family payroll supplies. Because the wages already sit inside the child's standard deduction, the after-tax character of a Roth contribution costs nothing, while qualified distributions under §408A(d) exit tax-free after the five-year clock and age 59½ — a compounding runway measured in half-centuries. The statute tests compensation, not traceable dollars, so a parent can gift the contribution cash inside the §2503(b) annual exclusion while the child keeps the paycheck. Held as a custodial Roth until majority. The strategy is only as strong as the payroll under it — the wage file is the foundation — and the account transfers to the child's control at majority whether the family is ready or not.",
+    "mechanics": [
+      "The contribution ceiling is the lesser of the child's includible compensation or $7,500 (2026) under the §219(b) dollar limit as incorporated by §408A — W-2 wages from the family business count even though they are FICA-exempt for an under-18 child of the parent.",
+      "§408A has no minimum age; providers require a custodial (guardian) Roth IRA for minors, with the parent as custodian and control passing at the state age of majority.",
+      "Funding-source flexibility: the law tests compensation, not the cash trail — a parent may gift the contribution amount, comfortably inside the §2503(b) $19,000 annual exclusion (2026), while the child keeps or spends the actual paycheck.",
+      "Qualified distributions under §408A(d) — the five-taxable-year clock plus age 59½, death, disability, or the first-home carve-out — are wholly tax-free, and contribution basis stays withdrawable at any time without tax or penalty.",
+      "The Roth wrapper also closes the kiddie-tax loop: growth inside the IRA never surfaces as current unearned income, which is exactly where the kiddie-tax sequencing wants the first $7,500 of wages to land."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §408A",
+        "note": "The Roth IRA statute — no minimum age, compensation-limited contributions, and tax-free qualified distributions under §408A(d)."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §219(b)(1)",
+        "note": "The contribution dollar limit — $7,500 for 2026 — incorporated for Roth IRAs through §408A(c)."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §2503(b)",
+        "note": "The $19,000 annual gift exclusion (2026) that lets a parent supply the contribution cash with no gift-tax consequence."
+      },
+      {
+        "type": "Admin",
+        "cite": "Notice 2025-67",
+        "note": "Sets the 2026 IRA limit at $7,500."
+      }
+    ],
+    "requirements": [
+      "Bona fide earned income for the child at least equal to the contribution — the family payroll documentation carries this burden.",
+      "A custodial Roth IRA at a provider that accepts minor accounts, with the parent or guardian as custodian.",
+      "Contributions made by the return due date and reconciled annually against the child's W-2.",
+      "Family acceptance that the account belongs to the child outright at the age of majority."
+    ],
+    "risks": [
+      "The leading exposure is inherited, not native: if the underlying wages fail exam as not bona fide — the unsubstantiated-family-wage theory of cases like Denman v. Commissioner, 48 T.C. 439 (1967) — the compensation supporting the Roth fails with them.",
+      "Contributions above the child's actual compensation are excess contributions carrying a 6% annual excise until corrected — the W-2 reconciliation is not optional.",
+      "Control transfers at majority: a young adult can drain the account, with tax and penalty touching only the earnings — governance is a family matter the plan should anticipate.",
+      "Withdrawals during college count as income in aid formulas even though retirement assets themselves are excluded — sequence any early access around FAFSA years."
+    ],
+    "stateNotes": [
+      "Missouri conforms via the federal-AGI starting point (RSMo §143.121): qualified Roth distributions excluded federally never enter the Missouri return either.",
+      "No PTET interaction — the contribution and growth sit entirely on the child's side; the deductible wages that create the compensation are the hire-children strategy's PTET story.",
+      "Missouri-specific: custodial accounts under Missouri's transfers-to-minors law generally vest control at 21, giving the family a few extra years of custodianship compared with age-18 states."
+    ],
+    "interactions": {
+      "requires": ["hire-children"],
+      "conflictsWith": [],
+      "synergiesWith": ["kids-401k"]
+    },
+    "reviewChecklist": [
+      "Child's W-2 compensation equals or exceeds the planned contribution, documented before funding.",
+      "Custodial account titled correctly with the parent as custodian and the provider's minor-account requirements met.",
+      "Contribution logged against the W-2 in the permanent file, with the April deadline calendared.",
+      "Family briefed in writing that control passes to the child at majority."
+    ]
+  },
+  "client": {
+    "teaser": "A yearly move that can quietly grow into a large tax-free nest egg for your child.",
+    "headline": "Turn your kids' paychecks into a lifetime of tax-free growth",
+    "plainEnglish": [
+      "Once your child earns real wages, they qualify for a Roth IRA — one of the best deals in the tax code. They can put in up to $7,500 a year (2026), or their total wages if less. The money grows for decades, and in retirement it all comes out tax-free.",
+      "It gets better. Your child does not have to give up their paycheck. The rule only asks that they earned at least as much as goes in. So you can gift the contribution money, and your child keeps what they earned.",
+      "Time does the heavy lifting. Money invested at 12 or 15 has half a century to compound. A few early years of contributions, left alone, can become a very large tax-free sum."
+    ],
+    "analogy": "It is like planting a tree in your child's yard instead of yours — same seed, same soil, but theirs gets fifty growing seasons instead of fifteen.",
+    "benefits": [
+      "Up to $7,500 a year (2026) per working child",
+      "All growth comes out tax-free in retirement",
+      "You can gift the contribution money; the child keeps the paycheck",
+      "The original contributions stay reachable if truly needed"
+    ],
+    "steps": [
+      "WE confirm your child's wages for the year — that sets the contribution cap.",
+      "WE help you open a custodial Roth IRA with the right provider.",
+      "YOU fund it any time up to the April tax deadline.",
+      "WE log it against the W-2 each year and repeat."
+    ],
+    "clientCommitments": [
+      "Keep the payroll behind the contributions real and documented",
+      "Plan for the account becoming your child's to control at adulthood"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Annual contribution-to-W-2 reconciliation for each child",
+      "Calendar the April funding deadline and confirm receipt with the provider",
+      "Revisit investment allocation and the control-at-majority plan as children age"
+    ],
+    "deliverables": [
+      "Custodial Roth IRA setup checklist and provider selection",
+      "Annual contribution log tied to each child's W-2",
+      "One-page family memo on gifting the contribution and control at majority"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "hasBusiness",
+        "op": "eq",
+        "value": true
+      },
+      {
+        "field": "dependentsUnder17",
+        "op": "gt",
+        "value": 0
+      }
+    ],
+    "reason": "Child wages already inside the standard deduction can seed decades of tax-free Roth growth."
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §408A", "Annual IRA limit notices"],
+    "keywords": [
+      "custodial Roth IRA",
+      "child earned income",
+      "kids Roth",
+      "excess contribution excise"
+    ],
+    "reviewTriggers": [
+      "Annual IRA limit COLAs",
+      "Legislation touching Roth qualified-distribution rules",
+      "Provider policy changes on minor accounts"
+    ]
+  }
+}

@@ -1,0 +1,296 @@
+{
+  "id": "home-office-deduction",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Home Office Deduction (Sole Prop)",
+  "category": "business-expenses",
+  "modeled": true,
+  "complexity": 1,
+  "riskRating": "low",
+  "entityTypes": ["sole-prop", "single-member-llc"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "A Schedule C proprietor who uses part of the home exclusively and regularly as the principal place of business — or to meet clients, or as a separate structure — deducts the business share of home costs under §280A(c), either through Form 8829 actual expenses or the Rev. Proc. 2013-13 simplified method at $5 per square foot capped at 300 feet. Because the deduction lands on Schedule C, it saves self-employment tax as well as income tax. The administrative-use language Congress added in 1997 superseded the Supreme Court's narrow Soliman test, so a home base for scheduling, billing, and records qualifies when there is no other fixed location for that work. The model runs either method against the §280A(c)(5) income cap; the exclusivity of the space — the issue exams are actually won and lost on — is file work.",
+    "mechanics": [
+      "§280A(c)(1) admits three uses, each demanding exclusive and regular use: the principal place of business (including the administrative/management language when no other fixed location exists), a place of meeting patients, clients, or customers in the normal course, and a separate unattached structure.",
+      "Actual method: the business-use percentage applied to rent or mortgage interest, taxes, utilities, insurance, and repairs, plus depreciation on the office share of basis, computed on Form 8829; direct costs of the office itself deduct in full.",
+      "Simplified method (Rev. Proc. 2013-13): $5 per square foot up to 300 square feet — a $1,500 ceiling — elected year by year on the return; no depreciation is claimed, so no unrecaptured gain accrues against a future home sale.",
+      "§280A(c)(5) caps the deduction at the business's income: it cannot create or deepen a Schedule C loss; the actual method carries the excess forward, the simplified method forfeits it — the model applies the cap the same way.",
+      "Depreciation claimed under the actual method resurfaces at sale as unrecaptured §1250 gain, taxed at up to 25 percent and outside the §121 home-sale exclusion — the exit cost that makes the simplified method attractive for appreciating homes.",
+      "Entity owners are out of scope: after an S election the office belongs in an accountable-plan reimbursement, not on a Schedule C that no longer exists — the model declines non-Schedule-C profiles for the same reason."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §280A(c)(1)",
+        "note": "The exclusive-and-regular-use gates and the administrative/management language that superseded Soliman prospectively."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §280A(c)(5)",
+        "note": "The gross-income cap: no home-office loss; carryforward under the actual method only."
+      },
+      {
+        "type": "Case",
+        "cite": "Commissioner v. Soliman, 506 U.S. 168 (1993)",
+        "note": "The narrow principal-place test Congress overrode in 1997 — still argued by examiners for non-administrative fact patterns."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Proc. 2013-13",
+        "note": "The simplified method: $5 per square foot, 300-foot cap, annual election, no depreciation, no carryover."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 8829 and instructions",
+        "note": "The actual-method computation and its expense-ordering rules."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§121(d)(6), 1250",
+        "note": "Post-1997 depreciation is not sheltered by the home-sale exclusion — the unrecaptured-gain exit cost."
+      }
+    ],
+    "requirements": [
+      "Net Schedule C profit for the deduction to land against — the income cap is real.",
+      "A measured, specific space used exclusively and regularly for the business; photographs and a floor plan in the file.",
+      "For the principal-place prong: no other fixed location where substantial administrative work happens.",
+      "Actual method: home cost records and the square-footage computation retained."
+    ],
+    "risks": [
+      "The leading audit theory is exclusivity: a guest room that doubles as an office, or a desk in the family room, fails §280A's strictly construed exclusive-use test — the most commonly lost issue in this area, where photographs taken today beat testimony given later.",
+      "Actual-method depreciation builds an unrecaptured §1250 gain that survives the home-sale exclusion — clients planning to sell soon should usually take the simplified method.",
+      "The simplified method's $1,500 ceiling and no-carryover rule leave money behind for large offices and high-cost homes — run both methods every year rather than defaulting.",
+      "Low-profit years strand the deduction against the income cap, and simplified-method excess is lost outright.",
+      "An S election silently ends the Schedule C deduction — the position must convert to an accountable plan or disappear."
+    ],
+    "stateNotes": [
+      "Conformity: federal-AGI states conform automatically — the deduction arrives inside Schedule C net profit with no separate state computation.",
+      "PTET interaction: none — a sole proprietor has no entity eligible to make a pass-through entity tax election, so there is no PTET interplay to model.",
+      "Missouri: conforms through the federal-AGI starting point (RSMo §143.121); the reduced Schedule C profit flows straight into the Missouri return."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": ["augusta-rule"],
+      "synergiesWith": ["accountable-plan"]
+    },
+    "reviewChecklist": [
+      "Space verified as exclusively business — no dual-use furniture, no guest bed, photos on file.",
+      "Both methods computed and the chosen method documented with the comparison.",
+      "Deduction tested against Schedule C profit and any carryforward tracked.",
+      "Actual-method depreciation and its exit consequences discussed with the client and acknowledged.",
+      "No conflicting use of the same space or days claimed under another strategy."
+    ]
+  },
+  "client": {
+    "teaser": "Bills you already pay every month become a business deduction.",
+    "headline": "Get credit at tax time for working from home",
+    "plainEnglish": [
+      "If you run your business from a dedicated space at home, the tax law lets you deduct the business share of costs you already pay. Rent or mortgage interest, utilities, insurance, repairs — a slice of each can count.",
+      "The catch is the word 'dedicated.' The space must be used only for business, on a regular basis. A spare room that is truly your office qualifies. A desk in the corner of the living room does not.",
+      "There are two ways to figure it. The simple way pays $5 per square foot, up to $1,500, with almost no records. The detailed way adds up actual costs and often pays more, but needs records and has a small cost when you sell the home. We run both and pick the winner.",
+      "Because the deduction comes off business profit, it cuts two taxes at once: income tax and self-employment tax."
+    ],
+    "analogy": "Your home already moonlights as your office, rent-free. This deduction makes your tax return finally acknowledge the rent.",
+    "benefits": [
+      "Deducts a slice of costs you were paying anyway",
+      "Saves income tax and self-employment tax together",
+      "A no-receipts simple option exists",
+      "Repeats every year you work from home"
+    ],
+    "steps": [
+      "WE confirm the space qualifies and measure it.",
+      "WE compute the deduction both ways and choose the better one.",
+      "WE file the forms with your return.",
+      "YOU keep the space business-only and snap a few photos for the file."
+    ],
+    "clientCommitments": [
+      "Keep the office space strictly business-only",
+      "Tell us if you move, change the space, or form a corporation"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Annual method comparison (actual vs. simplified) with current-year costs",
+      "Confirm the space and usage still qualify; refresh photos when the office changes"
+    ],
+    "deliverables": [
+      "Method comparison worksheet",
+      "Form 8829 or the simplified election filed with the return",
+      "Home-office documentation kit (floor plan, photos, measurement record)"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 32,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["simplified", "actual"]
+        },
+        "squareFeet": {
+          "type": "number",
+          "minimum": 0
+        },
+        "actualExpenses": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["method"]
+    },
+    "apply": {
+      "module": "home-office-deduction@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasScheduleC",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "Exclusive, regular business use of home space deducts directly on Schedule C."
+    },
+    "goldenTests": [
+      {
+        "name": "single Sch C 150k, simplified 300 sq ft",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 150000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "method": "simplified",
+          "squareFeet": 300
+        },
+        "expect": {
+          "totalBurdenDelta": -458,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj Sch C 300k, actual 9k",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 300000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "method": "actual",
+          "actualExpenses": 9000
+        },
+        "expect": {
+          "totalBurdenDelta": -1878,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §280A", "Tax Court memoranda on exclusive-use fact patterns"],
+    "keywords": [
+      "home office deduction",
+      "280A",
+      "exclusive use",
+      "simplified method $5",
+      "Form 8829"
+    ],
+    "reviewTriggers": [
+      "Any change to the simplified-method rate or cap",
+      "New case law on exclusivity or administrative use"
+    ]
+  }
+}

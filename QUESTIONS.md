@@ -7,9 +7,10 @@ the switch later. Per the kickoff protocol: pick a reasonable default consistent
 ---
 
 ## Scaffolding scope (kickoff)
+
 **Question:** The kickoff prompt asked for a full v1.0.0 build in one autonomous session.
 **Default applied:** Wide-scaffolding pass (kickoff option 2), then promoted in a follow-up
-turn to a *fully functional* build. The appliance now boots end-to-end: Postgres + Redis come
+turn to a _fully functional_ build. The appliance now boots end-to-end: Postgres + Redis come
 up via Docker, `pnpm db:migrate` + `pnpm db:seed` populate the schema, the API starts, the
 auth flow works (login, refresh, /auth/me, role gates), and chat creation + streaming SSE
 gracefully report a missing key when one isn't configured. The Anthropic SDK calls are real
@@ -27,6 +28,7 @@ custom-skill packaging step in `routes/admin/custom-skills.ts`, OCR fallback in
 `lib/parsers/index.ts`, MCP authority server in v1.5).
 
 ## Missing reference assets
+
 **Question:** `mockup.html` is referenced by Phases 14, 15, 18, 19, 20 as the visual target but
 is not present in the repo. Same for `KICKOFF_PROMPT.md`.
 **Default applied:** Chat view is built to the editorial-aesthetic description in the kickoff
@@ -38,6 +40,7 @@ sharpen spacing, hierarchy, and microcopy.
 **Reversible:** Yes — drop `mockup.html` into the repo root and re-evaluate `apps/web/src/styles/theme.ts` and the chat panels under `apps/web/src/components/panels/`.
 
 ## Skills repo content
+
 **Question:** The Vibe-Claude-Tax-Research-Skills upstream repo is referenced for ingestion
 (Phase 7) and routing (Phase 11), but the actual skill content cannot be assumed in this build
 session.
@@ -50,6 +53,7 @@ synced.
 **Reversible:** Drop the real repo, re-run `pnpm tsx scripts/skills-ingest.ts`.
 
 ## Manifest URL availability
+
 **Question:** `https://vibemb.com/manifests/anthropic-models.json` is the documented refresh
 target for the model registry (Phase 6). Network state in the build env is unknown.
 **Default applied:** Refresh endpoint fetches the URL with 5-second timeout and returns a
@@ -60,6 +64,7 @@ on first run.
 **Reversible:** Set `MODELS_MANIFEST_URL` to a different host.
 
 ## Cost-streaming UX
+
 **Question:** Pure JS estimate vs periodic Haiku tokenizer call (kickoff §10 item 6).
 **Default applied:** JS estimate (`chars / 4`) during streaming, snaps to actual on
 `message_delta`.
@@ -67,30 +72,393 @@ on first run.
 **Reversible:** Swap `apps/web/src/components/CostLedger.tsx` provisional logic.
 
 ## Chat history retention
+
 **Question:** Forever vs 7 years (kickoff §10 item 2).
 **Default applied:** Forever; admin-configurable via `settings.chat_retention_days` (null =
 forever).
 **Reversible:** Change setting; nightly job in `apps/api/src/jobs/retention.ts` (stub).
 
 ## Per-chat model override
+
 **Question:** Admin-only or per-user (kickoff §10 item 5).
 **Default applied:** Per-user, gated by `users.can_override_model` flag (default true).
 **Reversible:** Flip the flag, or remove the model picker from `apps/web/src/components/ChatHeader.tsx`.
 
 ## Single API key vs per-user
+
 **Question:** Per-user keys for individual billing (kickoff §10 item 1).
 **Default applied:** Single appliance key in v1; the schema does **not** include a per-user
 override column to keep migration cleanly reversible.
 **Reversible:** v1.5 phase will add `users.anthropic_key_ciphertext` and a fallback chain.
 
 ## Stub-state warnings
+
 **Question:** Banner on assistant messages citing `stub`-status skills (kickoff §10 item 4).
 **Default applied:** Yes — the Authorities panel renders a warning chip when any cited authority
 comes from a skill whose `skill_versions.status_field == 'stub'`.
 **Reversible:** Suppress in `apps/web/src/components/panels/AuthoritiesPanel.tsx`.
 
 ## Dispatcher visibility
+
 **Question:** Show or hide the dispatcher's chosen skills in UI (kickoff §10 item 3).
 **Default applied:** Show. Phase 20's Skills panel renders `cpa-pack-index` (oxblood),
 `compliance-ssts-circular230` (moss), and routed skills.
 **Reversible:** Hide via `settings.show_skills_panel = false`.
+
+---
+
+# Planning module (MASTER-BUILD-PLAN.md, slice TP-0…TP-3 + TP-11)
+
+## Planning feature flag mechanism
+
+**Question:** MASTER-BUILD-PLAN TP-0 says "scaffold the `planning` feature flag" without
+specifying env vs DB.
+**Default applied:** DB-backed setting `planning_enabled` (settings KV, seeded false) so
+admins flip it without redeploying; admin write path `POST
+/api/admin/settings/planning-enabled`, effective value exposed via new authenticated
+`GET /api/config` (no public config endpoint existed before). All planning/clients API
+surfaces respond 404 via `requirePlanning` middleware when off.
+**Reversible:** Move to env or licensing entitlement later; the middleware is the single
+read point.
+
+## T&B client sync
+
+**Question:** TP-3 specifies T&B-synced clients (nightly + on-demand), but the repo has
+no T&B integration, API spec, or credentials.
+**Decision (user, 2026-07-19):** Local-only clients in this slice — no provenance/
+tb_client_id columns and no sync scaffolding. T&B fields + sync adapter land later as an
+additive migration. `merged_into_id` is kept now because TP-11 retention rules depend on
+merge.
+
+## PII detect pass for archival
+
+**Question:** TP-11 routes archive snapshots through Vibe Shield (Presidio) in detect
+mode; no Shield exists in this repo (`pii_strip_enabled` is a seeded key with no
+implementation).
+**Decision (user, 2026-07-19):** Local in-process detector (regex + context rules for
+SSN/EIN/account numbers) with the same hits + one-click-redaction UX before the snapshot
+freezes. Swappable for Shield/Presidio later behind the same detect interface.
+
+## Archive search reconciliation (TP-3 vs TP-11)
+
+**Question:** TP-3 requires cross-client search with "no PII in the index"; TP-11 requires
+per-client full-text search over archives. How do both hold at once?
+**Default applied:** Per-client FTS (`GET /api/archives?client_id&q`) runs over the
+POST-redaction `snapshot_text` behind the client scope. Cross-client search
+(`GET /api/clients/search`) matches only client names and archive titles/topic tags —
+snapshot bodies are never in the cross-client index.
+
+## Bulk archive and PII
+
+**Question:** How does bulk multi-select archive interact with the PII detect pass?
+**Default applied:** Bulk uses chat titles (no Claude call) and refuses to silently
+archive any chat with detector hits — those return as `pii_review_required` for
+individual handling in the single-session dialog.
+
+## Claude-drafted title/tags at archive time
+
+**Default applied:** Synchronous Haiku call with a 10 s timeout mirroring the chat-title
+job; on no key / timeout / parse failure the dialog falls back to the chat's existing
+title and empty tags. Archival never blocks on the API.
+
+---
+
+# Planning module — remaining build (TP-4…TP-16), applied defaults 2026-07-19
+
+## Build-environment adaptations (user directed "complete the entire build without interruption")
+
+**No Anthropic API key at build time:** all runtime Claude jobs ship with tested
+graceful no-key degradation; the 100 strategy content records are authored at build
+time as original prose (schema-valid JSON seeds); the runtime author:draft pipeline
+still ships fully built.
+**No external systems** (T&B, Connect portal, Shield/Presidio, vibellm/GLM-OCR,
+OpenSign, Stripe, licensing.kisaes.com, Vault/B2): adapter seams + config-driven
+no-ops; webhook handlers tested with signed fixtures; manual-override endpoints;
+delivery = staff-manual + HMAC signed links; entitlement client fail-open for
+internal/advisor renders, fail-closed for client-facing.
+**Workers stay in the API process** (existing createWorker pattern) — no apps/worker.
+pdf-render runs in-process.
+
+## Engine numeric precision
+
+Integer cents internally (half-up rate multiplication); IRS-line checkpoints and wire
+types carry whole dollars; golden tolerance default $1.
+
+## Engine v1 simplifications (documented in module headers)
+
+MAGI = AGI (no foreign-income addbacks). §469 allowance phase-out uses AGI before
+passive losses as the MAGI proxy. PTET modeled as entity-level deduction +
+dollar-for-dollar state credit against the flat-state liability. OBBBA's 2/37
+itemized-benefit haircut for 37%-bracket taxpayers deferred with AMT et al.
+Deferred per master plan: AMT, refundable ACTC, UBIA prong, §461(l), non-flat states.
+
+## Migration map (additive-only)
+
+0007 table_sets · 0008 strategies/strategy_versions/golden_tests/review_queue ·
+0009 plans/plan_scenarios/plan_results/plan_research_links + research_archives.plan_id
+FK (plans tables land at TP-6, not TP-8 — the walking skeleton needs them) ·
+0010 deliverables/deliverable_links · 0011 engagements/webhook_events ·
+0012 hand-written triggers.
+
+## Strategy content home
+
+JSON records in packages/strategies/content/<id>.json (goldens inline); db seed loads
+idempotently — onConflictDoNothing on (strategy_id, semver), current_version_id set
+only when NULL so admin publishes are never clobbered by re-seeds.
+
+## TP-12 — applied defaults (authoring at scale)
+
+- **entityTypes vocabulary** — the schema validator canonicalizes the vocabulary the
+  TP-6 content already used: `sole-prop`, `single-member-llc`, `s-corp`, `partnership`,
+  `c-corp`, `rental`, `individual`.
+- **Banned-word gate scope** — "loophole/trick/secret/guarantee" is enforced on CLIENT
+  sections only. Advisor prose is exempt because legitimate terms of art ("guaranteed
+  payments" under §707(c)) would false-positive. The reading-level gate (FK ≤ 9) is
+  measured over `client.plainEnglish + client.analogy`; fragment lists are excluded.
+- **Mechanics↔authority mapping** — enforced as: any §-token named in a mechanics bullet
+  must appear in some authority cite. Cites are tokenized leniently so `IRC §§702, 1366`
+  covers both sections.
+- **Structural spec** — everything machine-critical for the 90 new records (classification,
+  applyOrder, inputs schema, suggest rule, interactions, golden cases) lives in
+  `packages/strategies/spec/tp12-spec.mjs`; scaffold + embed scripts stamp it into content.
+  Prose was authored to the schema and validated by `scripts/validate-content.mjs`.
+- **Golden deltas** — computed exclusively through the engine by
+  `scripts/embed-goldens.mjs` (94 new cases). The one intentionally positive delta
+  (bracket-management income acceleration) is declared via `model.mayIncreaseBurden`.
+- **Author-pipeline model pin** — `strategy-author` uses `claude-sonnet-4-5` pinned in the
+  handler; TP-13 centralizes per-job pins/budgets in `jobs-config.ts`. No key → the job
+  logs a skip and succeeds (pipeline idles until credentials arrive).
+- **spouse-payroll modeling** — modeled honestly as near-neutral on payroll tax (employer
+  FICA deducted, employee FICA added to otherTaxes); the record's value story is the
+  benefit doors (§105 MERP, retirement capacity). `mayIncreaseBurden: true`.
+- **c-corp-conversion modeling** — flow-through removed, 21% corp tax surfaced via
+  `corpTaxPaid`, salary + optional qualified dividends on the 1040; QBI forfeiture and
+  second-layer tax called out in notes. `mayIncreaseBurden: true`.
+- **Content items flagged for partner spot-check** (from the authoring pass; all records
+  pass the automated gates, these are substance checks): WOTC 2026 hires are written as
+  reauthorization-contingent (credit lapsed 12/31/2025; extension bills pending) — revisit
+  published status if reauthorization stalls; RSMo §143.022 20% business-income deduction
+  described as having no SSTB/wage limits; Missouri MOST 529 figures and RSMo §§143.113/
+  143.114 cites drawn from memory; a handful of older case cites (Lone Manor Farms, Denman,
+  Pohoski, Nielsen, FedEx W.D. Tenn., Dixie Dairies, Durden, Sanford) pass format lint but
+  merit a cite-check before client-facing use; OZ 2.0 (rolling deferral, rural step-ups)
+  follows post-OBBBA secondary sources pending implementing guidance.
+
+## TP-13 — applied defaults (Claude seam)
+
+- **Seam surface** — streaming keeps `getAnthropic()` (kill switch + Shield routing apply
+  there too); every background job goes through `callClaude(job, request)` with per-job
+  model pins and HARD token budgets in `lib/anthropic/jobs-config.ts` (TP-14 job budgets
+  pre-declared). Retry: 3 attempts, exponential backoff + jitter, on 429/5xx/network only.
+- **Audit** — every `callClaude` writes a `claude.call` audit row with SHA-256 request/
+  response hashes, token usage, and attempt count; payloads are never persisted (tested).
+  Terminal failures also leave an audit row with `failed: true`.
+- **ZDR** — org-level Anthropic account setting, not a request header; carried on the
+  TP-15 deployment checklist instead of code.
+- **Kill switch semantics** — `ANTHROPIC_KILL_SWITCH=1|true|on` blocks before the key is
+  even read; the chat stream surfaces the typed message via its existing error event +
+  system_note path; job handlers treat it like no-key (logged skip).
+
+## TP-14 — applied defaults (currency jobs)
+
+- **Queues/crons** — tables-draft (Oct 1 annual), strategy-watch (Mon 05:00),
+  archive-scan (Mon 05:30), golden-regression (on table publish), strategy-refresh
+  (on demand; full sweep when no strategy_id, aborting after the first no-key skip).
+- **golden-regression is pure-local** — replays every golden_tests row for currently
+  published strategy versions through the engine against the target table set; drift
+  beyond tolerance opens one review item per affected strategy. Verified live: publish
+  of a payload-identical set ran 112 goldens, 0 failures.
+- **archive-scan is pure-local** — case-insensitive keyword match (keywords ≥ 4 chars)
+  of current-version monitoring.keywords vs active research_archives archived after the
+  record's lastReviewed; open-item dedup per (strategy, archive). Verified live: 6 hits
+  opened once, 0 on re-run.
+- **strategy-watch seen-store** — Redis SETNX with 180-day TTL on
+  sha256(strategy:headline:source); heartbeat audit row (strategy_watch.run) written
+  even when quiet so silence is distinguishable from breakage. Uses the server-side
+  web_search tool (cast through the seam — SDK doesn't type it yet).
+- **Plan memos** — PLAN_MEMOS_ENABLED setting (seeded false); POST
+  /api/planning/plans/:id/memo returns 403 memos_disabled when off, 409 no_results
+  before compute, 503 claude_unavailable without a key, and always prepends a DRAFT
+  banner. Claude narrates engine-computed figures only.
+- **needs-module-change** — pipeline strategy drafts whose model block (module ref,
+  applyOrder, or inputs schema) differs from the published version are flagged in the
+  review payload; the queue decision alone cannot ship a math change.
+
+## TP-15 — applied defaults (hardening)
+
+- **Migration 0012** is hand-written SQL (0002 pattern: journal entry + copied snapshot
+  with re-chained ids; `generate` confirms no drift). Triggers: `plan_results_freeze`
+  (UPDATE/DELETE raise once the owning plan is presented/engaged/delivered/archived —
+  draft/in-review recompute flow untouched) and `audit_log_append_only`. Both verified
+  live and covered by `packages/db/src/triggers.integration.test.ts`, which skips
+  cleanly when no database is reachable.
+- **Backup drill** ran in local mode against the dev stack (see STATE.md note). The
+  compose path is unchanged; `BACKUP_MODE=local` + libpq vars / `PG_URL` is additive.
+- **External infra** (Tailscale, Shield egress policy, ZDR org agreement, Vault/B2
+  offsite) is tracked as operator checklist items in docs/deployment-checklist.md —
+  the app degrades gracefully while absent.
+
+## TP-16 — rollout notes
+
+- **Walk finding, fixed in this phase**: archiving a research chat WITH a plan selected
+  now auto-creates the `plan_research_links` row (the "Research this" launcher flow
+  satisfies the elevated-risk gate without a second manual linking step). Explicit
+  linking in the Review tab remains for archives created without a plan.
+- **Fresh-DB walk executed with** signed webhook fixtures (real HMAC secrets in env) and
+  a mock licensing server to exercise both entitlement postures (402 fail-closed
+  unlicensed; renders when granted).
+- The build is complete through TP-16. Remaining externally-gated work (T&B sync fields,
+  Connect delivery, OCR provider, real OpenSign/Stripe/licensing endpoints, Shield/ZDR
+  org setup, Vault/B2 offsite) is documented in docs/deployment-checklist.md and QUESTIONS
+  entries above; all have adapter seams and degrade gracefully.
+
+## Post-rollout change — deliverable rendering unified on PDFKit
+
+Deliverable PDFs originally rendered React → HTML → headless Chromium (Playwright).
+Replaced with server-side PDFKit — the same engine (and WinAnsi sanitizer) the chat
+response export uses: real selectable text, ~3× smaller artifacts, and no browser or
+docker Chromium layer. All five kinds re-verified live (advisor/client/handout/
+pitch-deck/slideshow; reveal + entitlement behavior unchanged); the staff slideshow
+web view remains live HTML via a dependency-free string template. playwright-core,
+react, and react-dom were dropped from the API package.
+
+## QA round 1 — deferrals surfaced by the completeness review
+
+Three master-plan line items were found unimplemented and previously unlogged; they
+are now EXPLICIT deferrals (not silent gaps):
+
+- **TP-8 plan-level authority annotations** (inserting authority-server citations as
+  plan annotations) — deferred; the research-archive linking flow carries the
+  authority trail today.
+- **TP-14 weekly partner digest** for strategy-watch — deferred; the heartbeat audit
+  row + review-queue items are the current surface. A digest email needs the email
+  subsystem enabled per install.
+- **TP-14 suggestion narratives** (Claude-written "why this rule-hit fits this
+  client") — deferred; suggest reasons come from the record's template today.
+
+## QA round 2 — applied defaults for review findings
+
+Round-2 adversarial review (five fresh agents over the round-1 diffs plus a self-review
+of the deliverables/ops surface) confirmed 19 findings; all fixed. Decisions applied
+without user interruption:
+
+- **Required-parameter enforcement moved from scenario writes to compute.** The UI
+  persists a selection first and collects params after, so rejecting an incomplete
+  selection made most modeled strategies unselectable (round-1 regression).
+  Type/range/enum checks still reject scenario writes; compute now refuses to run any
+  scenario missing required params (`invalid_params`) — closing the original
+  "missing param silently models $0" hole for legacy rows too.
+- **Selections validate against the pinned version's schema** (published or
+  deprecated), not the strategy's current version — a republish must not block or
+  mis-validate plans pinned to an older semver. Unknown versions are rejected at
+  write time.
+- **Superseded strategy versions are deprecated on approve** (one published row per
+  strategy); compute and validation intentionally keep resolving deprecated semvers
+  so issued plans never break.
+- **PTET in an entity loss year deepens the pass-through loss** rather than silently
+  dropping the federal deduction. Allocation convention: S corp first (no SE-base
+  effect — the conservative choice), else partnership; a note is emitted either way.
+  With no electable entity at all the deduction stays unmodeled and a note says so.
+- **bracket-management is now carry-threaded**: income deferred out of year N lands in
+  year N+1 (and acceleration mirrors). Steady-state projection deltas net to zero
+  after year 1 instead of booking a phantom recurring exclusion.
+- **Stripe invoices are send_invoice (30-day due, hosted invoice email)**, not
+  charge_automatically — a fresh customer has no payment method, so auto-charge
+  guaranteed instant `payment_failed`. All Stripe calls carry plan-derived
+  idempotency keys so timeouts can't double-invoice.
+- **Manual engagement override now requires plan ≥ presented**, matching
+  send-letter/send-invoice — pre-review terminal states were recordable but silently
+  never advanced the plan, and a draft delete would have dropped the row.
+- **Signature-valid webhooks with unresolvable plan_ids are acked `ignored`**
+  (never 500): a poison event must not retry for days or get the endpoint disabled.
+  OpenSign plan_id is accepted top-level or under metadata (round-trip asymmetry);
+  Stripe signature parsing accepts any matching `v1` during secret rotation.
+- **Research links on frozen plans: additions allowed, deletions blocked** — by
+  design. The elevated-risk gate is evaluated at presentation; later additions are
+  supplementary evidence and cannot retroactively satisfy the gate, but deleting a
+  link would destroy the evidence the presentation relied on.
+- **Reviewer swap while in-review clears the checklist** — ticks are the assigned
+  reviewer's attestation and are never inherited.
+
+## QA round 3 — convergence fixes
+
+Round 3 reviewed only the round-2 diffs. Engine/strategies verified clean; eight
+residual defects fixed:
+
+- **Rejected pipeline drafts now carry status `rejected`**, distinct from
+  `deprecated` (= superseded but once published). Deprecated stays pinnable and
+  computable for issued plans; rejected content can never enter a scenario — the
+  shared status was a review-gate bypass.
+- **Stripe invoicing hardened for retries and re-sends**: one customer per
+  engagement pinned in the new `engagements.stripe_customer_id` column (migration
+  0013, additive); the invoice is created FIRST with pending items excluded and the
+  line item attached directly to it, so an orphaned item from a failed attempt can
+  never be swept into a later invoice after a fee change; idempotency keys are
+  scoped per send attempt (+ amount), so a timeout retry replays while a deliberate
+  re-send mints a fresh invoice and a params drift can't 400 sends for 24h; an item
+  failure best-effort deletes the draft invoice so an empty $0 invoice can't
+  auto-finalize. Send-invoice now requires a client contact email
+  (`no_client_email`) — send_invoice collection emails the hosted invoice, and a
+  missing address meant "sent" with nothing delivered.
+- **The strategy draft/sweep trigger router is planning-flag gated** like the
+  review queue its items land in.
+- **Web**: StrategiesTab remounts per scenario (cached plan switches could write
+  plan A's selections into plan B with one click); profile saves share a
+  mutation-key guard with Compute; a rejected param value stays visible next to
+  its validation error instead of snapping back.
+
+## QA round 4 — Stripe retry lifecycle and error-hold scope
+
+- **Invoices are now created inert and finalized explicitly**: create draft (no
+  auto_advance, pending items excluded) → attach item → finalize(auto_advance).
+  An orphaned draft from any mid-sequence failure or client timeout is harmless —
+  it never finalizes, never emails, and can never auto-pay at $0 and falsely mark
+  the engagement paid. A same-attempt retry replays the cached create/item
+  responses and completes the remaining steps; the previous delete-on-failure
+  path could wedge sends for 24h by replaying a deleted invoice's id.
+- **Stripe webhooks ignore paid/failed events whose invoice id contradicts the
+  pinned `stripe_invoice_id`** (`invoice_mismatch` ack); a null pin still accepts
+  the manual dashboard-invoice flow.
+- **Web param-error hold is per-strategy**: an errored strategy keeps its
+  rejected value visible while its PATCH payload reverts to the last-persisted
+  entry, so edits to OTHER strategies are no longer collaterally rejected and
+  silently dropped.
+- Coverage added: Stripe adapter sequence tests (ordering, inert draft, key
+  scoping, customer reuse, failure path) and webhook invoice-mismatch tests.
+
+## QA round 5 — invoice supersession semantics
+
+- **The round-4 invoice-mismatch webhook check is removed.** With the
+  inert-draft lifecycle, an orphaned draft can never finalize or auto-pay at $0,
+  so every paid/failed invoice bearing the plan metadata is either our finalized
+  invoice or one an operator deliberately created — a real payment of a
+  superseded invoice is money collected and must be recorded, not ack-ignored.
+- **A deliberate re-send voids the previously pinned invoice first**
+  (best-effort — a void of an already-paid invoice fails harmlessly), closing
+  the pay-both-emails exposure the mismatch check tried to paper over.
+- **The webhook refreshes the invoice pin only on `paid`** — a stale invoice's
+  `payment_failed` must not re-point the pin that the next re-send voids.
+- **Web error-hold lifecycle**: held (errored) strategies substitute from a
+  last-ACCEPTED ref (not the laggy query cache), and a successful save of an
+  unrelated edit clears only the errors of values that actually shipped.
+- Stripe's "Email finalized invoices to customers" account setting (default ON)
+  is what emails send_invoice invoices at finalization — now called out in the
+  operator guide's go-live checklist.
+
+## QA round 6 — final invoice-send guards
+
+- **Send-invoice 409s `already_paid`** when the engagement's payment status is
+  already terminal — minting a fresh invoice would email a client who already
+  paid (a paid invoice can't be voided). Genuine out-of-band re-billing goes
+  through the audited manual override.
+- **A failed void of a superseded invoice is logged loudly** (invoice id +
+  reason) instead of silently swallowed — the operator can void it in the
+  Stripe dashboard.
+- **Accepted residual risk (documented, not fixed):** if a re-send crashes
+  between finalizing the replacement invoice and persisting its id, AND the fee
+  is then changed before retrying, the finalized-but-unpinned invoice is
+  unreachable by the void mechanism (same-fee retries converge via idempotency
+  replay). The window is a mid-request crash followed by a fee change. Any such
+  invoice is discoverable in Stripe by the `plan_id` metadata stamped on every
+  invoice at creation (dashboard/API metadata search) — the round-6 void-failure
+  log covers the separate failed-void case only.

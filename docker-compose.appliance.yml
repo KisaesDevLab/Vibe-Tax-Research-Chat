@@ -36,6 +36,7 @@ services:
       GITHUB_WEBHOOK_SECRET: ${VIBE_TAX_GITHUB_WEBHOOK_SECRET:-}
     volumes:
       - vibe-tax-attachments:/app/attachments
+      - vibe-tax-deliverables:/app/storage/deliverables
       - vibe-tax-skills:/app/workspaces
     healthcheck:
       test: ['CMD', 'wget', '-q', '-O', '-', 'http://localhost:4000/api/ping']
@@ -84,4 +85,5 @@ networks:
 
 volumes:
   vibe-tax-attachments:
+  vibe-tax-deliverables:
   vibe-tax-skills:

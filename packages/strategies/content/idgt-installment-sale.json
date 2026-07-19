@@ -1,0 +1,193 @@
+{
+  "id": "idgt-installment-sale",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Installment Sale to an IDGT (Succession)",
+  "category": "income-timing",
+  "modeled": false,
+  "complexity": 5,
+  "riskRating": "elevated",
+  "entityTypes": ["s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "structural",
+  "advisor": {
+    "summary": "The owner sells appreciating business interests to an intentionally defective grantor trust for an installment note at the applicable federal rate. Because Rev. Rul. 85-13 treats grantor and trust as one taxpayer, the sale triggers no gain and the note interest is neither income nor deduction — the transaction is an income-tax non-event that freezes the estate at the note's value while all growth above the AFR accrues to the beneficiaries outside the transfer-tax base. The grantor's continued payment of the trust's income tax is an additional, gift-tax-free wealth shift. Two facts discipline the recommendation post-OBBBA: the $15 million permanent exemption means many estates no longer need a freeze at all, and assets sold to the trust keep carryover basis, giving up the step-up at death. This is an elevated-risk, counsel-led structure — the record is advisory, and the engine models none of it.",
+    "mechanics": [
+      "The trust is drafted with a deliberate grantor-trust trigger — most commonly the §675(4)(C) power to substitute assets of equivalent value — making it defective for income tax under §§671-679 while remaining outside the gross estate for transfer tax.",
+      "A seed gift, customarily around 10% of the intended purchase price, capitalizes the trust first so the note is respected as debt rather than a retained equity strip; a thin trust is the classic §2036 inclusion setup.",
+      "The sale closes at appraised fair market value against an installment note bearing at least the AFR (§1274(d); §7872 governs below-market recharacterization). Interest-only with a balloon is common. Under Rev. Rul. 85-13, no gain is recognized and no interest income or deduction arises while grantor status holds.",
+      "The freeze: the estate holds a note fixed at principal plus AFR interest, and every dollar of growth above that hurdle accrues in the trust for the beneficiaries — amplified where defensible minority or marketability discounts price the interests sold.",
+      "The tax burn: the grantor pays the income tax on all trust income, and Rev. Rul. 2004-64 confirms those payments are not additional gifts — the estate shrinks further while the trust compounds pre-tax.",
+      "The basis cost: trust assets keep carryover basis, and Rev. Rul. 2023-2 confirms no §1014 step-up at death for grantor-trust assets excluded from the gross estate. The substitution power allows swapping high-basis assets in and pulling low-basis assets back into the estate late in life to aim the step-up where it matters."
+    ],
+    "authority": [
+      {
+        "type": "Admin",
+        "cite": "Rev. Rul. 85-13",
+        "note": "Grantor and grantor trust are one taxpayer — the sale is ignored for income tax, which is the hinge the whole structure turns on."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§671-679",
+        "note": "The grantor trust rules that make the trust defective for income tax purposes only."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §675(4)(C)",
+        "note": "The nonfiduciary power of substitution — the customary defect trigger, which doubles as the basis-management swap lever."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Rul. 2004-64",
+        "note": "The grantor's payment of the trust's income tax is not a gift — the authority behind the tax-burn wealth shift."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§1274(d), 7872",
+        "note": "The note must carry at least the AFR or the shortfall is recharacterized as a gift."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §2036",
+        "note": "The inclusion risk: an undercapitalized trust, missed payments, or retained control pulls the transferred assets back into the gross estate at date-of-death value."
+      },
+      {
+        "type": "Case",
+        "cite": "Estate of Powell v. Commissioner, 148 T.C. 392 (2017)",
+        "note": "The Tax Court's expansive reading of §2036 retained control — the modern warning case for transfers where the senior generation keeps its hands on the assets."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Rul. 2023-2",
+        "note": "No basis step-up at death for grantor-trust assets not includible in the gross estate — the carryover-basis cost the freeze must outweigh."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1014",
+        "note": "The step-up the family gives up on assets sold to the trust — quantify it against the estate tax saved before recommending."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §2010, as amended by P.L. 119-21 (OBBBA)",
+        "note": "The permanent $15M (indexed) basic exclusion — the threshold question of whether this client needs a freeze at all."
+      }
+    ],
+    "requirements": [
+      "An estate realistically expected to exceed the $15M-per-person (indexed) exemption, or high-growth assets on a credible path to exceed it.",
+      "A qualified appraisal of the interests sold, with any minority or marketability discounts defensibly supported.",
+      "A seed gift — roughly 10% of the purchase price is the practice norm, not a safe harbor — reported on Form 709 with adequate disclosure.",
+      "A real note: AFR or better, security, an enforced payment schedule, and trust cash flow (typically distributions from the interest sold) that can actually service it.",
+      "Estate counsel leading the drafting, with CPA and appraiser coordinated — this is not a single-advisor project."
+    ],
+    "risks": [
+      "§2036 inclusion is the leading audit theory: a thin seed gift, missed note payments, or retained control invites the government to pull the assets back into the estate at death-date value — Estate of Powell v. Commissioner, 148 T.C. 392 (2017) shows how far retained-control arguments now reach.",
+      "Valuation is the second front: discounts on closely held interests are the standing IRS attack, and only adequate-disclosure gift reporting starts the statute of limitations running.",
+      "The carryover-basis cost is real: for low-basis assets with modest growth, the income tax lost from the forfeited §1014 step-up (Rev. Rul. 2023-2) can exceed the estate tax saved — both taxes must be modeled before commitment.",
+      "Death before the note is retired leaves genuinely unsettled income-tax questions on the unpaid balance; structure to retire the note during life where possible.",
+      "Ending grantor status mid-stream — deliberately or by drafting accident — can trigger gain to the extent the note balance exceeds basis, and the burn must remain affordable for as long as status holds.",
+      "Post-OBBBA, a freeze sized for the old sunset math may be unnecessary complexity: below roughly $30M married, the permanent exemption often covers the estate without it."
+    ],
+    "stateNotes": [
+      "States generally conform to the federal grantor-trust income-tax treatment through their federal starting points, but separate state estate and inheritance taxes with much lower exemptions can keep a freeze valuable even where the federal exemption covers the client — check every state of residence and property situs.",
+      "PTET interaction: pass-through interests sold to the trust can keep their entity-level PTET elections; while grantor status holds, the deemed-owner rules put the PTET deduction and any credit on the grantor's own returns.",
+      "Missouri imposes no state estate or inheritance tax and conforms to the federal income treatment through RSMo §143.121; the Missouri SALT Parity Act election (RSMo §143.436) continues to function for entity interests held by the trust."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["annual-gifting-program", "flp-gifting"]
+    },
+    "reviewChecklist": [
+      "The exemption math is rerun under the permanent $15M (indexed) exclusion and the client genuinely needs a freeze.",
+      "The estate tax saved and the §1014 step-up forgone are both modeled, and the net favors the transaction.",
+      "Seed gift meets or exceeds the customary 10% benchmark and Form 709 with adequate disclosure is filed.",
+      "Note terms are at AFR or better with security, a payment calendar exists, and the first payments have actually been made.",
+      "Appraisal quality and discount support are reviewed by someone other than the appraiser.",
+      "A swap-power basis plan is documented for late-life repositioning of low-basis assets.",
+      "Counsel, CPA, and appraiser roles are coordinated in writing."
+    ]
+  },
+  "client": {
+    "teaser": "Lock in today's value for the estate tax — tomorrow's growth goes to your family.",
+    "headline": "Freeze your estate at today's value; give the growth to your kids",
+    "plainEnglish": [
+      "If your business is growing fast, the estate tax risk is not today's value. It is the value years from now. This plan freezes what the estate tax ever sees at today's number.",
+      "You set up a special family trust. Then you sell your business interest to it for a promissory note. Because of how the trust is built, the sale itself triggers no income tax. Your estate holds the note. The trust holds the business — and all its future growth — for your family.",
+      "There is a quiet extra push. You keep paying the income tax on what the trust earns. The IRS does not count those payments as gifts. So your estate shrinks a little more each year while the trust grows untouched. One trade-off: the family keeps your old cost basis, so we weigh both taxes before you commit."
+    ],
+    "analogy": "It is like selling the family orchard to your kids at today's price and taking back an IOU. Every future harvest is theirs. The taxman can only ever see the IOU.",
+    "benefits": [
+      "Future growth of the business happens outside your taxable estate",
+      "No income tax on the sale itself when structured correctly",
+      "Your ongoing tax payments quietly move even more wealth to the family",
+      "Doubles as a real succession plan with the next generation in place"
+    ],
+    "steps": [
+      "WE model your estate with and without the freeze, including the cost-basis trade-off.",
+      "WE coordinate the estate attorney who drafts the trust and the appraiser who prices the asset.",
+      "YOU make the seed gift and sign the sale documents; the note payments start on schedule.",
+      "WE check the plan every year — payments made, valuations current, the law unchanged."
+    ],
+    "clientCommitments": [
+      "Keep the note real: payments on time, every time",
+      "Budget for the trust's income tax bill landing on your own return each year",
+      "Involve us and counsel before any change to the trust or the business ownership"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "structural",
+    "annualMaintenance": [
+      "Annual note-payment compliance check with the trustee",
+      "Estate projection refresh as the exemption indexes and asset values move",
+      "Grantor-status confirmation and swap-power basis review"
+    ],
+    "deliverables": [
+      "Freeze feasibility memo — estate tax saved vs. step-up forgone, both modeled",
+      "Transaction closing binder: trust, appraisal, note, security agreement, Form 709",
+      "Annual compliance letter documenting payments and valuations"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "totalBusinessProfit",
+        "op": "gt",
+        "value": 750000
+      }
+    ],
+    "reason": "Selling to a grantor trust freezes estate value while income tax stays with the grantor."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §§2036 and 2010 developments",
+      "Grantor trust legislative proposals (§§671-679)",
+      "The Rev. Rul. 85-13 line of authority"
+    ],
+    "keywords": [
+      "IDGT",
+      "installment sale to grantor trust",
+      "estate freeze",
+      "2036",
+      "seed gift",
+      "grantor trust"
+    ],
+    "reviewTriggers": [
+      "Any legislative proposal taxing grantor-trust sales or forcing estate inclusion",
+      "New §2036 case law on seed capital or retained control",
+      "Exemption indexing updates that change who needs a freeze"
+    ]
+  }
+}

@@ -1,0 +1,298 @@
+{
+  "id": "section-127-education",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Section 127 Educational Assistance",
+  "category": "health-fringe",
+  "modeled": true,
+  "complexity": 2,
+  "riskRating": "low",
+  "entityTypes": ["s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "A written §127 educational assistance program pays up to $5,250 per employee per year for tuition, fees, books, and supplies — excluded from income and FICA, deductible to the business, and with no requirement that the education relate to the job. The exclusion also covers principal and interest on the employee's qualified education loans, a feature OBBBA made permanent while indexing the cap after 2026. The constraint that disciplines owner planning is §127(b)(3): no more than 5% of benefits may go to >5% owners, their spouses, and their dependents — so the clean family play is a bona fide employed adult child who is neither a dependent nor an equity holder. The engine caps the deduction at $5,250 per participating employee and deducts it at the entity.",
+    "mechanics": [
+      "Program requirements under §127(b): a separate written plan for the exclusive benefit of employees, reasonable notice, no choice between assistance and other taxable compensation, and the 5% concentration limit on the owner class.",
+      "Covered benefits reach tuition, fees, books, and supplies at any level, job-related or not; meals, lodging, transportation, tools the employee keeps, and most hobby courses are out.",
+      "Payments of principal and interest on the employee's qualified education loans count toward the same cap — made permanent by P.L. 119-21 (OBBBA), which also indexes the $5,250 for years after 2026.",
+      "Excluded amounts are not FICA wages under §3121(a)(18), so both employer and employee save payroll tax relative to equivalent salary.",
+      "The owner-class fence of §127(b)(3): >5% owners, their spouses, and their dependents may not absorb more than 5% of total benefits — a solo owner cannot self-fund a degree, and a dependent college-age child on payroll is inside the fence.",
+      "Job-related education above the cap can still travel as a §132(d) working-condition fringe backed by §162 principles — no dollar limit but a strict relatedness standard; and employer-paid loan interest bars the employee's own §221 deduction for the same dollars."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §127",
+        "note": "The exclusion: the per-employee cap, written-plan and notice requirements, and coverage of loan payments as educational assistance."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §127(b)(3)",
+        "note": "The owner limitation: no more than 5% of benefits paid may go to >5% owners, their spouses, or their dependents."
+      },
+      {
+        "type": "IRC",
+        "cite": "P.L. 119-21 (OBBBA) — §127 amendments",
+        "note": "Made the student-loan-payment feature permanent and indexed the $5,250 cap for years after 2026."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §3121(a)(18)",
+        "note": "Excludes §127 amounts from FICA wages — the payroll-tax layer of the benefit."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §132(d)",
+        "note": "The uncapped working-condition-fringe fallback for strictly job-related education above the §127 limit."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §162(a)",
+        "note": "The deduction standard behind both the program cost and the §132(d) fallback."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §221(e)(1)",
+        "note": "No student-loan interest deduction for interest the employer paid under §127 — no double benefit."
+      }
+    ],
+    "requirements": [
+      "A separate written plan adopted before benefits are paid, with reasonable employee notification.",
+      "Per-employee benefits held to the cap ($5,250 for 2026; indexed after) — the excess is W-2 wages.",
+      "A year-end 5% concentration test across everything paid to the owner class.",
+      "For family use: the employed child is bona fide, non-dependent, and equity-free after attribution."
+    ],
+    "risks": [
+      "The concentration test is fractional, and that is the leading exam theory: if the only user of the plan is inside the owner class, 100% of benefits went to restricted persons and the exclusion fails — §127(b)(3) itself is the controlling authority, and no ruling rescues a solo owner's self-funded degree.",
+      "A still-dependent child on payroll is inside the restricted class; the popular pitch of running a dependent's tuition through the business fails on the statute's face.",
+      "Bona fide employment of the child is the companion issue — real duties, reasonable wages, payroll filings — the same substance discipline as any family-payroll strategy.",
+      "Amounts above the cap are wages unless independently excludable as §132(d) job-related education."
+    ],
+    "stateNotes": [
+      "Conformity: most federal-AGI states conform to the §127 exclusion, including the loan-payment feature; verify any state that decoupled from the loan-payment expansion before promising state-level exclusion.",
+      "PTET: the entity's deduction reduces the pass-through income base a PTET election is computed on — sequenced, not stacked.",
+      "Missouri: conforms on a rolling basis through RSMo §143.121; excluded §127 benefits stay out of Missouri AGI, and a PTET-electing Missouri entity (RSMo §143.436) computes that tax after this deduction."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["kids-401k"]
+    },
+    "reviewChecklist": [
+      "Written plan executed before the first payment; notice to eligible employees documented.",
+      "Recipient analysis complete: dependency status and equity (with attribution) verified for any family member.",
+      "Per-employee benefit tracking against the current-year cap.",
+      "Year-end 5% concentration computation retained.",
+      "Substantiation — registrar bills, loan statements — collected before each payment."
+    ]
+  },
+  "client": {
+    "teaser": "The business can pay for school or student loans — deductible to it, tax-free to them.",
+    "headline": "Let the business pay for education, tax-free",
+    "plainEnglish": [
+      "A business can set up a formal education benefit: up to $5,250 per employee, per year, for tuition, books, fees — and student loan payments too. The business deducts it. The employee pays no tax on it. It even skips payroll taxes, which a raise would not.",
+      "The honest part: the rules block owners from steering this to themselves, their spouses, or the kids they claim on their return. So it cannot pay for your own dependent college student.",
+      "Where it shines: employees you want to help with school or student debt, and adult children who truly work in your business and are no longer your dependents. For them, the payments are a clean deduction for you and tax-free money for them."
+    ],
+    "analogy": "A $5,250 raise gets taxed before it ever reaches the tuition office. This benefit sends the same dollars straight to the school, with no tax toll on the road.",
+    "benefits": [
+      "Up to $5,250 per employee, per year — deductible and tax-free",
+      "Covers student loan payments, not just tuition",
+      "Skips payroll taxes on both sides, unlike a raise",
+      "A standout perk for hiring and keeping good people"
+    ],
+    "steps": [
+      "WE check who in your circle can actually benefit before promising numbers.",
+      "WE draft the written plan and the employee notice.",
+      "YOU have the business pay the school or loan servicer and keep the records.",
+      "WE track the caps and run the year-end ownership test."
+    ],
+    "clientCommitments": [
+      "Only pay for people the rules actually allow — we confirm before each new participant",
+      "Keep tuition bills and loan statements for every payment",
+      "If a family member joins the plan, they really work and really get paid"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Update the plan cap once indexing begins after 2026",
+      "Run the year-end 5% concentration test",
+      "Refresh dependency and equity status for family participants"
+    ],
+    "deliverables": [
+      "Written §127 plan document and employee notice",
+      "Participant eligibility memo (dependency and attribution analysis)",
+      "Per-employee benefit tracking schedule",
+      "Year-end concentration test workpaper"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 34,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "assistanceAmount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "participatingEmployees": {
+          "type": "number",
+          "minimum": 1
+        }
+      },
+      "required": ["assistanceAmount"]
+    },
+    "apply": {
+      "module": "section-127-education@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasEmployees",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "Up to $5,250 per employee of tuition or student-loan payments, deductible and excluded."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj S-corp 400k/120k, 3 staff at the cap",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 400000,
+              "employeeWages": 150000,
+              "ownerWages": 120000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "assistanceAmount": 15750,
+          "participatingEmployees": 3
+        },
+        "expect": {
+          "totalBurdenDelta": -3024,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj S-corp 300k/100k, one employee 5,250",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 300000,
+              "employeeWages": 45000,
+              "ownerWages": 100000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "assistanceAmount": 5250,
+          "participatingEmployees": 1
+        },
+        "expect": {
+          "totalBurdenDelta": -1008,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §127", "IRS guidance on employer student-loan assistance"],
+    "keywords": [
+      "section 127",
+      "educational assistance",
+      "$5,250 education benefit",
+      "employer student loan payments"
+    ],
+    "reviewTriggers": [
+      "First indexing of the cap after 2026",
+      "New §127 plan-design guidance or rulings",
+      "Family participant status changes (dependency, equity)"
+    ]
+  }
+}

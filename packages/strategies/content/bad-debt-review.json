@@ -1,0 +1,280 @@
+{
+  "id": "bad-debt-review",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Bad Debt Deduction Review (Accrual)",
+  "category": "business-expenses",
+  "modeled": true,
+  "complexity": 2,
+  "riskRating": "low",
+  "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "For an accrual-method business, the receivables aging is a standing list of income that was taxed when billed and may never be collected. Section 166 allows an ordinary deduction for business debts that became wholly worthless during the year and — for business debts only — for partially worthless debts to the extent actually charged off on the books. The review is an annual year-end sweep: identify dead accounts, document why they died, book the charge-offs, and stop paying tax on phantom income. Cash-method businesses have nothing to deduct here — the unpaid invoice was never income — which makes method confirmation the first step, not a footnote. The model applies the charged-off amount as an ordinary entity deduction; establishing worthlessness and the bona fides of the debt is file work the engine cannot do.",
+    "mechanics": [
+      "§166(a)(1) allows the deduction for a business debt that became wholly worthless within the year — a facts determination built on debtor insolvency or bankruptcy, disappearance, failed collection efforts, and the passage of time, with no formal charge-off required (though booking one is best practice).",
+      "Partial worthlessness is narrower: §166(a)(2) allows it only to the extent the debt is actually charged off on the books during the year — under Reg. §1.166-3 the charge-off entry is a statutory prerequisite, not bookkeeping hygiene.",
+      "The deduction cannot exceed basis in the debt (Reg. §1.166-1(e)): accrual receivables carry basis because the income was recognized; a cash-method taxpayer's unpaid invoice has none, so this review belongs on accrual files only.",
+      "Worthlessness is proven with objective evidence — collection letters, agency referrals, judgments returned unsatisfied, bankruptcy notices — and Reg. §1.166-2(b) confirms legal action is unnecessary where the facts show a suit would not collect.",
+      "Only specific identified charge-offs count: the reserve method was repealed for non-bank taxpayers in 1986, so a book allowance for doubtful accounts deducts nothing until individual accounts are written off.",
+      "A later recovery of a deducted debt is income in the recovery year under the tax-benefit rule — no amended return, just pickup when the surprise check arrives."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §166",
+        "note": "The bad-debt deduction: wholly worthless debts, partially worthless business debts to the extent charged off, and short-term capital loss treatment for nonbusiness debts of individuals."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.166-1(e)",
+        "note": "The basis limitation that shuts cash-method taxpayers out — unpaid fees and rents are deductible only if previously included in income."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.166-2",
+        "note": "Evidence of worthlessness: all pertinent facts, bankruptcy as an indicator, and no requirement to sue when suing would be futile."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.166-3",
+        "note": "Partial worthlessness conditioned on an actual charge-off on the books during the year."
+      },
+      {
+        "type": "Case",
+        "cite": "Dixie Dairies Corp. v. Commissioner, 74 T.C. 476 (1980)",
+        "note": "The multi-factor debt-versus-equity framework applied when a related-party loan is challenged as a capital contribution — the threshold every owner or affiliate receivable must clear."
+      }
+    ],
+    "requirements": [
+      "An accrual-method taxpayer with receivables previously taken into income (or genuine basis in loaned funds).",
+      "A bona fide debtor-creditor relationship — related-party balances need notes, interest, and a real repayment expectation.",
+      "Worthlessness established in the deduction year with a documented collection history.",
+      "For partial worthlessness: the charge-off entry booked before year end."
+    ],
+    "risks": [
+      "The leading audit theory is timing: the IRS argues the debt went worthless in an earlier (often closed) year or is not worthless yet, and wins whenever the file lacks a dated worthlessness event — contemporaneous collection records are the defense.",
+      "Related-party loans are the second front: owner and affiliate balances get recharacterized as equity or gifts under the Dixie Dairies Corp. factors, converting an ordinary deduction into nothing.",
+      "Cash-method owners who read about bad-debt write-offs will ask for one — zero basis, zero deduction, and claiming it anyway is an exam flag the return signer owns.",
+      "Book reserves are not deductions; conflating the allowance for doubtful accounts with identified charge-offs overstates the deduction by the whole reserve.",
+      "Recoveries are taxable when received — set that expectation at write-off time, not exam time."
+    ],
+    "stateNotes": [
+      "Conformity: states that begin from federal AGI or federal taxable income conform to §166 automatically — the write-off needs no separate state computation.",
+      "PTET interaction: the write-off is an ordinary entity deduction that already reduces the base a pass-through entity tax election is computed on; the engine sequences PTET after it, so no additional state-side benefit should be layered on.",
+      "Missouri: conforms through its federal starting points (RSMo §143.121 for individuals, §143.431 for corporations) with no bad-debt addback, and a Missouri SALT Parity Act (RSMo §143.436) electing entity simply computes on the post-write-off income."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["cash-vs-accrual"]
+    },
+    "reviewChecklist": [
+      "Client's accounting method confirmed as accrual (or basis otherwise established) before any amount is modeled.",
+      "Each written-off account has a worthlessness file: collection attempts, correspondence, bankruptcy or judgment evidence, and the year the facts crystallized.",
+      "Partial write-offs supported by charge-off entries actually booked before year end.",
+      "Related-party balances tested against the debt-versus-equity factors and documented as bona fide loans.",
+      "The modeled amount ties to the charge-off entries, not to a general reserve."
+    ]
+  },
+  "client": {
+    "teaser": "Stop paying tax on invoices that will never be paid.",
+    "headline": "Get your tax back on money you'll never collect",
+    "plainEnglish": [
+      "If your books count income when you send an invoice, there is a hidden cost. You pay tax on every sale — even the ones that never get paid. A customer who folded or vanished leaves you taxed on money you never saw.",
+      "The tax law has a fix. When an invoice becomes truly uncollectible, you can write it off and deduct it. That takes back the income you reported but never received. The key is claiming it in the right year, with proof you tried to collect.",
+      "We make it a year-end routine. We sweep your unpaid invoices, flag the dead ones, document why, and record the write-offs before December 31. Your tax bill ends up matching the money you actually made."
+    ],
+    "analogy": "Paying tax on a bounced paycheck would feel absurd. This is the process for getting that tax back.",
+    "benefits": [
+      "Deducts income you reported but never collected",
+      "Cleans up your books at the same time",
+      "Becomes a repeatable year-end routine",
+      "If a written-off customer pays later, you simply report it then — no penalty"
+    ],
+    "steps": [
+      "WE review your unpaid invoices near year end.",
+      "WE flag the accounts that are truly dead and document why.",
+      "YOU approve the write-offs so we can record them before December 31.",
+      "WE claim the deduction on the return and track any later recoveries."
+    ],
+    "clientCommitments": [
+      "Keep collection emails, letters, and notices — they are the proof",
+      "Approve write-offs before year end rather than at tax time"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Fourth-quarter receivables-aging review with worthlessness documentation",
+      "Book charge-off entries before year end and reconcile them to the return",
+      "Track written-off accounts for recovery income in later years"
+    ],
+    "deliverables": [
+      "Annual bad-debt review memo with a worthlessness file for each account",
+      "Charge-off journal entries and reconciliation schedule"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 34,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "worthlessAmount": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["worthlessAmount"]
+    },
+    "apply": {
+      "module": "bad-debt-review@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasBusiness",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "Accrual-method businesses often carry receivables that are already worthless and deductible."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj Sch C 300k, 20k written off",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 300000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "worthlessAmount": 20000
+        },
+        "expect": {
+          "totalBurdenDelta": -4174,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "single S-corp 200k/80k, 8k written off",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 200000,
+              "employeeWages": 0,
+              "ownerWages": 80000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "worthlessAmount": 8000
+        },
+        "expect": {
+          "totalBurdenDelta": -1536,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §166", "Reg. §1.166-1 through -10"],
+    "keywords": [
+      "bad debt deduction",
+      "166",
+      "worthless receivable",
+      "charge-off",
+      "partially worthless debt"
+    ],
+    "reviewTriggers": [
+      "New case law on worthlessness timing or related-party debt",
+      "Any statutory change to §166 or its regulations"
+    ]
+  }
+}

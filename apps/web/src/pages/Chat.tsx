@@ -12,6 +12,9 @@ import { FollowUpActions } from '../components/panels/FollowUpActions';
 import { useChatStream, type StreamingMessage } from '../hooks/useChatStream';
 import { api, apiFetch, ApiError } from '../lib/api';
 import { extractFollowUpActions, type FollowUpVerb } from '../lib/follow-up';
+import { useAppConfig } from '../lib/app-config';
+import { ArchiveDialog } from '../components/ArchiveDialog';
+import { NudgeBanner } from '../components/NudgeBanner';
 import type { ChatDTO, MessageDTO } from '@vibe/shared';
 
 interface AttachmentDTO {
@@ -90,7 +93,7 @@ export function ChatPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   if (!chatId) {
     return (
-      <div className="flex h-dvh overflow-hidden bg-paper">
+      <div className="flex h-full overflow-hidden bg-paper">
         <ChatSidebar mobileOpen={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)} />
         <div className="flex-1 flex flex-col min-h-0">
           <header className="md:hidden shrink-0 flex items-center px-4 py-3 border-b border-ink/10">
@@ -157,6 +160,9 @@ function ChatView({ chatId }: { chatId: string }) {
   >([]);
   const [dragOver, setDragOver] = useState(false);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
+  // TP-11 — archive-to-client dialog (planning module only).
+  const { config } = useAppConfig();
+  const [showArchive, setShowArchive] = useState(false);
 
   const { data, refetch } = useQuery<{ chat: ChatDTO; messages: MessageDTO[] }>({
     queryKey: ['chat', chatId],
@@ -246,17 +252,17 @@ function ChatView({ chatId }: { chatId: string }) {
   }, [streaming]);
 
   return (
-    // h-dvh + overflow-hidden so the sidebar and chat column are each
-    // capped at the viewport. h-dvh (vs h-screen / 100vh) tracks the
-    // *visible* viewport on iOS Safari so the composer doesn't get hidden
-    // behind the URL bar. Mobile (<md): sidebar is an off-canvas drawer
-    // and the main column takes the full width. md+: sidebar is inline.
-    // The chat column is a flex column with min-h-0 (the magic that lets
-    // a flex child actually scroll instead of forcing the parent taller),
-    // header and form are shrink-to-content, and only <main> scrolls
-    // between them.
+    // h-full + overflow-hidden so the sidebar and chat column are each
+    // capped at the viewport height granted by AppShell (which owns h-dvh
+    // — dvh tracks the *visible* viewport on iOS Safari so the composer
+    // doesn't get hidden behind the URL bar). Mobile (<md): sidebar is an
+    // off-canvas drawer and the main column takes the full width. md+:
+    // sidebar is inline. The chat column is a flex column with min-h-0
+    // (the magic that lets a flex child actually scroll instead of
+    // forcing the parent taller), header and form are shrink-to-content,
+    // and only <main> scrolls between them.
     <div
-      className="flex h-dvh overflow-hidden bg-paper"
+      className="flex h-full overflow-hidden bg-paper"
       onDragOver={(e) => {
         // Capture drag-over at the chat-column level so users can drop
         // anywhere on the page and have the file land on the active chat.
@@ -312,12 +318,28 @@ function ChatView({ chatId }: { chatId: string }) {
             {data?.chat.title ?? 'Loading…'}
           </div>
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+            {config.planning_enabled && data?.chat && (
+              <button
+                type="button"
+                onClick={() => setShowArchive(true)}
+                className="text-xs px-2 py-1 border border-ink/20 rounded hover:bg-ink/5"
+                title="Freeze an immutable snapshot and file it to a client"
+              >
+                Archive…
+              </button>
+            )}
             <ReferenceLibraryToggle chat={data?.chat} onChange={() => void refetch()} />
             <div className="font-mono text-xs text-ink/50 hidden sm:block">
               {data?.messages.length ?? 0} messages
             </div>
           </div>
         </header>
+        {config.planning_enabled && (
+          <NudgeBanner chatId={chatId} onArchiveClick={() => setShowArchive(true)} />
+        )}
+        {showArchive && data?.chat && (
+          <ArchiveDialog chat={data.chat} onClose={() => setShowArchive(false)} />
+        )}
 
         <main className="flex-1 min-h-0 overflow-y-auto">
           <div className="px-4 sm:px-6 md:px-7 py-6 max-w-4xl w-full">

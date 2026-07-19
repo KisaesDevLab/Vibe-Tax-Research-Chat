@@ -1,0 +1,159 @@
+{
+  "id": "deferred-comp",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Nonqualified Deferred Compensation for Owners",
+  "category": "payroll-family",
+  "modeled": false,
+  "complexity": 4,
+  "riskRating": "moderate",
+  "entityTypes": ["c-corp", "s-corp"],
+  "typicalSavingsBand": "structural",
+  "advisor": {
+    "summary": "A nonqualified deferred compensation plan lets an owner-executive elect, before the service year, to take compensation later — pushing income out of peak-rate years with no qualified-plan dollar caps. Section 409A supplies the discipline: elections are generally irrevocable before the year services begin, payout timing is fixed up front to a short list of permissible events, and a failure triggers immediate inclusion, a 20% additional tax, and premium interest. The structural screen comes first, though: §404(a)(5) holds the employer's deduction until the year the executive includes the income, so a pass-through owner deferring against their own K-1 is usually just deferring their own deduction. The clean fact patterns are C-corporation owner-executives and sellers taking deferred comp or consulting payments from an unrelated buyer. Advisory by design — the value rides on future-rate assumptions the deterministic engine does not project.",
+    "mechanics": [
+      "Election timing under §409A(a)(4): the deferral election must generally be locked before January 1 of the service year; performance-based compensation earns a narrow exception running to six months before the period ends.",
+      "Distributions under §409A(a)(2) may occur only on the six permissible events — separation from service, death, disability, a fixed date or schedule, change in control, or unforeseeable emergency — with no accelerations and no haircut withdrawals.",
+      "The arrangement must remain unfunded and unsecured: constructive receipt under Reg. §1.451-2 and the economic benefit doctrine tax any amount set aside beyond the reach of general creditors, which is why a rabbi trust works and a secured account does not.",
+      "The employer's deduction waits under §404(a)(5) until the year of the executive's inclusion — the matching rule that makes routine pass-through owner deferrals self-defeating.",
+      "FICA runs on the special timing rule of §3121(v)(2): deferred amounts are FICA-taxed when vested rather than when paid — often cheap for an executive already over the wage base, with the eventual payout then FICA-free."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §409A",
+        "note": "The governing statute for every NQDC arrangement — election timing, the six distribution events, anti-acceleration, and the inclusion-plus-20%-plus-interest failure cost."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.409A-1",
+        "note": "The definitional core of the regulations — deferral of compensation, separation from service, specified employees, and plan aggregation all live here."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §404(a)(5)",
+        "note": "Defers the employer's deduction to the inclusion year — the provision that screens out most pass-through owner deferrals."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.451-2",
+        "note": "Constructive receipt — compensation credited, set apart, or made available without substantial limitation is taxed currently; every plan design must clear it."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §3121(v)(2)",
+        "note": "The FICA special timing rule — deferred comp is FICA-taxed at vesting, frequently an advantage above the Social Security wage base."
+      }
+    ],
+    "requirements": [
+      "A written plan that satisfies §409A in form and in operation before the first deferral election is signed.",
+      "The right taxpayer profile: a C-corporation owner-executive, a key employee, or a seller deferring payments from an unrelated buyer — not an S-corp owner deferring against their own K-1.",
+      "Elections executed and documented before the service year, with the payout schedule fixed in the election itself.",
+      "Employer credit quality the executive can live with — deferred amounts are an unsecured claim, and a rabbi trust cures change-of-heart risk, never insolvency risk."
+    ],
+    "risks": [
+      "The leading exposure is a §409A operational failure — an early payment, a discretionary acceleration, a late election — which triggers immediate inclusion of all vested deferrals plus the 20% additional tax and premium interest; the penalty routinely dwarfs the benefit being chased.",
+      "Credit risk is structural: participants are general unsecured creditors, and an employer bankruptcy can erase decades of deferrals with no tax relief to match.",
+      "Deferring at known rates into unknown ones is a bet — legislation or a spike year at payout can invert the arbitrage entirely.",
+      "For pass-through owners, §404(a)(5) usually turns the play into a wash or worse; the combined owner-plus-entity math must be run before any benefit is claimed.",
+      "State trailing tax: deferred comp earned in one state can stay taxable there after a move unless paid as substantially equal periodic payments over ten years or more under the federal pension-sourcing statute (4 U.S.C. §114)."
+    ],
+    "stateNotes": [
+      "Missouri conforms to the federal inclusion timing through its federal-AGI starting point (RSMo §143.121) — deferred amounts hit the Missouri return in the same year they hit the federal one.",
+      "PTET interaction is timing-only: the entity's deduction is deferred to the inclusion year under federal law, so a Missouri pass-through entity tax election (RSMo §143.436) sees no base reduction until that year.",
+      "Missouri-specific: compensation earned in Missouri and paid to a retiree who has left the state can remain Missouri-source unless structured as periodic payments over ten years or more — payout design should anticipate a possible move."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["defined-benefit-plan"]
+    },
+    "reviewChecklist": [
+      "The fact-pattern screen is documented: entity type, expected rate path at payout, and employer credit quality all support deferral — and the file says so.",
+      "Plan documents drafted or reviewed by executive-comp counsel and checked against §409A in both form and operation.",
+      "Deferral elections dated before the service year, with payout events and schedules fixed in the election.",
+      "Rabbi trust or other security measures considered, and the executive's unsecured-creditor status acknowledged in writing.",
+      "An annual operations audit is calendared — payments exactly per schedule, no accelerations, W-2 reporting correct."
+    ]
+  },
+  "client": {
+    "teaser": "Choose which year — and which tax rate — your biggest paydays land in.",
+    "headline": "Earn it now, get paid later — when your tax rate is lower",
+    "plainEnglish": [
+      "You normally pay tax on pay the year you earn it, even if that is your highest-rate year ever. A deferred compensation plan is a formal agreement, made in advance, to deliver part of your pay in a later year. You pay tax when the money arrives, ideally at a much lower rate.",
+      "The rules are strict. The choice to defer must be made before you earn the money. The payout schedule is locked in from the start. Breaking the rules brings steep penalties. So this plan comes with real legal paperwork, done once and done right.",
+      "One honest caveat. For most S corporation and partnership owners, deferring your own pay also defers your own deduction, and the math cancels out. The plan shines for C corporation owners and for owners selling to an outside buyer."
+    ],
+    "analogy": "It works like a dam on a river of income. Instead of the whole flow hitting in flood years, you release it into the years where it does the least damage.",
+    "benefits": [
+      "Moves income from peak-rate years into lower-rate years",
+      "No dollar caps like a 401(k) — large amounts can be deferred",
+      "Can be built around retirement or the sale of your business",
+      "Doubles as a retention tool for key employees"
+    ],
+    "steps": [
+      "WE screen whether your entity and plans actually benefit — and tell you plainly if they do not.",
+      "WE coordinate a specialist attorney to draft the plan documents.",
+      "YOU sign your deferral election before each year begins; the payout schedule locks at that point.",
+      "WE audit the plan every year so the strict rules stay satisfied."
+    ],
+    "clientCommitments": [
+      "Sign deferral elections before the year starts — late elections cannot be fixed",
+      "Accept that deferred money is an unsecured promise from the company until paid",
+      "Never ask for an early or changed payout — the rules do not allow it"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "structural",
+    "annualMaintenance": [
+      "Calendar and execute deferral elections before each service year",
+      "Annual §409A operations audit — payments exactly per schedule, no accelerations",
+      "Review employer credit quality and rabbi trust funding; confirm W-2 Box 11 reporting at distributions"
+    ],
+    "deliverables": [
+      "Suitability memo — entity type, rate-path, and credit screen",
+      "§409A plan document set (with executive-comp counsel)",
+      "Deferral election forms and the annual election calendar",
+      "Annual operational compliance checklist for the file"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "totalBusinessProfit",
+        "op": "gt",
+        "value": 400000
+      }
+    ],
+    "reason": "NQDC defers tax past qualified-plan limits — inside strict §409A guardrails."
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §409A and its regulations", "IRS §409A correction-program guidance"],
+    "keywords": [
+      "nonqualified deferred compensation",
+      "409A",
+      "rabbi trust",
+      "special timing rule",
+      "deferral election"
+    ],
+    "reviewTriggers": [
+      "New §409A correction or enforcement guidance",
+      "Rate legislation changing the deferral arbitrage",
+      "Changes to the FICA special timing rule or wage base"
+    ]
+  }
+}
