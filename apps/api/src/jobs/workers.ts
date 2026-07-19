@@ -90,6 +90,14 @@ export function startWorkers(): void {
     await ingestReferenceDocument(document_id);
   });
 
+  // ── pdf-render — TP-9 deliverable rendering via headless Chromium.
+  createWorker('pdf-render', async (job) => {
+    const deliverable_id = job.data?.deliverable_id as string | undefined;
+    if (!deliverable_id) return;
+    const { renderDeliverable } = await import('./handlers/pdf-render.js');
+    await renderDeliverable(deliverable_id);
+  });
+
   // ── notifications-email — outbound transactional email.
   // Today's only job type is `password-reset`. The payload carries the
   // plaintext token (the DB stores only its hash) and the recipient.

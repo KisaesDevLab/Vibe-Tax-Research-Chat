@@ -31,6 +31,9 @@ import { clientsRouter } from './routes/clients/index.js';
 import { archivesRouter } from './routes/archives.js';
 import { adminTableSetsRouter } from './routes/admin/table-sets.js';
 import { planningRouter } from './routes/planning/index.js';
+import { dlRouter } from './routes/dl.js';
+import { clientDeliverablesRouter } from './routes/planning/deliverables.js';
+import { requirePlanning } from './middleware/planning-flag.js';
 import { webhooksRouter } from './routes/webhooks/index.js';
 import { setupRouter } from './routes/setup.js';
 import { mountBullBoard } from './routes/admin/bull-board.js';
@@ -99,6 +102,10 @@ export function createApp(): Express {
   app.use('/api/clients', clientsRouter);
   app.use('/api/archives', archivesRouter);
   app.use('/api/planning', planningRouter);
+  // TP-9 — public signed-link downloads (token IS the credential) and the
+  // client Documents tab feed.
+  app.use('/api/dl', dlRouter);
+  app.use('/api/clients/:id/deliverables', requireAuth, requirePlanning, clientDeliverablesRouter);
 
   // 404
   app.use((req, res) => {

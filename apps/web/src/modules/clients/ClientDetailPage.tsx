@@ -12,6 +12,7 @@ import { OverviewTab } from './tabs/OverviewTab';
 import { ActivityTab } from './tabs/ActivityTab';
 import { ResearchTab } from './tabs/ResearchTab';
 import { PlansTab } from './tabs/PlansTab';
+import { DocumentsTab } from './tabs/DocumentsTab';
 
 export interface ClientDetail {
   client: ClientDTO;
@@ -111,20 +112,10 @@ export function ClientDetailPage() {
       {activeTab === 'overview' && <OverviewTab detail={data} />}
       {activeTab === 'plans' && <PlansTab client={client} />}
       {activeTab === 'research' && <ResearchTab client={client} counts={counts} />}
-      {activeTab === 'documents' && (
-        <EmptyTab text="Deliverables land here once plan rendering ships. Nothing here yet." />
-      )}
+      {activeTab === 'documents' && <DocumentsTab client={client} />}
       {activeTab === 'activity' && <ActivityTab clientId={client.id} />}
 
       {showMerge && <MergeClientDialog client={client} onClose={() => setShowMerge(false)} />}
-    </div>
-  );
-}
-
-function EmptyTab({ text }: { text: string }) {
-  return (
-    <div className="text-ink/50 border border-dashed border-ink/20 rounded p-8 text-center">
-      {text}
     </div>
   );
 }

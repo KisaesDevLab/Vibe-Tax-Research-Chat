@@ -71,6 +71,13 @@
       "when": 1784432542100,
       "tag": "0009_sad_penance",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784433819240,
+      "tag": "0010_elite_zombie",
+      "breakpoints": true
     }
   ]
 }

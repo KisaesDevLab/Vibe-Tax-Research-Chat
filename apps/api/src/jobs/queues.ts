@@ -15,6 +15,8 @@ export const notificationsEmailQueue = new Queue('notifications-email', { connec
 // { document_id }. The worker walks the document end-to-end so retries
 // are idempotent (it scrubs prior chunks before re-inserting).
 export const referencesIngestQueue = new Queue('references-ingest', { connection });
+// TP-9 — worker-side Chromium rendering. Payload: { deliverable_id }.
+export const pdfRenderQueue = new Queue('pdf-render', { connection });
 
 export const QUEUES = [
   skillsSyncQueue,
@@ -24,4 +26,5 @@ export const QUEUES = [
   attachmentSummarizeQueue,
   notificationsEmailQueue,
   referencesIngestQueue,
+  pdfRenderQueue,
 ];
