@@ -160,3 +160,49 @@ individual handling in the single-session dialog.
 **Default applied:** Synchronous Haiku call with a 10 s timeout mirroring the chat-title
 job; on no key / timeout / parse failure the dialog falls back to the chat's existing
 title and empty tags. Archival never blocks on the API.
+
+---
+
+# Planning module — remaining build (TP-4…TP-16), applied defaults 2026-07-19
+
+## Build-environment adaptations (user directed "complete the entire build without interruption")
+
+**No Anthropic API key at build time:** all runtime Claude jobs ship with tested
+graceful no-key degradation; the 100 strategy content records are authored at build
+time as original prose (schema-valid JSON seeds); the runtime author:draft pipeline
+still ships fully built.
+**No external systems** (T&B, Connect portal, Shield/Presidio, vibellm/GLM-OCR,
+OpenSign, Stripe, licensing.kisaes.com, Vault/B2): adapter seams + config-driven
+no-ops; webhook handlers tested with signed fixtures; manual-override endpoints;
+delivery = staff-manual + HMAC signed links; entitlement client fail-open for
+internal/advisor renders, fail-closed for client-facing.
+**Workers stay in the API process** (existing createWorker pattern) — no apps/worker.
+Playwright Chromium for pdf-render runs in-process; docker-image implications
+documented, not solved here.
+
+## Engine numeric precision
+
+Integer cents internally (half-up rate multiplication); IRS-line checkpoints and wire
+types carry whole dollars; golden tolerance default $1.
+
+## Engine v1 simplifications (documented in module headers)
+
+MAGI = AGI (no foreign-income addbacks). §469 allowance phase-out uses AGI before
+passive losses as the MAGI proxy. PTET modeled as entity-level deduction +
+dollar-for-dollar state credit against the flat-state liability. OBBBA's 2/37
+itemized-benefit haircut for 37%-bracket taxpayers deferred with AMT et al.
+Deferred per master plan: AMT, refundable ACTC, UBIA prong, §461(l), non-flat states.
+
+## Migration map (additive-only)
+
+0007 table_sets · 0008 strategies/strategy_versions/golden_tests/review_queue ·
+0009 plans/plan_scenarios/plan_results/plan_research_links + research_archives.plan_id
+FK (plans tables land at TP-6, not TP-8 — the walking skeleton needs them) ·
+0010 deliverables/deliverable_links · 0011 engagements/webhook_events ·
+0012 hand-written triggers.
+
+## Strategy content home
+
+JSON records in packages/strategies/content/<id>.json (goldens inline); db seed loads
+idempotently — onConflictDoNothing on (strategy_id, semver), current_version_id set
+only when NULL so admin publishes are never clobbered by re-seeds.

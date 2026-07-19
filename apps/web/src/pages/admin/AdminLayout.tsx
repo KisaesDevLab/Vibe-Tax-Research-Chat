@@ -13,6 +13,7 @@ const navItems = [
   { to: '/admin/custom-skills', label: 'Custom skills' },
   { to: '/admin/references', label: 'References' },
   { to: '/admin/usage', label: 'Usage' },
+  { to: '/admin/table-sets', label: 'Table sets' },
 ];
 
 export function AdminLayout() {

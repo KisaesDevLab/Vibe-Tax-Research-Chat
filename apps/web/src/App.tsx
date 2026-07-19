@@ -18,6 +18,7 @@ import { AdminSkillsPage } from './pages/admin/Skills';
 import { AdminCustomSkillsPage } from './pages/admin/CustomSkills';
 import { AdminReferencesPage } from './pages/admin/References';
 import { AdminUsagePage } from './pages/admin/Usage';
+import { AdminTableSetsPage } from './pages/admin/TableSets';
 import { RequireAuth, RequireRole } from './components/RequireRole';
 import { RequirePlanning } from './components/RequirePlanning';
 import { AppShell } from './components/AppShell';
@@ -67,6 +68,7 @@ export function App() {
             <Route path="custom-skills" element={<AdminCustomSkillsPage />} />
             <Route path="references" element={<AdminReferencesPage />} />
             <Route path="usage" element={<AdminUsagePage />} />
+            <Route path="table-sets" element={<AdminTableSetsPage />} />
           </Route>
         </Route>
       </Route>

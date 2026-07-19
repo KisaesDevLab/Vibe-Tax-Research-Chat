@@ -5,7 +5,8 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { getDb, closeDb } from './index.js';
-import { models, users, settings, SETTING_KEYS } from './schema/index.js';
+import { models, users, settings, table_sets, SETTING_KEYS } from './schema/index.js';
+import type { TableSetPayload, TableSetSourceNote } from '@vibe/shared';
 import { sql } from 'drizzle-orm';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -125,6 +126,38 @@ export async function runSeed(): Promise<void> {
       .onConflictDoNothing({ target: settings.key });
   }
   console.log(`Seeded ${defaults.length} default settings.`);
+
+  // 5. TP-4 — table sets (TABLES_2026 v1, published). Unique (tax_year,
+  // version) makes the re-seed a no-op.
+  const tableSetDir = path.resolve(__dirname, '../seeds/table-sets');
+  let tableSetCount = 0;
+  try {
+    const { readdirSync } = await import('node:fs');
+    for (const file of readdirSync(tableSetDir).filter((f) => f.endsWith('.json'))) {
+      const raw = JSON.parse(readFileSync(path.join(tableSetDir, file), 'utf-8')) as {
+        tax_year: number;
+        version: number;
+        status: string;
+        payload: TableSetPayload;
+        source_notes: TableSetSourceNote[];
+      };
+      await db
+        .insert(table_sets)
+        .values({
+          tax_year: raw.tax_year,
+          version: raw.version,
+          status: raw.status,
+          payload: raw.payload,
+          source_notes: raw.source_notes,
+          published_at: raw.status === 'published' ? new Date() : null,
+        })
+        .onConflictDoNothing({ target: [table_sets.tax_year, table_sets.version] });
+      tableSetCount++;
+    }
+  } catch (err) {
+    console.warn('Table-set seed skipped:', (err as Error).message);
+  }
+  console.log(`Seeded ${tableSetCount} table set(s).`);
 
   // touch updated_at to silence linter
   void sql;

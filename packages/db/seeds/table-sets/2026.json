@@ -1,0 +1,156 @@
+{
+  "tax_year": 2026,
+  "version": 1,
+  "status": "published",
+  "payload": {
+    "brackets": {
+      "single": [
+        { "rate": 0.1, "upTo": 12400 },
+        { "rate": 0.12, "upTo": 50400 },
+        { "rate": 0.22, "upTo": 105700 },
+        { "rate": 0.24, "upTo": 201775 },
+        { "rate": 0.32, "upTo": 256225 },
+        { "rate": 0.35, "upTo": 640600 },
+        { "rate": 0.37, "upTo": null }
+      ],
+      "mfj": [
+        { "rate": 0.1, "upTo": 24800 },
+        { "rate": 0.12, "upTo": 100800 },
+        { "rate": 0.22, "upTo": 211400 },
+        { "rate": 0.24, "upTo": 403550 },
+        { "rate": 0.32, "upTo": 512450 },
+        { "rate": 0.35, "upTo": 768600 },
+        { "rate": 0.37, "upTo": null }
+      ],
+      "mfs": [
+        { "rate": 0.1, "upTo": 12400 },
+        { "rate": 0.12, "upTo": 50400 },
+        { "rate": 0.22, "upTo": 105700 },
+        { "rate": 0.24, "upTo": 201775 },
+        { "rate": 0.32, "upTo": 256225 },
+        { "rate": 0.35, "upTo": 384300 },
+        { "rate": 0.37, "upTo": null }
+      ],
+      "hoh": [
+        { "rate": 0.1, "upTo": 17700 },
+        { "rate": 0.12, "upTo": 67450 },
+        { "rate": 0.22, "upTo": 105700 },
+        { "rate": 0.24, "upTo": 201775 },
+        { "rate": 0.32, "upTo": 256200 },
+        { "rate": 0.35, "upTo": 640600 },
+        { "rate": 0.37, "upTo": null }
+      ]
+    },
+    "capitalGainsBrackets": {
+      "single": [
+        { "rate": 0, "upTo": 49450 },
+        { "rate": 0.15, "upTo": 545500 },
+        { "rate": 0.2, "upTo": null }
+      ],
+      "mfj": [
+        { "rate": 0, "upTo": 98900 },
+        { "rate": 0.15, "upTo": 613700 },
+        { "rate": 0.2, "upTo": null }
+      ],
+      "mfs": [
+        { "rate": 0, "upTo": 49450 },
+        { "rate": 0.15, "upTo": 306850 },
+        { "rate": 0.2, "upTo": null }
+      ],
+      "hoh": [
+        { "rate": 0, "upTo": 66200 },
+        { "rate": 0.15, "upTo": 579600 },
+        { "rate": 0.2, "upTo": null }
+      ]
+    },
+    "standardDeduction": { "single": 16100, "mfj": 32200, "mfs": 16100, "hoh": 24150 },
+    "seTax": {
+      "ssWageBase": 184500,
+      "ssRate": 0.124,
+      "medicareRate": 0.029,
+      "addlMedicareRate": 0.009,
+      "addlMedicareThreshold": { "single": 200000, "mfj": 250000, "mfs": 125000, "hoh": 200000 },
+      "netEarningsFactor": 0.9235
+    },
+    "qbi": {
+      "rate": 0.2,
+      "threshold": { "single": 201750, "mfj": 403500, "mfs": 201750, "hoh": 201750 },
+      "phaseInRange": { "single": 75000, "mfj": 150000, "mfs": 75000, "hoh": 75000 },
+      "minDeduction": { "amount": 400, "qbiFloor": 1000 }
+    },
+    "salt": {
+      "cap": { "single": 40400, "mfj": 40400, "mfs": 20200, "hoh": 40400 },
+      "phaseDown": {
+        "magiThreshold": { "single": 505000, "mfj": 505000, "mfs": 252500, "hoh": 505000 },
+        "reductionRate": 0.3,
+        "floor": { "single": 10000, "mfj": 10000, "mfs": 5000, "hoh": 10000 }
+      }
+    },
+    "ctc": {
+      "perChild": 2200,
+      "otherDependent": 500,
+      "phaseOutThreshold": { "single": 200000, "mfj": 400000, "mfs": 200000, "hoh": 200000 },
+      "phaseOutPer1000": 50
+    },
+    "niit": {
+      "rate": 0.038,
+      "magiThreshold": { "single": 200000, "mfj": 250000, "mfs": 125000, "hoh": 200000 }
+    },
+    "passive": { "rentalLossAllowance": 25000, "phaseOutStart": 100000, "phaseOutEnd": 150000 },
+    "retirement": {
+      "limit402g": 24500,
+      "catchUp50": 8000,
+      "catchUp60to63": 11250,
+      "limit415c": 72000,
+      "limit415b": 290000,
+      "simpleLimit": 17000,
+      "simpleCatchUp50": 4000,
+      "hsaSelf": 4400,
+      "hsaFamily": 8750,
+      "hsaCatchUp": 1000,
+      "compCap": 360000,
+      "iraLimit": 7500,
+      "iraCatchUp": 1100
+    }
+  },
+  "source_notes": [
+    {
+      "group": "brackets, capitalGainsBrackets, standardDeduction",
+      "authority": "Rev. Proc. 2025-32 (2026 inflation adjustments, incl. OBBBA extra adjustment to the bottom two brackets)",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf",
+      "note": "Verified 2026-07 against irs.gov newsroom + Tax Foundation 2026 tables: 37% above $640,600 single / $768,600 MFJ; 12/22/24 breaks $12,400/$50,400/$105,700 single, $24,800/$100,800/$211,400 MFJ; std deduction $16,100/$32,200/$24,150; LTCG 0% to $49,450/$98,900, 15% to $545,500/$613,700, HOH 0% $66,200 / 15% $579,600, MFS 15% $306,850."
+    },
+    {
+      "group": "seTax.ssWageBase",
+      "authority": "SSA 2026 OASDI wage base announcement (2025-10-24)",
+      "url": "https://www.ssa.gov/news/press/factsheets/colafacts2026.pdf",
+      "note": "$184,500 for 2026 (up from $176,100). Rates statutory: 12.4% OASDI / 2.9% Medicare / 0.9% additional; 92.35% factor per IRC §1402(a)(12). Additional-Medicare and NIIT thresholds statutory (not indexed)."
+    },
+    {
+      "group": "qbi",
+      "authority": "IRC §199A as amended by OBBBA §70105; Rev. Proc. 2025-32",
+      "note": "2026 thresholds $201,750 single / $403,500 MFJ; OBBBA widens phase-in ranges to $75,000 / $150,000 and adds the $400 minimum deduction for ≥$1,000 of active QBI, both effective 2026."
+    },
+    {
+      "group": "salt",
+      "authority": "OBBBA SALT provisions",
+      "note": "Cap $40,400 for 2026 ($40,000 in 2025, ~1%/yr through 2029); phase-down 30% of MAGI over the $505,000 (2026) threshold, floored at $10,000. MFS halves."
+    },
+    {
+      "group": "ctc",
+      "authority": "IRC §24 as amended by OBBBA",
+      "note": "$2,200 per qualifying child (indexed from 2026), $500 other dependents; phase-out $50 per $1,000 of MAGI over $200k/$400k. Refundable ACTC portion deferred in engine v1."
+    },
+    {
+      "group": "retirement",
+      "authority": "IRS Notice 2025-67 (2026 COLA limits); Rev. Proc. 2025-19 (2026 HSA)",
+      "url": "https://www.irs.gov/pub/irs-drop/n-25-67.pdf",
+      "note": "402(g) $24,500; catch-up 50+ $8,000; 60–63 super catch-up $11,250; 415(c) $72,000; 415(b) $290,000; SIMPLE $17,000 (+$4,000); comp cap §401(a)(17) $360,000; IRA $7,500 (+$1,100); HSA $4,400 self / $8,750 family (+$1,000 55+)."
+    },
+    {
+      "group": "passive",
+      "authority": "IRC §469(i)",
+      "note": "Statutory $25,000 active-participation allowance, phased out 50% of MAGI over $100,000, gone at $150,000 (not indexed)."
+    }
+  ]
+}
