@@ -1,0 +1,293 @@
+{
+  "id": "augusta-rule",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Augusta Rule (§280A(g))",
+  "category": "business-expenses",
+  "modeled": true,
+  "complexity": 1,
+  "riskRating": "moderate",
+  "entityTypes": ["s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "Section 280A(g) draws a hard statutory line: rent a residence out for fewer than 15 days in the year and the rental income simply never enters gross income, with the related deductions denied in exchange. Stack that exclusion against a §162(a) rent deduction at the entity level and the client's business can pay documented fair-market rent to hold real meetings — planning days, board sessions, trainings — in the owner's home, deducting what the owner collects tax-free. Nothing about the structure is novel or contested; what the government litigates is the price and the proof. Sinopoli shows the Tax Court honoring the framework while gutting the numbers where comparables and meeting evidence were missing, and §280A(a) forecloses the shortcut of a sole proprietor renting from themselves. The ceiling is modest by design — this is a clean four-figure play, not a centerpiece.",
+    "mechanics": [
+      "The exclusion of §280A(g) operates per dwelling unit used as a residence: stay under 15 rental days for the year and none of the rent is includible, while the owner-side rental deductions are barred; the fifteenth day is a cliff that converts every rental dollar received that year into taxable income.",
+      "The entity's side of the transaction rests on §162(a) — the rent must be ordinary, necessary, and reasonable in amount, which in practice demands a genuine, documented business reason for each individual rental day.",
+      "Pricing must come from daily-event comparables — hotel conference rooms, coworking event space, banquet rooms of similar capacity — refreshed each year and kept in the file; dividing monthly residential rent by thirty is the pricing method Sinopoli punished.",
+      "Every rental day needs its own contemporaneous evidence package under §274-style discipline: agenda or notice, minutes or work product, attendee list, an invoice from the owner to the entity, and a payment that can be traced.",
+      "A Schedule C business cannot run this play: with no separate payor, the owner is renting from themselves, and §280A(a)'s general disallowance leaves nothing deductible — an S corporation, partnership, or C corporation tenant is a structural prerequisite."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §280A(g)",
+        "note": "The under-15-day exclusion and its companion denial of owner-side deductions — the statutory core."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §162(a)",
+        "note": "Governs the entity's rent deduction; reasonableness in amount and business purpose are part of the standard."
+      },
+      {
+        "type": "Case",
+        "cite": "Sinopoli v. Commissioner, T.C. Memo 2023-105",
+        "note": "The court left the structure intact but reduced roughly $3,000-per-meeting rents to about $500 where the taxpayers had no comparable-rate support and weak proof the meetings happened. The lesson is evidentiary, not structural."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §280A(a)",
+        "note": "The general disallowance that defeats the self-payor variant — why a sole proprietorship cannot participate."
+      },
+      {
+        "type": "Admin",
+        "cite": "IRC §274 substantiation principles",
+        "note": "The contemporaneous-documentation discipline examiners import when testing the business purpose of each rental day."
+      }
+    ],
+    "requirements": [
+      "A separate business entity — S corporation, partnership, or C corporation — as the paying tenant.",
+      "No more than 14 rental days per residence per year, tracked against a hard calendar.",
+      "A genuine business event on each rented day, evidenced by agenda, minutes, and attendees.",
+      "A written invoice from owner to entity and an actual traceable payment for every rental.",
+      "A current comparable-rate file supporting the daily rate, refreshed annually."
+    ],
+    "risks": [
+      "The leading audit theory is rate inflation: Sinopoli v. Commissioner, T.C. Memo 2023-105, is the template, where unsupported premium rents were re-set to a small fraction on exam — expect the same haircut for any rate the comparables file cannot carry.",
+      "A drumbeat of recurring board meetings for a single-owner entity, with no minutes and no output, invites disallowance of the whole deduction plus accuracy-related penalties.",
+      "One day too many is fatal to the year: at 15 rental days the §280A(g) exclusion disappears and all the rent becomes taxable.",
+      "The dollars here are inherently small — a client should never be allowed to defend an aggressive rate or a padded calendar over a four-figure benefit.",
+      "Careless overlap with a claimed home-office use pattern can undermine both positions; the rented space and days must be reconciled."
+    ],
+    "stateNotes": [
+      "Conformity: states whose returns start from federal AGI inherit the exclusion automatically; check any non-conformity or addback states in the client's footprint before presenting the number as fully tax-free.",
+      "PTET interaction: the rent is an ordinary entity deduction, so it already shrinks the income base a pass-through entity tax election is computed on — the engine sequences PTET after this deduction, and no separate state benefit should be layered on top.",
+      "Missouri: conforms through its federal-AGI starting point (RSMo §143.121) with no addback for §280A(g) amounts, so the excluded rent stays off the Missouri return as well."
+    ],
+    "interactions": {
+      "requires": ["s-corp-election"],
+      "conflictsWith": [],
+      "synergiesWith": ["accountable-plan", "board-fees-family"]
+    },
+    "reviewChecklist": [
+      "Payor entity exists, is in good standing, and is not merely the client's own Schedule C activity.",
+      "Daily rate is anchored to at least two current local daily-use comparables retained in the file.",
+      "Planned day count is 14 or fewer and plausible against this client's actual business calendar.",
+      "Documentation kit (agenda, minutes, invoice, payment method) is issued and the client has acknowledged the commitments in writing.",
+      "Modeled benefit uses the client's real marginal rate and does not double-count the PTET effect.",
+      "No conflict with a claimed home-office deduction pattern for the same spaces and days."
+    ]
+  },
+  "client": {
+    "teaser": "Your business rents meeting space anyway — this makes the landlord you, and the rent tax-free.",
+    "headline": "Let your business rent your home — up to 14 tax-free days a year",
+    "plainEnglish": [
+      "The tax code has a rule nicknamed the Augusta Rule, after homeowners in Augusta, Georgia who rent out their houses each year during the Masters golf tournament. If you rent your home to anyone for 14 days or fewer in a year, the rent you collect is not taxed. It does not even go on your return.",
+      "Your business already holds real meetings — annual planning, team training, board sessions. Instead of paying a hotel for a conference room, the business can rent your home for those days at the same kind of going rate. The business deducts the rent as a normal expense, and you keep the money without paying tax on it.",
+      "What keeps it safe is routine, not complexity: hold real meetings, use the agenda and minutes templates we give you, charge a rate backed by actual local quotes, and stop at 14 days. We set up every piece and check the count at year-end."
+    ],
+    "analogy": "The conference-room bill your business was going to pay a hotel gets redirected to your own front door — and unlike nearly any other money you can receive, it arrives untaxed.",
+    "benefits": [
+      "Up to 14 days of rental income each year with no tax on your side",
+      "The full rent is deductible to your business",
+      "Nothing extra to file — just clean records",
+      "Works again every single year"
+    ],
+    "steps": [
+      "WE gather real quotes from local meeting venues and set a supportable daily rate.",
+      "WE build your meeting calendar and hand you the agenda, minutes, and invoice templates.",
+      "YOU actually hold the meetings and fill in the short minutes each time.",
+      "YOU have the business pay the rent by check or transfer — never cash — and stop at day 14."
+    ],
+    "clientCommitments": [
+      "Hold the meetings for real — the paperwork describes something that happened",
+      "Complete the one-page minutes at each session",
+      "Never let the rental count pass 14 days in a year",
+      "Keep every payment traceable from the business account to yours"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Refresh the comparable-rate quotes each year",
+      "Monitor the rental-day count and confirm the hard stop at 14",
+      "Year-end review that invoices, minutes, and payments all reconcile"
+    ],
+    "deliverables": [
+      "Corporate resolution authorizing home rentals for stated business purposes",
+      "Comparable-rate memo with retained venue quotes",
+      "Meeting agenda, minutes, and invoice templates",
+      "Annual rental summary schedule for the file"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 30,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "days": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 14
+        },
+        "dailyRate": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["days", "dailyRate"]
+    },
+    "apply": {
+      "module": "augusta-rule@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasEntity",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "A separate payor entity can rent the owner's home for up to 14 days of documented business use."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj S-corp 200k/80k comp, 14 days at $800",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 200000,
+              "employeeWages": 0,
+              "ownerWages": 80000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "days": 14,
+          "dailyRate": 800
+        },
+        "expect": {
+          "totalBurdenDelta": -1971,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj S-corp 200k/80k comp, 10 days at $500",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 200000,
+              "employeeWages": 0,
+              "ownerWages": 80000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "days": 10,
+          "dailyRate": 500
+        },
+        "expect": {
+          "totalBurdenDelta": -880,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §280A", "Tax Court memoranda citing §280A(g)"],
+    "keywords": [
+      "Augusta rule",
+      "280A(g)",
+      "14 day rental exclusion",
+      "home rental to own business",
+      "Sinopoli"
+    ],
+    "reviewTriggers": [
+      "New case law applying or limiting §280A(g)",
+      "IRS guidance on daily-rate substantiation for related-party rentals",
+      "Any statutory amendment or technical correction touching §280A"
+    ]
+  }
+}

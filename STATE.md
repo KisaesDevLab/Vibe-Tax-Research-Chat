@@ -11,8 +11,8 @@ Updated after each phase commit.
 | TP-3  | Clients module (local-only)                  | done    | feat(tp-3)  |
 | TP-11 | Chat archival to client                      | done    | feat(tp-11) |
 | TP-4  | Tax engine + table sets                      | done    | feat(tp-4)  |
-| TP-5  | Scenario + strategy runtime                  | pending | —           |
-| TP-6  | First 10 strategies + Planning UI            | pending | —           |
+| TP-5  | Scenario + strategy runtime                  | done    | feat(tp-5)  |
+| TP-6  | First 10 strategies + Planning UI            | done    | feat(tp-6)  |
 | TP-7  | Intake (manual + PDF import)                 | pending | —           |
 | TP-8  | Plan workflow + review gate                  | pending | —           |
 | TP-9  | Deliverables + delivery                      | pending | —           |

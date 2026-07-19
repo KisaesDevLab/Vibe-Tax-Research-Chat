@@ -10,8 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { composeScenario } from '@vibe/engine';
 import type { BaselineProfile, TableSetPayload } from '@vibe/shared';
-import { listStrategyRecords } from './content.js';
-import { resolveApply } from './registry.js';
+import { listStrategyRecords, resolveApply } from './index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

@@ -65,9 +65,15 @@ importers:
       '@vibe/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@vibe/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
       '@vibe/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@vibe/strategies':
+        specifier: workspace:*
+        version: link:../../packages/strategies
       adm-zip:
         specifier: ^0.5.17
         version: 0.5.17

@@ -1,0 +1,299 @@
+{
+  "id": "se-health-insurance",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial authoring"
+    }
+  ],
+  "name": "Self-Employed Health Insurance Deduction",
+  "category": "health-fringe",
+  "modeled": true,
+  "complexity": 1,
+  "riskRating": "low",
+  "entityTypes": ["sole-prop", "partnership", "s-corp"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "Section 162(l) gives self-employed taxpayers — Schedule C proprietors, partners, and more-than-2% S corporation shareholders — an above-the-line deduction for health, dental, and age-capped long-term-care premiums covering the owner, spouse, dependents, and children under 27. Two guardrails shape the planning: the deduction is capped at earned income from the business that sponsors the plan, and it is disallowed for any month in which either spouse was merely eligible for a subsidized employer plan, whether or not they enrolled. S corporation owners reach the deduction only through the Notice 2008-1 mechanics — the corporation pays or reimburses the premium and includes it in the shareholder's Box 1 W-2 wages — so a premium paid from a personal checking account with no payroll add-back produces nothing. The deduction reduces income tax but not self-employment tax, and premiums the §36B premium tax credit already covered cannot be deducted again. In practice this is less an aggressive position than a housekeeping win: the most common failure is a deduction never claimed, or claimed on Schedule A where the 7.5% AGI floor swallows it.",
+    "mechanics": [
+      "The deduction lands above the line on Schedule 1, computed on Form 7206 — no itemizing and no 7.5% AGI floor — and reaches medical and dental premiums plus qualified long-term-care premiums up to the age-indexed dollar caps, for the taxpayer, spouse, dependents, and children who have not reached 27 (§162(l)(1), §162(l)(2)(C)).",
+      "The deduction cannot exceed earned income from the sponsoring trade or business: Schedule C profit reduced by half of SE tax and by SE retirement contributions, or, for a >2% S corporation shareholder, W-2 wages from that corporation (§162(l)(2)(A)); any excess premium falls to Schedule A subject to the 7.5% floor.",
+      "Because §1372 treats >2% S corporation shareholders as partners for fringe-benefit purposes, the premium must run through the corporation: the entity pays or reimburses it and includes the amount in Box 1 wages (exempt from FICA), after which the shareholder deducts it under §162(l) per Notice 2008-1 — the entire deduction hinges on this payroll routing.",
+      "Eligibility is tested month by month: no deduction is allowed for any calendar month in which the taxpayer or the spouse was eligible to participate in a subsidized employer health plan (§162(l)(2)(B)); declining the employer's offer does not restore the month.",
+      "The deduction and the §36B premium tax credit cannot cover the same dollars — only the net, unsubsidized premium is deductible — and because each figure depends on the other, exchange-policy clients require the iterative or simplified computation of Rev. Proc. 2014-41.",
+      "The benefit is income tax only: §1402 does not subtract the deduction in computing SE tax, and the deduction attributable to the business also reduces qualified business income for §199A purposes, both of which the model reflects."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §162(l)",
+        "note": "The deduction itself: covered premiums and family members, the earned-income cap in (2)(A), and the month-by-month subsidized-employer-eligibility disallowance in (2)(B)."
+      },
+      {
+        "type": "Admin",
+        "cite": "Notice 2008-1",
+        "note": "The S corporation pathway: premiums paid or reimbursed by the corporation and included in the >2% shareholder's Box 1 W-2 wages qualify for §162(l); premiums paid personally without the add-back do not."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1372",
+        "note": "Treats >2% S corporation shareholders as partners for fringe benefits — the reason the premium lands in W-2 wages instead of remaining an excludable benefit."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §36B",
+        "note": "The premium tax credit; §162(l) reaches only the premium the credit did not pay, preventing a double benefit on exchange coverage."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Proc. 2014-41",
+        "note": "The iterative and simplified methods for computing the §162(l) deduction and the §36B credit together, since each is an input to the other."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 7206 and instructions",
+        "note": "The computation form implementing the deduction and its earned-income limit."
+      }
+    ],
+    "requirements": [
+      "Positive earned income from the sponsoring business: Schedule C net profit, K-1 self-employment earnings, or S corporation W-2 wages for a >2% shareholder.",
+      "The plan is established under the business — for Schedule C, a policy in the owner's or the business's name; for an S corporation, corporate payment or reimbursement plus Box 1 W-2 inclusion before the final payroll of the year.",
+      "No month claimed in which either spouse was eligible for subsidized employer coverage.",
+      "For exchange policies carrying a premium tax credit, the Rev. Proc. 2014-41 coordinated computation.",
+      "No overlap with a §105 reimbursement plan — the same premium dollar is deducted once."
+    ],
+    "risks": [
+      "The leading exam theory is mechanical disallowance rather than a litigated doctrine: an S corporation owner who paid premiums personally without the Notice 2008-1 payroll add-back has no plan established under the business, and the deduction fails in full — a foot-fault that is cheap to fix before year-end payroll closes and expensive to discover after.",
+      "Months claimed while a spouse's employer offered subsidized coverage are disallowed on eligibility alone; enrollment is irrelevant, and this is the item examiners verify first.",
+      "The earned-income cap means a loss-year business supports no deduction; the excess survives only on Schedule A above the 7.5% floor, which usually means not at all.",
+      "Deducting premiums the premium tax credit effectively paid is a double benefit; the Rev. Proc. 2014-41 computation exists precisely to police this line.",
+      "Stacking the same premiums into both §162(l) and a §105 spouse-employee plan double-counts the deduction."
+    ],
+    "stateNotes": [
+      "Conformity: states that begin with federal AGI absorb the §162(l) deduction automatically; verify treatment in decoupled or gross-income-start states in the client's footprint before projecting a state benefit.",
+      "PTET interaction: §162(l) is a personal above-the-line deduction, so it does not reduce the base on which a pass-through entity tax is computed. For S corporation owners, the premium add-back is already a wage deduction inside the entity's ordinary income, so the entity-level effect flows through the K-1 — do not adjust the PTET base a second time.",
+      "Missouri: conforms through the federal AGI starting point (RSMo §143.121) with no addback. Note the interplay with Missouri's separate health-premium subtraction (RSMo §143.113): it reaches only premiums not already deducted federally, so dollars claimed under §162(l) cannot be subtracted again on the MO-1040."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": ["section-105-merp", "spouse-health-s-corp"],
+      "synergiesWith": ["s-corp-election", "hsa-contributions"]
+    },
+    "reviewChecklist": [
+      "Earned-income cap computed and the deduction does not exceed it.",
+      "Policy verified as established under the business; for S corporation clients, Box 1 W-2 inclusion confirmed on the final payroll of the year.",
+      "Month-by-month subsidized-employer-eligibility check completed for both spouses.",
+      "Rev. Proc. 2014-41 computation run for any exchange policy with a premium tax credit; Form 1095-A in the file.",
+      "Medicare premiums for owners 65+ captured, and no month claimed after Medicare disqualification issues arise on companion strategies.",
+      "No premium dollar also claimed under a §105 plan or elsewhere."
+    ]
+  },
+  "client": {
+    "teaser": "You already pay for health insurance — set up right, every dollar of it lowers your taxable income.",
+    "headline": "Make your health insurance bill fully deductible.",
+    "plainEnglish": [
+      "When you work for yourself, the health insurance you pay for — for you, your spouse, and your kids — can come straight off your income before tax is figured. Dental premiums count. Long-term-care premiums count. Even Medicare premiums can count.",
+      "Many owners miss part or all of this. If you own an S corporation, the premiums must run through the company and appear on your W-2 in a specific way. Paid the wrong way, the deduction can be lost completely. That is a payroll fix, not an insurance change, and it costs nothing to do correctly.",
+      "There are limits. The deduction cannot be more than the business earns, and it is off for any month you or your spouse could have joined an employer's subsidized plan — even if you turned it down. We check each month, fix the payroll handling, and make sure the full amount holds up."
+    ],
+    "analogy": "Think of a coupon printed on a bill you have paid for years without noticing it. The premium stays the same — but claimed the right way, the tax law hands part of it back every single year.",
+    "benefits": [
+      "Premiums come straight off your income — no itemizing required.",
+      "Health, dental, long-term-care, and Medicare premiums can all qualify.",
+      "Family coverage counts, including children under 27.",
+      "Usually a paperwork fix with no change to your insurance at all."
+    ],
+    "steps": [
+      "WE list every premium your household pays and who pays it.",
+      "WE check the eligibility rules month by month so the deduction stands up.",
+      "WE set up the S corporation payroll handling correctly before year-end, if that applies to you.",
+      "YOU send us your premium statements and tell us about any employer coverage offered to you or your spouse.",
+      "YOU route business-paid premiums through the company account, not your personal one."
+    ],
+    "clientCommitments": [
+      "Tell us right away if you or your spouse is offered coverage at a job, even if you decline it.",
+      "For S corporation owners: let the company pay or repay the premiums so they reach your W-2 correctly.",
+      "Send us Form 1095-A each year if your coverage comes from the exchange.",
+      "Keep premium statements so the amounts can be supported."
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Annual premium inventory across health, dental, long-term-care, and Medicare.",
+      "Year-end payroll check confirming the W-2 premium inclusion for S corporation owners.",
+      "Month-by-month employer-coverage eligibility re-check for both spouses.",
+      "Premium tax credit coordination recomputed when exchange coverage is present."
+    ],
+    "deliverables": [
+      "Household premium inventory worksheet",
+      "Payroll instruction memo for the S corporation W-2 inclusion",
+      "Form 7206 computation with the earned-income limit applied",
+      "Monthly eligibility checklist"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 30,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "annualPremium": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Annual health, dental, and qualified long-term-care premiums paid for the owner's household"
+        }
+      },
+      "required": ["annualPremium"]
+    },
+    "apply": {
+      "module": "se-health-insurance@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasBusiness",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "seHealthInsurance",
+          "op": "eq",
+          "value": 0
+        }
+      ],
+      "reason": "Self-employed owner with no above-the-line health premium deduction on file."
+    },
+    "goldenTests": [
+      {
+        "name": "single Sch C 100k, 12k premium",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 100000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "annualPremium": 12000
+        },
+        "expect": {
+          "totalBurdenDelta": -2112,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj Sch C 60k, 30k premium (no clip)",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 60000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "annualPremium": 30000
+        },
+        "expect": {
+          "totalBurdenDelta": -1885,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §162(l)", "Notice 2008-1", "IRC §36B", "Form 7206 instructions"],
+    "keywords": [
+      "self-employed health insurance deduction",
+      "162(l)",
+      "2% shareholder health insurance W-2",
+      "premium tax credit iterative calculation"
+    ],
+    "reviewTriggers": [
+      "Annual inflation adjustment of the qualified LTC premium caps",
+      "Premium tax credit statutory or subsidy-schedule changes affecting the §36B interplay",
+      "New IRS guidance on S corporation shareholder premium mechanics"
+    ]
+  }
+}

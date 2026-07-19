@@ -2,10 +2,23 @@
 // firm-level archive). The snapshot is self-contained: deleting the source
 // chat never touches it, and no update path exists for snapshot/sha256
 // once the row is written.
-import { pgTable, uuid, text, boolean, jsonb, timestamp, index } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  uuid,
+  text,
+  boolean,
+  jsonb,
+  timestamp,
+  index,
+  type AnyPgColumn,
+} from 'drizzle-orm/pg-core';
 import { clients } from './clients.js';
 import { chats } from './chats.js';
 import { users } from './users.js';
+// Lazy circular reference: plans.ts imports this module for
+// plan_research_links; both directions only touch each other inside
+// deferred .references() closures, so the ESM cycle is safe.
+import { plans } from './plans.js';
 
 // Shape of the frozen snapshot payload. Kept intentionally plain-JSON so
 // the sha256 over its canonical serialization is reproducible forever.
@@ -60,8 +73,8 @@ export const research_archives = pgTable(
     archived_at: timestamp('archived_at', { withTimezone: true }).notNull().defaultNow(),
     status: text('status').notNull().default('active'), // 'active' | 'superseded'
     tombstone: jsonb('tombstone').$type<ArchiveTombstone>(),
-    // Forward links for TP-8; plan_id gets its FK when plans exist.
-    plan_id: uuid('plan_id'),
+    // TP-6 added the FK (migration 0009) once plans existed.
+    plan_id: uuid('plan_id').references((): AnyPgColumn => plans.id),
     strategy_id: text('strategy_id'),
   },
   (t) => ({

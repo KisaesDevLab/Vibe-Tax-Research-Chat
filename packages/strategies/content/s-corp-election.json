@@ -1,0 +1,333 @@
+{
+  "id": "s-corp-election",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "S Corporation Election",
+  "category": "entity-structure",
+  "modeled": true,
+  "complexity": 3,
+  "riskRating": "moderate",
+  "entityTypes": ["sole-prop", "single-member-llc", "partnership"],
+  "typicalSavingsBand": "5k-25k",
+  "advisor": {
+    "summary": "A §1362 election converts a profitable Schedule C or LLC into an S corporation, restructuring the owner's income into two layers: W-2 compensation that bears FICA, and passthrough distributions that bear no employment tax at all under Rev. Rul. 59-221. Because unincorporated profit is hit with self-employment tax on nearly every dollar — 12.4% Social Security up to the $184,500 wage base for 2026, plus uncapped Medicare — moving profit above a defensible salary into the distribution layer produces recurring employment-tax savings. The wage number is the whole fight: set it too low and the IRS recharacterizes distributions back into wages, the theory that carried Watson in the Eighth Circuit. The election also reshapes the §199A calculation in both directions, so the net benefit must be modeled, not assumed. Below roughly $60,000 of profit, payroll and compliance costs usually eat the savings.",
+    "mechanics": [
+      "Without the election, the owner's entire net business profit is subject to self-employment tax under §§1401-1402: 12.4% Social Security on 92.35% of earnings up to the $184,500 wage base (2026), 2.9% Medicare with no cap, and an additional 0.9% under §3101(b)(2) once wages and SE income cross $200,000 single / $250,000 joint.",
+      "The election is made under §1362 on Form 2553, due within two months and fifteen days of the start of the effective year; a missed deadline is routinely curable under the late-election relief of Rev. Proc. 2013-30 when the entity has acted consistently with S status.",
+      "Once the election is in place, only the owner's W-2 wages carry FICA; the remaining profit flows through on Schedule K-1 free of employment tax, because S corporation passthrough income is not self-employment income under Rev. Rul. 59-221.",
+      "The wage layer must be reasonable compensation for the services the owner actually performs; Rev. Rul. 74-44 authorizes the IRS to recharacterize distributions as wages when salary is artificially low, and Watson, McAlary, and Glass Blocks show courts rebuilding the number from market data — including where no salary was paid at all.",
+      "The election moves the §199A math in both directions: owner wages come out of qualified business income, shrinking the 20% deduction, but the same wages supply the W-2 wage limitation that preserves the deduction for taxpayers above the taxable-income thresholds — the model computes the net rather than the payroll-tax savings alone."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §1362",
+        "note": "Statutory basis for the election; Form 2553 timing rules flow from it."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Proc. 2013-30",
+        "note": "Standing relief procedure for late S elections — a blown deadline rarely kills the strategy."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Rul. 59-221",
+        "note": "Holds that an S corporation shareholder's passthrough income is not self-employment income — the source of the entire benefit."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Rul. 74-44",
+        "note": "The recharacterization weapon: distributions paid in place of reasonable salary are wages subject to employment tax."
+      },
+      {
+        "type": "Case",
+        "cite": "David E. Watson, P.C. v. United States, 668 F.3d 1008 (8th Cir. 2012)",
+        "note": "Leading reasonable-compensation case — a CPA's $24,000 salary against $200,000+ of distributions was rebuilt to market rate; the exam playbook for this strategy."
+      },
+      {
+        "type": "Case",
+        "cite": "Sean McAlary Ltd. v. Commissioner, T.C. Summ. Op. 2013-62",
+        "note": "Court constructed reasonable compensation from wage-survey data for the work actually performed — defines the evidence that wins or loses."
+      },
+      {
+        "type": "Case",
+        "cite": "Glass Blocks Unlimited v. Commissioner, T.C. Memo 2013-180",
+        "note": "Zero-salary structure with cash pulled out as purported loan repayments; everything was recharacterized as wages. Paying nothing is the least defensible position."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§1401-1402",
+        "note": "The self-employment tax being displaced — defines the rate and base the savings are measured against."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §3101(b)(2)",
+        "note": "Additional 0.9% Medicare tax and its thresholds; part of the burden avoided on the distribution layer."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §199A",
+        "note": "QBI interplay: wages reduce qualified business income but feed the W-2 wage limitation above the thresholds."
+      }
+    ],
+    "requirements": [
+      "Eligible small business corporation: domestic, no more than 100 shareholders, one class of stock, and only permitted shareholders (individuals, estates, certain trusts — no partnerships, corporations, or nonresident aliens).",
+      "Timely Form 2553, or a qualifying late-election package under Rev. Proc. 2013-30.",
+      "Actual payroll operation: W-2 to the owner, Forms 941, federal and state withholding deposits, and state unemployment registration.",
+      "A documented reasonable-compensation analysis supporting the wage figure before the first payroll runs.",
+      "Sustained profit high enough that employment-tax savings exceed the recurring payroll and 1120-S compliance cost — typically $60,000+ of annual net profit."
+    ],
+    "risks": [
+      "The leading audit theory is wage recharacterization: an unreasonably low salary invites the IRS to convert distributions back into wages under Rev. Rul. 74-44, with back FICA, deposit and accuracy penalties, and interest. Watson v. Commissioner, 668 F.3d 1008 (8th Cir. 2012), is the controlling illustration — the courts will substitute a market-based number when the taxpayer's figure is indefensible.",
+      "At modest profit levels the election is a net loser: payroll processing, a separate 1120-S, and state filings are fixed costs that outrun the savings below roughly $60,000 of profit.",
+      "Lower reported wages shrink the owner's Social Security earnings record, a real retirement trade-off that should be disclosed, not discovered.",
+      "For clients under the §199A thresholds, wages reduce QBI with no offsetting wage-limitation benefit — the payroll-tax savings can be partially clawed back through a smaller 20% deduction.",
+      "Some jurisdictions tax S corporations anyway (entity-level or franchise taxes, and New York City does not recognize the election), and appreciated assets inside a corporation lose the basis-adjustment flexibility a partnership would keep."
+    ],
+    "stateNotes": [
+      "Conformity: most states honor the federal S election automatically, but a handful require a separate state election or impose entity-level taxes on S corporations — confirm each state in the client's filing footprint before modeling.",
+      "PTET interaction: the election is frequently the gateway to a pass-through entity tax election, because a Schedule C filer has no entity to make one. With the 2026 SALT cap at $40,400, the stacked value of S status plus PTET should be presented together; the engine sequences PTET after the federal picture is set.",
+      "Missouri: the federal election carries over with no separate state filing, Missouri's income computation starts from federal AGI (RSMo §143.121), and the S corporation is eligible for Missouri's elective pass-through entity tax — no franchise-tax penalty for making the election."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": ["c-corp-conversion", "partnership-vs-s-corp"],
+      "synergiesWith": [
+        "reasonable-comp-study",
+        "ptet",
+        "accountable-plan",
+        "augusta-rule",
+        "spouse-health-s-corp",
+        "solo-401k"
+      ]
+    },
+    "reviewChecklist": [
+      "Entity meets every §1361 eligibility gate (shareholder count, shareholder types, one class of stock) and the Form 2553 due date or Rev. Proc. 2013-30 path is calendared.",
+      "The ownerWages input is supported by a reasonable-compensation analysis in the file — not a percentage rule of thumb.",
+      "Modeled savings are net of payroll and 1120-S compliance costs and reflect the client's actual §199A posture at their taxable-income level.",
+      "State footprint checked for non-recognition, separate state elections, and entity-level taxes; PTET opportunity evaluated alongside.",
+      "Client has been told, in writing, about the Social Security earnings-record trade-off and the payroll obligations they are taking on.",
+      "Profit history supports the election — no recommendation on a single spike year."
+    ]
+  },
+  "client": {
+    "teaser": "Same business, restructured pay — and the 15.3% self-employment tax stops applying to every dollar.",
+    "headline": "Split your profit so most of it skips self-employment tax",
+    "plainEnglish": [
+      "If you run your business as a sole proprietor or a regular LLC, about 15.3% comes off the top of every dollar of profit for Social Security and Medicare — before income tax even starts. That is just how the default setup works.",
+      "An S corporation changes the setup. You become an employee of your own company and take a fair, documented salary for the work you do. That salary is taxed like any paycheck. But profit above the salary comes to you as an owner distribution, and distributions do not pay Social Security or Medicare tax at all.",
+      "The one firm rule is that the salary has to be fair for the job you actually do. We set that number carefully, back it up with real market data, and keep the paperwork current. Get that right and the savings repeat every profitable year."
+    ],
+    "analogy": "Picture your profit flowing through two pipes — a paycheck pipe that pays payroll tax and an owner pipe that does not; today everything runs through the paycheck pipe, and this election opens the second one.",
+    "benefits": [
+      "Roughly 15% in payroll tax removed from profit above your salary",
+      "Savings repeat every year the business earns money",
+      "Unlocks other strategies that need a company in place, like the state entity-tax deduction and renting your home to your business",
+      "The business itself does not change — only how the income is packaged"
+    ],
+    "steps": [
+      "WE run the analysis to confirm the numbers work for your profit level, including all costs.",
+      "WE determine a fair, well-documented salary for your role.",
+      "WE prepare and file the one-page IRS election and watch the deadline.",
+      "WE set up your payroll and the state accounts that go with it.",
+      "YOU approve the salary figure and sign the election.",
+      "YOU take your pay as scheduled payroll plus owner distributions — and leave the year-end corporate return, W-2, and K-1 to us."
+    ],
+    "clientCommitments": [
+      "Run real payroll all year — no skipping months when cash is tight",
+      "Keep business and personal money separate once the corporation exists",
+      "Tell us when profit or your role changes so the salary can be re-checked",
+      "Accept a somewhat smaller Social Security earnings record in exchange for the tax savings"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Annual reasonable-compensation refresh against current profit and duties",
+      "Quarterly payroll filings and year-end W-2/K-1 preparation",
+      "Form 1120-S preparation and distribution-versus-basis tracking",
+      "Yearly re-check that the election still beats the alternatives at current profit"
+    ],
+    "deliverables": [
+      "Filed Form 2553 with acceptance confirmation",
+      "Reasonable-compensation memo supporting the wage figure",
+      "Payroll setup package and calendar of filing obligations",
+      "Annual savings summary comparing S-corp results to the no-election baseline"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 10,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "ownerWages": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Reasonable W-2 compensation set for the owner"
+        }
+      },
+      "required": ["ownerWages"]
+    },
+    "apply": {
+      "module": "s-corp-election@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasScheduleC",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "totalBusinessProfit",
+          "op": "gte",
+          "value": 60000
+        }
+      ],
+      "reason": "Schedule C profit of ${totalBusinessProfit} — an S election with reasonable W-2 comp can cut SE tax."
+    },
+    "goldenTests": [
+      {
+        "name": "single Sch C 150k, comp 60k",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 150000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "ownerWages": 60000
+        },
+        "expect": {
+          "totalBurdenDelta": -8895,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj Sch C 300k, comp 120k",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 300000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "ownerWages": 120000
+        },
+        "expect": {
+          "totalBurdenDelta": -7567,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §1362",
+      "IRC §§1401-1402",
+      "Rev. Rul. 74-44 progeny — reasonable compensation cases",
+      "SSA annual wage base announcements"
+    ],
+    "keywords": [
+      "S corporation election",
+      "reasonable compensation",
+      "SE tax avoidance S corp",
+      "Form 2553",
+      "wage recharacterization"
+    ],
+    "reviewTriggers": [
+      "New reasonable-compensation case law or IRS enforcement campaign",
+      "Change to the Social Security wage base or additional Medicare thresholds",
+      "Any legislative proposal to apply SECA/NIIT to S corporation passthrough income",
+      "§199A threshold or deduction changes"
+    ]
+  }
+}

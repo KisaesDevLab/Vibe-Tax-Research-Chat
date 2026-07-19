@@ -30,6 +30,7 @@ import { configRouter } from './routes/config.js';
 import { clientsRouter } from './routes/clients/index.js';
 import { archivesRouter } from './routes/archives.js';
 import { adminTableSetsRouter } from './routes/admin/table-sets.js';
+import { planningRouter } from './routes/planning/index.js';
 import { webhooksRouter } from './routes/webhooks/index.js';
 import { setupRouter } from './routes/setup.js';
 import { mountBullBoard } from './routes/admin/bull-board.js';
@@ -97,6 +98,7 @@ export function createApp(): Express {
   app.use('/api/chats', chatsRouter);
   app.use('/api/clients', clientsRouter);
   app.use('/api/archives', archivesRouter);
+  app.use('/api/planning', planningRouter);
 
   // 404
   app.use((req, res) => {

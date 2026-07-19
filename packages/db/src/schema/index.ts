@@ -12,6 +12,7 @@ export * from './research-archives.js';
 export * from './table-sets.js';
 export * from './strategies.js';
 export * from './review-queue.js';
+export * from './plans.js';
 export * from './messages.js';
 export * from './attachments.js';
 export * from './usage.js';

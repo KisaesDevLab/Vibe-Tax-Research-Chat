@@ -1,0 +1,308 @@
+{
+  "id": "ptet",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial authoring to schema v1.0 reflecting the post-OBBBA SALT cap ($40,400 for 2026 with MAGI phase-down)."
+    }
+  ],
+  "name": "Pass-Through Entity Tax (PTET) Election",
+  "category": "entity-structure",
+  "modeled": true,
+  "complexity": 2,
+  "riskRating": "moderate",
+  "entityTypes": ["s-corp", "partnership"],
+  "typicalSavingsBand": "5k-25k",
+  "advisor": {
+    "summary": "A PTET election moves the owner's state income tax on pass-through earnings from the individual return, where §164(b)(6) caps it, to the entity return, where no cap applies. The partnership or S corporation pays the state tax, deducts it against ordinary income under §164, and the owner receives either a state credit or an income exclusion depending on the state's design; the IRS confirmed in Notice 2020-75 that it will respect the entity-level deduction. OBBBA kept the individual cap alive — $40,400 for 2026 — and added a phase-down that pulls it back toward $10,000 as MAGI climbs past roughly $505,000, which makes the election more valuable for high-income owners, not less. The federal benefit approximates the tax paid times the owner's marginal federal rate, haircut by the §199A interaction since the deduction also shrinks QBI. The exposure here is procedural rather than doctrinal: missed election windows, missed estimated payments, and resident-credit mismatches for multistate owners.",
+    "mechanics": [
+      "The entity affirmatively elects into its state's PTET regime — in most states annually, and often with binding election or estimated-payment deadlines during the year. The election converts what would be the owners' personal state liability on the pass-through income into an entity-level tax.",
+      "The entity deducts the tax it pays under §164 as an ordinary, non-separately-stated expense. The §164(b)(6) cap by its terms limits only individuals, so the entity's deduction is uncapped — the structural insight Notice 2020-75 confirmed the IRS will respect.",
+      "The deduction reduces the ordinary income passed through to owners under §702 (partnerships) or §1366 (S corporations), so federal K-1 income arrives already net of the state tax rather than the owner deducting it subject to the cap.",
+      "On the owner's personal state return, credit states (California and New York among them) grant a credit for the owner's share of the entity tax, while exclusion states carve the taxed income out of the owner's state base. The two designs reach similar economics through different filings — verify which machinery the client's state uses before modeling.",
+      "Under OBBBA the individual SALT cap is $40,400 for 2026 but phases back down toward $10,000 once MAGI exceeds roughly $505,000. Below the phase-down range, compare the election against what the owner could deduct personally; above it, the personal cap is effectively $10,000 again and the entity-level deduction is nearly always favorable.",
+      "The entity deduction also reduces §199A qualified business income, clawing back roughly 20% of the deduction's value on QBI-eligible income — quote the net-of-QBI benefit, never the gross."
+    ],
+    "authority": [
+      {
+        "type": "Admin",
+        "cite": "IRS Notice 2020-75",
+        "note": "The controlling guidance: the IRS will respect entity-level state income taxes as deductible by the entity and outside the individual SALT cap. Promised proposed regulations were never issued, so the Notice remains the anchor."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §164; §164(b)(6)",
+        "note": "State taxes are deductible under §164; the (b)(6) cap — $40,400 for 2026 with the OBBBA MAGI phase-down — applies to individuals only, which is the entire premise of the election."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§702, 1366",
+        "note": "Pass-through of entity items: the PTET deduction reduces the ordinary income reported on owners' K-1s."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §199A",
+        "note": "The entity deduction reduces qualified business income, offsetting roughly a fifth of the federal benefit for QBI-eligible income."
+      },
+      {
+        "type": "Admin",
+        "cite": "State SALT-parity statutes (36+ states)",
+        "note": "Election windows, rates, credit-versus-exclusion machinery, and estimated-payment schedules all vary state by state and change year to year — the state statute must be confirmed annually."
+      },
+      {
+        "type": "Admin",
+        "cite": "Missouri SALT Parity Act, RSMo §143.436",
+        "note": "Missouri's own PTET: an annual affected-business-entity election, tax imposed at the top individual rate, with members claiming a credit for their share of the entity tax paid."
+      }
+    ],
+    "requirements": [
+      "A partnership or S corporation — a Schedule C sole proprietorship or a disregarded SMLLC cannot elect; sequence an S election first if the profile warrants it.",
+      "A state PTET regime covering the entity's income, with the election made inside the state's window.",
+      "Cash flow at the entity to fund estimated payments on the state's schedule, including a pre-year-end payment where cash-basis timing matters.",
+      "Owner consent where the state binds all owners to the election, documented before filing it."
+    ],
+    "risks": [
+      "The dominant failure mode is procedural: a missed election deadline or missed mandatory estimated payment forfeits the entire year's benefit in many states, with no relief mechanism. Every state deadline in the client's footprint must be calendared.",
+      "Multistate owners face resident-credit risk — some resident states limit or deny the other-state tax credit for taxes paid by the entity rather than by the individual, which can convert the federal benefit into partial double state taxation. Map every owner's resident state before electing.",
+      "Deduction timing follows payment for most regimes: a cash-basis entity that funds the tax in January instead of December pushes the deduction into the wrong year.",
+      "The §199A interaction reduces the net benefit by roughly 20% on QBI-eligible income; quoting the gross deduction overstates the savings.",
+      "Notice 2020-75 was never converted into final regulations. The position is respected and widely used, but the guidance posture should be monitored, and clients should understand the deduction rests on a notice rather than a statute or regulation."
+    ],
+    "stateNotes": [
+      "Conformity: PTET is inherently a state-by-state construct — over 36 states have enacted SALT-parity regimes, and each fixes its own rate, election window, payment schedule, and owner-relief design. Confirm the specific statute for every state where the entity files, every year, because legislatures amend these regimes frequently.",
+      "Credit versus exclusion: credit states refund the owner through a personal-return credit for their share of the entity tax; exclusion states remove the taxed income from the owner's state base. Excess-credit treatment (refundable, carryforward, or lost) differs by state and can change the real value of the election.",
+      "Resident-credit interaction: for owners living outside the entity's taxing state, verify the resident state grants its other-state credit for entity-paid tax — several do not, or cap it, and that mismatch is the most common way a PTET election loses money.",
+      "Missouri: the SALT Parity Act (RSMo §143.436) lets partnerships and S corporations make an annual election to be taxed as an affected business entity at Missouri's top individual rate, with each member claiming a credit for their pro-rata share of the tax paid — a credit-design regime. Nonresident members remain in scope for their Missouri-source share, and the election is made with the entity's return filing, so the practical deadline discipline is around estimated payments and year-end cash timing rather than a mid-year election form."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": [
+        "s-corp-election",
+        "reasonable-comp-study",
+        "qbi-wage-optimization",
+        "state-credits-review"
+      ]
+    },
+    "reviewChecklist": [
+      "Entity is a partnership or S corporation in good standing — not a disregarded entity or Schedule C",
+      "State election window, rate, and estimated-payment schedule confirmed against the current-year statute, not last year's memo",
+      "Every owner's resident state checked for credit availability on entity-paid tax; mismatches quantified",
+      "Owner consent documented where the state requires it",
+      "Modeled benefit is net of the §199A haircut and compares against the owner's personal cap position under the OBBBA phase-down",
+      "Cash-basis entities: payment scheduled before December 31"
+    ]
+  },
+  "client": {
+    "teaser": "The federal cap on deducting state taxes applies to people — not to your business.",
+    "headline": "Deduct your state income tax in full again.",
+    "plainEnglish": [
+      "Since 2018, federal law has limited how much state income tax you can deduct on your personal return. For a successful business owner, that limit erases a deduction that used to be worth real money — and the limit shrinks even more once your income is high enough.",
+      "Here is the key: the limit applies to people, not to businesses. If your company elects to pay the state tax on your business income itself, the company deducts every dollar of it. The state then gives you credit on your personal return so the same tax is not paid twice.",
+      "You do not pay the state one dollar more than before. The same tax simply takes a different route — one where the federal deduction is not capped. The IRS has published guidance approving this approach, and most states built these programs on purpose so their business owners could use it.",
+      "What we watch closely: strict state deadlines. Miss the election date or a required payment, and the benefit is gone for that year. That calendar work is our job."
+    ],
+    "analogy": "Two toll lanes lead to the same destination, and the toll is identical in both. One lane hands you back a federal deduction at the end; the other mostly doesn't. This election just moves your car into the better lane.",
+    "benefits": [
+      "The business deducts 100% of the state tax on its income — no federal cap",
+      "Your total payment to the state stays the same; only your federal bill goes down",
+      "Backed by published IRS guidance and available in more than 36 states",
+      "The savings repeat every year the election stays in place"
+    ],
+    "steps": [
+      "WE confirm your state's program, the current rate, and every deadline that applies to you.",
+      "WE prepare the election and the payment schedule for the business.",
+      "YOU approve the election and make the state payments from the business account on the dates we set.",
+      "WE claim your credit on your personal state return so nothing is taxed twice."
+    ],
+    "clientCommitments": [
+      "Make the entity's state payments on the exact dates we give you — the deadlines are strict.",
+      "Keep enough cash in the business to cover the payments, including one before year-end.",
+      "Tell us if you or any co-owner moves to another state — it changes whether this still works."
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Re-confirm the state regime, rate, and election window each year before filing the election",
+      "Maintain the entity estimated-payment calendar, including the pre-year-end payment for cash-basis entities",
+      "Re-check every owner's residency and resident-state credit treatment annually",
+      "Re-run the benefit model against the current-year SALT cap and phase-down thresholds"
+    ],
+    "deliverables": [
+      "Election confirmation and owner-consent record",
+      "Entity estimated-payment schedule with amounts and due dates",
+      "Owner credit memo mapping entity tax paid to each personal state return",
+      "Annual benefit summary net of the QBI interaction"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 80,
+    "inputs": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "apply": {
+      "module": "ptet@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasEntity",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "state",
+          "op": "exists"
+        }
+      ],
+      "reason": "Pass-through owner in {state.code} — an entity-level tax election moves the state tax above the SALT cap."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj S-corp 300k/100k comp, 5% flat state, itemizer",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": {
+            "code": "XX",
+            "flatRate": 0.05
+          },
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 300000,
+              "employeeWages": 0,
+              "ownerWages": 100000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 20000,
+            "mortgageInterest": 25000,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {},
+        "expect": {
+          "totalBurdenDelta": -60,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj S-corp 300k/100k comp, MO 4.7%, standard deduction",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": {
+            "code": "MO",
+            "flatRate": 0.047
+          },
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 300000,
+              "employeeWages": 0,
+              "ownerWages": 100000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {},
+        "expect": {
+          "totalBurdenDelta": -2247,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRS Notice 2020-75 and any successor regulations",
+      "IRC §164(b)(6) (OBBBA cap and phase-down parameters)",
+      "State SALT-parity statutes in client footprint states",
+      "Missouri RSMo §143.436"
+    ],
+    "keywords": [
+      "PTET",
+      "pass-through entity tax",
+      "SALT cap workaround",
+      "SALT parity",
+      "entity-level tax election",
+      "Notice 2020-75",
+      "Missouri SALT Parity Act",
+      "resident credit entity tax"
+    ],
+    "reviewTriggers": [
+      "Any proposed or final regulations under Notice 2020-75",
+      "OBBBA technical corrections to the SALT cap or phase-down thresholds",
+      "State legislative amendments to PTET rates, deadlines, or credit design",
+      "New guidance on resident-state credits for entity-paid taxes"
+    ]
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "id": "reasonable-comp-study",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": { "from": 2026, "to": null },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Reasonable Compensation Study (S-Corp)",
+  "category": "entity-structure",
+  "modeled": false,
+  "complexity": 2,
+  "riskRating": "elevated",
+  "entityTypes": ["s-corp"],
+  "typicalSavingsBand": "structural",
+  "advisor": {
+    "summary": "Every dollar of employment-tax savings an S election produces sits on a single assumption: that the owner's W-2 wage is defensible for the services performed. The IRS's attack never varies — it asserts the salary was too low and recharacterizes distributions as wages under Rev. Rul. 74-44, a theory the Eighth Circuit sustained in Watson against a CPA drawing $24,000 in salary alongside $200,000+ of distributions. A reasonable-compensation study builds the wage from evidence before the year is filed: an inventory of what the owner actually does, priced against independent market wage data under the like-services benchmark of Reg. §1.162-7(b)(3). The finished study is both the input to the S-election model and the exam defense for it. This is an advisory engagement — it produces documentation and a number, not a modeled savings line of its own.",
+    "mechanics": [
+      "The exposure: when a shareholder-employee is undercompensated for services, the IRS treats purported distributions as wages under Rev. Rul. 74-44, pulling them into the FICA base defined by §§3111 and 3121(a) and, where thresholds are crossed, the additional Medicare tax of §3101(b)(2).",
+      "The benchmark: Reg. §1.162-7(b)(3) defines reasonable compensation as what like enterprises would ordinarily pay for like services under like circumstances; courts apply it through a multi-factor analysis — training, duties, time devoted, comparable pay, distribution history, and business scale — as in Watson.",
+      "The methodology courts credit: McAlary shows the Tax Court constructing the wage bottom-up from market survey data for the work actually done, which is exactly what a contemporaneous study replicates in advance; Glass Blocks confirms that paying no salary at all is the fastest route to full recharacterization.",
+      "The study prices every function the owner performs — management and administration included, not just billable or technical work — using cited independent sources such as BLS Occupational Employment and Wage Statistics and commercial compensation databases, scaled to actual hours and geography.",
+      "Failure is expensive beyond the tax: recharacterization brings back-FICA plus §6656 deposit penalties, §6662 accuracy-related penalties, and interest, which together routinely exceed whatever the low salary saved.",
+      "The concluded wage is a live modeling input, not paper: it trades employment tax against the §199A effects (wages shrink QBI but supply the W-2 wage limitation above the thresholds), and the S-election model computes that net using this study's number."
+    ],
+    "authority": [
+      {
+        "type": "Admin",
+        "cite": "Rev. Rul. 74-44",
+        "note": "The foundational recharacterization ruling — distributions paid instead of reasonable salary to a shareholder-employee are wages subject to employment tax."
+      },
+      {
+        "type": "Case",
+        "cite": "David E. Watson, P.C. v. United States, 668 F.3d 1008 (8th Cir. 2012)",
+        "note": "The leading case: appellate court upheld rebuilding a $24,000 salary to a survey-based market figure against $200,000+ in distributions. Defines both the audit theory and the evidence standard."
+      },
+      {
+        "type": "Case",
+        "cite": "Sean McAlary Ltd. v. Commissioner, T.C. Summ. Op. 2013-62",
+        "note": "The court derived reasonable compensation from market wage data for the services actually rendered — the methodology a proactive study performs first."
+      },
+      {
+        "type": "Case",
+        "cite": "Glass Blocks Unlimited v. Commissioner, T.C. Memo 2013-180",
+        "note": "No salary paid; cash withdrawn as purported loan repayments was recharacterized as wages. Establishes the floor: zero is indefensible."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.162-7(b)(3)",
+        "note": "The reasonableness yardstick — like services, like enterprises, like circumstances — that the study's market comparison operationalizes."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§3111, 3121(a)",
+        "note": "FICA imposition and the wage definition recharacterized amounts fall into."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §3101(b)(2)",
+        "note": "Additional 0.9% Medicare tax that attaches to recharacterized wages above the thresholds."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§6656, 6662",
+        "note": "Deposit and accuracy-related penalties that stack on top of back-FICA when the position fails."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §199A",
+        "note": "The counterweight the study must respect: a higher wage costs employment tax and QBI below the threshold but supplies the wage limitation above it."
+      }
+    ],
+    "requirements": [
+      "An S corporation in place, or one being elected — the study pairs naturally with a new election so the first year starts documented.",
+      "A candid inventory of the owner's actual duties, hours, credentials, and what non-owner staff absorb.",
+      "Independent market wage data matched to the owner's real mix of functions, geography, and company size — cited and retained, not merely consulted.",
+      "A written, dated report finalized before or with the year's payroll decisions, kept in the permanent file.",
+      "Payroll actually set to the studied figure — a study that payroll ignores is evidence against the client, not for them."
+    ],
+    "risks": [
+      "The leading audit theory is wage recharacterization of the Watson fact pattern — high distributions over a token salary. Watson v. Commissioner, 668 F.3d 1008 (8th Cir. 2012), applying Rev. Rul. 74-44, is the case every exam file cites; without a contemporaneous study the taxpayer is arguing valuation after the fact against the government's expert.",
+      "This record carries an elevated rating because the study defends the firm's largest recurring S-corp exposure: if it fails, the client faces back FICA, §6656 and §6662 penalties, and interest across multiple open years at once.",
+      "A partial study is an assailable study — pricing only the technical role while ignoring management, sales, and administrative functions leaves the factor test unsatisfied.",
+      "Stale studies decay: a wage supported at $200,000 of profit does not defend a $700,000 year; growth, role changes, and acquisitions all require a refresh.",
+      "Overshooting has a real cost too — an inflated wage burns unnecessary employment tax and can shrink the §199A deduction below the threshold; the target is defensible, not maximal or minimal."
+    ],
+    "stateNotes": [
+      "Conformity: states that piggyback on federal wage definitions follow the recharacterization result automatically — reclassified wages ripple into state withholding, unemployment insurance wage bases, and state payroll penalties, so the exposure is never federal-only.",
+      "PTET interaction: the studied wage directly sizes the PTET base — every added dollar of W-2 comp is a dollar less entity income available for the pass-through entity tax deduction, which matters under the $40,400 SALT cap (2026); set the wage first, then model PTET on what remains.",
+      "Missouri: no separate state reasonableness standard — Missouri starts from federal AGI (RSMo §143.121), so a federal recharacterization flows straight into the Missouri return, and the corrected wages retroactively change Missouri withholding and unemployment filings; the wage also reduces the base for Missouri's elective PTET."
+    ],
+    "interactions": {
+      "requires": ["s-corp-election"],
+      "conflictsWith": [],
+      "synergiesWith": ["ptet", "qbi-wage-optimization", "solo-401k", "spouse-health-s-corp"]
+    },
+    "reviewChecklist": [
+      "Duty inventory covers everything the owner does — management, sales, finance, and technical work — with hours that reconcile to reality.",
+      "Wage data sources are independent, current, matched to geography and business size, and cited in the report with retention copies in the file.",
+      "The report is dated before or contemporaneous with the year's payroll decisions and formally adopted (board or owner minutes).",
+      "Payroll is actually set to the concluded figure and the same figure feeds the S-election model's ownerWages input.",
+      "The wage choice was evaluated against §199A and retirement-plan contribution effects, not employment tax alone.",
+      "A refresh trigger is diarized: material profit change, role change, or three years, whichever comes first."
+    ]
+  },
+  "client": {
+    "teaser": "The dated, data-backed report that keeps your S-corporation tax savings from being unwound.",
+    "headline": "Back your salary with evidence before anyone asks",
+    "plainEnglish": [
+      "Owning an S corporation lets you split your pay between a salary and owner distributions, and that split is where your biggest recurring tax savings comes from. The IRS allows it on one condition: the salary must be fair for the work you really do. That word — fair — is where owners get challenged.",
+      "A reasonable compensation study answers the question with data instead of a guess. We list everything you actually do for the business — managing people, selling, doing the hands-on work — and price each part using independent salary data for your industry and area. The result is a written, dated report showing your salary matches what the market pays for that work.",
+      "The report earns its keep twice. Day to day, it sets the right number, so you are not overpaying payroll tax out of caution or underpaying and inviting a challenge. And if the IRS ever asks, you hand over a professional study prepared in advance — not an explanation assembled after the letter arrived."
+    ],
+    "analogy": "It is a home appraisal for your paycheck — you could guess the number, but a documented appraisal gets it right and ends the argument before it starts.",
+    "benefits": [
+      "A salary grounded in real market data — not too high, not too low",
+      "Strong written backup for the tax savings your S corporation creates",
+      "Far smaller penalty and back-tax exposure if you are ever examined",
+      "A number that gets refreshed as your business and role grow"
+    ],
+    "steps": [
+      "WE interview you about what you actually do, your hours, and your background.",
+      "WE price your mix of duties using independent salary sources for your area and industry.",
+      "WE deliver the written, dated report and set your payroll to match it.",
+      "WE refresh the study when your business meaningfully changes.",
+      "YOU answer the interview honestly — the study only protects you if it matches reality.",
+      "YOU keep payroll at the studied amount and tell us when your role or profit shifts."
+    ],
+    "clientCommitments": [
+      "Give an accurate picture of your duties and hours, even where it raises the number",
+      "Actually pay yourself the studied salary through payroll",
+      "Flag major changes — growth, new managers, stepping back — so the study stays current",
+      "Keep the report and its updates in your permanent records"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Annual sanity check of the studied wage against current profit and duties",
+      "Full refresh on material profit change, role change, or every three years",
+      "Confirmation that payroll matched the studied figure at year-end"
+    ],
+    "deliverables": [
+      "Written reasonable-compensation report with cited market data and factor analysis",
+      "Adoption minutes for the corporate record",
+      "Payroll adjustment memo aligning actual wages to the study",
+      "Refresh-trigger calendar entry in the client file"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [{ "field": "hasSCorp", "op": "eq", "value": true }],
+    "reason": "S-corp owner compensation should be supported by a documented reasonable-comp study."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "Rev. Rul. 74-44 progeny — Tax Court reasonable compensation memos",
+      "Reg. §1.162-7",
+      "IRS employment tax exam priorities and S-corp compliance campaigns",
+      "BLS OEWS annual data releases"
+    ],
+    "keywords": [
+      "reasonable compensation",
+      "S corporation officer wages",
+      "distribution recharacterization",
+      "Watson v. United States",
+      "shareholder-employee wages"
+    ],
+    "reviewTriggers": [
+      "New reasonable-compensation case law or appellate decision",
+      "IRS guidance or campaign targeting S-corp officer compensation",
+      "Changes to FICA rates, wage base, or additional Medicare thresholds",
+      "§199A changes that alter the wage-versus-QBI trade"
+    ]
+  }
+}

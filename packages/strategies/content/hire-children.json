@@ -1,0 +1,331 @@
+{
+  "id": "hire-children",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Hiring Children Under 18",
+  "category": "payroll-family",
+  "modeled": true,
+  "complexity": 2,
+  "riskRating": "moderate",
+  "entityTypes": ["sole-prop", "partnership"],
+  "typicalSavingsBand": "5k-25k",
+  "advisor": {
+    "summary": "When a parent's sole proprietorship — or a partnership owned entirely by the child's parents — pays a child under 18 for genuine work, the wages occupy a uniquely favorable position in the Code: deductible to the business under §162(a), exempt from FICA under §3121(b)(3)(A), exempt from FUTA through age 20 under §3306(c)(5), and taxed to the child rather than the parent under §73(a). Because wages are earned income, the child's own standard deduction — $16,100 for 2026 — shelters them completely, and the kiddie tax never applies to compensation. The result is a full-rate deduction on the parent's return, a simultaneous reduction of the parent's SE tax base, and zero tax on the receiving end. Entity form is the gate — a corporate employer forfeits the FICA exemption — and the whole structure stands or falls on whether the work, the rate, and the records are real, the line the Tax Court drew in Eller.",
+    "mechanics": [
+      "The wages are an ordinary and necessary business expense under §162(a), and because they reduce net self-employment earnings under §1402(a), each dollar paid cuts both the parent's income tax and the parent's SE tax — the double effect that drives the arithmetic.",
+      "Section 3121(b)(3)(A) removes from FICA-covered employment the services of a child under 18 working for a parent, provided the employer is the parent's sole proprietorship or a partnership in which every partner is a parent of that child; §3306(c)(5) supplies the matching FUTA exemption until the child turns 21.",
+      "Under §73(a), pay for a child's services is the child's gross income regardless of who collects it, and because wages are earned income, the dependent standard deduction of §63(c)(5)(B) shelters them up to the full $16,100 single standard deduction for 2026 — at or below that level the child owes no income tax.",
+      "The kiddie tax of §1(g) reaches only net unearned income, so it never touches these wages no matter how high the parents' bracket is.",
+      "The employer's identity controls everything: a corporation — including the parent's own S corporation — is a separate employer, so wages it pays the child stay fully FICA-taxable under §3121(b)(3)(A)'s parent-employer limitation; S-corp owners need a family management company as an intermediate payor to restore the exemption.",
+      "Deductibility survives only to the extent the pay is reasonable for services actually performed — in Eller the Tax Court upheld wages to the taxpayers' minor children as deductible but trimmed the amounts the documented work could not support."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §162(a)",
+        "note": "Deduction for the wages — conditioned on reasonableness and services actually rendered."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1402(a)",
+        "note": "Wages deducted from the sole proprietorship also shrink the parent's self-employment tax base — half the benefit lives here."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §3121(b)(3)(A)",
+        "note": "The FICA exemption for a child under 18 employed by a parent; its text is also why a corporate employer disqualifies."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §3306(c)(5)",
+        "note": "Parallel FUTA exemption for a child under 21 employed by a parent."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §73(a)",
+        "note": "Assigns the income to the child, not the parent — the rate-shift foundation."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §63(c)(5)(B)",
+        "note": "Dependent standard deduction extends to earned income, sheltering wages up to $16,100 (2026)."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1(g)",
+        "note": "Kiddie tax applies only to unearned income — confirms wages escape it."
+      },
+      {
+        "type": "Case",
+        "cite": "Eller v. Commissioner, 77 T.C. 934 (1981)",
+        "note": "Court allowed deductions for minor children's wages to the extent the work supported them and disallowed the excess — both the validation and the warning."
+      }
+    ],
+    "requirements": [
+      "Qualifying employer: the parent's sole proprietorship, or a partnership in which each partner is a parent of the child — never a corporation directly.",
+      "Real, age-appropriate work the business would otherwise pay for: filing, cleaning, deliveries, social media content, appearing in advertising.",
+      "A written job description per child and contemporaneous timesheets, with pay at a defensible market rate for the task.",
+      "Payment on a regular payroll cadence into an account the child owns, with a W-2 issued and employment returns filed showing the FICA-exempt wages.",
+      "Compliance with state child-labor rules, including any work-permit requirements."
+    ],
+    "risks": [
+      "The leading audit theory is that the wages outrun the work: examiners compare pay to the documented services and cut the excess, exactly the adjustment sustained in Eller v. Commissioner, 77 T.C. 934 (1981) — the structure survives, inflated amounts do not.",
+      "Missing timesheets, no job description, and a single round-number payment in late December is the losing fact pattern; contemporaneous records are the entire defense.",
+      "Paying the child through the parent's S corporation by accident silently forfeits the FICA exemption — the entity check must come before the first paycheck.",
+      "If the parent spends or reclaims the child's wages, the bona fides collapse; the child must actually receive, own, and control the funds.",
+      "State child-labor registration, work-permit, and payroll rules apply even inside a family business, and violations undercut the federal position."
+    ],
+    "stateNotes": [
+      "Conformity: states that begin with federal AGI inherit the federal outcome on the parent's side automatically, but the child's state filing threshold is a separate question — several states set standard deductions or filing floors below the federal $16,100, which can create a small state liability or filing duty for the child.",
+      "PTET interaction: none when a sole proprietorship pays the wages, since there is no electing entity; in a family-management-company structure fed by an S corporation, the management fee reduces the entity income on which any PTET election is computed — the engine handles the sequencing, so do not double-count.",
+      "Missouri: the individual income computation starts from federal AGI (RSMo §143.121) and Missouri's standard deduction tracks the federal amount, so a child kept at or under $16,100 owes no Missouri income tax either; note that Missouri requires work certificates for workers under 16 in most non-exempt settings, and new-hire reporting applies even to the owner's children."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": [
+        "family-management-company",
+        "kids-roth-ira",
+        "kids-401k",
+        "kiddie-tax-planning"
+      ]
+    },
+    "reviewChecklist": [
+      "Employer entity verified as a sole proprietorship or parent-only partnership; S-corp clients routed through a family management company first.",
+      "Each child's job description matches age-appropriate, genuinely useful work, and the hourly rate has market support in the file.",
+      "Timesheets exist and are contemporaneous — hours times rate reconciles to the wages modeled.",
+      "Wages flow into an account owned by the child, on a payroll cadence, with W-2 and employment returns properly reflecting the FICA exemption.",
+      "Per-child wages at or under the $16,100 standard deduction unless a documented reason supports more.",
+      "State child-labor and new-hire requirements confirmed for each child's age and role."
+    ]
+  },
+  "client": {
+    "teaser": "Pay your kids for real work — the business deducts it, and they owe nothing on it.",
+    "headline": "Turn family payroll into a deduction taxed at zero",
+    "plainEnglish": [
+      "If your kids do real jobs for your business — organizing files, cleaning the shop, making social media posts, appearing in your ads — the business can pay them a fair wage, the same as any other worker. That wage is a deduction for you.",
+      "Here is the part most owners never hear. When a parent's own business employs a child under 18, the paycheck skips Social Security and Medicare taxes on both sides. And in 2026 a child can earn up to $16,100 before owing any federal income tax. So dollars that would have been taxed at your highest rate become a deduction for you and tax-free money for them.",
+      "It only works if it is real. Real tasks, hours written down as they happen, and pay that matches what the job is worth. We build that system for you — job descriptions, timesheets, payroll, and the year-end forms.",
+      "A bonus: because this is earned income, your child can put some of it into a Roth IRA and start compounding decades early."
+    ],
+    "analogy": "You were going to hand your kids money anyway — this way the business pays them for honest work, the tax code approves, and the paycheck arrives untaxed.",
+    "benefits": [
+      "A full business deduction that also lowers your self-employment tax",
+      "Up to $16,100 per child in 2026 with no federal income tax on their side",
+      "No Social Security or Medicare tax on the wages, for you or for them",
+      "The earnings can seed a Roth IRA or college savings in the child's name",
+      "Kids learn the business while the family keeps more of what it earns"
+    ],
+    "steps": [
+      "WE confirm your business structure qualifies before anything is paid.",
+      "WE write a simple job description for each child and set a fair pay rate with backup.",
+      "WE add each child to payroll and handle the forms, including the year-end W-2.",
+      "YOU make sure the work actually gets done and the timesheets get filled in as it happens.",
+      "YOU pay the wages into an account in the child's name, on a normal schedule — no cash, no lump sums."
+    ],
+    "clientCommitments": [
+      "The work must really happen — hours logged at the time, not reconstructed later",
+      "Pay goes into the child's own account and stays theirs",
+      "Keep pay in line with the job; raises need a reason",
+      "Follow the youth-work rules for your state, including any permits"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Year-end W-2 preparation and employment-return filings for each child",
+      "Annual review of rates, duties, and hours as the children grow",
+      "Timesheet and payment-trail spot check before filing season",
+      "Coordination of Roth IRA or 529 funding from the wages where elected"
+    ],
+    "deliverables": [
+      "Per-child job description and market-rate support memo",
+      "Timesheet templates and payroll onboarding package",
+      "Year-end W-2s and filed employment returns reflecting the exemptions",
+      "Annual family-payroll summary for the permanent file"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 20,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "children": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "annualWagesEach": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 16100,
+          "description": "Keep at or under the single standard deduction"
+        }
+      },
+      "required": ["children", "annualWagesEach"]
+    },
+    "apply": {
+      "module": "hire-children@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasBusiness",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "dependentsUnder17",
+          "op": "gte",
+          "value": 1
+        }
+      ],
+      "reason": "Business owner with children — wages for real work deduct at the parent's rate and land tax-free under the child's standard deduction."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj Sch C 150k, 2 kids at 8k",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 150000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 2,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "children": 2,
+          "annualWagesEach": 8000
+        },
+        "expect": {
+          "totalBurdenDelta": -3688,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj Sch C 200k, 1 kid at the standard deduction",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 200000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 1,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "children": 1,
+          "annualWagesEach": 16100
+        },
+        "expect": {
+          "totalBurdenDelta": -4885,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §3121(b)(3)",
+      "IRC §63(c) annual inflation adjustments",
+      "Tax Court memos on family employment deductions",
+      "DOL and state child-labor rule changes"
+    ],
+    "keywords": [
+      "hiring children under 18",
+      "family employment FICA exemption",
+      "child wages standard deduction",
+      "parent employer payroll",
+      "kids on payroll"
+    ],
+    "reviewTriggers": [
+      "Annual standard deduction adjustment (update the $16,100 wage ceiling)",
+      "New case law on family wage deductions or documentation standards",
+      "Any amendment to the §3121(b)(3) or §3306(c)(5) exemptions",
+      "State child-labor law changes in client footprint states"
+    ]
+  }
+}

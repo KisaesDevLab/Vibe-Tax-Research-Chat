@@ -1,0 +1,287 @@
+{
+  "id": "accountable-plan",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial authoring"
+    }
+  ],
+  "name": "Accountable Plan",
+  "category": "business-expenses",
+  "modeled": true,
+  "complexity": 1,
+  "riskRating": "low",
+  "entityTypes": ["s-corp", "c-corp", "partnership"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "An accountable plan is a written reimbursement arrangement that satisfies the three tests of Reg. §1.62-2: business connection, timely substantiation, and return of any excess advance. When the tests are met, the entity deducts every reimbursed dollar and the owner-employee receives the payment entirely outside the W-2 — no income tax and no FICA on either side. This matters because §67(g) permanently eliminated the miscellaneous itemized deduction for unreimbursed employee expenses, so an entity owner who absorbs home-office, vehicle, phone, or supply costs personally gets zero tax benefit for them. A compliant reimbursement plan is the only remaining route to a deduction for those dollars once the client operates through an entity. The mechanics are trivially simple; the entire defensive posture comes from running genuine expense reports on a real cadence rather than paying flat amounts.",
+    "mechanics": [
+      "Reg. §1.62-2(d) through (f) impose three cumulative tests: the reimbursed expense must have a business connection (deductible under §162 and incurred in service to the employer), must be substantiated within a reasonable period (a 60-day safe harbor applies), and any advance in excess of substantiated amounts must be returned within a reasonable period (120-day safe harbor).",
+      "Payments under a qualifying arrangement are carved out of gross income by §62(a)(2)(A) and §62(c): they never touch the W-2, so the owner avoids income tax and both halves of FICA — a combined 15.3% on wages below the 2026 Social Security wage base of $184,500 — and the entity still deducts the full amount.",
+      "Home-office costs are reimbursed at the business-use percentage of rent or mortgage interest, utilities, insurance, and repairs, computed the way Form 8829 would, but paid as an entity expense reimbursement; because the entity, not the owner, takes the deduction, no personal depreciation or recapture position is created.",
+      "Vehicle reimbursement uses the standard mileage rate times logged business miles, or the business percentage of actual costs; either method lives or dies on the contemporaneous records §274(d) demands — a reconstructed year-end log does not satisfy the statute.",
+      "If any of the three tests fails, the entire arrangement is treated as nonaccountable under Reg. §1.62-2(c)(5): everything paid becomes W-2 wages subject to withholding and payroll taxes, retroactively converting a clean deduction into a payroll-tax problem."
+    ],
+    "authority": [
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.62-2",
+        "note": "The controlling regulation: defines the business-connection, substantiation, and return-of-excess tests, the safe-harbor timing windows, and the nonaccountable-plan wage recharacterization in (c)(5)."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §62(a)(2)(A); §62(c)",
+        "note": "The statutory exclusion — reimbursed employee business expenses paid under a qualifying arrangement come out of gross income rather than being deducted below the line."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §274(d)",
+        "note": "Strict substantiation for vehicle, travel, and meal reimbursements; without contemporaneous records the reimbursement fails no matter how good the plan document is."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §67(g)",
+        "note": "Permanent repeal of the 2% miscellaneous itemized deductions — the reason unreimbursed owner-employee expenses now produce no benefit and reimbursement is the only path."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Rul. 2012-25",
+        "note": "The Service's stated theory against abusive plans: an arrangement that recharacterizes wages as reimbursements flunks the business-connection test in its entirety."
+      }
+    ],
+    "requirements": [
+      "A written plan adopted by the entity (resolution or written consent) before reimbursements begin.",
+      "The owner performs services for the entity as an employee (or the entity otherwise has employees incurring business costs personally).",
+      "Expense reports with receipts submitted within the substantiation safe harbor (60 days), and any excess advances returned within 120 days.",
+      "Reimbursements actually paid from the entity's account and coded to expense categories — not booked as year-end journal entries against distributions.",
+      "Home-office space claimed for reimbursement is used exclusively and regularly for the business."
+    ],
+    "risks": [
+      "The leading audit theory is wage recharacterization (Rev. Rul. 2012-25): flat monthly stipends or a single year-end lump sum with no underlying expense reports read as disguised compensation, and the Service converts the payments to wages with withholding, FICA, and penalty exposure.",
+      "A failed test does not disallow one expense — it makes the whole arrangement nonaccountable under Reg. §1.62-2(c)(5), sweeping every payment into the W-2.",
+      "Mileage claimed without a contemporaneous log is the most commonly lost item in exam; §274(d) leaves no room for estimates.",
+      "Home-office percentages built on space that is not exclusively business-use overstate the reimbursement and undermine the credibility of the rest of the plan.",
+      "Year-end journal-entry reimbursements are defensible only weakly; contemporaneous actual payments are what an examiner expects to see."
+    ],
+    "stateNotes": [
+      "Conformity: because a compliant reimbursement never enters federal wages or AGI, states that start from federal AGI or federal taxable income follow the exclusion automatically; no state-level addback regimes target accountable-plan reimbursements.",
+      "PTET interaction: the reimbursement is an entity-level deduction, so it reduces the income base on which any pass-through entity tax is computed. The engine picks this up from the reduced entity income — do not separately adjust the PTET base or the benefit will be double-counted.",
+      "Missouri: conforms through its federal AGI starting point (RSMo §143.121) with no addback; for an electing entity under Missouri's PTET, the reimbursement reduces the electing entity's Missouri tax base the same way it reduces federal ordinary income."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": ["home-office-deduction"],
+      "synergiesWith": ["s-corp-election", "augusta-rule", "vehicle-expense-method"]
+    },
+    "reviewChecklist": [
+      "Written plan executed and dated before the first reimbursement; entity in good standing.",
+      "Owner is on payroll (or otherwise an employee of the payor entity); client is not Schedule C only.",
+      "Home-office worksheet in the file with square-footage percentage and exclusive-use confirmation.",
+      "Vehicle method selected and a contemporaneous mileage-log habit confirmed with the client.",
+      "Sample expense reports reviewed; payments trace from the entity account to the owner and are coded as expenses, not draws.",
+      "No flat stipends or unreconciled advances anywhere in the arrangement."
+    ]
+  },
+  "client": {
+    "teaser": "The business costs you cover out of your own pocket can come back to you tax-free.",
+    "headline": "Have your business pay you back — tax-free.",
+    "plainEnglish": [
+      "If you own a company and pay for business things with personal money — a home office, miles on your car, your cell phone — the tax law gives you nothing back for them. Employees can no longer deduct those costs, and that includes you as the owner-employee. The money is simply gone.",
+      "An accountable plan fixes this. It is a short written policy that lets your company pay you back for those costs. The company deducts every dollar it repays you, and the money you receive is free of both income tax and payroll tax.",
+      "The only price is a little paperwork. You turn in a simple expense report with receipts, and the company pays you from its own account. We set up the plan and the forms; you keep the monthly habit going."
+    ],
+    "analogy": "It is the same expense-report system every large employer runs. You have just never had one for your own company — once it exists, paying yourself back stops costing you anything in tax.",
+    "benefits": [
+      "Money you already spend comes back to you with no tax taken out.",
+      "Your business deducts the full amount it repays you.",
+      "Covers home office, mileage, phone, internet, supplies, and travel.",
+      "A simple monthly routine once the plan is in place."
+    ],
+    "steps": [
+      "WE draft the written reimbursement plan and the resolution your company adopts.",
+      "WE build your home-office worksheet and set up your mileage and expense-report templates.",
+      "YOU submit a short expense report with receipts each month or quarter.",
+      "YOU have the company pay the reimbursement from its own bank account — not in cash."
+    ],
+    "clientCommitments": [
+      "Keep receipts and turn in expense reports within 60 days of spending.",
+      "Track business miles as you drive them, using the app or log we provide.",
+      "Pay reimbursements from the company account, never as round monthly amounts with no report behind them.",
+      "Tell us when your home-office space or vehicle use changes so the worksheets stay accurate."
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Refresh the home-office percentage and eligible cost list for the year.",
+      "Spot-check expense reports and the mileage log at year-end.",
+      "Confirm reimbursements were paid from the entity account and coded as expenses, not owner draws."
+    ],
+    "deliverables": [
+      "Accountable plan document and adopting resolution",
+      "Home-office reimbursement worksheet",
+      "Expense-report and mileage-log templates",
+      "Year-end reimbursement summary schedule"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 30,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "annualReimbursement": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Substantiated annual business-expense reimbursements moved onto the entity"
+        }
+      },
+      "required": ["annualReimbursement"]
+    },
+    "apply": {
+      "module": "accountable-plan@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasEntity",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "Entity owners paying business costs personally can move them to a documented reimbursement plan."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj S-corp 200k/80k comp, 12k reimbursed",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 200000,
+              "employeeWages": 0,
+              "ownerWages": 80000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "annualReimbursement": 12000
+        },
+        "expect": {
+          "totalBurdenDelta": -2112,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "single S-corp 120k/50k comp, 5k reimbursed",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 120000,
+              "employeeWages": 0,
+              "ownerWages": 50000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "annualReimbursement": 5000
+        },
+        "expect": {
+          "totalBurdenDelta": -880,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": ["Reg. §1.62-2", "IRC §62(c)", "IRC §274(d)"],
+    "keywords": [
+      "accountable plan",
+      "nonaccountable plan",
+      "expense reimbursement wages",
+      "Rev. Rul. 2012-25",
+      "standard mileage rate"
+    ],
+    "reviewTriggers": [
+      "New IRS guidance on reimbursement arrangements or per-diem safe harbors",
+      "Annual standard mileage rate update",
+      "Any case law or ruling recharacterizing reimbursements as wages"
+    ]
+  }
+}

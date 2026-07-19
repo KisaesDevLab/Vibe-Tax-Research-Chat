@@ -234,6 +234,10 @@ export function computeYear(
 
   const corpTaxPaid = dollars(profile.corpTaxPaid);
   const otherTaxes = dollars(profile.otherTaxes);
+  // ptetPaid is real cash out the door at the entity — it belongs in the
+  // burden. The owner-level credit already reduced stateTax, so the PTET
+  // election's honest benefit is the federal deduction, never the state
+  // tax itself.
   const totalBurden =
     incomeTax +
     se.seTax +
@@ -241,6 +245,7 @@ export function computeYear(
     niit +
     ownerPayroll.total +
     stateTax +
+    ptetPaid +
     corpTaxPaid +
     otherTaxes;
 

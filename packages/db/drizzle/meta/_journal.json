@@ -64,6 +64,13 @@
       "when": 1784432042457,
       "tag": "0008_polite_demogoblin",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1784432542100,
+      "tag": "0009_sad_penance",
+      "breakpoints": true
     }
   ]
 }
