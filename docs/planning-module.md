@@ -84,8 +84,10 @@ draft → in-review → presented → engaged → delivered → archived
 ## 7. Deliverables & delivery
 
 - Kinds: advisor-pdf, client-pdf, handout, pitch-deck (names hidden until
-  engaged), slideshow. Rendered by headless Chromium (`pdf-render` queue),
-  stored content-addressed under `DELIVERABLES_DIR`.
+  engaged), slideshow. Rendered server-side by PDFKit (`pdf-render` queue) —
+  the same engine chat exports use; real selectable text, no browser
+  dependency — stored content-addressed under `DELIVERABLES_DIR`. The staff
+  slideshow "present" mode is a live HTML view, not an artifact.
 - Client-facing kinds require plan ≥ presented AND entitlement: without
   `LICENSING_URL`/`LICENSE_KEY` the internal kinds fail open, client-facing kinds
   fail closed (402 `license_required`).
@@ -135,6 +137,6 @@ run inserts 0) → create client → plan → typed intake → scenario with an
 elevated-risk strategy → compute (matches the embedded golden exactly) →
 in-review → gate blocked (checklist, then elevated-risk link) → research launch →
 archive (auto-links) → gate passes → presented → compute 409 frozen → advisor PDF
-(Chromium) → signed link → public download → client-pdf 402 unlicensed →
+(PDFKit) → signed link → public download → client-pdf 402 unlicensed →
 entitled → signed OpenSign + Stripe webhook fixtures → auto-advance to engaged →
 client-pdf renders with names revealed → pipeline jobs skip cleanly with no key.

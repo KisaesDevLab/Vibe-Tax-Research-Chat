@@ -1,4 +1,5 @@
-// TP-9 — pdf-render job: assemble render data, print through Chromium,
+// TP-9 — pdf-render job: assemble render data, build the PDF via PDFKit
+// (the same server-side rendering as chat exports — no Chromium),
 // content-address the artifact, register it on the deliverable row.
 import { createHash } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
@@ -10,8 +11,8 @@ import { deliverables } from '@vibe/db/schema';
 import { logger } from '../../lib/logger.js';
 import { audit } from '../../lib/audit.js';
 import { buildRenderData } from '../../lib/render/data.js';
-import { renderDeliverableHtml, type DeliverableKind } from '../../lib/render/templates.js';
-import { htmlToPdf } from '../../lib/render/html-pdf.js';
+import { buildDeliverablePdf } from '../../lib/render/deliverable-pdf.js';
+import type { DeliverableKind } from '../../lib/render/types.js';
 
 const STORAGE_ROOT = path.resolve(process.env.DELIVERABLES_DIR ?? './storage/deliverables');
 
@@ -32,8 +33,7 @@ export async function renderDeliverable(deliverableId: string): Promise<void> {
     .where(eq(deliverables.id, row.id));
   try {
     const data = await buildRenderData(row.plan_id, row.reveal_strategies);
-    const html = renderDeliverableHtml(row.kind as DeliverableKind, data);
-    const pdf = await htmlToPdf(html);
+    const pdf = await buildDeliverablePdf(row.kind as DeliverableKind, data);
     const sha256 = createHash('sha256').update(pdf).digest('hex');
     mkdirSync(STORAGE_ROOT, { recursive: true });
     const storageRef = `${sha256}.pdf`;

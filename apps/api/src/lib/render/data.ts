@@ -13,7 +13,7 @@ import {
 } from '@vibe/db/schema';
 import type { PlanDTO, YearResult } from '@vibe/shared';
 import { loadBranding } from './theme.js';
-import type { RenderData, StrategyRenderData } from './templates.js';
+import type { RenderData, StrategyRenderData } from './types.js';
 
 export async function buildRenderData(
   planId: string,

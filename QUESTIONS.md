@@ -177,8 +177,7 @@ no-ops; webhook handlers tested with signed fixtures; manual-override endpoints;
 delivery = staff-manual + HMAC signed links; entitlement client fail-open for
 internal/advisor renders, fail-closed for client-facing.
 **Workers stay in the API process** (existing createWorker pattern) — no apps/worker.
-Playwright Chromium for pdf-render runs in-process; docker-image implications
-documented, not solved here.
+pdf-render runs in-process.
 
 ## Engine numeric precision
 
@@ -312,3 +311,13 @@ only when NULL so admin publishes are never clobbered by re-seeds.
   Connect delivery, OCR provider, real OpenSign/Stripe/licensing endpoints, Shield/ZDR
   org setup, Vault/B2 offsite) is documented in docs/deployment-checklist.md and QUESTIONS
   entries above; all have adapter seams and degrade gracefully.
+
+## Post-rollout change — deliverable rendering unified on PDFKit
+
+Deliverable PDFs originally rendered React → HTML → headless Chromium (Playwright).
+Replaced with server-side PDFKit — the same engine (and WinAnsi sanitizer) the chat
+response export uses: real selectable text, ~3× smaller artifacts, and no browser or
+docker Chromium layer. All five kinds re-verified live (advisor/client/handout/
+pitch-deck/slideshow; reveal + entitlement behavior unchanged); the staff slideshow
+web view remains live HTML via a dependency-free string template. playwright-core,
+react, and react-dom were dropped from the API package.

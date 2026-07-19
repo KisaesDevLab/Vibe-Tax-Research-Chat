@@ -149,18 +149,9 @@ importers:
       pino-http:
         specifier: ^10.4.0
         version: 10.5.0
-      playwright-core:
-        specifier: ^1.61.1
-        version: 1.61.1
       rate-limit-redis:
         specifier: ^4.2.0
         version: 4.3.1(express-rate-limit@7.5.1(express@4.22.1))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
       resend:
         specifier: ^6.12.3
         version: 6.12.3
@@ -204,12 +195,6 @@ importers:
       '@types/pdf-parse':
         specifier: ^1.1.4
         version: 1.1.5
-      '@types/react':
-        specifier: ^18.3.18
-        version: 18.3.28
-      '@types/react-dom':
-        specifier: ^18.3.5
-        version: 18.3.7(@types/react@18.3.28)
       '@types/supertest':
         specifier: ^6.0.2
         version: 6.0.3
@@ -4173,11 +4158,6 @@ packages:
   pirates@4.0.7:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
     engines: {node: '>= 6'}
-
-  playwright-core@1.61.1:
-    resolution: {integrity: sha512-h7Qlt6m4REp25qvIdvbDtVmD4LqVXfpRxhORv9L0jzETM05p4fuPJ3dKyuSXQxDSbXnmS79HAgi9589lGSpLkg==}
-    engines: {node: '>=18'}
-    hasBin: true
 
   png-js@1.1.0:
     resolution: {integrity: sha512-PM/uYGzGdNSzqeOgly68+6wKQDL1SY0a/N+OEa/+br6LnHWOAJB0Npiamnodfq3jd2LS/i2fMeOKSAILjA+m5Q==}
@@ -8950,8 +8930,6 @@ snapshots:
       thread-stream: 3.1.0
 
   pirates@4.0.7: {}
-
-  playwright-core@1.61.1: {}
 
   png-js@1.1.0:
     dependencies:

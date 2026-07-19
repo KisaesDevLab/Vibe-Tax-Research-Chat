@@ -39,7 +39,7 @@ Updated after each phase commit.
   see docs/deployment-checklist.md §4.
 - TP-16 fresh-DB verification walk passed end-to-end (migrate 0000–0012, double-seed
   idempotency, intake → compute matching goldens, gate blocked→linked→passed, presented
-  freeze 409 + DB trigger, Chromium advisor PDF, signed-link download, 402 fail-closed →
+  freeze 409 + DB trigger, PDFKit advisor PDF, signed-link download, 402 fail-closed →
   entitled client PDF, signed OpenSign/Stripe fixtures auto-advancing to engaged with
   name reveal, no-key job skips). Operator guide: docs/planning-module.md.
 - Build complete: TP-0…TP-16 all done.

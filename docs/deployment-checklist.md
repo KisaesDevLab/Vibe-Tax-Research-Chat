@@ -67,9 +67,9 @@ checklist is the single place they are tracked.
 
 ## 7. Rendering
 
-- [ ] Chromium reachable: default Playwright install or `PLAYWRIGHT_CHROMIUM_PATH`.
-      Smoke: generate an advisor PDF on a test plan (7-page output expected).
-      In docker, the API image must include the Chromium deps layer.
+- [ ] Deliverables render server-side via PDFKit (the same engine as chat exports) —
+      no browser, no extra image layers. Smoke: generate an advisor PDF on a test plan
+      (multi-page output: cover + projection + one page per strategy).
 
 ## 8. Jobs
 

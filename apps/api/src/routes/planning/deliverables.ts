@@ -16,7 +16,7 @@ import { mintLinkToken } from '../../lib/signed-links.js';
 import { pdfRenderQueue } from '../../jobs/queues.js';
 import { deliverableStoragePath } from '../../jobs/handlers/pdf-render.js';
 import { buildRenderData } from '../../lib/render/data.js';
-import { renderDeliverableHtml } from '../../lib/render/templates.js';
+import { renderSlideshowHtml } from '../../lib/render/slideshow-html.js';
 
 export const deliverablesRouter = Router({ mergeParams: true });
 
@@ -128,7 +128,7 @@ deliverablesRouter.get('/slideshow-view', async (req, res) => {
     const reveal = ['engaged', 'delivered'].includes(plan.status);
     const data = await buildRenderData(plan.id, reveal);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(renderDeliverableHtml('slideshow', data));
+    res.send(renderSlideshowHtml(data));
   } catch (err) {
     res.status(409).json({ error: (err as Error).message });
   }
