@@ -458,6 +458,7 @@ residual defects fixed:
   between finalizing the replacement invoice and persisting its id, AND the fee
   is then changed before retrying, the finalized-but-unpinned invoice is
   unreachable by the void mechanism (same-fee retries converge via idempotency
-  replay). The window is a mid-request crash followed by a fee change; the
-  round-6 logging makes any such invoice discoverable in Stripe by plan
-  metadata.
+  replay). The window is a mid-request crash followed by a fee change. Any such
+  invoice is discoverable in Stripe by the `plan_id` metadata stamped on every
+  invoice at creation (dashboard/API metadata search) — the round-6 void-failure
+  log covers the separate failed-void case only.
