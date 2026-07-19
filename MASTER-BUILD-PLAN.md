@@ -4,7 +4,7 @@ Single self-contained plan for adding the Planning and Clients modules to the Vi
 Research Chat appliance. Supersedes vibe-taxplan-build-plan.md and
 vibe-taxresearch-planning-addendum.md — no cross-document references are required to
 execute this plan. Companion documents (required in-repo, listed in TP-0): the strategy
-authoring schema and the KaneTaxes reference library.
+authoring schema and the reference strategy library.
 
 Decisions in this document are FINAL unless marked open. Finalized 2026-07-17.
 
@@ -22,7 +22,7 @@ strategyVersions[], engineVersion}` at compute time. Reissuing an old plan repro
    Vibe Shield (Presidio) on the DPA + ZDR tier. Return parsing runs locally (text-layer
    → coordinate parser; scans → GLM-OCR on vibellm). Shield is the only egress path to
    api.anthropic.com (enforced in compose network policy).
-4. **Reference material.** `/reference/kanetaxes/` (100 extracted strategy MD files +
+4. **Reference material.** `/reference/strategy-library/` (100 extracted strategy MD files +
    `_index.md`) is consulted for citation coverage and transform verification ONLY. All
    published prose is original, authored to `docs/strategy-schema.md`. The reference dir
    is gitignored and never ships in images.
@@ -113,7 +113,7 @@ Place in-repo before any build session:
 - `docs/strategy-backlog.md` — 100-strategy inventory by category (56 modeled /
   44 advisory). Source: vibe-taxplan-strategy-backlog.md.
 - `docs/exemplars/augusta-rule.md` — authored exemplar demonstrating target depth.
-- `/reference/kanetaxes/` — unpack strategy-library-reference-md.zip (100 files +
+- `/reference/strategy-library/` — unpack strategy-library-reference-md.zip (100 files +
   `_index.md`). Add to .gitignore and .dockerignore. Verify count = 101 files.
 - CLAUDE.md, STATE.md, QUESTIONS.md initialized; `planning` feature flag scaffolded.
 
@@ -242,7 +242,7 @@ authority; stateNotes non-empty — must address conformity, PTET interaction, M
 suggest rule present on all 100).
 
 Authoring pipeline `pnpm author:draft <id>` (worker job): prompt = schema + category
-conventions + `/reference/kanetaxes/<id>.md` + current TableSet figures → Anthropic API
+conventions + `/reference/strategy-library/<id>.md` + current TableSet figures → Anthropic API
 (claude-sonnet-4-6) via Shield, web-search enabled for authority verification only →
 complete draft strategy_versions row (status draft, createdBy pipeline). Instructions
 require original prose; reference is a coverage checklist, not a source of wording.

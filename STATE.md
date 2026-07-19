@@ -25,7 +25,7 @@ Updated after each phase commit.
 
 ## Notes
 
-- `reference/kanetaxes/` intake verified: 101 markdown files, gitignored + dockerignored.
+- `reference/strategy-library/` intake verified: 101 markdown files, gitignored + dockerignored.
 - Applied defaults are logged in QUESTIONS.md (planning-module sections).
 - TABLES_2026 seed figures verified via web research 2026-07 (Rev. Proc. 2025-32, SSA
   wage base, Notice 2025-67, OBBBA parameters) with per-group sourceNotes.
