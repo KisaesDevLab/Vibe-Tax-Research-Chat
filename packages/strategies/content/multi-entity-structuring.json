@@ -1,0 +1,182 @@
+{
+  "id": "multi-entity-structuring",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Multi-Entity Structuring (OpCo / PropCo Split)",
+  "category": "entity-structure",
+  "modeled": false,
+  "complexity": 5,
+  "riskRating": "moderate",
+  "entityTypes": ["s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "structural",
+  "advisor": {
+    "summary": "The OpCo/PropCo split is the default architecture for an owner whose business and building share one legal wrapper: operations run in one entity, the real estate (and sometimes heavy equipment) sits in another, and OpCo pays PropCo documented market rent under a real lease. The rent is an ordinary §162 deduction to OpCo, the rental stream avoids self-employment tax, and the structure buys three things the single wrapper cannot: a liability wall between the judgment-exposed operating business and its most valuable asset, per-entity flexibility for PTET elections and §199A positioning, and independent exit paths — sell the business, keep the building as a rental to the buyer, or exchange the building under §1031 without touching operations. The tax friction is the self-rental recharacterization rule, whose income/loss asymmetry has to be planned rather than discovered, and the timing rule is unforgiving: this structure is cheap to build at acquisition and expensive to retrofit out of an existing corporation. Advisory by design — the rent-flow math lives in the self-rental strategy; this record governs the structural design.",
+    "mechanics": [
+      "The frame: PropCo — typically an LLC taxed as a partnership or disregarded — holds the building; OpCo runs operations and pays rent under a written market-rate lease, deductible under §162(a)(3) as rent required for continued use of property OpCo does not own.",
+      "Liability isolation is the non-tax anchor: operating claims (injury, employment, contract) stop at OpCo, and property claims stop at PropCo — provided each entity keeps its own bank accounts, books, insurance, and formalities.",
+      "Rental income in PropCo is excluded from self-employment income under §1402(a)(1), but the self-rental rule of Reg. §1.469-2(f)(6) recharacterizes net rental income from a materially participating tenant business as nonpassive — while net losses stay passive — so the rent level determines which side of that asymmetry the client occupies.",
+      "The §199A position survives the split: rental to a commonly controlled trade or business is treated as a trade or business under Reg. §1.199A-1(b)(14), and Reg. §1.199A-4 aggregation can pool W-2 wages and UBIA across the pair when the limits bind.",
+      "The Reg. §1.469-4(d)(1) grouping election can treat the rental and the operating activity as one economic unit where ownership is proportionate — the standard answer when depreciation would otherwise strand self-rental losses.",
+      "State elections and exits unbundle: PTET elections are made entity by entity, and PropCo can run a §1031 exchange or survive a business sale independently — the optionality that makes the split valuable long before any audit question arises."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §162(a)(3)",
+        "note": "OpCo’s rent deduction — genuine lease, market rate, for property the payor does not own."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.469-2(f)(6)",
+        "note": "The self-rental recharacterization: net rental income from a materially participating tenant is nonpassive; losses stay passive — the asymmetry that drives rent-setting."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1402(a)(1)",
+        "note": "Real estate rentals excluded from self-employment income — the character benefit of the rent stream."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.199A-1(b)(14)",
+        "note": "Self-rental to a commonly controlled trade or business is a §199A trade or business — the rent keeps QBI character."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.199A-4",
+        "note": "Aggregation rules letting commonly controlled entities share W-2 wages and UBIA for the §199A limits."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.469-4(d)(1)",
+        "note": "The grouping election treating the rental and operating business as one economic unit — the mitigation for trapped self-rental losses."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1031",
+        "note": "Like-kind exchange optionality preserved by holding the real property in its own entity."
+      }
+    ],
+    "requirements": [
+      "A written market-rate lease between OpCo and PropCo, actually invoiced, paid, and enforced.",
+      "Real separateness: distinct bank accounts, books, insurance, and entity formalities — the liability wall collapses without them.",
+      "Clean title in PropCo, with lender consent, insurance re-titling, and any reassessment consequences addressed at transfer.",
+      "Proportionate ownership where §469 grouping or §199A aggregation is intended — both elections carry common-ownership conditions."
+    ],
+    "risks": [
+      "The self-rental asymmetry is the recurring surprise: net rental income is nonpassive and cannot absorb the client's passive losses — a rule the courts have consistently sustained, most prominently in Krukowski v. Commissioner, 279 F.3d 547 (7th Cir. 2002) — while rent set low enough to create losses leaves those losses passive and potentially trapped.",
+      "Non-market rent is the exam wedge: above-market invites reallocation and, with a C corporation tenant, constructive-dividend treatment; the comparable-lease file is the whole defense.",
+      "Retrofits are the expensive path — moving an appreciated building out of an existing corporation is a taxable event, so the analysis must precede, not follow, the deed.",
+      "Transfer frictions are real: lender due-on-sale and consent, insurance gaps during re-titling, and property tax reassessment in some jurisdictions.",
+      "The structure adds returns, leases, and bookkeeping; a client who will not maintain the formalities converts the liability wall into decoration."
+    ],
+    "stateNotes": [
+      "Conformity: Missouri conforms to the federal passive-activity and rental characterizations through its federal starting point, so the recharacterization and grouping analysis carries straight into the state return.",
+      "PTET interaction: the split multiplies election flexibility — Missouri SALT Parity Act elections (RSMo §143.436) are entity-by-entity, so OpCo can elect while PropCo does not (or both can), letting the group route the deduction where it pays.",
+      "Missouri: retitling the building into PropCo triggers no Missouri real estate transfer tax — the state does not impose one — which removes a friction cost that complicates this structure elsewhere; lender consent and insurance re-titling still apply."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["self-rental-structuring", "holding-management-company"]
+    },
+    "reviewChecklist": [
+      "Market rent supported by a rent study or comparable leases retained in the file, refreshed on renewal.",
+      "Lease executed, invoices issuing, and payments actually moving between accounts.",
+      "Self-rental posture decided deliberately — asymmetry accepted or the grouping election made with its disclosure statement.",
+      "§199A aggregation evaluated where the wage/UBIA limits bind.",
+      "Entity formalities verified annually: separate accounts, books, insurance, and minutes.",
+      "Any proposed retrofit from an existing corporation has a written tax-cost analysis before anything moves."
+    ]
+  },
+  "client": {
+    "teaser": "Your business and your building do not belong in the same legal basket — splitting them adds protection and options.",
+    "headline": "Put your building and your business in separate boxes",
+    "plainEnglish": [
+      "If your business owns its building, one lawsuit can put both at risk. A claim against the business could reach the property, and a problem at the property could reach the business. Splitting them fixes that: operations in one company, real estate in another.",
+      "The business then pays fair-market rent to the property company, like it would to any landlord. The rent is a normal deductible expense. On your side, rental income is not hit with the extra payroll-style tax that business profits carry.",
+      "The split also keeps doors open. Someday you might sell the business but keep the building and collect rent from the buyer. Or trade the building for a bigger one without touching the business. Separate boxes make both possible.",
+      "There are special rules about how rent income and losses between your own companies get treated. We plan for those on day one, because the right choice depends on your whole picture."
+    ],
+    "analogy": "It is like keeping your savings and spending money in different accounts — same owner, but trouble in one account cannot drain the other.",
+    "benefits": [
+      "Your most valuable asset is shielded from business lawsuits and debts",
+      "Rent moves money to you without payroll-style taxes",
+      "Freedom to sell, keep, or trade the building separately from the business",
+      "More levers for state tax elections and future planning"
+    ],
+    "steps": [
+      "WE design the structure — which assets go where and who owns each company.",
+      "WE document a fair market rent and put a real lease in place.",
+      "YOU keep the companies separate: their own accounts, their own bills, rent paid on time.",
+      "WE review the rent, elections, and records each year so everything stays defensible."
+    ],
+    "clientCommitments": [
+      "Pay the rent like a real tenant — on schedule, from the right account",
+      "Never mix the two companies' money or paperwork",
+      "Talk to us before refinancing, selling, or moving any property between entities"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "structural",
+    "annualMaintenance": [
+      "Annual rent review against market with refreshed comparables",
+      "Entity-formality check: accounts, books, insurance, and lease renewal",
+      "Re-evaluate the grouping election and aggregation as facts change",
+      "Coordinate PTET elections across the entities each year"
+    ],
+    "deliverables": [
+      "Structure design memo (asset placement, ownership, and elections)",
+      "Written lease with market-rent support file",
+      "Title, insurance, and lender transition checklist",
+      "Annual compliance review memo"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "hasBusiness",
+        "op": "eq",
+        "value": true
+      },
+      {
+        "field": "hasRental",
+        "op": "eq",
+        "value": true
+      }
+    ],
+    "reason": "Separating operations from real estate improves liability walls and exit flexibility."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "Reg. §1.469-2(f)(6) and self-rental case law",
+      "§199A aggregation guidance"
+    ],
+    "keywords": [
+      "OpCo PropCo",
+      "self-rental",
+      "market rent",
+      "grouping election",
+      "liability isolation",
+      "entity separation"
+    ],
+    "reviewTriggers": [
+      "New self-rental or grouping-election case law",
+      "Changes to §199A aggregation rules",
+      "Client refinancing, acquisition, or exit events touching the real estate"
+    ]
+  }
+}

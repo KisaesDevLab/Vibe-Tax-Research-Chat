@@ -1,0 +1,186 @@
+{
+  "id": "self-rental-structuring",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Self-Rental Structuring (Real Estate Held Separately)",
+  "category": "entity-structure",
+  "modeled": false,
+  "complexity": 3,
+  "riskRating": "moderate",
+  "entityTypes": ["s-corp", "partnership", "rental"],
+  "typicalSavingsBand": "structural",
+  "advisor": {
+    "summary": "Holding the business's building outside the operating entity and leasing it back at market rent is the cleanest character-conversion structure in the library: OpCo deducts the rent under §162, and the owner's rental income is excluded from self-employment income under §1402(a)(1) — dollars that would have surfaced as SE-taxed profit arrive bearing income tax only. The governing constraint is the self-rental rule of Reg. §1.469-2(f)(6): net rental income from a tenant business in which the taxpayer materially participates is recharacterized as nonpassive, so it can never absorb passive losses, while net losses from the same property stay passive and can strand. Krukowski and Fransen closed the courthouse door on challenging the rule, which leaves planning: set rent from real comparables, decide deliberately between living with the asymmetry and making the sticky Reg. §1.469-4 grouping election, and sequence any cost segregation study after that decision, not before. For S corporation owners the SE-tax benefit is smaller — distributions already avoid it — and the case rests on liability isolation, exit flexibility, and QBI placement.",
+    "mechanics": [
+      "The structure: the owner (or a dedicated LLC) holds the building; the operating entity leases it under a written market-rate lease, deducting rent under §162(a)(3) while the owner reports the rental on Schedule E.",
+      "The character conversion runs through §1402(a)(1): real estate rentals are excluded from self-employment income, so rent replacing sole-proprietor or general-partner profit sidesteps the 15.3%/2.9%/0.9% stack — while for S corporation owners, whose distributions already avoid SE tax, the value shifts to liability isolation and exit design.",
+      "Reg. §1.469-2(f)(6) recharacterizes net rental income from a materially participating tenant business as nonpassive — the 'passive income generator' play fails against one's own building — and the asymmetry is deliberate: net losses stay passive under §469 and release only against passive income or on full disposition under §469(g).",
+      "The standard mitigation is the Reg. §1.469-4(d)(1) grouping election, treating the rental and the operating business as one economic unit where ownership is proportionate; grouped, depreciation-driven losses are not trapped — but the election is disclosed, binding, and changes how dispositions are tested, so it is modeled before it is made.",
+      "The rent keeps QBI character because rental to a commonly controlled trade or business is treated as a §199A trade or business under Reg. §1.199A-1(b)(14), with Reg. §1.199A-4 aggregation available when the wage and UBIA limits bind.",
+      "Market rent is the non-negotiable foundation: an appraisal or comparable leases in the file, normal terms, actual monthly payment — above-market rent invites reallocation and constructive-dividend exposure, below-market wastes the conversion."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §162(a)(3)",
+        "note": "The operating entity’s rent deduction — genuine lease, reasonable amount, property the payor does not own."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1402(a)(1)",
+        "note": "Real estate rentals excluded from self-employment income — the character conversion at the strategy’s core."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.469-2(f)(6)",
+        "note": "The self-rental recharacterization: net rental income from a materially participating tenant is nonpassive; losses stay passive."
+      },
+      {
+        "type": "Case",
+        "cite": "Krukowski v. Commissioner, 279 F.3d 547 (7th Cir. 2002)",
+        "note": "The recharacterization rule sustained — an attorney’s rental income from his own firm held nonpassive; the leading authority that the rule cannot be litigated away."
+      },
+      {
+        "type": "Case",
+        "cite": "Fransen v. United States, 191 F.3d 599 (5th Cir. 1999)",
+        "note": "Companion appellate validation of the regulation — two circuits, same answer."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.469-4(d)(1)",
+        "note": "The grouping election — rental and operating activity as one economic unit — the standard fix for trapped self-rental losses."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.199A-1(b)(14)",
+        "note": "Common-control self-rental treated as a §199A trade or business, preserving QBI on the rent."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §469(g)",
+        "note": "Suspended passive losses release in full on a fully taxable disposition — the eventual exit valve."
+      }
+    ],
+    "requirements": [
+      "A separate operating entity as tenant, with the real estate titled personally or in its own LLC — never inside the operating company.",
+      "A written lease at documented market rent, supported by an appraisal or comparable leases, actually invoiced and paid monthly.",
+      "Separate books, bank account, and insurance for the rental — the liability shield and the tax character both depend on real separateness.",
+      "A deliberate §469 posture chosen up front: accept the recharacterization asymmetry or make the grouping election with its disclosure statement."
+    ],
+    "risks": [
+      "The leading trap is planning to use self-rental income against passive losses: Reg. §1.469-2(f)(6) forecloses it, and Krukowski v. Commissioner, 279 F.3d 547 (7th Cir. 2002), with Fransen, makes the rule effectively unchallengeable — any plan that needs self-rental income to be passive is dead on arrival.",
+      "Loss stranding is the quieter failure: cost segregation or heavy financing can drive the rental negative, and ungrouped losses sit passive — coordinate the grouping decision before commissioning the study, because the election cannot be retrofitted gracefully.",
+      "The grouping election is sticky: it binds future years and changes disposition testing, so electing casually trades one trap for another.",
+      "Non-market rent is the exam wedge — above-market invites reallocation and constructive-dividend treatment with a C corporation tenant; there is no safe harbor, only the comparables file.",
+      "Retrofitting a building out of an existing corporation is a taxable event; the structure belongs at acquisition, or after a written tax-cost analysis, never as a casual deed transfer."
+    ],
+    "stateNotes": [
+      "Conformity: Missouri conforms to the federal passive-activity and SE characterizations through its federal-AGI starting point, so the recharacterization, grouping, and exclusion results flow unchanged into the Missouri return.",
+      "PTET interaction: rent shifts income from the operating entity to the rental owner, which shrinks the base of an OpCo pass-through entity tax election — and a multi-member rental LLC can make its own Missouri SALT Parity election (RSMo §143.436) — so PTET placement is re-run whenever the rent level changes.",
+      "Missouri: no state real estate transfer tax applies to deeding the building into the rental LLC, which makes the Missouri retrofit-at-acquisition unusually cheap; lender consent and insurance re-titling remain the practical hurdles."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["multi-entity-structuring", "grouping-election"]
+    },
+    "reviewChecklist": [
+      "Market-rent support (appraisal or two-plus comparable leases) current and in the file; lease executed with normal terms and actual payment history.",
+      "The §469 posture documented: asymmetry accepted or grouping election attached for the first grouped year, with the modeling that justified it.",
+      "Any cost segregation study sequenced after the grouping decision.",
+      "Rental keeps separate books, banking, and insurance; the tenant entity is real and materially participated in.",
+      "QBI treatment and aggregation reviewed where the §199A limits bind.",
+      "No building has moved out of a corporation without a written tax-cost analysis."
+    ]
+  },
+  "client": {
+    "teaser": "Own the building yourself and rent it to your business — same dollars, lighter tax, better protection.",
+    "headline": "Become your business's landlord",
+    "plainEnglish": [
+      "Your business needs a home, and someone will collect rent for it. It might as well be you. You own the building personally or in a simple company of its own, and lease it to your business at the going rate.",
+      "The rent is a normal deductible expense for the business. On your side, rental income skips the extra 15% self-employment tax that business profit carries. The building also sits outside the business, so a lawsuit against the company cannot reach it.",
+      "There is one wrinkle we manage closely. Special IRS rules control how rent income and losses from your own building mix with the rest of your taxes. The rules have been tested in court and they hold. So we make the setup choices deliberately on day one — that is much easier than fixing them later."
+    ],
+    "analogy": "The rent check your business was always going to write just gets written to you — and it arrives with less tax taken out than a paycheck or profit draw would.",
+    "benefits": [
+      "Rent reaches you without the extra self-employment tax on business profits",
+      "Your building is shielded from business lawsuits and debts",
+      "Keep the building and its rent even if you sell the business someday",
+      "Works cleanly alongside depreciation strategies on the property"
+    ],
+    "steps": [
+      "WE structure the ownership before, or as, you buy the property.",
+      "WE document a fair market rent and put a real lease in place.",
+      "WE make the technical elections that keep your deductions usable.",
+      "YOU pay the rent monthly from the business account and keep the two sets of books separate."
+    ],
+    "clientCommitments": [
+      "Charge the market rent we document — never a number picked to move profit around",
+      "Keep the rental's money, records, and insurance separate from the business",
+      "Check with us before refinancing, big renovations, or a cost segregation study"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "structural",
+    "annualMaintenance": [
+      "Annual market-rent review with refreshed comparables and lease renewal",
+      "Monitor the rental's income/loss position against the chosen §469 posture",
+      "Verify separateness: accounts, books, insurance, and payment history",
+      "Re-run PTET placement when rent levels or entity income shift"
+    ],
+    "deliverables": [
+      "Ownership and lease structure memo",
+      "Market-rent support file and executed lease",
+      "Grouping-election analysis and disclosure statement (where elected)",
+      "Annual self-rental compliance review"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "hasBusiness",
+        "op": "eq",
+        "value": true
+      },
+      {
+        "field": "hasRental",
+        "op": "eq",
+        "value": true
+      }
+    ],
+    "reason": "Owning the building personally and renting to the business needs the self-rental rules managed."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "Reg. §1.469-2(f)(6) and self-rental case law",
+      "Reg. §1.469-4 grouping guidance"
+    ],
+    "keywords": [
+      "self-rental",
+      "recharacterization rule",
+      "grouping election",
+      "market rent",
+      "passive loss",
+      "business landlord"
+    ],
+    "reviewTriggers": [
+      "New self-rental or grouping case law",
+      "§199A rental guidance changes",
+      "Client plans for cost segregation, refinancing, or sale of either entity"
+    ]
+  }
+}

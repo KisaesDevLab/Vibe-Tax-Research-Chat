@@ -1,0 +1,294 @@
+{
+  "id": "like-kind-1031",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "1031 Like-Kind Exchange",
+  "category": "real-estate",
+  "modeled": true,
+  "complexity": 4,
+  "riskRating": "moderate",
+  "entityTypes": ["rental", "individual"],
+  "typicalSavingsBand": "100k-plus",
+  "advisor": {
+    "summary": "§1031 defers gain when real property held for business or investment is exchanged for like-kind real property — and post-TCJA it is real property only. In a deferred exchange the proceeds must never touch the client’s hands: a qualified intermediary holds them under the Reg. §1.1031(k)-1 safe harbors, replacement property is identified in writing within 45 days, and closing happens within 180 days — deadlines that are statutory and effectively unwaivable. Basis carries over reduced by the deferred gain under §1031(d), so this is postponement, not forgiveness — until the endgame, where holding until death converts deferral into elimination through the §1014 step-up. Starker validated the non-simultaneous exchange the modern structure is built on. The engine models the deferral as a reduction of the year’s long-term gain; the embedded gain in the replacement property is a permanent-file item, not a modeled one.",
+    "mechanics": [
+      "Gain is recognized only to the extent of boot — cash, non-like-kind property, or net debt relief — so full deferral requires the replacement to match or exceed the relinquished property in value, equity, and debt (or added cash to cover a debt shortfall) under §1031(b).",
+      "The 45-day identification (up to three properties, or the 200%-of-value alternative) and the 180-day closing window run from the relinquished-property transfer under §1031(a)(3); only federally declared disasters extend them.",
+      "Constructive receipt is fatal: the exchange must run through a qualified intermediary engaged before the relinquished closing, under the Reg. §1.1031(k)-1 safe harbors.",
+      "Replacement basis equals cost minus deferred gain under §1031(d); serial exchangers accumulate low basis and growing recapture exposure, which is the design when the endgame is a §1014 step-up at death.",
+      "Related-party exchanges carry a two-year holding rule under §1031(f) — an early disposition by either party unwinds the deferral.",
+      "The model removes the elected deferred gain from the current year’s long-term capital gain; it does not model the later recognition on a taxable exit."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §1031(a)",
+        "note": "Nonrecognition for like-kind exchanges of real property held for business or investment; TCJA confined the section to real property."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1031(a)(3), (b), (d)",
+        "note": "The 45/180-day deadlines, boot recognition, and carryover basis reduced by deferred gain."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1031(f)",
+        "note": "The related-party two-year rule that unwinds early dispositions."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.1031(k)-1",
+        "note": "Deferred-exchange safe harbors — the qualified-intermediary structure that avoids constructive receipt."
+      },
+      {
+        "type": "Case",
+        "cite": "Starker v. United States, 602 F.2d 1341 (9th Cir. 1979)",
+        "note": "Validated the non-simultaneous exchange; Congress later codified the 45/180-day limits around it."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1014",
+        "note": "Basis step-up at death — the endgame that converts serial deferral into permanent elimination."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 8824 and instructions",
+        "note": "Exchange-year reporting: realized versus recognized gain and the replacement-basis computation."
+      }
+    ],
+    "requirements": [
+      "Both legs are real property held for business or investment — no personal residences, no property held primarily for sale.",
+      "Qualified intermediary engaged before the relinquished closing; the client never receives or controls proceeds.",
+      "Written identification within 45 days and acquisition within 180 days (or the return due date with extension, if earlier).",
+      "Replacement value, equity, and debt matched or exceeded to defer fully; any intentional boot priced in advance."
+    ],
+    "risks": [
+      "The leading failure mode is procedural: blown deadlines or constructive receipt convert the exchange into a fully taxable sale, and the case law — from Starker forward — offers no 'close enough' doctrine once the safe harbors are missed.",
+      "Qualified-intermediary insolvency has cost exchangers both the deferral and the cash — use a bonded intermediary with segregated accounts.",
+      "Boot surprises from net debt relief and closing-cost mismatches recognize gain nobody planned.",
+      "Carryover basis means thinner depreciation going forward and a larger recapture bill on a future taxable sale — the model’s one-year deferral is not the whole economic story.",
+      "Related-party exchanges invite scrutiny and carry the two-year unwind."
+    ],
+    "stateNotes": [
+      "Conformity: most states conform to §1031, but several impose clawback regimes — deferred gain on in-state property remains taxable to that state when the replacement is later sold, wherever the taxpayer then lives; track filings for clawback states in the footprint.",
+      "Missouri conforms through its federal starting point (RSMo §143.121) and imposes no separate clawback filing today.",
+      "PTET interaction: none for directly held investment real estate — no PTET interaction arises unless the exchanging owner is an electing pass-through entity, where the deferral simply keeps the gain out of the PTET base."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": ["installment-sale-property", "opportunity-zones"],
+      "synergiesWith": ["cost-segregation", "basis-step-up-planning"]
+    },
+    "reviewChecklist": [
+      "Qualified-intermediary engagement letter signed before the relinquished closing; funds-flow diagram shows the client never touches proceeds.",
+      "Day-45 and day-180 calendared with reminders; identification letter form approved in advance.",
+      "Value/equity/debt match computed; any expected boot quantified and disclosed.",
+      "Related-party screen run on both legs.",
+      "Form 8824 prepared and carryover basis posted to the permanent file with recapture exposure noted."
+    ]
+  },
+  "client": {
+    "teaser": "Sell one investment property, buy another, and keep the tax money working for you.",
+    "headline": "Trade properties without paying tax in between",
+    "plainEnglish": [
+      "Selling an investment property normally means paying tax on the gain before you can reinvest. A like-kind exchange lets you roll the full sale into a new investment property and postpone the entire tax bill. All of your equity keeps working in the next property.",
+      "The rules are strict but simple to follow with planning. A neutral middleman holds the sale money — you never touch it. You name your replacement property within 45 days and close within 180. Miss a step and the whole sale becomes taxable.",
+      "The tax is postponed, not erased. It rides along inside the new property. But you can exchange again and again. Under current law, property held until death passes to your heirs with the old gain wiped out. Deferred long enough, the tax may never come due."
+    ],
+    "analogy": "It is like moving your full stack of chips from one table to another without the house taking a cut between games.",
+    "benefits": [
+      "Postpone the entire tax bill on a property sale",
+      "All of your equity moves into the next property",
+      "Repeatable as many times as your plan calls for",
+      "Held until death, the deferred gain can be erased for your heirs"
+    ],
+    "steps": [
+      "WE line up the exchange team before your sale closes — timing is everything.",
+      "WE plan the replacement numbers so the full tax is deferred.",
+      "WE track the 45-day and 180-day deadlines and handle the tax reporting.",
+      "YOU never touch the sale money — it goes straight to the intermediary."
+    ],
+    "clientCommitments": [
+      "Involve us before signing a sale contract, not after",
+      "Meet the identification and closing deadlines — no extensions exist",
+      "Keep the exchange records for as long as you own the replacement property"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "structural",
+    "annualMaintenance": [
+      "Track carryover basis and embedded gain in the permanent file",
+      "Monitor clawback-state filing duties where prior exchanges crossed state lines"
+    ],
+    "deliverables": [
+      "Exchange feasibility memo with full-deferral match computation",
+      "Deadline calendar and identification letter templates",
+      "Form 8824 filing and carryover-basis schedule"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 61,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "deferredGain": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["deferredGain"]
+    },
+    "apply": {
+      "module": "like-kind-1031@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasRental",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "longTermCapGain",
+          "op": "gt",
+          "value": 100000
+        }
+      ],
+      "reason": "A qualified-intermediary exchange defers the whole gain into replacement property."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj landlord defers 500k gain",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 160000,
+          "businesses": [],
+          "rentals": [
+            {
+              "id": "r1",
+              "name": "Rental",
+              "netIncome": 15000,
+              "activeParticipant": true
+            }
+          ],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 500000,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "deferredGain": 500000
+        },
+        "expect": {
+          "totalBurdenDelta": -92605,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "single landlord defers 200k of 250k gain (boot)",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 120000,
+          "businesses": [],
+          "rentals": [
+            {
+              "id": "r1",
+              "name": "Rental",
+              "netIncome": 8000,
+              "activeParticipant": true
+            }
+          ],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 250000,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "deferredGain": 200000
+        },
+        "expect": {
+          "totalBurdenDelta": -36764,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §1031",
+      "Reg. §1.1031(k)-1",
+      "State clawback and nonresident withholding rules on exchanges"
+    ],
+    "keywords": [
+      "1031 exchange",
+      "qualified intermediary",
+      "45 day identification",
+      "180 day closing",
+      "boot",
+      "swap till you drop"
+    ],
+    "reviewTriggers": [
+      "Legislative proposals limiting §1031 deferral",
+      "New guidance on exchange safe harbors or disaster extensions",
+      "A client sale of previously exchanged property"
+    ]
+  }
+}

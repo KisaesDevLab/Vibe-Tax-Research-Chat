@@ -1,0 +1,157 @@
+{
+  "id": "disability-insurance-c-corp",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "C-Corp Paid Disability (Tax-Free Benefits)",
+  "category": "health-fringe",
+  "modeled": false,
+  "complexity": 2,
+  "riskRating": "low",
+  "entityTypes": ["c-corp"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "Disability coverage carries a design fork the Code states plainly: premiums the employer pays and excludes under §106(a) produce taxable benefits under §105(a), while premiums paid with after-tax dollars — including employer-paid premiums imputed to the employee's W-2 — produce benefits excluded under §104(a)(3). Because the premium is small and the potential benefit stream is a multi-year fraction of salary, the arbitrage almost always favors taxing the premium. For a C-corp owner-employee the implementations are simple: impute corporate-paid premiums as W-2 income, or bonus the owner the cash to own the policy personally. Rev. Rul. 2004-55 blesses group designs that let each employee elect the treatment annually before the plan year. Advisory-only: the value is contingency insurance design, not a computable current-year delta.",
+    "mechanics": [
+      "Benefit taxation follows the premium: §105(a) includes benefits attributable to employer contributions that were not taxed to the employee, while §104(a)(3) excludes benefits under coverage the employee effectively paid for with taxed dollars.",
+      "Imputing the corporate-paid premium to the owner's W-2 converts the benefit stream to tax-free — a few hundred dollars of annual tax buys the exclusion on what could be years of salary-replacement checks.",
+      "Under Rev. Rul. 2004-55, a group plan may let each employee irrevocably elect, before each plan year, whether that year's coverage is employer-paid (taxable benefits) or employee-paid via imputation (tax-free benefits).",
+      "Mixed-funding group policies allocate benefits between taxable and excludable portions based on the premium history under Reg. §1.105-1, using contribution averaging for group coverage.",
+      "Employer-funded disability payments are FICA wages only during the first six full calendar months after work stops; §3121(a)(4) excludes later payments — a sizing input, not a design driver."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §104(a)(3)",
+        "note": "Excludes benefits from accident and health coverage — except amounts attributable to employer contributions the employee was never taxed on."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §105(a)",
+        "note": "Includes benefits attributable to untaxed employer contributions — the other half of the design fork."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §106(a)",
+        "note": "Excludes employer-paid premiums from income — precisely the treatment that makes the eventual benefits taxable."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Rul. 2004-55",
+        "note": "Respects annual, irrevocable pre-plan-year employee elections between pre-tax premiums/taxable benefits and after-tax premiums/tax-free benefits."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.105-1",
+        "note": "Allocates benefits between employer- and employee-funded portions of a plan, including contribution averaging for group policies."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §3121(a)(4)",
+        "note": "Excludes sick pay from FICA wages after six calendar months following the month the employee last worked."
+      }
+    ],
+    "requirements": [
+      "An employer-employee relationship — the C-corp owner on W-2 — and an individual or group disability policy in place or in design.",
+      "A documented premium-taxation choice — W-2 imputation, an executive bonus for a personally owned policy, or a Rev. Rul. 2004-55 election design — adopted before the plan year.",
+      "Payroll coding, plan documents, and insurer records that all tell the same story about who paid the premium."
+    ],
+    "risks": [
+      "The leading exposure is the default drift the IRS wins without litigating: the corporation deducts and excludes the premium for years, a claim arrives, and §105(a) makes every benefit check taxable at the moment income has stopped — Rev. Rul. 2004-55 is the controlling ruling on setting the election in advance, and it permits no retroactive repair.",
+      "Inconsistent records — deducted, untaxed premiums paired with a claimed §104(a)(3) exclusion at benefit time — resolve against the taxpayer; the exclusion follows what payroll actually did.",
+      "The annual imputation is a small cost with an invisible payoff; clients drop it quietly unless the framing sticks, and a payroll-provider conversion is the classic silent breaker.",
+      "Taxable benefits also mean under-insurance: a 60%-of-salary benefit taxed at full rates nets far less than the household plans on — size coverage to the after-tax need under the chosen design."
+    ],
+    "stateNotes": [
+      "Conformity: states beginning from federal AGI follow the federal answer on both premium imputation and benefit exclusion; no separate state design is needed in conforming states.",
+      "PTET: no PTET interaction — the payor is a C corporation and the design lives in payroll, not in a pass-through income base.",
+      "Missouri: conforms through the RSMo §143.121 federal starting point; benefits excluded federally under §104(a)(3) stay off the Missouri return."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["accident-health-c-corp"]
+    },
+    "reviewChecklist": [
+      "Current policy inventory shows who pays each premium and how payroll reports it.",
+      "The chosen design (imputation, bonus, or annual election) is documented and effective before the plan year.",
+      "January payroll verification is calendared — the treatment must survive payroll changes.",
+      "Coverage amount re-sized to the after-tax need under the chosen design."
+    ]
+  },
+  "client": {
+    "teaser": "A small payroll choice today decides whether disability checks arrive taxed or tax-free.",
+    "headline": "Make your disability benefits tax-free — before you ever need them",
+    "plainEnglish": [
+      "Disability insurance replaces your paycheck if you cannot work. The tax rules offer a simple trade. If the company pays the premium and no one pays tax on it, the benefit checks get taxed. If you pay tax on the small premium now, the checks arrive tax-free.",
+      "Look at the sizes. The tax on a premium might be a few hundred dollars a year. The benefits could be tens of thousands a year, for years, arriving right when your income has stopped. Paying tax on the small number to protect the big one is almost always the right call.",
+      "The catch: this is locked in by how payroll handles the premium before anything happens. Companies drift into the wrong setup because deducting the premium feels smart. We set it up the right way around, on purpose."
+    ],
+    "analogy": "It is like paying tax on the seed instead of the harvest. You never want the tax bill to land on the harvest — least of all in a bad year.",
+    "benefits": [
+      "Benefit checks arrive tax-free, exactly when a tax bill would hurt most",
+      "The cost is tax on a small premium, not on years of benefits",
+      "May let you carry less coverage, since none of it is lost to tax"
+    ],
+    "steps": [
+      "WE review your current coverage and how the premiums flow through payroll.",
+      "WE set up the treatment that makes your benefits tax-free and document it.",
+      "YOU approve the small amount added to your W-2 each year.",
+      "WE re-check payroll every January so nothing quietly undoes it."
+    ],
+    "clientCommitments": [
+      "Accept a small amount of extra taxable income each year — that is the price of tax-free benefits",
+      "Tell us before changing payroll providers or insurance carriers"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "January payroll verification that the premium treatment held",
+      "Annual confirmation of the Rev. Rul. 2004-55 election where used",
+      "Coverage re-sizing review as salary changes"
+    ],
+    "deliverables": [
+      "Premium-taxation design memo",
+      "Board resolution or plan amendment implementing the choice",
+      "Payroll coding instructions for the premium"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "hasEntity",
+        "op": "eq",
+        "value": true
+      }
+    ],
+    "reason": "Who pays the premium decides whether disability benefits arrive taxed or tax-free."
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §§104-106 guidance", "Rev. Rul. 2004-55 and successor rulings"],
+    "keywords": [
+      "disability premium taxation",
+      "104(a)(3) exclusion",
+      "employer-paid disability",
+      "Rev. Rul. 2004-55"
+    ],
+    "reviewTriggers": [
+      "New guidance on employer disability plan taxation",
+      "FICA sick-pay rule changes",
+      "Carrier or payroll platform changes at the client"
+    ]
+  }
+}

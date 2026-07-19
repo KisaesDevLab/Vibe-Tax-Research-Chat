@@ -1,0 +1,271 @@
+{
+  "id": "dependent-care-fsa",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Dependent Care FSA",
+  "category": "health-fringe",
+  "modeled": true,
+  "complexity": 1,
+  "riskRating": "low",
+  "entityTypes": ["individual"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "A dependent care assistance program funded through §125 salary reduction lets an employee pay work-enabling child or dependent care with dollars excluded from both income tax and FICA — a stack a simple deduction cannot match. OBBBA lifted the §129 exclusion to $7,500 ($3,750 for married filing separately) beginning in 2026, the first permanent increase since the limit was set. Excluded dollars reduce the §21 credit expense base dollar-for-dollar, so the FSA-versus-credit comparison must be run, though above the lowest brackets the exclusion nearly always wins. Owner-sponsored plans face §129(d) testing, including the 25% shareholder-concentration limit, which keeps owners from steering the benefit to themselves. The engine models the election as a W-2 wage exclusion at income-tax rates only; the FICA savings are real but sit outside the modeled burden, so the modeled number is conservative.",
+    "mechanics": [
+      "The employee elects up to $7,500 (2026; $3,750 MFS) of salary reduction through a §125 cafeteria plan; the elected amount never enters Box 1 wages and is excluded from Social Security and Medicare wages under §3121(a)(18).",
+      "Qualifying care tracks §21: care for a child under 13, or a spouse or dependent incapable of self-care, incurred so the taxpayer — and a spouse, if married — can work; day camps and preschool qualify, overnight camps and K-12 tuition do not.",
+      "The exclusion is capped at the lower-earning spouse's earned income, and every excluded dollar reduces the §21 credit expense base — the two benefits cannot stack on the same dollars, and Form 2441 reconciles them.",
+      "Elections are fixed for the plan year absent a qualifying status change, and unspent balances forfeit — the election should be set from documented, predictable care costs, not from the cap.",
+      "For owner-sponsored plans, §129(d) nondiscrimination applies, including the rule that no more than 25% of benefits may go to >5% owners and their spouses and dependents — a solo owner cannot concentrate the benefit on their own family.",
+      "The engine excludes the election from W-2 wages and lets the deterministic tables price the income-tax effect; the employee-side FICA savings is additional and intentionally left outside the modeled delta."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §129",
+        "note": "The dependent care assistance exclusion: the annual limit, earned-income caps, and the §129(d) nondiscrimination rules including the 25% owner-concentration test."
+      },
+      {
+        "type": "IRC",
+        "cite": "P.L. 119-21 (OBBBA) — §129 amendment",
+        "note": "Raised the exclusion to $7,500 ($3,750 MFS) for taxable years beginning in 2026."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §125",
+        "note": "The cafeteria-plan salary-reduction mechanism; elections are irrevocable for the year absent a qualifying status change."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §21",
+        "note": "The child and dependent care credit whose expense base is reduced by §129 exclusions — the comparison every client needs run."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §3121(a)(18)",
+        "note": "Excludes §129 benefits from FICA wages — the payroll-tax layer that beats an ordinary deduction."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 2441 and instructions",
+        "note": "Reports DCAP benefits, provider identification, and the §21 coordination that polices double-claiming."
+      }
+    ],
+    "requirements": [
+      "W-2 wages from an employer (including the client's own entity) sponsoring a §125 plan with a dependent care feature, elected before the plan year begins.",
+      "A qualifying individual — a child under 13, or a spouse or dependent incapable of self-care — and care that enables both spouses to work (student and incapacity exceptions aside).",
+      "Provider name, address, and TIN captured for Form 2441 reporting.",
+      "For owner-sponsored plans, §129(d) testing including the 25% owner-concentration limit."
+    ],
+    "risks": [
+      "The leading failure mode is administrative rather than doctrinal: Form 2441 reconciles W-2 Box 10 against claimed expenses, so double-claiming the §21 credit on excluded dollars or missing provider information surfaces at filing — there is no meaningful case law because the matching catches it first.",
+      "Over-election forfeits real dollars; the use-it-or-lose-it rule has no equitable exception.",
+      "Owner-heavy plans that fail §129(d) testing convert the owner's benefits back into taxable wages.",
+      "Care paid to the taxpayer's own child under 19 or to a claimed dependent never qualifies.",
+      "MFS filers are capped at $3,750, and single-earner couples fail the work-enabling test unless the student or incapacity exception applies."
+    ],
+    "stateNotes": [
+      "Conformity: states starting from federal AGI conform to the exclusion automatically, including the 2026 increase; a handful of states offer their own dependent-care credits worth comparing against the excluded expenses.",
+      "PTET: no PTET interaction — this is an individual payroll election, and the excluded wages never touch a pass-through entity's income base.",
+      "Missouri: conforms through the federal AGI starting point (RSMo §143.121); excluded dependent-care dollars stay off the Missouri return with no addback."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["childcare-credit-45f"]
+    },
+    "reviewChecklist": [
+      "Documented care costs support the election amount — no cap-chasing.",
+      "The §129-versus-§21 comparison is in the file at the client's actual marginal rate.",
+      "Provider TIN information collected; Form 2441 will reconcile.",
+      "If the plan is the client's own, §129(d) testing (including the 25% concentration limit) is complete for the year.",
+      "Both-spouse earned income confirmed, or a student/incapacity exception documented."
+    ]
+  },
+  "client": {
+    "teaser": "Pay for childcare with paycheck dollars that skip income tax and payroll tax.",
+    "headline": "Up to $7,500 of childcare, paid with pre-tax money",
+    "plainEnglish": [
+      "If you pay for daycare, preschool, after-school care, or summer day camp so you can work, you can pay part of it with money taken from your paycheck before taxes. No income tax. No Social Security or Medicare tax either.",
+      "The limit is $7,500 a year starting in 2026 — double the old amount. For many families this puts well over two thousand dollars a year back in their pocket.",
+      "You pick your amount once a year, and money you set aside but do not use is lost. So we set the number from your real childcare costs. We also check it against the childcare tax credit and pick whichever saves you more."
+    ],
+    "analogy": "It works like an express lane for your childcare money — the same bills get paid, but the tax tollbooth never sees them.",
+    "benefits": [
+      "Up to $7,500 of care paid with never-taxed dollars",
+      "Skips payroll tax too, which normal deductions cannot do",
+      "Covers daycare, preschool, after-school care, and day camps",
+      "Runs through payroll — nothing extra to track during the year"
+    ],
+    "steps": [
+      "WE total your expected care costs and compare this account to the childcare credit.",
+      "WE set the election amount so nothing is left unused.",
+      "YOU enroll at open enrollment and keep your provider's tax ID handy.",
+      "WE file the year-end form that ties it all together."
+    ],
+    "clientCommitments": [
+      "Give us your care provider's name and tax ID number",
+      "Tell us if your childcare situation changes during the year",
+      "Spend the account only on care that qualifies"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Reset the election each open enrollment from updated care costs",
+      "Re-run the FSA-versus-credit comparison as income and family facts change",
+      "Confirm the Form 2441 reconciliation at filing"
+    ],
+    "deliverables": [
+      "Election worksheet with the FSA-versus-credit comparison",
+      "Provider information capture sheet for Form 2441",
+      "Year-end reconciliation memo"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 33,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "election": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["election"]
+    },
+    "apply": {
+      "module": "dependent-care-fsa@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "wages",
+          "op": "gt",
+          "value": 0
+        },
+        {
+          "field": "dependentsUnder17",
+          "op": "gt",
+          "value": 0
+        }
+      ],
+      "reason": "Up to $7,500 of childcare can run through payroll pre-tax."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj wages 200k, 2 kids, full 7.5k election",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 200000,
+          "businesses": [],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 2,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "election": 7500
+        },
+        "expect": {
+          "totalBurdenDelta": -1650,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "single wages 120k, 1 kid, 5k election",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 120000,
+          "businesses": [],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 1,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "election": 5000
+        },
+        "expect": {
+          "totalBurdenDelta": -1100,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §129", "Form 2441 instructions and IRS Publication 503"],
+    "keywords": [
+      "dependent care FSA",
+      "section 129",
+      "$7,500 dependent care limit",
+      "Form 2441",
+      "childcare credit coordination"
+    ],
+    "reviewTriggers": [
+      "Any amendment or indexing of the §129 limit",
+      "Changes to §21 credit amounts or coordination rules",
+      "New §129(d) testing guidance"
+    ]
+  }
+}

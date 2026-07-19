@@ -1,0 +1,298 @@
+{
+  "id": "ichra",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "ICHRA",
+  "category": "health-fringe",
+  "modeled": true,
+  "complexity": 3,
+  "riskRating": "low",
+  "entityTypes": ["s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "5k-25k",
+  "advisor": {
+    "summary": "The 2019 tri-agency final rule created the Individual Coverage HRA: an employer of any size reimburses individual-market premiums and out-of-pocket medical care, tax-free to employees and deductible to the business, with no statutory dollar cap. ACA integration is solved by requiring every participant to be enrolled in individual-market coverage or Medicare. Benefits may vary across the regulation's defined employee classes but must be uniform within a class, and no class may be offered a choice between the ICHRA and a traditional group plan. As with all §105/§106 arrangements, >2% S corporation shareholders, partners, and sole proprietors cannot participate tax-free — C-corp owner-employees can. The engine models the employer's deduction for reimbursements; employee-side exclusion value and premium-tax-credit displacement are evaluated off-model.",
+    "mechanics": [
+      "The employer sets a fixed monthly allowance per class; employees substantiate individual-market enrollment and expenses; reimbursements are excluded under §106(a) and §105(b) and deducted under §162(a).",
+      "Classes must come from the permitted list in Reg. §54.9802-4 — full-time, part-time, salaried, hourly, seasonal, geographic rating area, and others — with same-terms treatment inside each class, varied only by age (up to 3:1) and family size.",
+      "An affordable ICHRA offer ends the employee's §36B premium tax credit; the offer must include an annual opt-out so an employee facing an unaffordable allowance can preserve the credit.",
+      "For applicable large employers, an affordable ICHRA satisfies the §4980H employer-mandate offer; an unaffordable one exposes the employer to §4980H(b) assessments as employees decline and claim credits.",
+      "Minimum class sizes apply to certain classes when a traditional group plan is offered to another class — the regulation's guardrail against shifting risk to the exchanges.",
+      "Owner mapping: C-corp owner-employees participate tax-free; §1372 keeps >2% S corporation shareholders (and self-employed owners generally) out — their route is §162(l), and only the entity's deduction for reimbursements is in the model."
+    ],
+    "authority": [
+      {
+        "type": "Reg",
+        "cite": "Reg. §54.9802-4",
+        "note": "The ICHRA regulation: permitted classes, same-terms rule, individual-coverage enrollment requirement, and the opt-out right (2019 tri-agency final rule)."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§105(b), 106(a)",
+        "note": "Exclude the reimbursements and the coverage itself from employee income."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §162(a)",
+        "note": "The employer's deduction for reimbursements — the quantity the engine models."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §36B",
+        "note": "Premium tax credit coordination: an affordable ICHRA offer bars the credit; an unaffordable one permits opt-out and a PTC claim."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §4980H",
+        "note": "The employer mandate an affordable ICHRA can satisfy for applicable large employers."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1372",
+        "note": "Excludes >2% S corporation shareholders from tax-free participation via partner treatment."
+      },
+      {
+        "type": "Admin",
+        "cite": "Notice 2018-88",
+        "note": "IRS guidance on ICHRA interaction with the employer mandate and §105(h)."
+      }
+    ],
+    "requirements": [
+      "Every participant (and covered dependents) enrolled in individual-market coverage or Medicare, substantiated at enrollment and again with each reimbursement.",
+      "A written plan with classes drawn only from the regulation's permitted list and same-terms allowances within each class.",
+      "No class offered both the ICHRA and a traditional group plan.",
+      "The 90-day advance annual notice covering premium-tax-credit interaction and the opt-out right.",
+      "Minimum class sizes respected where a group plan remains for another class."
+    ],
+    "risks": [
+      "Substantiation is the leading failure: reimbursing employees who dropped their individual coverage makes the payments taxable and threatens group-health-plan status with §4980D exposure at $100 per employee per day — Reg. §54.9802-4 and Notice 2018-88 frame the compliance boundary.",
+      "Improvised classes or minimum-class-size violations void the design's protection.",
+      "For applicable large employers, an unaffordable allowance converts into §4980H(b) assessments as employees decline and take the premium tax credit.",
+      "For heavily subsidized workforces, an affordable ICHRA can be worth less to employees than the credits they give up — model the workforce before replacing group coverage.",
+      "Owner-side expectations: no tax-free self-reimbursement for pass-through owners; the modeled number is the entity deduction only."
+    ],
+    "stateNotes": [
+      "Conformity: states conforming to federal income definitions exclude the reimbursements from employee income exactly as federal law does, and the employer deduction follows the ordinary business-income computation.",
+      "PTET: for pass-through sponsors the reimbursement deduction reduces the entity income a PTET election is computed on — sequence the two rather than stacking them.",
+      "Missouri: conforms through RSMo §143.121; a Missouri pass-through electing the SALT Parity Act PTET (RSMo §143.436) computes that tax after this deduction."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": ["qsehra"],
+      "synergiesWith": []
+    },
+    "reviewChecklist": [
+      "Workforce survey supports the ICHRA over group coverage or a QSEHRA, including premium-tax-credit displacement math.",
+      "Class design checked line-by-line against Reg. §54.9802-4, with minimum class sizes verified.",
+      "90-day notice delivered and documented; substantiation workflow live with the administrator.",
+      "Affordability computation on file where the client is an applicable large employer.",
+      "Owner participation limited to those the exclusion actually covers."
+    ]
+  },
+  "client": {
+    "teaser": "Set a fixed health budget and let each employee pick coverage that fits their life.",
+    "headline": "Health benefits with a budget you control — no group plan needed",
+    "plainEnglish": [
+      "Group health insurance means one plan for everyone and premium hikes every year. There is another way. Your business gives each employee a set monthly allowance, tax-free, to buy the health plan they choose on the individual market.",
+      "Every dollar is deductible to the business. You set the budget, so there are no renewal surprises. Employees keep coverage that belongs to them, not to the job.",
+      "You can set different allowance amounts for different groups — full-time and part-time, for example — as long as everyone in a group is treated the same. Any size of business can use it, and there is no cap on the allowance."
+    ],
+    "analogy": "Instead of buying one bus everyone must ride, you hand out travel allowances and let each person pick the ride that gets them home.",
+    "benefits": [
+      "Deductible to the business, tax-free to employees",
+      "A fixed budget you set — no more renewal shock",
+      "Works at any company size, with no dollar cap",
+      "Employees keep coverage they chose themselves"
+    ],
+    "steps": [
+      "WE compare the ICHRA against your current coverage and your team's facts.",
+      "WE design the classes, allowances, plan documents, and required notices.",
+      "YOU collect proof of coverage through the administrator and pay reimbursements monthly.",
+      "WE revisit the allowances each year as premiums move."
+    ],
+    "clientCommitments": [
+      "Reimburse only employees with current proof of their own coverage",
+      "Deliver the annual employee notice on schedule",
+      "Tell us before changing who gets which benefit level"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Annual allowance reset against individual-market premium changes",
+      "90-day notice cycle and substantiation audit",
+      "Affordability re-test where the employer mandate applies"
+    ],
+    "deliverables": [
+      "ICHRA plan document and class-design memo",
+      "Employee notice package",
+      "Administration and substantiation workflow",
+      "Affordability analysis for applicable large employers"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 33,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "annualReimbursements": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["annualReimbursements"]
+    },
+    "apply": {
+      "module": "ichra@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasEmployees",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "Fixed, class-based reimbursement of individual premiums replaces group-plan volatility."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj S-corp 400k/120k, 36k reimbursed",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 400000,
+              "employeeWages": 150000,
+              "ownerWages": 120000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "annualReimbursements": 36000
+        },
+        "expect": {
+          "totalBurdenDelta": -6912,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj S-corp 300k/100k, 18k reimbursed",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 300000,
+              "employeeWages": 80000,
+              "ownerWages": 100000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "annualReimbursements": 18000
+        },
+        "expect": {
+          "totalBurdenDelta": -3373,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "Reg. §54.9802-4 and tri-agency HRA rulemaking",
+      "IRC §36B affordability guidance"
+    ],
+    "keywords": [
+      "ICHRA",
+      "individual coverage HRA",
+      "employee classes",
+      "affordability safe harbor",
+      "premium tax credit"
+    ],
+    "reviewTriggers": [
+      "Amendments to the ICHRA regulations",
+      "New affordability safe-harbor guidance",
+      "Individual-market premium shifts in the client's rating areas"
+    ]
+  }
+}

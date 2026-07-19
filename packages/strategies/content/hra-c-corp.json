@@ -1,0 +1,184 @@
+{
+  "id": "hra-c-corp",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "HRA for C-Corps",
+  "category": "health-fringe",
+  "modeled": false,
+  "complexity": 3,
+  "riskRating": "low",
+  "entityTypes": ["c-corp"],
+  "typicalSavingsBand": "5k-25k",
+  "advisor": {
+    "summary": "An HRA is an employer-funded plan reimbursing employees' medical care: the corporation deducts under §162(a), the employee excludes under §105(b) and §106(a), and nothing hits FICA. The C corporation is the uniquely clean chassis because its owner-employee is simply an employee — §1372 bars >2% S corporation shareholders from the same exclusion. The controlling hazard is the ACA market reforms: a standalone HRA covering two or more employees must be integrated with group coverage or fit a sanctioned design, on pain of the §4980D excise tax at $100 per employee per day, while a plan with fewer than two current-employee participants is exempt. Advisory-only — the benefit is a function of entity structure and actual medical spend, quantified in the plan design rather than modeled from return inputs.",
+    "mechanics": [
+      "The corporation adopts a written reimbursement plan; payments of medical care described in §213(d) for the employee, spouse, and dependents are deductible under §162(a) and excluded from income and FICA wages under §105(b) and §106(a).",
+      "A C-corp owner-employee participates on the same footing as any employee — the double-tax structure that usually penalizes C corporations runs in the owner's favor here, converting family medical costs into corporate deductions with no shareholder-level income.",
+      "The same door is closed to pass-through owners: §1372 treats >2% S corporation shareholders as partners, so their reimbursements land on the W-2 and route through §162(l) rather than being excluded.",
+      "A standalone HRA covering two or more current employees violates the ACA market reforms unless integrated with group coverage or structured as a QSEHRA, ICHRA, or excepted-benefit HRA; a plan with fewer than two current-employee participants is exempt under §9831(a)(2), which is why owner-only C corporations implement this with minimal friction.",
+      "Self-insured nondiscrimination under §105(h) applies: an HRA favoring highly compensated individuals as to eligibility or benefits taxes the HCI's excess reimbursements."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §105(b)",
+        "note": "Excludes employer reimbursements of medical expenses of the employee, spouse, and dependents."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §106(a)",
+        "note": "Excludes the employer-provided coverage itself from the employee's income."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §162(a)",
+        "note": "The corporate deduction for reimbursements and plan costs as ordinary compensation expense."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §105(h)",
+        "note": "Self-insured plan nondiscrimination; the discriminatory excess is taxable to highly compensated individuals."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1372",
+        "note": "Why S corporations fail here: >2% shareholders are treated as partners for fringe-benefit purposes."
+      },
+      {
+        "type": "Admin",
+        "cite": "Notice 2013-54",
+        "note": "The market-reform analysis: standalone HRAs covering two or more employees must integrate with group coverage or fit an excepted design."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §4980D",
+        "note": "The excise tax — $100 per affected employee per day — that backs the market-reform rules."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §9831(a)(2)",
+        "note": "Exempts plans with fewer than two current-employee participants from the market reforms."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §213(d)",
+        "note": "Defines the medical care an HRA may reimburse tax-free."
+      }
+    ],
+    "requirements": [
+      "A C corporation with the owner as a bona fide W-2 employee.",
+      "A written plan document — covered class, annual limit, substantiation procedure — adopted before the first reimbursement.",
+      "A documented ACA compliance path: the one-participant exemption, integration with group coverage, or a sanctioned design.",
+      "Receipts or EOBs substantiating every reimbursement before payment.",
+      "§105(h) testing where the plan is self-insured and the corporation has a broader workforce."
+    ],
+    "risks": [
+      "The dominant exposure is the §4980D excise tax — $100 per affected employee per day, $36,500 per employee per year — for a standalone design that fails the market reforms; Notice 2013-54 is the controlling ruling, and it is the reason the compliance path is designed before the plan rather than after.",
+      "§105(h) discrimination converts the owner's excess reimbursements into taxable income when a broader workforce is excluded.",
+      "Unsubstantiated or non-§213(d) reimbursements lose the exclusion, and a corporation with no business substance beyond paying the family's bills invites constructive-dividend recharacterization of the whole arrangement.",
+      "Do not let the HRA drive entity choice by itself — double taxation on remaining C-corp earnings can swamp the health benefit; run the full comparison.",
+      "Each new hire changes the plan's legal posture: the one-participant exemption is lost the day a second employee becomes eligible."
+    ],
+    "stateNotes": [
+      "Conformity: states starting from federal AGI or federal taxable income conform to both the corporate deduction and the employee exclusion; no separate state filing position is required in conforming states.",
+      "PTET: none — the sponsor is a C corporation, so there is no pass-through entity tax interaction.",
+      "Missouri: conforms — the deduction runs through the Missouri corporate return's federal-taxable-income start (RSMo §143.431) and the exclusion stays out of Missouri AGI under RSMo §143.121."
+    ],
+    "interactions": {
+      "requires": ["c-corp-conversion"],
+      "conflictsWith": ["section-105-merp"],
+      "synergiesWith": ["accident-health-c-corp"]
+    },
+    "reviewChecklist": [
+      "Written plan and board resolution executed and dated before any reimbursement.",
+      "ACA compliance path documented for the current participant count.",
+      "Substantiation process live — receipts or EOBs before payment, log maintained.",
+      "§105(h) analysis current for the census; owner-only status confirmed where the exemption is relied on.",
+      "Modeled savings, if presented, tie to actual family medical spend rather than the plan cap."
+    ]
+  },
+  "client": {
+    "teaser": "Your corporation can repay your family's medical bills — deductible to it, tax-free to you.",
+    "headline": "Let your corporation pay the medical bills you already have",
+    "plainEnglish": [
+      "If your business is a regular C corporation, it can adopt a formal plan to repay employees for medical costs — doctor visits, prescriptions, dental, vision, deductibles. The company deducts those payments. The employee pays no tax on them.",
+      "Here is the key: as an owner who works in the company, you are one of those employees. Bills your family pays anyway, with already-taxed money, can be paid by the company with money that is never taxed.",
+      "Health-care law tightly controls how these plans are built, and the penalty for a sloppy one is severe. So the paperwork comes first, the payments second. We design the plan, put the documents in place, and keep the records clean."
+    ],
+    "analogy": "It is like a standing discount on every medical bill equal to your tax rate — the money that pays the doctor never passes through your taxable income.",
+    "benefits": [
+      "Family medical costs become company deductions",
+      "Reimbursements reach you free of income and payroll tax",
+      "Covers what insurance misses — deductibles, dental, vision",
+      "Repeats every year the plan stays in place"
+    ],
+    "steps": [
+      "WE confirm your structure qualifies and pick the compliant plan design.",
+      "WE draft the written plan before any money moves.",
+      "YOU submit receipts; the company reimburses you.",
+      "WE reconcile the plan and the deduction at year-end."
+    ],
+    "clientCommitments": [
+      "Submit a receipt or insurance statement for every reimbursement — no receipt, no payment",
+      "Tell us before hiring — a second employee changes the plan rules",
+      "Run reimbursements from the company account, never as informal transfers"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Annual §105(h) re-test as the census changes",
+      "Compliance-path confirmation at each renewal",
+      "Year-end reconciliation of reimbursements, substantiation, and the Form 1120 deduction"
+    ],
+    "deliverables": [
+      "Written HRA plan document and adopting resolution",
+      "ACA compliance-path memo",
+      "Substantiation log and reimbursement request templates",
+      "Year-end reimbursement summary"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "hasEntity",
+        "op": "eq",
+        "value": true
+      }
+    ],
+    "reason": "A C-corp HRA reimburses owner-employee medical costs with full deduction and exclusion."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §105(h) and §106 guidance",
+      "Tri-agency HRA rulemaking",
+      "IRS positions on §4980D"
+    ],
+    "keywords": [
+      "HRA C corporation",
+      "health reimbursement arrangement",
+      "4980D",
+      "105(h) testing",
+      "one-employee plan"
+    ],
+    "reviewTriggers": [
+      "New HRA design regulations or notices",
+      "§4980D relief or enforcement guidance",
+      "Client headcount changes"
+    ]
+  }
+}

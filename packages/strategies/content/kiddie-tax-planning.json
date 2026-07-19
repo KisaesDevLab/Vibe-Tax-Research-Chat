@@ -1,0 +1,153 @@
+{
+  "id": "kiddie-tax-planning",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Kiddie Tax Planning Around Child Wages",
+  "category": "payroll-family",
+  "modeled": false,
+  "complexity": 2,
+  "riskRating": "low",
+  "entityTypes": ["individual"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "The kiddie tax of §1(g) taxes a covered child's net unearned income above $2,700 (2026 — two $1,350 layers) at the parents' marginal rates, which neutralizes naive gifts of income-producing assets. It never reaches earned income: wages from the family business are taxed at the child's own rates and absorbed by a standard deduction that tracks earned income up to $16,100. The planning problem is therefore downstream of payroll — wages that accumulate in a taxable custodial account eventually throw off enough interest and dividends to cross the threshold and get taxed at the parents' top rate. The discipline is sequencing: Roth IRA first, plan deferrals second, 529 third, and low-yield holdings for whatever must stay taxable. This is a guardrail strategy for families running the hire-the-kids playbook rather than a standalone deduction, and it is priced accordingly.",
+    "mechanics": [
+      "§1(g) covers children under 18, 18-year-olds whose earned income does not exceed half their support, and full-time students 19–23 under the same earned-income test — substantial wages can push an older student out of scope entirely.",
+      "Net unearned income is unearned income minus two $1,350 layers (2026, per Rev. Proc. 2025-32) — in practice, unearned income above $2,700 is taxed at the parents' rates on Form 8615.",
+      "Earned income is never kiddie-taxed and independently enlarges the child's standard deduction under §63(c)(5)(B) — wages up to $16,100 (2026) are doubly protected.",
+      "The trap is accumulation: wages parked in a taxable custodial brokerage compound until the yield crosses $2,700, at which point the excess is taxed at the parents' 32–37% rather than the child's rates.",
+      "The sequence that defuses it: custodial Roth IRA up to the $7,500 limit (2026, Notice 2025-67), then 401(k) deferrals where the plan permits, then 529 funding — leaving little or nothing generating taxable yield.",
+      "Where a taxable account is unavoidable, hold low-distribution assets and time gain harvesting for years the child sits outside the covered-age tests."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §1(g)",
+        "note": "The kiddie tax — net unearned income of a covered child taxed at the parents' marginal rates; earned income is categorically outside it."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §63(c)(5)(B)",
+        "note": "The dependent standard deduction tracks earned income plus an add-on — the reason wages are sheltered up to $16,100 for 2026."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 8615 and instructions",
+        "note": "The computation and filing mechanics whenever the child's unearned income crosses the threshold."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Proc. 2025-32",
+        "note": "Sets the 2026 inflation figures, including the $1,350 kiddie-tax layers and the dependent standard deduction."
+      },
+      {
+        "type": "Admin",
+        "cite": "Notice 2025-67",
+        "note": "The 2026 IRA limit ($7,500) that sizes the first leg of the wage-routing sequence."
+      }
+    ],
+    "requirements": [
+      "A child with earned income from the family business (or elsewhere) plus actual or planned investment assets in their name.",
+      "A complete inventory of child-titled accounts — custodial brokerage, custodial Roth, 529 — and the income each produces.",
+      "Annual monitoring of each child's unearned income against the $2,700 threshold.",
+      "Coordination with the hire-children, kids' Roth IRA, and kids' 401(k) strategies — this strategy routes those dollars."
+    ],
+    "risks": [
+      "There is no aggressive position to defend here — the risk is inattention: several years of wages compounding in a taxable custodial account will eventually generate kiddie-taxable yield at the parents' top rate, quietly clawing back the payroll strategy's benefit.",
+      "Custodial-account transfers are irrevocable — assets moved into a child's name for tax reasons cannot be reclaimed, and large custodial balances weigh against financial aid more heavily than parent-owned 529s.",
+      "Coverage runs to age 23 for full-time students — assuming the rule ends at 18 produces surprise Form 8615 filings in the college years.",
+      "Rebalancing appreciated custodial positions triggers gains that are themselves kiddie-taxable — dispositions belong in uncovered years."
+    ],
+    "stateNotes": [
+      "Missouri conforms automatically: the Form 8615 result lands in federal AGI, which is the Missouri starting point (RSMo §143.121) — there is no separate Missouri kiddie regime.",
+      "No PTET interaction — this is an individual-side sequencing strategy with no entity deduction in play.",
+      "Missouri-specific: the 529 leg carries extra state value — Missouri allows a deduction of up to $8,000 per taxpayer ($16,000 MFJ) for MOST 529 contributions, stacking a state benefit on the federal shelter."
+    ],
+    "interactions": {
+      "requires": ["hire-children"],
+      "conflictsWith": [],
+      "synergiesWith": ["kids-roth-ira"]
+    },
+    "reviewChecklist": [
+      "Account inventory for each child is current, with projected interest, dividends, and planned gains tested against the $2,700 threshold.",
+      "Wage-routing order (Roth, then plan deferrals, then 529) is documented and actually funded this year.",
+      "Student-age children (19–23) tested annually on the earned-income-versus-support condition.",
+      "Form 8615 prepared proactively in any year the threshold is crossed, not discovered on notice."
+    ]
+  },
+  "client": {
+    "teaser": "Keep your kids' money taxed at their low rates — not pulled up to yours.",
+    "headline": "Don't let a family tax trap claw back your planning wins",
+    "plainEnglish": [
+      "There is a rule nicknamed the kiddie tax. It stops parents from parking investments in a child's name to dodge tax. Once a child's investment income tops $2,700 in a year, the extra is taxed at the parents' rates.",
+      "Here is the good news. Money your child earns by working — like wages from the family business — is never touched by this rule. Wages are always taxed at the child's own low rates.",
+      "So the plan is about where the wages go next. Left in a normal investment account, they will one day earn enough interest to trip the rule. Routed into a Roth IRA, a retirement plan, or a college fund, the growth stays out of reach. We map that route for each child and check it yearly."
+    ],
+    "analogy": "Think of your child's wages as water and the accounts as buckets. Some buckets slowly leak tax back at your rates as they fill. Others are sealed. We pour into the sealed buckets first.",
+    "benefits": [
+      "Your kids' money stays taxed at their rates — or grows tax-free",
+      "No surprise bills at your top rate on their accounts",
+      "Turns family payroll into decades of protected growth",
+      "A simple yearly check, with no extra filings unless a line is crossed"
+    ],
+    "steps": [
+      "WE list every account in your kids' names and what income each one produces.",
+      "WE set the routing order — Roth IRA first, then retirement plan, then college fund.",
+      "YOU fund the accounts in that order as wages come in.",
+      "WE re-check the numbers each year as balances grow."
+    ],
+    "clientCommitments": [
+      "Follow the funding order we set before adding to any taxable account",
+      "Tell us about new accounts or gifts in a child's name before they happen"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Annual yield audit of every child-titled account against the kiddie-tax threshold",
+      "Re-run the earned-income-versus-support test for students 19–23",
+      "Update the routing plan for new wages and current-year contribution limits"
+    ],
+    "deliverables": [
+      "Per-child account inventory and yield projection",
+      "Wage-routing plan (Roth, plan deferrals, 529) for each child",
+      "Annual threshold memo, with Form 8615 preparation when required"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "dependentsUnder17",
+        "op": "gt",
+        "value": 0
+      }
+    ],
+    "reason": "Earned income avoids the kiddie tax; unearned income above the threshold does not."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §1(g)",
+      "Annual Rev. Proc. inflation adjustments to the kiddie-tax layers"
+    ],
+    "keywords": ["kiddie tax", "Form 8615", "net unearned income", "custodial account yield"],
+    "reviewTriggers": [
+      "Annual inflation adjustment of the $1,350 layers",
+      "Any statutory change to §1(g) coverage ages or rate structure",
+      "Financial-aid formula changes affecting custodial accounts"
+    ]
+  }
+}

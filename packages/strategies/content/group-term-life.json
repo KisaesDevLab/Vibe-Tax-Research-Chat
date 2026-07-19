@@ -1,0 +1,156 @@
+{
+  "id": "group-term-life",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Group Term Life (First $50k)",
+  "category": "health-fringe",
+  "modeled": false,
+  "complexity": 1,
+  "riskRating": "low",
+  "entityTypes": ["s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "Section 79 excludes the cost of the first $50,000 of employer-provided group term life coverage from the employee's income; coverage above that imputes income at the age-banded Table I rates of Reg. §1.79-3(d)(2), which often undercut actual premiums for older insureds, and the imputed amount is FICA wages. The employer deducts premiums under §162(a) so long as it is not a policy beneficiary. The dollars are deliberately small — this is a hygiene item bundled into a broader fringe redesign, not a headline strategy — but it is cheap and very commonly done wrong: §1372 denies the exclusion to >2% S corporation shareholders, and a plan favoring key employees forfeits their $50,000 exclusion under §79(d).",
+    "mechanics": [
+      "The §79 exclusion requires true group term coverage carried by the employer — generally ten or more full-time employees, or the small-group alternative of Reg. §1.79-1 covering all eligible employees on a formula basis.",
+      "Coverage above $50,000 imputes income at the Table I uniform premium of Reg. §1.79-3(d)(2), less employee after-tax contributions; the imputed cost is reported in W-2 Box 12 code C and is FICA wages.",
+      "Because Table I rates sit below actual term pricing at older ages, even the taxable slice can be a rate arbitrage against personally owned coverage for insureds in their fifties and sixties.",
+      "Entity mapping is the compliance core: C-corp owner-employees qualify like any employee, while §1372 treats >2% S corporation shareholders as partners — their premiums belong on the W-2 with no §79 exclusion — and partners and sole proprietors are not employees at all.",
+      "The employer deducts premiums under §162(a) only if it holds no beneficial interest in the policy — §264(a)(1) forecloses the deduction otherwise — and a plan favoring key employees costs them the exclusion under §79(d)."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §79",
+        "note": "The exclusion for the cost of the first $50,000 of group term coverage, the imputation above it, and the §79(d) nondiscrimination rules."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.79-3(d)(2)",
+        "note": "The Table I uniform premiums — age-banded rates used to impute income on coverage over $50,000."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.79-1",
+        "note": "Defines group term life, including the under-ten-employee alternative rules."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1372",
+        "note": "Treats >2% S corporation shareholders as partners — no §79 exclusion; their premiums are W-2 wages."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §264(a)(1)",
+        "note": "Denies the employer deduction where the employer is directly or indirectly a policy beneficiary."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §162(a)",
+        "note": "The employer's premium deduction as ordinary compensation expense when §264 does not apply."
+      }
+    ],
+    "requirements": [
+      "A group term policy carried by the employer covering an eligible class — ten or more employees, or a compliant small-group formula design.",
+      "Employees as insureds naming their own beneficiaries; the employer holds no beneficial interest.",
+      "Table I imputation and FICA on coverage above $50,000, coded correctly through payroll.",
+      "§79(d) nondiscrimination review where key employees participate."
+    ],
+    "risks": [
+      "The leading audit finding is S corporation misclassification: >2% shareholders given the §79 exclusion that §1372 denies them — a payroll correction with years of quiet W-2 errors behind it, grounded squarely in the statute rather than case law.",
+      "Owner-tilted small-group designs fail §79(d), stripping key employees of the $50,000 exclusion and imputing income at the greater of Table I or actual cost.",
+      "Unimputed coverage above $50,000 accrues W-2 and FICA errors that surface in payroll exams.",
+      "The benefit is a few hundred dollars of premium per person — oversell it and the plan's credibility suffers; it belongs in a bundle, not on a cover page."
+    ],
+    "stateNotes": [
+      "Conformity: federal-AGI states conform to the §79 exclusion and the Table I imputation without adjustment.",
+      "PTET: for S corporation and partnership sponsors the premium deduction reduces the entity income a PTET election is computed on; there is no separate owner-level PTET effect because >2% shareholders and partners sit outside the exclusion anyway.",
+      "Missouri: conforms through RSMo §143.121; the $50,000 exclusion and any Table I imputed income carry to the Missouri return exactly as computed federally."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["de-minimis-fringe"]
+    },
+    "reviewChecklist": [
+      "Group status verified under Reg. §1.79-1, or the small-group alternative documented.",
+      "Owner premiums mapped correctly by entity type — no §79 exclusion for >2% S-corp shareholders.",
+      "Payroll system imputes Table I on coverage above $50,000 with current age bands.",
+      "Employer confirmed as non-beneficiary on every certificate."
+    ]
+  },
+  "client": {
+    "teaser": "Up to $50,000 of life insurance per employee, tax-free to them and deductible to the company.",
+    "headline": "Life insurance your company can give tax-free",
+    "plainEnglish": [
+      "The tax law lets your company give each employee up to $50,000 of term life insurance with no tax to the employee. The company deducts the premiums. It is one of the simplest benefits there is.",
+      "To be straight with you: this is a small-dollar item. The savings are the tax on a modest premium. We include it because it costs little, employees value it, and it is often set up wrong — especially for S corporation owners, who follow different rules.",
+      "Want more than $50,000 of coverage? The extra is taxed using an IRS rate table. For older employees that table is often cheaper than buying term insurance on their own."
+    ],
+    "analogy": "This is the tax version of tightening a loose screw — quick, cheap, and worth doing while the toolbox is already out.",
+    "benefits": [
+      "Tax-free coverage for every employee, deductible to the business",
+      "The IRS rate table can beat retail term prices for older insureds",
+      "A low-cost benefit employees actually notice"
+    ],
+    "steps": [
+      "WE review how any current life coverage runs through payroll.",
+      "WE fix owner treatment if it is wrong — a common finding.",
+      "YOU approve the coverage design; the payroll handling runs itself after that."
+    ],
+    "clientCommitments": [
+      "Keep us posted on new hires and coverage changes so the payroll reporting stays right"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Confirm Table I imputation is running with current age bands",
+      "Re-check §79(d) discrimination as the census changes",
+      "Verify owner premium mapping after any entity change"
+    ],
+    "deliverables": [
+      "Coverage and payroll treatment memo",
+      "Payroll imputation setup instructions",
+      "Annual compliance checklist for the file"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "hasEmployees",
+        "op": "eq",
+        "value": true
+      }
+    ],
+    "reason": "The first $50,000 of employer-paid group term life is deductible and excluded."
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §79", "Reg. §§1.79-1 through 1.79-3"],
+    "keywords": [
+      "group term life",
+      "Table I imputed income",
+      "section 79 $50,000",
+      "2% shareholder fringe"
+    ],
+    "reviewTriggers": [
+      "Table I rate revisions",
+      "New §79(d) nondiscrimination guidance",
+      "Entity-type changes at the client"
+    ]
+  }
+}

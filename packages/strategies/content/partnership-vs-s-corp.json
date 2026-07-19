@@ -1,0 +1,201 @@
+{
+  "id": "partnership-vs-s-corp",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Partnership vs. S-Corp (Guaranteed Payment Flexibility)",
+  "category": "entity-structure",
+  "modeled": false,
+  "complexity": 3,
+  "riskRating": "low",
+  "entityTypes": ["partnership", "s-corp"],
+  "typicalSavingsBand": "structural",
+  "advisor": {
+    "summary": "For a multi-owner business, partnership versus S corporation is a five-axis trade, and only one axis favors the S corporation: employment tax. An S owner pays FICA on reasonable W-2 compensation and takes the rest as distributions, while a general partner's guaranteed payments and distributive share are generally swept into self-employment income — and the limited-partner exclusion has become contested ground for active LLC members after Renkemeyer and Soroban. Nearly everything else runs the other way: §704(b) special allocations, outside basis from entity-level debt under §752, inside-basis step-ups through the §754/§743(b) machinery, tax-free property movement in and out, and freedom from the single-class-of-stock straitjacket. The right answer is fact-driven — service firms with pro-rata owners usually take the S corporation's payroll savings; leveraged real estate and unequal-economics deals usually need the partnership. This record frames the decision; the S-corp election strategy models the employment-tax dollars once the choice tilts that way.",
+    "mechanics": [
+      "Employment tax is the S corporation's axis: only reasonable W-2 compensation bears FICA and distributions escape it, while a partner's guaranteed payments under §707(c) and distributive share of business income are generally self-employment income under §1402(a) — and Rev. Rul. 69-184 bars treating a partner as a W-2 employee of the partnership at all.",
+      "The §1402(a)(13) limited-partner exclusion is the contested seam: Renkemeyer put active service partners outside it, and Soroban held that 'limited partner' status turns on functional analysis rather than the state-law label — so SE savings inside a partnership should never be promised to an active member.",
+      "Allocations are the partnership's axis: §704(b) respects disproportionate splits of income, loss, and cash with substantial economic effect — preferred returns, waterfalls, sweat-equity deals — while the S corporation's single-class-of-stock rule locks every owner into strict pro-rata sharing.",
+      "Debt basis separates the forms decisively for leveraged ventures: partnership liabilities enter outside basis under §752 and support losses and debt-financed distributions, while S shareholders get basis only from stock and direct shareholder loans under §1366(d) — entity-level bank debt gives them nothing.",
+      "The §754 election unlocks §743(b) inside-basis adjustments when interests transfer by sale or death — effectively fresh depreciation for the buyer or heir — and appreciated property generally moves in under §721 and out under §731 tax-free, where an S corporation recognizes gain on distributing appreciated property under §311(b).",
+      "Guaranteed payments are the partnership's compensation dial: fixed, deductible amounts set by agreement without a reasonableness exam standard — but fully SE-taxed and excluded from the recipient's QBI under Reg. §1.199A-3, so the §199A cost of the flexibility has to be priced in."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §707(c)",
+        "note": "Guaranteed payments — the partnership’s fixed-compensation mechanism, deductible to the entity and ordinary income to the partner."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1402(a), (a)(13)",
+        "note": "SE tax on a partner’s distributive share and guaranteed payments, and the limited-partner exclusion whose reach is now litigated."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Rul. 69-184",
+        "note": "A partner is not an employee of the partnership — no W-2 route to FICA treatment inside the partnership form."
+      },
+      {
+        "type": "Case",
+        "cite": "Renkemeyer, Campbell & Weaver, LLP v. Commissioner, 136 T.C. 137 (2011)",
+        "note": "Law-firm partners performing services could not claim the limited-partner exclusion — their shares were SE income."
+      },
+      {
+        "type": "Case",
+        "cite": "Soroban Capital Partners LP v. Commissioner, 161 T.C. No. 18 (2023)",
+        "note": "Limited-partner status for §1402(a)(13) requires functional analysis, not the state-law label — the current front of the SE-tax fight."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §704(b)",
+        "note": "Special allocations respected when they have substantial economic effect — the partnership’s core flexibility."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §752",
+        "note": "Entity liabilities allocated into partners’ outside basis — decisive for leveraged real estate; no S corporation analogue."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1366(d)",
+        "note": "S shareholder loss limits: stock basis plus direct shareholder loans only."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§754, 743(b)",
+        "note": "The election and adjustment giving transferees an inside-basis step-up on sale or death."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§721, 731, 311(b)",
+        "note": "Property moves in and out of a partnership tax-free; an S corporation recognizes gain distributing appreciated property."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.199A-3",
+        "note": "Guaranteed payments are excluded from QBI — the §199A price of the partnership’s compensation flexibility."
+      },
+      {
+        "type": "Case",
+        "cite": "David E. Watson, P.C. v. United States, 668 F.3d 1008 (8th Cir. 2012)",
+        "note": "The S-corporation side’s exam exposure: unreasonably low owner wages recharacterized — the payroll savings have a floor."
+      }
+    ],
+    "requirements": [
+      "Two or more genuine co-owners — the comparison only exists for real multi-owner ventures.",
+      "For the S route: continuous §1361 eligibility — eligible shareholders, one class of stock, the shareholder limit — which alone rules out many deal structures.",
+      "For the partnership route: an operating or partnership agreement drafted to §704(b) standards, with capital-account maintenance and deliberate guaranteed-payment terms.",
+      "Willingness to carry the chosen form's compliance: reasonable-compensation support for S corporations, K-1 and capital-account complexity for partnerships."
+    ],
+    "risks": [
+      "The partnership's recurring cost is SE tax on active members' full shares, and the aggressive answer — claiming the limited-partner exclusion while running the business — is exactly what Renkemeyer and Soroban Capital Partners punish; it is an actively litigated position, not a planning default.",
+      "The S corporation's mirror-image exposure is reasonable compensation: David E. Watson, P.C. v. United States, 668 F.3d 1008 (8th Cir. 2012), recharacterized low wages, so the payroll savings cannot be manufactured by zeroing the salary.",
+      "Choosing S for payroll savings and later needing preferred returns, investor classes, or waterfalls the single-class-of-stock rule forbids is the classic expensive regret — conversions out are not free, and appreciated assets leave an S corporation only with gain recognition.",
+      "Inadvertent S termination — a side agreement creating a second class of stock, an ineligible shareholder arriving through death or trust funding — retroactively destroys the election.",
+      "Partnership complexity is a genuine cost: §704(c) layers, capital accounts, and liability recomputations raise preparation cost and error risk every year."
+    ],
+    "stateNotes": [
+      "Conformity: Missouri conforms to the federal characterization of both forms through its federal starting point, so the federal analysis carries to the state return without adjustment.",
+      "PTET interaction: neutral between the forms in Missouri — the SALT Parity Act election (RSMo §143.436) is available to both S corporations and partnerships, so the entity-level deduction survives whichever form wins the analysis.",
+      "Missouri: with no separate state election mechanics distinguishing the forms, the Missouri decision rides entirely on the federal axes — employment tax, allocations, debt basis, step-ups, and property movement."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["s-corp-election"]
+    },
+    "reviewChecklist": [
+      "The five axes scored on client facts: employment tax, allocation needs, debt basis, step-up and exit plans, and property movement.",
+      "SE-tax position for each member documented deliberately — no unexamined limited-partner exclusion claims for active members.",
+      "If S: reasonable-compensation support planned and §1361 eligibility confirmed against the full cap table and estate plans.",
+      "If partnership: agreement drafted to §704(b) standards and a standing plan for the §754 election on triggering transfers.",
+      "The decision memo revisits the choice at every ownership or debt change — the right answer moves with the cap table."
+    ]
+  },
+  "client": {
+    "teaser": "Partnership or S corporation is worth real money every year — and the right answer depends on how your business works.",
+    "headline": "Two ways to structure co-owned businesses — priced side by side",
+    "plainEnglish": [
+      "When a business has more than one owner, there are two main tax setups: a partnership or an S corporation. From the outside they look alike — both pass profits to the owners' returns. But they behave very differently, and the wrong pick costs money every year.",
+      "The S corporation usually wins on payroll taxes. You take a fair salary, and profits above it skip the extra 15% tax. The trade-off is rigid rules: every owner must share profits exactly by ownership share, with no exceptions.",
+      "A partnership flips that. Owners can split profits and cash almost any way they agree. One owner can get a fixed payment for their work. Business loans can unlock extra deductions for the owners. The trade-off is more payroll-style tax for working owners.",
+      "Neither one is simply better. If the business runs on the owners' work, the S corporation often wins. If it runs on property, debt, or uneven deals between owners, the partnership often wins. We price both with your real numbers before anything gets filed."
+    ],
+    "analogy": "It is like choosing between a sedan and a pickup: the sedan costs less to run each day, but if your life involves hauling, the truck earns its keep. The mistake is buying on sticker price without looking at your driveway.",
+    "benefits": [
+      "A structure matched to how your business actually makes money",
+      "Payroll-tax savings when the S corporation route fits",
+      "Freedom to split profits unevenly and reward sweat equity when the partnership fits",
+      "Fewer expensive do-overs when investors, property, or heirs enter the picture"
+    ],
+    "steps": [
+      "WE map how your business earns, borrows, and pays its owners.",
+      "WE run your numbers under both structures, side by side.",
+      "YOU and your co-owners pick the winner with us and sign the updated agreement.",
+      "WE revisit the choice whenever owners, debt, or plans change."
+    ],
+    "clientCommitments": [
+      "Share the full ownership picture — side deals and handshake terms change the answer",
+      "Tell us before adding owners, investors, or major debt",
+      "If the S corporation wins: take the fair salary we set through payroll, every year"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Re-score the entity choice at each ownership, debt, or major asset change",
+      "For S corporations: refresh reasonable-compensation support and monitor eligibility",
+      "For partnerships: maintain capital accounts and the standing §754 election plan",
+      "Coordinate the annual PTET election for whichever form is in place"
+    ],
+    "deliverables": [
+      "Entity-choice decision memo with side-by-side modeling",
+      "Updated operating or shareholder agreement matched to the chosen form",
+      "SE-tax position memo for each owner",
+      "Ownership-change review checklist"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "hasEntity",
+        "op": "eq",
+        "value": true
+      }
+    ],
+    "reason": "Special allocations, basis from debt, and comp flexibility differ sharply between the two."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "§1402(a)(13) litigation (Soroban line) and any SE-tax regulations",
+      "IRC §1361 eligibility guidance"
+    ],
+    "keywords": [
+      "partnership vs S corp",
+      "guaranteed payments",
+      "limited partner exclusion",
+      "self-employment tax",
+      "special allocations",
+      "debt basis"
+    ],
+    "reviewTriggers": [
+      "Appellate outcomes in the functional-analysis SE-tax cases",
+      "Any statutory change to SE tax on pass-through owners",
+      "Client ownership or capital-structure changes"
+    ]
+  }
+}

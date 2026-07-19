@@ -1,0 +1,157 @@
+{
+  "id": "cash-vs-accrual",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Cash vs. Accrual Method Analysis",
+  "category": "business-expenses",
+  "modeled": false,
+  "complexity": 3,
+  "riskRating": "low",
+  "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "5k-25k",
+  "advisor": {
+    "summary": "The TCJA opened the cash method to nearly every small business, and the threshold keeps indexing upward: any taxpayer meeting the §448(c) gross-receipts test — $32 million three-year average for 2026, computed with aggregation — may use the cash method regardless of inventories, and the same test exempts it from §263A UNICAP and from full §471 inventory accounting. For the typical service or B2B accrual client whose receivables outrun payables, the switch defers the entire net receivable position: a favorable §481(a) catch-up deducted in full in the change year through an automatic Form 3115. This record is advisory because the payoff is a balance-sheet fact — net A/R minus A/P at the change date — that the engine does not hold; quantify it from the books before promising a number.",
+    "mechanics": [
+      "Eligibility runs through §448(c): three-year average gross receipts at or below the indexed ceiling ($32 million for 2026), aggregating commonly controlled entities under §448(c)(2); syndicates allocating more than 35 percent of losses to limited owners are excluded regardless of size.",
+      "On the cash method, income lands when actually or constructively received and deductions when paid, so receivables sit untaxed until collected — the gap against the accrual all-events test is where the deferral lives.",
+      "The same receipts test unlocks §471(c) inventory relief — treat inventory as non-incidental materials and supplies or follow the books — and the §263A(i) UNICAP exemption, ending indirect-cost capitalization.",
+      "The change is automatic: Form 3115 under the Rev. Proc. 2015-13 procedures, filed with the timely return, no user fee, audit protection for prior years; the §481(a) adjustment captures the cumulative difference — deducted entirely in the change year when negative, spread over four years when positive.",
+      "Direction matters: cash wins where receivables exceed payables plus accrued liabilities; accrual can win for deposit-heavy businesses, because customer deposits are immediate income to a cash-method taxpayer."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §448(b)(3), (c)",
+        "note": "Cash-method eligibility through the aggregated gross-receipts test — $32 million average for 2026, indexed annually — and the tax-shelter exclusion."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §471(c)",
+        "note": "Small-business inventory options that replace full inventory accounting."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §263A(i)",
+        "note": "UNICAP exemption keyed to the same receipts test."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §481(a)",
+        "note": "The one-time cumulative catch-up that delivers the deferral in the change year."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Proc. 2015-13",
+        "note": "Automatic method-change procedures: Form 3115 with the timely return, audit protection, and the negative-adjustment/positive-spread rules."
+      }
+    ],
+    "requirements": [
+      "Aggregated three-year average gross receipts at or below the indexed ceiling, with the syndicate screen passed.",
+      "A balance-sheet snapshot at the proposed change date: receivables, payables, accrued liabilities, customer deposits, and inventory.",
+      "Tolerance for cash-basis tax numbers — lenders can still receive accrual financials; the two coexist."
+    ],
+    "risks": [
+      "The benefit is deferral, not forgiveness: receivables are taxed when collected, growth compounds the benefit, and contraction quietly reverses it.",
+      "Crossing the receipts ceiling later forces a change back to accrual with a positive §481(a) adjustment — model the exit for growth clients before making the entrance.",
+      "Deposit-heavy businesses can be worse off on cash: advance payments are income on receipt, while accrual taxpayers keep a deferral path.",
+      "Aggregation mistakes invalidate eligibility — related entities counted separately is the classic failure.",
+      "This is a method, not a dial: adopted consistently and changed only with consent — no year-by-year cherry-picking."
+    ],
+    "stateNotes": [
+      "Conformity: states that start from federal taxable income or federal AGI conform to the method and the §481(a) adjustment as computed federally; confirm any state-specific addback rules in the client's filing footprint.",
+      "PTET interaction: the change-year catch-up deduction shrinks the entity income a pass-through entity tax election is computed on, so PTET estimates should be reset in the change year.",
+      "Missouri: conforms through rolling IRC conformity and its federal starting points (RSMo §143.091, §143.431), and a Missouri SALT Parity Act (RSMo §143.436) electing entity computes the PTET on the post-adjustment income."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["bad-debt-review", "prepaid-expenses"]
+    },
+    "reviewChecklist": [
+      "Eligibility workpaper on file: three-year aggregated receipts and the syndicate screen, dated and retained.",
+      "§481(a) adjustment quantified from the actual balance sheet, not estimated.",
+      "Change year chosen against the bracket path so the one-time deduction lands where the marginal rate is highest.",
+      "Form 3115 filing requirements calendared and the §471(c) inventory approach documented.",
+      "Growth trajectory reviewed so a forced flip-back is not lurking inside the plan horizon."
+    ]
+  },
+  "client": {
+    "teaser": "One accounting election can push a whole year of unpaid invoices off this year's tax bill.",
+    "headline": "Stop paying tax on invoices before the cash arrives",
+    "plainEnglish": [
+      "There are two ways to keep score for taxes. The accrual way counts income when you send the invoice. The cash way counts income when money lands in the bank. If customers owe you a lot at any moment, the accrual way keeps you paying tax ahead of your own cash.",
+      "Most businesses under $32 million in sales may switch to the cash method. The switch comes with a one-time bonus. All the billed-but-unpaid income you were already taxed on gets subtracted in the change year. If customers owe you $200,000 more than you owe suppliers, that is roughly a $200,000 deduction.",
+      "To be fair, this is a deferral. Those dollars are taxed when collected. But the benefit rolls forward as long as the business keeps its scale, and we can time the switch to a high-income year when it is worth the most."
+    ],
+    "analogy": "It is the difference between being taxed on your order book and taxed on your cash register. The register is the honest measure of what you can actually spend.",
+    "benefits": [
+      "A potentially large one-time deduction in the switch year",
+      "Never again taxed on money customers have not paid",
+      "Often ends burdensome inventory accounting at the same time",
+      "Simpler bookkeeping all year"
+    ],
+    "steps": [
+      "WE confirm you qualify, counting related companies the way the IRS requires.",
+      "WE compute the exact one-time deduction from your balance sheet.",
+      "WE pick the best year and file the one form that makes it official.",
+      "YOU keep sending us year-end financials so we can watch the sales ceiling."
+    ],
+    "clientCommitments": [
+      "Provide the year-end balance sheet and aging reports we ask for",
+      "Flag major growth or acquisitions early — the ceiling test depends on it"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Annual aggregated gross-receipts test against the indexed ceiling",
+      "Monitor the receivables/deposits balance so the method still favors the client"
+    ],
+    "deliverables": [
+      "Method-analysis memo quantifying the §481(a) adjustment from the balance sheet",
+      "Form 3115 package filed with the change-year return",
+      "Annual eligibility test workpaper"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "totalBusinessProfit",
+        "op": "gt",
+        "value": 100000
+      }
+    ],
+    "reason": "A method change (Form 3115) can produce a one-time favorable §481(a) adjustment."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §448(c)",
+      "Automatic method-change list updates (Rev. Proc. 2015-13 successors)"
+    ],
+    "keywords": [
+      "cash method",
+      "448(c)",
+      "Form 3115",
+      "481(a) adjustment",
+      "accounting method change"
+    ],
+    "reviewTriggers": [
+      "Annual indexing of the gross-receipts ceiling",
+      "Revisions to the automatic method-change procedures"
+    ]
+  }
+}

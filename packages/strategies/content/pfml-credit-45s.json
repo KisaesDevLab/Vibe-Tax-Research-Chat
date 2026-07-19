@@ -1,0 +1,297 @@
+{
+  "id": "pfml-credit-45s",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Paid Family & Medical Leave Credit (§45S)",
+  "category": "credits-incentives",
+  "modeled": true,
+  "complexity": 3,
+  "riskRating": "low",
+  "entityTypes": ["s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "Section 45S pays employers for doing formally what many already do informally: continuing wages during FMLA-type leave. A written policy that replaces at least 50% of wages for at least two weeks earns a credit of 12.5% of leave wages, climbing a quarter-point for each replacement point above 50% to a 25% maximum at full pay, on up to twelve weeks of leave per employee per year. OBBBA ended the credit's serial-expiration era by making §45S permanent and added an election to compute it on premiums for paid-leave insurance instead of self-funded wages. The traps are procedural: the policy must exist before the leave, general PTO does not count, leave paid or mandated by a state program is excluded, and the credit only reaches rank-and-file employees under a compensation ceiling. The engine applies the statutory rate curve to the entered leave wages; the twelve-week cap, employee-eligibility screens, and wage-deduction reduction are return-time work.",
+    "mechanics": [
+      "The credit rate is 12.5% of qualifying leave wages when the written policy replaces 50% of normal pay, plus 0.25 percentage points for each replacement point above 50%, topping out at 25% at full replacement — the engine applies exactly this curve to the entered leave wages.",
+      "The policy floor is written and specific: at least two weeks of annual paid family and medical leave for full-time qualifying employees (prorated for part-time) at no less than 50% wage replacement, in place before the leave it covers, with the non-interference language Notice 2018-71 requires for employees outside FMLA coverage.",
+      "Only qualifying employees count — roughly a year of service and prior-year compensation below a threshold keyed to 60% of the §414(q) highly-compensated figure — so the credit is structurally aimed at rank-and-file leave, not executive benefits.",
+      "P.L. 119-21 made §45S permanent for tax years beginning after 2025 and added an election to compute the credit as a percentage of premiums paid for paid family and medical leave insurance, converting an unpredictable self-funded cost into an insurable one; OBBBA also permits a shortened employee-tenure election — verify the details before relying on them.",
+      "Exclusions are the exam surface: leave paid by or mandated under a state or local program is not creditable, general PTO or sick time not designated for FMLA-type purposes fails, the same wages cannot drive other employment credits, and the wage deduction is reduced by the credit under §280C(a)."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §45S",
+        "note": "The employer credit for paid family and medical leave: rate curve, twelve-week cap, written-policy and qualifying-employee requirements."
+      },
+      {
+        "type": "IRC",
+        "cite": "P.L. 119-21 (OBBBA) §45S amendments",
+        "note": "Permanence plus the insurance-premium computation option and tenure-election changes, effective for tax years beginning after 2025."
+      },
+      {
+        "type": "Admin",
+        "cite": "IRS Notice 2018-71",
+        "note": "The controlling Q&A: policy content and timing, qualifying leave types, wage-replacement computation, non-interference language, and the exclusion of state-mandated leave."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §280C(a)",
+        "note": "The wage deduction is reduced by the credit claimed — the no-double-benefit adjustment the return must carry."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §414(q)",
+        "note": "Source of the highly-compensated threshold that the qualifying-employee compensation ceiling is keyed to (60% of the prior-year figure)."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 8994 and instructions",
+        "note": "Credit computation; flows to Form 3800 as a general business credit."
+      }
+    ],
+    "requirements": [
+      "A written paid family and medical leave policy — two weeks minimum, 50% replacement minimum, non-interference language included — adopted before any leave it is meant to cover.",
+      "Leave tracked and designated as FMLA-type in payroll; ordinary PTO, vacation, and undesignated sick time do not qualify.",
+      "Qualifying-employee screening each year: service requirement met and prior-year compensation under the ceiling.",
+      "No state-mandated or state-paid leave in the credited wages, and the §280C(a) deduction reduction reflected on the return."
+    ],
+    "risks": [
+      "The leading exam theory is relabeling — ordinary PTO recharacterized as family leave at year-end fails the designation requirement, and Notice 2018-71's policy-first rule means leave paid before the written policy's effective date earns nothing; there is no rescue for a policy adopted retroactively.",
+      "State paid-leave mandates crowd the credit out: only voluntary employer amounts beyond any state program qualify, so the analysis is state-by-state and changes as programs launch.",
+      "The dollars are structurally modest for small employers — typically four figures — so administration cost and the nonrefundable-credit stranding risk deserve an honest weighing before adoption.",
+      "The compensation ceiling and service requirement mean owner and executive leave usually earns nothing; plans sold as owner benefits misunderstand the statute."
+    ],
+    "stateNotes": [
+      "Conformity: the credit is federal-only; states conforming to federal taxable income — Missouri among them via its federal starting point — inherit the slightly higher income the §280C(a) wage-deduction reduction produces.",
+      "PTET interaction: none directly; the reduced wage deduction marginally raises the entity income a pass-through entity tax election is computed on, and nothing else changes.",
+      "Missouri: no state paid family leave mandate exists, so a Missouri employer's program is entirely voluntary and fully creditable — and after the 2025 repeal of the Proposition A earned-sick-time requirements (HB 567, effective August 28, 2025), there is no state-mandated overlay to carve out."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": []
+    },
+    "reviewChecklist": [
+      "Written policy meets the two-week/50% minimums, includes non-interference language, and its effective date precedes every credited leave event.",
+      "Payroll separately tracks FMLA-type leave by employee, with hours and replacement percentage visible.",
+      "Qualifying-employee list re-screened for the year (service and compensation ceiling).",
+      "No state-mandated leave dollars in the credited wages; insurance-premium election evaluated where the client insures the benefit.",
+      "Form 8994 computation ties to payroll, and the §280C(a) reduction appears on the return."
+    ]
+  },
+  "client": {
+    "teaser": "Already paying people during family or medical leave? A written policy turns that into a tax credit.",
+    "headline": "Get paid back for paid leave",
+    "plainEnglish": [
+      "When an employee has a baby, gets seriously ill, or cares for a sick family member, many good employers keep paying them. The tax law rewards that. With a formal policy, you get back up to a quarter of the wages you pay during that leave.",
+      "The key word is formal. A handshake promise or general vacation time does not count. There must be a written policy, set up before the leave happens, that meets a few clear standards. Most caring employers are one document away from qualifying.",
+      "There is also a newer option. Instead of paying leave out of pocket, you can buy insurance that covers it. The credit can then apply to those premiums, which makes the cost fixed and predictable."
+    ],
+    "analogy": "You were going to take care of your people anyway. This is the government offering to split the bill — but only if the promise is written down first.",
+    "benefits": [
+      "Up to 25% of leave wages back as a tax credit",
+      "Usually just formalizes what you already do for your team",
+      "An insurance option can make the cost fixed and predictable",
+      "Now a permanent part of the law — worth building into your handbook"
+    ],
+    "steps": [
+      "WE draft or update your written leave policy to meet every requirement.",
+      "WE help you set the pay level, since paying more earns a higher credit rate.",
+      "YOU adopt the policy and have payroll tag the qualifying leave as we show you.",
+      "WE compute and claim the credit on your return each year."
+    ],
+    "clientCommitments": [
+      "Adopt the written policy before anyone's leave starts — timing is everything",
+      "Have payroll mark family and medical leave separately from regular PTO",
+      "Apply the policy evenly to every eligible employee"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Re-screen the qualifying-employee list against the service and compensation tests",
+      "Reconcile payroll's designated leave wages and replacement percentages at year-end",
+      "Review state paid-leave developments that could crowd out the credit",
+      "Revisit the insurance-premium election as the market for paid-leave policies matures"
+    ],
+    "deliverables": [
+      "Written paid family and medical leave policy meeting the §45S minimums",
+      "Payroll leave-tracking procedure for FMLA-type designation",
+      "Form 8994 computation workpapers with the wage-deduction adjustment"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 72,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "leaveWagesPaid": {
+          "type": "number",
+          "minimum": 0
+        },
+        "paymentRatePct": {
+          "type": "number",
+          "minimum": 50,
+          "maximum": 100
+        }
+      },
+      "required": ["leaveWagesPaid"]
+    },
+    "apply": {
+      "module": "pfml-credit-45s@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasEmployees",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "A written paid-leave policy at 50%+ wage replacement earns a 12.5–25% credit on leave wages."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj S-corp 400k/120k, 30k leave wages at 100%",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 400000,
+              "employeeWages": 150000,
+              "ownerWages": 120000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "leaveWagesPaid": 30000,
+          "paymentRatePct": 100
+        },
+        "expect": {
+          "totalBurdenDelta": -7500,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "mfj S-corp 300k/100k, 12k leave wages at 60%",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 300000,
+              "employeeWages": 90000,
+              "ownerWages": 100000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "leaveWagesPaid": 12000,
+          "paymentRatePct": 60
+        },
+        "expect": {
+          "totalBurdenDelta": -1800,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §45S",
+      "IRS guidance updating Notice 2018-71 for the OBBBA amendments"
+    ],
+    "keywords": [
+      "paid family and medical leave credit",
+      "45S",
+      "Form 8994",
+      "written leave policy",
+      "paid leave insurance premiums"
+    ],
+    "reviewTriggers": [
+      "IRS guidance on the insurance-premium computation and tenure elections",
+      "Enactment of any state paid-leave mandate touching client footprints",
+      "Changes to the qualifying-employee compensation threshold"
+    ]
+  }
+}

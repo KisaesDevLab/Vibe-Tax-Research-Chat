@@ -1,0 +1,288 @@
+{
+  "id": "installment-sale-property",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Installment Sale (Property Dispositions)",
+  "category": "real-estate",
+  "modeled": true,
+  "complexity": 3,
+  "riskRating": "low",
+  "entityTypes": ["rental", "individual"],
+  "typicalSavingsBand": "25k-100k",
+  "advisor": {
+    "summary": "Section 453 recognizes gain on a seller-financed property sale as payments arrive — gross profit ratio times each principal payment — instead of stacking the whole gain into the closing year. Spread across several years, more of the gain rides the 0%/15% capital-gain brackets and stays under the net investment income tax threshold, which is where the modeled benefit comes from. Two statutory exceptions do most of the damage in bad plans: §453(i) forces all depreciation recapture into income in the year of sale regardless of cash received, and §453A charges interest on the deferred tax once large-balance thresholds are crossed. Installment treatment is automatic; electing out under §453(d) is the affirmative choice when one-year recognition is actually cheaper. The engine models an even spread of the elected gain over the note term; recapture, note interest, and §453A charges sit outside the model and belong in the plan narrative.",
+    "mechanics": [
+      "Each year’s recognized gain equals the gross profit ratio (gross profit over total contract price) times the principal collected; stated interest on the note is ordinary income, and §§483 and 1274 impute interest if the note does not carry an adequate rate.",
+      "Bracket smoothing is the engine of value: several mid-size gain slices can sit inside the 15% bracket and under the net investment income tax threshold where a single-year recognition would stack into the top capital-gain rate plus surtax.",
+      "§453(i) pulls all depreciation recapture into the year of sale even if little cash changed hands — the down payment has to be sized to cover that tax, and heavily depreciated property (post cost segregation) can make the year-one bill dominant.",
+      "§453A imposes an interest charge on the deferred tax where aggregate installment obligations from large sales exceed $5 million outstanding at year end, and pledging the note as loan collateral accelerates gain.",
+      "Related-party sales carry the §453(e) tripwire — the buyer’s resale within two years accelerates the seller’s deferred gain — and dealer property and publicly traded securities are ineligible entirely.",
+      "The model spreads the entered gain evenly across the note term beginning in the sale year; it does not model recapture, interest income, or buyer-default scenarios."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §453",
+        "note": "The installment method: proportional recognition as payments arrive, automatic unless the taxpayer elects out under (d)."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §453(i)",
+        "note": "All depreciation recapture is ordinary income in the year of disposition regardless of the payment schedule — the year-one liquidity driver."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §453A",
+        "note": "Interest charge on deferred tax for large installment balances and the pledge-acceleration rule."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §453(e)",
+        "note": "Related-party resale within two years accelerates the deferred gain."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§483, 1274",
+        "note": "Imputed-interest and OID rules — the note must carry adequate stated interest or payments are recharacterized."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 6252 and instructions",
+        "note": "Installment reporting for the sale year and every collection year."
+      }
+    ],
+    "requirements": [
+      "A non-dealer disposition of real property with at least one payment received after the year of sale.",
+      "A written note at or above the applicable federal rate with a genuine amortization schedule and recorded security.",
+      "A down payment sized to cover the year-one tax on recaptured depreciation plus closing costs.",
+      "A buyer whose credit the client has actually underwritten — the seller is the lender."
+    ],
+    "risks": [
+      "Buyer default is the dominant economic risk: repossession under §1038 restores the property but rarely the plan, and a failed note can swamp the tax savings — there is no marquee tax case here because the losses are commercial, not doctrinal.",
+      "A thin down payment against heavy recapture creates a year-one tax bill with no cash to pay it — the classic malpractice pattern on post-cost-segregation dispositions.",
+      "Deferred gain is taxed at future years’ rates and thresholds; rate risk cuts both ways and should be disclosed, not assumed away.",
+      "Balances above the $5 million threshold accrue the §453A interest charge, eroding the deferral’s value.",
+      "An installment note receives no basis step-up at death — the deferred gain is income in respect of a decedent to the heirs, unlike the property itself had it been held."
+    ],
+    "stateNotes": [
+      "Conformity: nearly all states conform to federal installment reporting through their federal starting point, but a seller who moves states mid-note pays each collection year under the residence rules then in effect — multistate sequencing matters.",
+      "Missouri conforms via federal AGI (RSMo §143.121); Missouri-source gain collected by a nonresident seller remains Missouri-source in each collection year.",
+      "PTET interaction: none for a personally held rental — no PTET interaction arises unless the property sits in an electing pass-through, in which case the entity-level recognition schedule drives the PTET base year by year."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": ["like-kind-1031"],
+      "synergiesWith": ["bracket-management"]
+    },
+    "reviewChecklist": [
+      "Both-ways projection (full recognition vs. installment spread) in the file, including net investment income tax thresholds and bracket breakpoints.",
+      "Recapture computed separately and the down payment confirmed to cover the year-one tax.",
+      "Note papered at an adequate rate with security; §453A exposure and any related-party buyer flagged.",
+      "Form 6252 calendared for the sale year and each collection year.",
+      "Client advised in writing on default risk and the absence of a step-up on the note."
+    ]
+  },
+  "client": {
+    "teaser": "Spread the tax on a property sale across the years you collect the money.",
+    "headline": "Sell now, pay tax as the payments come in",
+    "plainEnglish": [
+      "Sell a property for a big profit and take the cash at once, and the whole gain lands in one tax year. That often pushes you into the top capital-gain rate plus an extra surtax. Lumpy income is expensive income.",
+      "In an installment sale, the buyer pays you over several years, and you pay tax only as money arrives. Each year’s slice is smaller, so more of it is taxed at lower rates. You also earn interest from the buyer along the way — you are the bank.",
+      "Two things need planning. First, tax on your past depreciation is due in year one no matter what, so the down payment must cover it. Second, you are trusting the buyer to keep paying, so the note needs real security. We build both protections in before you sign."
+    ],
+    "analogy": "Your gain is like water poured into measuring cups sized by tax rate. Pour it all at once and it overflows into the costly cup. Pour it over five years and each cup stays in the cheap range.",
+    "benefits": [
+      "More of your gain taxed at lower rates",
+      "Can keep you under the extra 3.8% investment surtax",
+      "Steady payments plus interest income over the term",
+      "You help set the payment schedule as a deal term"
+    ],
+    "steps": [
+      "WE model the sale both ways and show the savings from spreading it.",
+      "WE size the down payment so year-one taxes are covered with room to spare.",
+      "WE handle the installment tax form in the sale year and every collection year.",
+      "YOU have your attorney paper the note and security before closing."
+    ],
+    "clientCommitments": [
+      "Collect and track payments so each year’s tax filing is accurate",
+      "Tell us before changing, refinancing, or selling the note — those moves can trigger the deferred tax"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Annual Form 6252 reporting for each collection year",
+      "Monitor note balances against the large-balance interest-charge threshold",
+      "Watch related-party buyers for the two-year resale rule"
+    ],
+    "deliverables": [
+      "Installment vs. lump-sum projection memo",
+      "Year-one liquidity schedule covering recapture tax",
+      "Form 6252 filings and a note-tracking schedule for the term"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 63,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "totalGain": {
+          "type": "number",
+          "minimum": 0
+        },
+        "termYears": {
+          "type": "number",
+          "minimum": 2,
+          "maximum": 30
+        }
+      },
+      "required": ["totalGain", "termYears"]
+    },
+    "apply": {
+      "module": "installment-sale-property@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasRental",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "longTermCapGain",
+          "op": "gt",
+          "value": 100000
+        }
+      ],
+      "reason": "Carrying the note on a property sale spreads gain recognition under §453 — depreciation recapture stays in year one."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj landlord, 400k gain over 4 years",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 150000,
+          "businesses": [],
+          "rentals": [
+            {
+              "id": "r1",
+              "name": "Rental",
+              "netIncome": 12000,
+              "activeParticipant": true
+            }
+          ],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 400000,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "totalGain": 400000,
+          "termYears": 4
+        },
+        "expect": {
+          "totalBurdenDelta": -56400,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "single 250k gain over 5 years",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 100000,
+          "businesses": [],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 250000,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "totalGain": 250000,
+          "termYears": 5
+        },
+        "expect": {
+          "totalBurdenDelta": -35700,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §453 and §453A",
+      "Applicable federal rate releases",
+      "Net investment income tax threshold guidance"
+    ],
+    "keywords": [
+      "installment sale",
+      "453 gross profit ratio",
+      "depreciation recapture year of sale",
+      "453A interest charge",
+      "seller financing"
+    ],
+    "reviewTriggers": [
+      "Statutory changes to installment reporting or the recapture rules",
+      "Capital-gain rate or surtax threshold changes",
+      "Client note modifications, refinancings, or early payoffs"
+    ]
+  }
+}

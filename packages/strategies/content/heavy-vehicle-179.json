@@ -1,0 +1,298 @@
+{
+  "id": "heavy-vehicle-179",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Heavy Vehicle §179 (>6,000 lbs GVWR)",
+  "category": "business-expenses",
+  "modeled": true,
+  "complexity": 2,
+  "riskRating": "moderate",
+  "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "5k-25k",
+  "advisor": {
+    "summary": "A vehicle rated above 6,000 pounds GVWR is not a passenger automobile under §280F(d)(5), so the luxury-auto caps that meter car depreciation out over many years simply do not apply. Used more than 50 percent for business, a heavy SUV, pickup, or van can be fully expensed in year one — §179 up to the $32,000 SUV cap for 2026, with permanent 100 percent bonus absorbing the rest of the business-use basis. The engine models exactly that: cost times business-use percentage, deducted in year one, refused at 50 percent business use or below. Everything after year one is the honest part of the conversation: the deduction is timing, later years have nothing left, recapture waits if business use slips, and the whole position stands on a contemporaneous mileage log.",
+    "mechanics": [
+      "GVWR above 6,000 pounds — the manufacturer's door-jamb rating, not curb weight — takes the vehicle outside the §280F(d)(5) passenger-automobile definition, removing the annual luxury-auto depreciation caps.",
+      "§179(b)(5) caps expensing on heavy SUVs at $32,000 for 2026; pickups with a six-foot-plus bed and cargo-configured or nine-passenger vans escape the SUV cap — but with 100 percent bonus under §168(k) permanent, the cap mostly matters in states that decouple from bonus.",
+      "The deduction equals cost times business-use percentage, and qualified business use must exceed 50 percent under §280F(b) for §179 or accelerated depreciation at all — the model refuses to apply at or below 50 percent for the same reason an examiner would.",
+      "Substantiation is §274(d) listed-property discipline: a contemporaneous mileage log with date, destination, and business purpose; reconstructed logs fail, and the courts cannot estimate around the statute.",
+      "The acceleration borrows from the future: five-year property fully expensed in year one leaves nothing for years two through six, §280F(b)(2) recaptures the excess over straight line if business use later drops to 50 percent or below, and §1245 recaptures all depreciation as ordinary income on sale or trade-in."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §280F(b), (d)(5)",
+        "note": "The passenger-automobile definition heavy vehicles escape, the more-than-50-percent business-use requirement, and recapture when use drops."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §179(b)(5)",
+        "note": "The SUV-specific expensing cap — $32,000 for 2026 per the annual inflation adjustment."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §168(k), as amended by P.L. 119-21 (OBBBA)",
+        "note": "Permanent 100 percent bonus for property acquired after January 19, 2025 — no SUV cap applies to bonus."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §274(d)",
+        "note": "Strict substantiation for listed property — the contemporaneous mileage log the deduction lives or dies on."
+      },
+      {
+        "type": "Case",
+        "cite": "Sanford v. Commissioner, 50 T.C. 823 (1968), aff'd, 412 F.2d 201 (2d Cir. 1969)",
+        "note": "Section 274(d) displaces the Cohan estimate: without adequate records the deduction is denied entirely, not approximated."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1245",
+        "note": "Ordinary-income recapture of all depreciation on disposition, including trade-ins."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Proc. 2025-32",
+        "note": "2026 figures: $2,560,000 §179 ceiling, $4,090,000 phase-out, $32,000 SUV cap."
+      }
+    ],
+    "requirements": [
+      "GVWR above 6,000 pounds documented from the manufacturer's label — photograph it for the file.",
+      "Business use above 50 percent that is realistic for this client, supported by a mileage log from day one.",
+      "The vehicle placed in service — delivered and available for business use — by December 31.",
+      "For the §179 component: sufficient aggregate business taxable income; bonus needs none."
+    ],
+    "risks": [
+      "The leading audit theory is substantiation failure under §274(d): no contemporaneous log, no deduction — Sanford v. Commissioner is the template, and courts apply it without sympathy because the statute forbids estimates.",
+      "Business use sliding to 50 percent or below during the recovery period triggers §280F recapture — the classic pattern is the work truck that gradually becomes the family vehicle.",
+      "The entire benefit is timing: years two through six report more income than baseline, and §1245 recaptures the depreciation as ordinary income at sale — including trade-ins, which stopped being tax-free in 2018.",
+      "Buying a vehicle the business does not need to harvest a deduction spends a dollar to save a fraction of one; the purchase case must stand on its own.",
+      "State benefit can lag federal substantially where bonus is decoupled or §179 capped."
+    ],
+    "stateNotes": [
+      "Conformity: bonus decoupling is the most common state divergence — several states spread the deduction over years even when the federal return takes it at once, so present state savings separately.",
+      "PTET interaction: the deduction reduces entity income before any pass-through entity tax is computed; the engine sequences PTET afterward, and a large vehicle write-off in an electing entity should prompt a PTET estimate reset.",
+      "Missouri: conforms to federal bonus depreciation and §179 through rolling conformity (RSMo §143.091), so the year-one federal deduction is also the Missouri deduction; a Missouri SALT Parity Act (RSMo §143.436) election computes on the reduced income."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": ["vehicle-expense-method"],
+      "synergiesWith": ["section-179-expensing"]
+    },
+    "reviewChecklist": [
+      "GVWR documentation in the file before the deduction is modeled.",
+      "Business-use percentage plausible against the client's actual driving pattern, with the log method (app or diary) in place at delivery.",
+      "Placed-in-service date verified — delivery and availability, not the order date.",
+      "§179 versus bonus mix chosen with state conformity in mind.",
+      "Client has acknowledged the recapture exposure and the years-two-through-six give-back in writing."
+    ]
+  },
+  "client": {
+    "teaser": "The right work vehicle can write off its business share in year one.",
+    "headline": "Write off a work vehicle in the year you buy it",
+    "plainEnglish": [
+      "When a business buys a normal car, the deduction dribbles out over many years under IRS caps. Vehicles rated over 6,000 pounds — many full-size trucks, vans, and large SUVs — play by different rules. Used mostly for business, the business share of the price can usually be deducted in year one.",
+      "On a $90,000 truck used 80 percent for business, that is a $72,000 deduction this year. In a high bracket, that can mean $20,000 or more back at tax time.",
+      "Two honest catches. First, this speeds up deductions rather than creating new ones — later years have less to deduct, and selling the vehicle brings some tax back. Second, 'mostly for business' is a real rule with real records: a mileage log, and business use that stays above half. We help you keep both airtight."
+    ],
+    "analogy": "It is like getting a whole punch card stamped on the first visit. The reward comes now instead of over years — but the card is used up.",
+    "benefits": [
+      "Deduct the business share of the full price in year one",
+      "Works for many trucks, vans, and large SUVs a business already needs",
+      "Biggest impact in high-income years",
+      "We handle the elections and forms"
+    ],
+    "steps": [
+      "WE confirm the vehicle qualifies — weight rating and business-use plan — before you sign.",
+      "WE set up simple mileage tracking on day one.",
+      "YOU take delivery and put the vehicle to business use before year end.",
+      "YOU keep business use above half and let the app log every trip."
+    ],
+    "clientCommitments": [
+      "Keep the mileage log current — it is the whole defense",
+      "Keep business use above 50 percent during the six-year recovery period, and tell us if that changes",
+      "Talk to us before selling or trading the vehicle"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Annual business-use percentage check against the log during the recovery period",
+      "Recapture review before any sale or trade-in"
+    ],
+    "deliverables": [
+      "Vehicle qualification memo (GVWR proof, business-use plan, placed-in-service evidence)",
+      "Form 4562 elections with the §179/bonus mix and state impact",
+      "Mileage-log setup and annual mileage summary"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 36,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "vehicleCost": {
+          "type": "number",
+          "minimum": 0
+        },
+        "businessUsePct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "required": ["vehicleCost", "businessUsePct"]
+    },
+    "apply": {
+      "module": "heavy-vehicle-179@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "hasBusiness",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "reason": "A >6,000 lb GVWR vehicle used mostly for business escapes the §280F luxury-auto caps."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj Sch C 300k, 90k SUV at 80%",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 300000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "vehicleCost": 90000,
+          "businessUsePct": 80
+        },
+        "expect": {
+          "totalBurdenDelta": -14674,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "single Sch C 150k, 70k truck all business",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 150000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "vehicleCost": 70000,
+          "businessUsePct": 100
+        },
+        "expect": {
+          "totalBurdenDelta": -20961,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": ["IRC §280F", "IRC §179(b)(5) annual indexing", "IRC §168(k)"],
+    "keywords": [
+      "heavy vehicle",
+      "6000 lbs GVWR",
+      "SUV 179 cap",
+      "280F luxury auto",
+      "mileage log substantiation"
+    ],
+    "reviewTriggers": [
+      "Annual SUV-cap and §179 indexing",
+      "Any bonus-depreciation statutory change",
+      "New case law on §274(d) vehicle substantiation"
+    ]
+  }
+}

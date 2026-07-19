@@ -1,0 +1,320 @@
+{
+  "id": "rd-credit",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "R&D Tax Credit (§41)",
+  "category": "credits-incentives",
+  "modeled": true,
+  "complexity": 4,
+  "riskRating": "moderate",
+  "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "25k-100k",
+  "advisor": {
+    "summary": "The §41 research credit is the rare six-figure federal incentive available to ordinary product, software, and process businesses — and it is documentation-intensive in exact proportion to its value. Qualified research expenses (in-house wages, supplies, and 65% of contract research, domestic only) must clear the §41(d) four-part test at the business-component level, and most established claimants compute under the alternative simplified method: 14% of QREs over half the prior-three-year average, or 6% for first-time claimants with no history — which is precisely the math the engine runs. OBBBA restored immediate expensing of domestic research through new §174A, removing the amortization drag that distorted the credit decision from 2022 to 2024. §280C(c) then forces either a deduction add-back or the reduced-credit election, and qualified small businesses can point up to $500,000 of the credit at payroll tax. The exam environment is hostile to thin studies — Siemer Milling and Little Sandy Coal are the cautionary record — so the credit is only as strong as the experimentation file behind it.",
+    "mechanics": [
+      "Qualified research expenses are in-house research wages, supplies consumed in research, and 65% of contract research payments, for domestic activities only; each claimed dollar must attach to a business component passing the §41(d) four-part test — §174-eligible expenditures, technological in nature, aimed at a new or improved business component, with substantially all activity constituting a process of experimentation.",
+      "The engine computes the alternative simplified credit exactly: 14% of current-year QREs exceeding 50% of the prior-three-year average, or 6% of all QREs when no prior-year history exists — the gross-credit figure before any §280C(c) adjustment.",
+      "§280C(c) requires either adding the credit back to income or electing the reduced credit on a timely-filed original return; because the model carries the gross number, the reviewer must overlay the roughly 21% haircut (or the add-back) when presenting the net benefit.",
+      "OBBBA's §174A restored immediate deduction of domestic research or experimental expenditures for tax years beginning after December 31, 2024, with transition options for amounts capitalized in 2022–2024; foreign research stays on 15-year amortization under §174.",
+      "A qualified small business — under $5 million of gross receipts and no receipts before the five-year window — may elect under §41(h) to apply up to $500,000 of the credit against payroll taxes, monetizing the credit before income tax liability exists.",
+      "Recent revisions to Form 6765 demand business-component-level qualitative reporting, ending the era of single-number studies; the credit claim and its documentation now have to match at filing, not just on exam."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §41",
+        "note": "The credit for increasing research activities — permanent, with the regular and alternative simplified computation methods."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §41(d)",
+        "note": "The four-part test and its exclusions (funded research, post-commercial-production work, adaptation, foreign research) — where most overclaims die."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §41(h)",
+        "note": "The qualified small business payroll-tax offset election, up to $500,000 — the monetization route for pre-profit companies."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §280C(c)",
+        "note": "No double benefit: deduction add-back or the reduced-credit election on a timely-filed original return; the overlay the modeled gross credit needs."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§174, 174A (P.L. 119-21)",
+        "note": "OBBBA restoration of immediate domestic R&E expensing via new §174A for tax years beginning after 2024, with 2022–2024 transition options; foreign R&E remains on 15-year amortization under §174."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.41-4",
+        "note": "The process-of-experimentation standard and recordkeeping expectations examiners apply."
+      },
+      {
+        "type": "Case",
+        "cite": "Siemer Milling Co. v. Commissioner, T.C. Memo 2019-37",
+        "note": "Credit denied where activities were described only in general terms with no documented experimentation — the documentation cautionary tale."
+      },
+      {
+        "type": "Case",
+        "cite": "Little Sandy Coal Co. v. Commissioner, 62 F.4th 287 (7th Cir. 2023)",
+        "note": "The substantially-all/process-of-experimentation requirement enforced quantitatively — shrink-back arguments cannot rescue undocumented components."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 6765 and instructions",
+        "note": "Computation, ASC and §280C elections, and the expanded business-component reporting on current revisions."
+      }
+    ],
+    "requirements": [
+      "Domestic activities satisfying all four §41(d) prongs, identified and documented at the business-component level.",
+      "Contemporaneous substantiation: project lists, employee-level wage allocations, and experimentation evidence such as design iterations, test logs, and version histories.",
+      "A credible credit study mapping expenses to qualified activities — a percentage-of-payroll guess is an exam invitation, not a study.",
+      "The §280C(c) reduced-credit election made on the timely-filed original return, or the add-back computed.",
+      "For the payroll offset: qualified small business status verified and the §41(h) election made on Form 6765."
+    ],
+    "risks": [
+      "The leading audit theory is the unsupported study: Siemer Milling Co. v. Commissioner, T.C. Memo 2019-37, denied credits where experimentation was asserted but not evidenced, and Little Sandy Coal extended the lesson to the substantially-all test — R&D claims also recur in IRS Dirty Dozen warnings about credit mills.",
+      "Funded research (customer- or grant-paid with rights or payment contingencies) and post-commercial-production refinement are the two most common overclaim categories and are categorically excluded.",
+      "Missing the §280C(c) election deadline forces the deduction add-back, which is generally the worse outcome for top-bracket pass-through owners.",
+      "The expanded Form 6765 reporting makes a thin study visible at filing; a claim that cannot name its business components should not be filed.",
+      "The credit is nonrefundable against income tax with §39 carryovers the model does not track — sequence it against the client's actual liability."
+    ],
+    "stateNotes": [
+      "Conformity: Missouri's rolling conformity picks up §174A expensing automatically, so the state deduction follows the federal one; states that decoupled from federal research treatment need year-by-year checking for multistate clients.",
+      "PTET interaction: none directly — the federal credit passes to owners, while the slightly higher entity income from a §280C add-back (where elected against) flows into any pass-through entity tax base.",
+      "Missouri: the state's own qualified research expense credit (RSMo §620.1039, effective 2023) allows 15% of additional QREs — 20% when the research runs with a Missouri university — capped at $300,000 per taxpayer against a $10 million statewide pool; it is application-based through DED and exhausts early, so file at the window's opening."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": []
+    },
+    "reviewChecklist": [
+      "Four-part-test screening memo covers each claimed business component, and funded-research and post-commercial-production exclusions are affirmatively ruled out.",
+      "Wage allocations tie to payroll records employee by employee, and experimentation artifacts exist for the largest components.",
+      "ASC versus regular method compared in the study; the modeled figure matches the chosen method's gross credit.",
+      "§280C(c) election status confirmed before filing, and the net-of-election benefit — not the gross model output — is what the client sees.",
+      "Qualified small business payroll offset evaluated for eligible clients.",
+      "Missouri QRE credit application calendared where state QREs exist."
+    ]
+  },
+  "client": {
+    "teaser": "If your team designs, builds, tests, and improves things, part of that payroll can come back as a credit.",
+    "headline": "Get paid back for solving hard problems",
+    "plainEnglish": [
+      "If your business spends money making products, software, or processes better, the tax law rewards it. The reward is a credit, which cuts your tax bill dollar for dollar. That is stronger than a deduction.",
+      "You do not need a lab or white coats. Manufacturers refining a process, contractors engineering around site problems, and firms building software often qualify. What matters is that your team solves technical problems by designing, testing, and refining.",
+      "The credit is only as good as its paper trail. The IRS pushes hard on claims with big numbers and thin files. So we build a real study: which projects qualify, whose time went in, and the records that prove it. Done right, it can repeat every year."
+    ],
+    "analogy": "Think of it as a rebate on your problem-solving payroll: the government returns part of what you already pay your team to figure things out.",
+    "benefits": [
+      "Cuts your tax bill dollar for dollar, not just your taxable income",
+      "Rewards work you are already paying for",
+      "Newer companies can use it against payroll taxes before they owe income tax",
+      "Repeats every year the development work continues"
+    ],
+    "steps": [
+      "WE interview your team and identify which projects truly qualify.",
+      "WE build the credit study, the wage allocations, and the documentation file.",
+      "YOU keep the project records we set up — test notes, versions, time tracking.",
+      "WE make the right elections and claim the credit on your return."
+    ],
+    "clientCommitments": [
+      "Have your team keep the simple project records we set up — they are the audit defense",
+      "Tell us about customer-funded or grant-funded work so we exclude it correctly",
+      "Expect the credit to be reviewed — the study is built to be examined"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "multi-step",
+    "annualMaintenance": [
+      "Refresh the credit study annually — new projects in, completed or disqualified projects out",
+      "Update employee wage allocations and collect the year's experimentation artifacts",
+      "Confirm the §280C(c) election on each year's original return",
+      "File the Missouri QRE credit application when the DED window opens"
+    ],
+    "deliverables": [
+      "R&D credit study with business-component documentation",
+      "Employee wage allocation schedules tied to payroll",
+      "Form 6765 workpapers with ASC computation and election record",
+      "Documentation kit for ongoing project record-keeping"
+    ],
+    "feeGuidanceBand": null
+  },
+  "model": {
+    "applyOrder": 71,
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "qre": {
+          "type": "number",
+          "minimum": 0
+        },
+        "priorThreeYearAvgQre": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["qre"]
+    },
+    "apply": {
+      "module": "rd-credit@1.0.0"
+    },
+    "suggest": {
+      "all": [
+        {
+          "field": "totalBusinessProfit",
+          "op": "gt",
+          "value": 150000
+        }
+      ],
+      "reason": "Development work that resolves technical uncertainty may qualify for the §41 credit."
+    },
+    "goldenTests": [
+      {
+        "name": "mfj S-corp 500k/150k, 200k QRE over 120k avg",
+        "profile": {
+          "filingStatus": "mfj",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "s1",
+              "name": "S corp",
+              "kind": "s-corp",
+              "netProfit": 500000,
+              "employeeWages": 250000,
+              "ownerWages": 150000,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "qre": 200000,
+          "priorThreeYearAvgQre": 120000
+        },
+        "expect": {
+          "totalBurdenDelta": -19600,
+          "tolerance": 1
+        }
+      },
+      {
+        "name": "single Sch C 200k, first-year 80k QRE",
+        "profile": {
+          "filingStatus": "single",
+          "state": null,
+          "wages": 0,
+          "businesses": [
+            {
+              "id": "b1",
+              "name": "Business",
+              "kind": "schedule-c",
+              "netProfit": 200000,
+              "employeeWages": 0,
+              "ownerWages": 0,
+              "sstb": false,
+              "qbiEligible": true
+            }
+          ],
+          "rentals": [],
+          "interestIncome": 0,
+          "ordinaryDividends": 0,
+          "qualifiedDividends": 0,
+          "shortTermCapGain": 0,
+          "longTermCapGain": 0,
+          "otherIncome": 0,
+          "adjustments": 0,
+          "seHealthInsurance": 0,
+          "retirementContributions": 0,
+          "hsaContribution": 0,
+          "itemized": {
+            "stateLocalTaxesPaid": 0,
+            "mortgageInterest": 0,
+            "charitable": 0,
+            "other": 0
+          },
+          "dependentsUnder17": 0,
+          "otherDependents": 0,
+          "withholding": 0,
+          "estimatedPayments": 0,
+          "qbiReduction": 0,
+          "otherCredits": 0,
+          "corpTaxPaid": 0,
+          "otherTaxes": 0,
+          "ptetPaid": 0
+        },
+        "params": {
+          "qre": 80000,
+          "priorThreeYearAvgQre": 0
+        },
+        "expect": {
+          "totalBurdenDelta": -4800,
+          "tolerance": 1
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §41 and §174A guidance",
+      "Form 6765 revisions and instructions",
+      "Tax Court research credit decisions",
+      "Missouri DED qualified research expense credit program"
+    ],
+    "keywords": [
+      "research credit",
+      "section 41",
+      "qualified research expenses",
+      "process of experimentation",
+      "174A expensing",
+      "Form 6765"
+    ],
+    "reviewTriggers": [
+      "New §174A transition guidance or technical corrections",
+      "Further Form 6765 reporting expansions",
+      "Appellate decisions on the four-part test or funded research",
+      "Missouri QRE program funding changes"
+    ]
+  }
+}
