@@ -77,8 +77,14 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
   // state. A whole-array hold would silently freeze OTHER strategies'
   // edits out of the server round-trip.
   const erroredIds = useMemo(() => new Set(paramErrors.map((e) => e.strategyId)), [paramErrors]);
+  // Last selections the server ACCEPTED — updated synchronously on save
+  // success, unlike the query cache, which lags until the invalidated
+  // refetch lands. Substituting held entries from the cache could ship a
+  // stale pre-edit value and regress a param the server already has.
+  const lastPersistedRef = useRef<StrategySelection[]>(scenario?.selections ?? []);
   useEffect(() => {
     if (pendingSaves === 0 && planFetching === 0 && serverSelections) {
+      lastPersistedRef.current = serverSelections;
       const local = new Map(selectionsRef.current.map((s) => [s.strategyId, s]));
       const next = serverSelections.map((s) =>
         erroredIds.has(s.strategyId) ? (local.get(s.strategyId) ?? s) : s,
@@ -108,14 +114,19 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
 
   const save = useMutation({
     mutationKey: ['scenario-save', plan.id],
-    mutationFn: (selections: StrategySelection[]) =>
+    mutationFn: (vars: { selections: StrategySelection[]; heldIds: string[] }) =>
       api(`/api/planning/plans/${plan.id}/scenarios/${scenario!.id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ selections }),
+        body: JSON.stringify({ selections: vars.selections }),
       }),
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
       setError(null);
-      setParamErrors([]);
+      lastPersistedRef.current = vars.selections;
+      // Only errors for strategies whose local value actually SHIPPED are
+      // resolved. Held strategies were substituted with their last-good
+      // entry — their rejected value is still on screen and its error
+      // must survive an unrelated edit's successful save.
+      setParamErrors((prev) => prev.filter((e) => vars.heldIds.includes(e.strategyId)));
       qc.invalidateQueries({ queryKey: ['plan', plan.id] });
     },
     onError: (err) => {
@@ -136,21 +147,31 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
   // Every commit updates the ref synchronously and PATCHes that exact
   // array — never a rebuild from the (possibly stale) query cache. In
   // the PAYLOAD, a strategy whose params were rejected reverts to its
-  // last-persisted entry: sending the known-bad value again would 400
-  // the whole array and silently drop the unrelated edit being saved.
+  // last-ACCEPTED entry (lastPersistedRef, not the laggy query cache):
+  // sending the known-bad value again would 400 the whole array and
+  // silently drop the unrelated edit being saved.
   function commit(next: StrategySelection[], clearedErrorId?: string) {
     selectionsRef.current = next;
     setLocalSelections(next);
-    const server = new Map((scenario?.selections ?? []).map((s) => [s.strategyId, s]));
-    const payload = next.map((s) =>
+    const persisted = new Map(lastPersistedRef.current.map((s) => [s.strategyId, s]));
+    const heldIds: string[] = [];
+    const payload = next.map((s) => {
       // clearedErrorId: setParam just replaced that strategy's rejected
-      // value — its NEW input must ship, not the stale server entry
+      // value — its NEW input must ship, not the last-good entry
       // (state updates land after this synchronous commit).
-      erroredIds.has(s.strategyId) && s.strategyId !== clearedErrorId
-        ? (server.get(s.strategyId) ?? s)
-        : s,
-    );
-    save.mutate(payload);
+      if (erroredIds.has(s.strategyId) && s.strategyId !== clearedErrorId) {
+        const lastGood = persisted.get(s.strategyId);
+        // No last-good entry means the local value ships after all — if
+        // the server then accepts it, its error must clear, so it is
+        // NOT held.
+        if (lastGood) {
+          heldIds.push(s.strategyId);
+          return lastGood;
+        }
+      }
+      return s;
+    });
+    save.mutate({ selections: payload, heldIds });
   }
 
   function toggle(s: StrategyListing) {

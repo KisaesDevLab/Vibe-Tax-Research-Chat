@@ -148,6 +148,7 @@ engagementRouter.post('/send-invoice', async (req, res) => {
       clientEmail: loaded.clientEmail,
       amount,
       customerId: engagement.stripe_customer_id,
+      previousInvoiceId: attempt > 1 ? engagement.stripe_invoice_id : null,
       attempt,
     });
     await applyEngagementUpdate(

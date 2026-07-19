@@ -105,6 +105,12 @@ draft → in-review → presented → engaged → delivered → archived
   (t=/v1=, 5-min tolerance), idempotent via the `webhook_events` ledger.
   Signed AND paid auto-advances presented → engaged and unlocks strategy names
   in client deliverables.
+- Stripe invoices use `send_invoice` collection: Stripe **emails the hosted
+  invoice on finalization only if the account's "Email finalized invoices to
+  customers" setting is enabled** (Stripe's default — verify it in Dashboard →
+  Settings → Billing before go-live). Send-invoice requires the client record
+  to carry a contact email; a deliberate re-send voids the previously issued
+  invoice so the client can't pay both.
 
 ## 9. Claude seam & jobs
 

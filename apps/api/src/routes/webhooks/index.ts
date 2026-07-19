@@ -236,36 +236,22 @@ webhooksRouter.post('/stripe', async (req, res) => {
     res.status(200).json({ ok: true, ignored: true });
     return;
   }
-  // When the engagement has a pinned invoice, events for a DIFFERENT
-  // invoice that merely shares the plan metadata must not mutate payment
-  // state — an orphaned or superseded invoice getting paid/failed out of
-  // band would otherwise overwrite the tracked invoice's status. A null
-  // pin still accepts (the manual dashboard-invoice flow).
-  const eventInvoiceId = payload.data?.object?.id;
-  const { engagements: engagementsTable } = await import('@vibe/db/schema');
-  const [existingEngagement] = await getDb()
-    .select({ stripe_invoice_id: engagementsTable.stripe_invoice_id })
-    .from(engagementsTable)
-    .where(eq(engagementsTable.plan_id, planId))
-    .limit(1);
-  if (
-    existingEngagement?.stripe_invoice_id &&
-    eventInvoiceId &&
-    existingEngagement.stripe_invoice_id !== eventInvoiceId
-  ) {
-    logger.warn(
-      { planId, eventInvoiceId, pinned: existingEngagement.stripe_invoice_id },
-      'stripe webhook for non-pinned invoice ignored',
-    );
-    res.status(200).json({ ok: true, ignored: true, reason: 'invoice_mismatch' });
-    return;
-  }
+  // Any paid/failed invoice bearing this plan's metadata mutates state:
+  // with the inert-draft invoice lifecycle an orphaned draft can never
+  // finalize or auto-pay at $0, so every such event is either our
+  // finalized invoice or one an operator deliberately created — a real
+  // payment of a SUPERSEDED invoice is still money collected and must
+  // be recorded (re-sends void the previous invoice, so the window is
+  // small). The pin is only refreshed on 'paid': a failed event from an
+  // old invoice must not re-point the pin the next re-send voids.
   const { applyEngagementUpdate } = await import('../../lib/engagement/index.js');
   const result = await applyEngagementUpdate(
     planId,
     {
       payment_status: paymentStatus,
-      stripe_invoice_id: payload.data?.object?.id,
+      ...(paymentStatus === 'paid' && payload.data?.object?.id
+        ? { stripe_invoice_id: payload.data.object.id }
+        : {}),
       event: { source: 'stripe', kind: payload.type ?? 'unknown' },
     },
     null,

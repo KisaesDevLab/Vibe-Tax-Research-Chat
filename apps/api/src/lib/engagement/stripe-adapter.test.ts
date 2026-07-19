@@ -40,6 +40,7 @@ const input = {
   clientEmail: 'client@example.com',
   amount: 1_000,
   customerId: null,
+  previousInvoiceId: null,
   attempt: 1,
 };
 
@@ -95,6 +96,28 @@ describe('stripe createInvoice sequence', () => {
       'item-plan-1-a2-100000',
       'fin-plan-1-a2-100000',
     ]);
+  });
+
+  it('a re-send voids the superseded invoice first (best-effort)', async () => {
+    await getPaymentProvider().createInvoice({
+      ...input,
+      customerId: 'cus_test',
+      previousInvoiceId: 'in_old',
+      attempt: 2,
+    });
+    expect(calls[0]!.url).toBe('https://api.stripe.com/v1/invoices/in_old/void');
+    expect(calls[0]!.idempotencyKey).toBe('void-plan-1-a2-in_old');
+    // A failed void (e.g. the old invoice was already paid) must not
+    // block the replacement invoice.
+    calls.length = 0;
+    failOn = (url) => url.includes('/void');
+    const { invoiceId } = await getPaymentProvider().createInvoice({
+      ...input,
+      customerId: 'cus_test',
+      previousInvoiceId: 'in_old',
+      attempt: 3,
+    });
+    expect(invoiceId).toBe('in_test');
   });
 
   it('reuses the pinned customer without a create call', async () => {

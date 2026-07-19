@@ -44,6 +44,9 @@ export interface PaymentProvider {
     amount: number;
     /** Reused across sends once pinned on the engagement row. */
     customerId: string | null;
+    /** Pinned invoice from the previous send, voided (best-effort)
+     *  before minting the replacement so the client can't pay both. */
+    previousInvoiceId: string | null;
     /** 1-based send attempt — scopes idempotency keys so a deliberate
      *  re-send mints a new invoice while a timeout retry replays. */
     attempt: number;
@@ -102,6 +105,17 @@ export function getPaymentProvider(): PaymentProvider {
     async createInvoice(input) {
       const cents = Math.round(input.amount * 100);
       const scope = `${input.planId}-a${input.attempt}`;
+      // A deliberate re-send supersedes the previous invoice — void it
+      // so the client can't pay the old email too. Best-effort: a void
+      // fails if the invoice was already paid (the webhook records that
+      // payment) or already voided; either way the re-send proceeds.
+      if (input.previousInvoiceId) {
+        await call(
+          `/v1/invoices/${input.previousInvoiceId}/void`,
+          {},
+          `void-${scope}-${input.previousInvoiceId}`,
+        ).catch(() => undefined);
+      }
       // One customer per engagement, pinned on first send: a fresh
       // customer per attempt would strand a failed attempt's invoice
       // items where a later invoice could sweep them in.
@@ -131,8 +145,11 @@ export function getPaymentProvider(): PaymentProvider {
       //     create/item responses and simply completes the remaining
       //     steps — never deleting, so the replayed id stays valid.
       // send_invoice (not the charge_automatically default): the
-      // customer has no payment method on file — finalizing emails the
-      // hosted invoice instead of attempting a doomed automatic charge.
+      // customer has no payment method on file — Stripe emails the
+      // hosted invoice on finalization instead of attempting a doomed
+      // automatic charge. NOTE: that email depends on the account's
+      // "Email finalized invoices to customers" setting (Stripe default
+      // ON) — documented in docs/planning-module.md.
       const invoice = await call(
         '/v1/invoices',
         {

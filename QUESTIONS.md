@@ -425,3 +425,22 @@ residual defects fixed:
   silently dropped.
 - Coverage added: Stripe adapter sequence tests (ordering, inert draft, key
   scoping, customer reuse, failure path) and webhook invoice-mismatch tests.
+
+## QA round 5 — invoice supersession semantics
+
+- **The round-4 invoice-mismatch webhook check is removed.** With the
+  inert-draft lifecycle, an orphaned draft can never finalize or auto-pay at $0,
+  so every paid/failed invoice bearing the plan metadata is either our finalized
+  invoice or one an operator deliberately created — a real payment of a
+  superseded invoice is money collected and must be recorded, not ack-ignored.
+- **A deliberate re-send voids the previously pinned invoice first**
+  (best-effort — a void of an already-paid invoice fails harmlessly), closing
+  the pay-both-emails exposure the mismatch check tried to paper over.
+- **The webhook refreshes the invoice pin only on `paid`** — a stale invoice's
+  `payment_failed` must not re-point the pin that the next re-send voids.
+- **Web error-hold lifecycle**: held (errored) strategies substitute from a
+  last-ACCEPTED ref (not the laggy query cache), and a successful save of an
+  unrelated edit clears only the errors of values that actually shipped.
+- Stripe's "Email finalized invoices to customers" account setting (default ON)
+  is what emails send_invoice invoices at finalization — now called out in the
+  operator guide's go-live checklist.
