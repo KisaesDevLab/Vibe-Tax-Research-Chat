@@ -305,9 +305,13 @@ adminReviewQueueRouter.post('/:id/reject', async (req, res) => {
         .returning({ id: review_queue.id });
       if (!decided) throw new DecisionError(409, 'already_decided');
       if (item.kind === 'strategy-draft' && versionId) {
+        // 'rejected', NOT 'deprecated': deprecated means "superseded but
+        // once published" and stays resolvable for plans pinned to it.
+        // A rejected draft was never approved — it must never become
+        // pinnable or computable.
         await tx
           .update(strategy_versions)
-          .set({ status: 'deprecated' })
+          .set({ status: 'rejected' })
           .where(and(eq(strategy_versions.id, versionId), eq(strategy_versions.status, 'draft')));
       }
       if (item.kind === 'table-draft' && tableSetId) {
@@ -339,7 +343,9 @@ adminReviewQueueRouter.post('/:id/reject', async (req, res) => {
 
 // ── pipeline trigger: POST /api/admin/strategies/:id/draft ─────────────
 export const adminStrategyDraftRouter = Router();
-adminStrategyDraftRouter.use(requireAuth, requireRole('admin'));
+// Same planning-flag gate as the review queue the drafts land in — with
+// the module off, triggering drafts would park items nobody can see.
+adminStrategyDraftRouter.use(requireAuth, requireRole('admin'), requirePlanning);
 
 adminStrategyDraftRouter.post('/:id/draft', async (req, res) => {
   const db = getDb();

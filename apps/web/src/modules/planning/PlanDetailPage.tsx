@@ -67,8 +67,11 @@ export function PlanDetailPage() {
     queryFn: () => api('/api/planning/strategies'),
   });
 
-  // A selection PATCH in flight means compute would run stale selections.
+  // A selection or profile PATCH in flight means compute would run
+  // against stale rows.
   const pendingScenarioSaves = useIsMutating({ mutationKey: ['scenario-save', planId] });
+  const pendingProfileSaves = useIsMutating({ mutationKey: ['profile-save', planId] });
+  const pendingSaves = pendingScenarioSaves + pendingProfileSaves;
 
   const compute = useMutation({
     mutationFn: () => api(`/api/planning/plans/${planId}/compute`, { method: 'POST' }),
@@ -103,11 +106,16 @@ export function PlanDetailPage() {
             // Live check, not render-time state: the click that triggers a
             // param field's blur-save lands before this button re-renders
             // as disabled.
-            if (qc.isMutating({ mutationKey: ['scenario-save', planId] }) > 0) return;
+            if (
+              qc.isMutating({ mutationKey: ['scenario-save', planId] }) > 0 ||
+              qc.isMutating({ mutationKey: ['profile-save', planId] }) > 0
+            ) {
+              return;
+            }
             compute.mutate();
           }}
-          disabled={compute.isPending || pendingScenarioSaves > 0}
-          title={pendingScenarioSaves > 0 ? 'Saving scenario changes…' : undefined}
+          disabled={compute.isPending || pendingSaves > 0}
+          title={pendingSaves > 0 ? 'Saving changes…' : undefined}
           className="shrink-0 px-3 py-1.5 bg-ink text-paper rounded text-sm disabled:opacity-50"
         >
           {compute.isPending ? 'Computing…' : 'Compute'}
@@ -135,7 +143,13 @@ export function PlanDetailPage() {
       </nav>
 
       {activeTab === 'profile' && <ProfileTab detail={data} />}
-      {activeTab === 'strategies' && <StrategiesTab detail={data} />}
+      {/* Keyed by scenario: StrategiesTab holds selections in local
+          state, and a cached plan switch would otherwise leave the
+          previous plan's selections mounted — one click could write
+          plan A's selections into plan B's scenario. */}
+      {activeTab === 'strategies' && (
+        <StrategiesTab key={data.scenarios[0]?.id ?? plan.id} detail={data} />
+      )}
       {activeTab === 'results' && <ScenarioCompare detail={data} />}
       {activeTab === 'review' && <ReviewTab detail={data} />}
       {activeTab === 'deliverables' && <DeliverablesTab detail={data} />}

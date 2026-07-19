@@ -61,6 +61,9 @@ function JsonEditor({ detail, frozen }: { detail: PlanDetail; frozen: boolean })
   const [error, setError] = useState<string | null>(null);
 
   const save = useMutation({
+    // Compute is disabled while this key is mutating — computing against
+    // a profile PATCH still in flight would store pre-edit results.
+    mutationKey: ['profile-save', plan.id],
     mutationFn: (profile: unknown) =>
       api(`/api/planning/plans/${plan.id}`, {
         method: 'PATCH',

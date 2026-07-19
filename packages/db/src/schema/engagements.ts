@@ -15,6 +15,10 @@ export const engagements = pgTable(
     payment_status: text('payment_status').notNull().default('none'), // none|invoiced|paid|failed
     opensign_envelope_id: text('opensign_envelope_id'),
     stripe_invoice_id: text('stripe_invoice_id'),
+    // Pinned on first invoice send and reused: re-minting a customer per
+    // attempt let orphaned invoice items from a failed attempt get swept
+    // into a later invoice.
+    stripe_customer_id: text('stripe_customer_id'),
     events: jsonb('events')
       .$type<Array<{ at: string; source: string; kind: string; detail?: string }>>()
       .notNull()

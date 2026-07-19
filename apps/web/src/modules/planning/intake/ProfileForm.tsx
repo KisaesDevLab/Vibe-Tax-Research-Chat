@@ -19,6 +19,9 @@ export function ProfileForm({
   const [error, setError] = useState<string | null>(null);
 
   const save = useMutation({
+    // Same key as ProfileTab's editor: Compute is disabled while any
+    // profile PATCH for this plan is in flight.
+    mutationKey: ['profile-save', planId],
     mutationFn: () =>
       api(`/api/planning/plans/${planId}`, {
         method: 'PATCH',

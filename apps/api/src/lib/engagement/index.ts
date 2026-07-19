@@ -38,11 +38,16 @@ export interface PaymentProvider {
     planId: string;
     planTitle: string;
     clientName: string;
-    /** First contact email, when the client record has one. */
-    clientEmail: string | null;
+    /** First contact email — required upstream; invoices are emailed. */
+    clientEmail: string;
     /** Whole dollars. */
     amount: number;
-  }): Promise<{ invoiceId: string }>;
+    /** Reused across sends once pinned on the engagement row. */
+    customerId: string | null;
+    /** 1-based send attempt — scopes idempotency keys so a deliberate
+     *  re-send mints a new invoice while a timeout retry replays. */
+    attempt: number;
+  }): Promise<{ invoiceId: string; customerId: string }>;
 }
 
 export function getSignatureProvider(): SignatureProvider {
@@ -73,17 +78,19 @@ export function getSignatureProvider(): SignatureProvider {
 export function getPaymentProvider(): PaymentProvider {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new ProviderNotConfiguredError('stripe');
-  // Every call carries an Idempotency-Key derived from the plan (and
-  // amount, for money-bearing calls): a timeout after Stripe already
-  // processed the request must not mint a second customer or a second
-  // live invoice on retry.
-  const call = async (path: string, form: Record<string, string>, idempotencyKey: string) => {
+  // Idempotency keys are scoped to the plan + send attempt (+ cents for
+  // money-bearing calls): a timeout retry within an attempt replays
+  // Stripe's cached response instead of minting duplicates, while a
+  // deliberate re-send (next attempt) gets fresh keys — a reused key
+  // with drifted params would otherwise 400 idempotency_error and block
+  // sends for 24h.
+  const call = async (path: string, form: Record<string, string>, idempotencyKey?: string) => {
     const res = await fetch(`https://api.stripe.com${path}`, {
       method: 'POST',
       headers: {
         authorization: `Bearer ${key}`,
         'content-type': 'application/x-www-form-urlencoded',
-        'idempotency-key': idempotencyKey,
+        ...(idempotencyKey ? { 'idempotency-key': idempotencyKey } : {}),
       },
       body: new URLSearchParams(form),
       signal: AbortSignal.timeout(10_000),
@@ -93,46 +100,68 @@ export function getPaymentProvider(): PaymentProvider {
   };
   return {
     async createInvoice(input) {
-      // Stripe invoices require a customer; the amount is an invoice
-      // item; metadata.plan_id is what the invoice.paid webhook matches
-      // on — without it the round-trip cannot correlate.
       const cents = Math.round(input.amount * 100);
-      const customer = await call(
-        '/v1/customers',
-        {
-          name: input.clientName,
-          ...(input.clientEmail ? { email: input.clientEmail } : {}),
-          description: `Tax plan client — ${input.planTitle}`,
-        },
-        `cust-${input.planId}`,
-      );
-      await call(
-        '/v1/invoiceitems',
-        {
-          customer: customer.id,
-          currency: 'usd',
-          amount: String(cents),
-          description: input.planTitle,
-        },
-        `item-${input.planId}-${cents}`,
-      );
-      // send_invoice (not charge_automatically): a fresh customer has no
-      // payment method on file — Stripe must EMAIL the hosted invoice,
-      // not attempt a doomed automatic charge that instantly fails the
-      // engagement via invoice.payment_failed.
+      const scope = `${input.planId}-a${input.attempt}`;
+      // One customer per engagement, pinned on first send: a fresh
+      // customer per attempt would strand a failed attempt's invoice
+      // items where a later invoice could sweep them in.
+      const customerId =
+        input.customerId ??
+        (
+          await call(
+            '/v1/customers',
+            {
+              name: input.clientName,
+              email: input.clientEmail,
+              description: `Tax plan client — ${input.planTitle}`,
+            },
+            `cust-${scope}`,
+          )
+        ).id;
+      // Invoice FIRST, with pending items excluded, then the line item
+      // attached directly to it: an orphaned item from a failed earlier
+      // attempt can never join this invoice, so a fee change between
+      // attempts cannot over-bill. send_invoice (not the
+      // charge_automatically default): the customer has no payment
+      // method on file — Stripe emails the hosted invoice instead of
+      // attempting a doomed automatic charge that would instantly fail
+      // the engagement.
       const invoice = await call(
         '/v1/invoices',
         {
-          customer: customer.id,
+          customer: customerId,
           description: `${input.planTitle} — ${input.clientName}`,
           'metadata[plan_id]': input.planId,
           collection_method: 'send_invoice',
           days_until_due: '30',
+          pending_invoice_items_behavior: 'exclude',
           auto_advance: 'true',
         },
-        `inv-${input.planId}-${cents}`,
+        `inv-${scope}-${cents}`,
       );
-      return { invoiceId: invoice.id };
+      try {
+        await call(
+          '/v1/invoiceitems',
+          {
+            customer: customerId,
+            invoice: invoice.id,
+            currency: 'usd',
+            amount: String(cents),
+            description: input.planTitle,
+          },
+          `item-${scope}-${cents}`,
+        );
+      } catch (err) {
+        // Best-effort: delete the still-draft invoice so auto_advance
+        // can't finalize and email an empty $0 invoice later.
+        await fetch(`https://api.stripe.com/v1/invoices/${invoice.id}`, {
+          method: 'DELETE',
+          headers: { authorization: `Bearer ${key}` },
+          signal: AbortSignal.timeout(10_000),
+        }).catch(() => undefined);
+        throw err;
+      }
+      return { invoiceId: invoice.id, customerId };
     },
   };
 }
@@ -164,6 +193,7 @@ export interface EngagementUpdate {
   payment_status?: string;
   opensign_envelope_id?: string;
   stripe_invoice_id?: string;
+  stripe_customer_id?: string;
   event: { source: string; kind: string; detail?: string };
 }
 
@@ -235,6 +265,7 @@ export async function applyEngagementUpdate(
         payment_status: payment,
         opensign_envelope_id: update.opensign_envelope_id ?? engagement.opensign_envelope_id,
         stripe_invoice_id: update.stripe_invoice_id ?? engagement.stripe_invoice_id,
+        stripe_customer_id: update.stripe_customer_id ?? engagement.stripe_customer_id,
         events: [...engagement.events, { at: new Date().toISOString(), ...update.event }],
         updated_at: new Date(),
       })

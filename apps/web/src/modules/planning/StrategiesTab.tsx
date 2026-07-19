@@ -71,12 +71,17 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
   const pendingSaves = useIsMutating({ mutationKey: ['scenario-save', plan.id] });
   const planFetching = useIsFetching({ queryKey: ['plan', plan.id] });
   const serverSelections = scenario?.selections;
+  // While a rejected value's error is showing, reconciliation would snap
+  // the field back to the last-saved value and leave the error describing
+  // input the user can no longer see — hold local state until the user
+  // edits again (which clears the strategy's errors) or a save succeeds.
+  const holdForErrors = paramErrors.length > 0;
   useEffect(() => {
-    if (pendingSaves === 0 && planFetching === 0 && serverSelections) {
+    if (pendingSaves === 0 && planFetching === 0 && !holdForErrors && serverSelections) {
       selectionsRef.current = serverSelections;
       setLocalSelections(serverSelections);
     }
-  }, [serverSelections, pendingSaves, planFetching]);
+  }, [serverSelections, pendingSaves, planFetching, holdForErrors]);
 
   const { data } = useQuery<{ strategies: StrategyListing[] }>({
     queryKey: ['planning-strategies'],
@@ -141,6 +146,7 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
   function setParam(s: StrategyListing, key: string, value: unknown) {
     const cur = selectionsRef.current;
     if (!cur.some((x) => x.strategyId === s.id)) return;
+    setParamErrors((prev) => prev.filter((e) => e.strategyId !== s.id));
     commit(
       cur.map((x) => (x.strategyId === s.id ? { ...x, params: { ...x.params, [key]: value } } : x)),
     );

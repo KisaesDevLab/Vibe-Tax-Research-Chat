@@ -128,20 +128,34 @@ engagementRouter.post('/send-invoice', async (req, res) => {
     res.status(400).json({ error: 'no_fee_configured' });
     return;
   }
+  // send_invoice collection EMAILS the hosted invoice — without an
+  // address it would sit undelivered in Stripe while the UI reported
+  // success. Fail loud; the manual override covers out-of-band billing.
+  if (!loaded.clientEmail) {
+    res.status(400).json({ error: 'no_client_email' });
+    return;
+  }
   try {
     const provider = getPaymentProvider();
-    const { invoiceId } = await provider.createInvoice({
+    const engagement = await ensureEngagement(planId);
+    const attempt =
+      engagement.events.filter((e) => e.source === 'stripe' && e.kind === 'invoice.sent').length +
+      1;
+    const { invoiceId, customerId } = await provider.createInvoice({
       planId,
       planTitle: loaded.plan.title,
       clientName: loaded.clientName,
       clientEmail: loaded.clientEmail,
       amount,
+      customerId: engagement.stripe_customer_id,
+      attempt,
     });
     await applyEngagementUpdate(
       planId,
       {
         payment_status: 'invoiced',
         stripe_invoice_id: invoiceId,
+        stripe_customer_id: customerId,
         event: { source: 'stripe', kind: 'invoice.sent' },
       },
       req.auth!.user_id,

@@ -379,3 +379,30 @@ without user interruption:
   link would destroy the evidence the presentation relied on.
 - **Reviewer swap while in-review clears the checklist** — ticks are the assigned
   reviewer's attestation and are never inherited.
+
+## QA round 3 — convergence fixes
+
+Round 3 reviewed only the round-2 diffs. Engine/strategies verified clean; eight
+residual defects fixed:
+
+- **Rejected pipeline drafts now carry status `rejected`**, distinct from
+  `deprecated` (= superseded but once published). Deprecated stays pinnable and
+  computable for issued plans; rejected content can never enter a scenario — the
+  shared status was a review-gate bypass.
+- **Stripe invoicing hardened for retries and re-sends**: one customer per
+  engagement pinned in the new `engagements.stripe_customer_id` column (migration
+  0013, additive); the invoice is created FIRST with pending items excluded and the
+  line item attached directly to it, so an orphaned item from a failed attempt can
+  never be swept into a later invoice after a fee change; idempotency keys are
+  scoped per send attempt (+ amount), so a timeout retry replays while a deliberate
+  re-send mints a fresh invoice and a params drift can't 400 sends for 24h; an item
+  failure best-effort deletes the draft invoice so an empty $0 invoice can't
+  auto-finalize. Send-invoice now requires a client contact email
+  (`no_client_email`) — send_invoice collection emails the hosted invoice, and a
+  missing address meant "sent" with nothing delivered.
+- **The strategy draft/sweep trigger router is planning-flag gated** like the
+  review queue its items land in.
+- **Web**: StrategiesTab remounts per scenario (cached plan switches could write
+  plan A's selections into plan B with one click); profile saves share a
+  mutation-key guard with Compute; a rejected param value stays visible next to
+  its validation error instead of snapping back.

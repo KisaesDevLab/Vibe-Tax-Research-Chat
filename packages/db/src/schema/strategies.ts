@@ -31,7 +31,7 @@ export const strategy_versions = pgTable(
       .notNull()
       .references(() => strategies.id),
     semver: text('semver').notNull(),
-    status: text('status').notNull().default('draft'), // draft|in-review|published|deprecated
+    status: text('status').notNull().default('draft'), // draft|in-review|published|deprecated|rejected
     /** Full authored record per docs/strategy-schema.md (advisor/client/engagement…). */
     content: jsonb('content').$type<Record<string, unknown>>().notNull(),
     inputs_schema: jsonb('inputs_schema').$type<Record<string, unknown>>(),
