@@ -12,13 +12,21 @@ vi.mock('../../lib/engagement/index.js', () => ({
   applyEngagementUpdate: (...args: unknown[]) => applyEngagementUpdate(...(args as [])),
 }));
 vi.mock('../../jobs/queues.js', () => ({ skillsSyncQueue: { add: vi.fn() } }));
-// The handlers pre-check that plan_id resolves to a real plan before
-// touching the engagement machinery; planLookup drives that check.
+// The handlers pre-check that plan_id resolves to a real plan (and that
+// a stripe event's invoice matches the pinned one); the two lookups run
+// in call order — planLookup first, then engagementLookup.
 const planLookup = vi.fn(async () => [{ id: 'found' }]);
+const engagementLookup = vi.fn(
+  async (): Promise<Array<{ stripe_invoice_id: string | null }>> => [{ stripe_invoice_id: null }],
+);
+const lookups = [planLookup, engagementLookup];
+let lookupIndex = 0;
 vi.mock('@vibe/db', () => ({
   getDb: () => ({
     select: () => ({
-      from: () => ({ where: () => ({ limit: () => planLookup() }) }),
+      from: () => ({
+        where: () => ({ limit: () => lookups[Math.min(lookupIndex++, 1)]!() }),
+      }),
     }),
   }),
 }));
@@ -31,6 +39,7 @@ const OPENSIGN_SECRET = 'opensign-test-secret';
 const STRIPE_SECRET = 'whsec_test_secret';
 
 async function buildApp() {
+  lookupIndex = 0; // each test drives exactly one request
   const { webhooksRouter } = await import('./index.js');
   const app = express();
   app.use('/api/webhooks', express.raw({ type: '*/*', limit: '5mb' }), webhooksRouter);
@@ -254,6 +263,32 @@ describe('POST /api/webhooks/stripe', () => {
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ ok: true, ignored: true, reason: 'unknown_plan' });
     expect(applyEngagementUpdate).not.toHaveBeenCalled();
+  });
+
+  it('ignores paid/failed events for a non-pinned invoice id', async () => {
+    applyEngagementUpdate.mockClear();
+    engagementLookup.mockResolvedValueOnce([{ stripe_invoice_id: 'in_pinned' }]);
+    // payload's invoice id is in_123 — differs from the pinned in_pinned.
+    const app = await buildApp();
+    const res = await request(app)
+      .post('/api/webhooks/stripe')
+      .set('Stripe-Signature', sigHeader(payload))
+      .send(payload);
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ ok: true, ignored: true, reason: 'invoice_mismatch' });
+    expect(applyEngagementUpdate).not.toHaveBeenCalled();
+  });
+
+  it('accepts events when no invoice is pinned (manual dashboard flow)', async () => {
+    applyEngagementUpdate.mockClear();
+    engagementLookup.mockResolvedValueOnce([{ stripe_invoice_id: null }]);
+    const app = await buildApp();
+    const res = await request(app)
+      .post('/api/webhooks/stripe')
+      .set('Stripe-Signature', sigHeader(payload))
+      .send(payload);
+    expect(res.status).toBe(200);
+    expect(applyEngagementUpdate).toHaveBeenCalled();
   });
 
   it('out-of-order benign events (invoice.finalized) never downgrade state', async () => {

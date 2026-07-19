@@ -1,7 +1,7 @@
 // TP-6 — strategy picker: published strategies with suggest badges, a
 // param form generated from each strategy's inputs schema, and per-
 // scenario selection editing.
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   useIsFetching,
   useIsMutating,
@@ -71,17 +71,22 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
   const pendingSaves = useIsMutating({ mutationKey: ['scenario-save', plan.id] });
   const planFetching = useIsFetching({ queryKey: ['plan', plan.id] });
   const serverSelections = scenario?.selections;
-  // While a rejected value's error is showing, reconciliation would snap
-  // the field back to the last-saved value and leave the error describing
-  // input the user can no longer see — hold local state until the user
-  // edits again (which clears the strategy's errors) or a save succeeds.
-  const holdForErrors = paramErrors.length > 0;
+  // Reconciliation is per-strategy: entries whose params were rejected
+  // keep their local (rejected-but-visible) value so the error message
+  // still describes what's on screen; everything else takes the server
+  // state. A whole-array hold would silently freeze OTHER strategies'
+  // edits out of the server round-trip.
+  const erroredIds = useMemo(() => new Set(paramErrors.map((e) => e.strategyId)), [paramErrors]);
   useEffect(() => {
-    if (pendingSaves === 0 && planFetching === 0 && !holdForErrors && serverSelections) {
-      selectionsRef.current = serverSelections;
-      setLocalSelections(serverSelections);
+    if (pendingSaves === 0 && planFetching === 0 && serverSelections) {
+      const local = new Map(selectionsRef.current.map((s) => [s.strategyId, s]));
+      const next = serverSelections.map((s) =>
+        erroredIds.has(s.strategyId) ? (local.get(s.strategyId) ?? s) : s,
+      );
+      selectionsRef.current = next;
+      setLocalSelections(next);
     }
-  }, [serverSelections, pendingSaves, planFetching, holdForErrors]);
+  }, [serverSelections, pendingSaves, planFetching, erroredIds]);
 
   const { data } = useQuery<{ strategies: StrategyListing[] }>({
     queryKey: ['planning-strategies'],
@@ -129,11 +134,23 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
   const strategies = data?.strategies ?? [];
 
   // Every commit updates the ref synchronously and PATCHes that exact
-  // array — never a rebuild from the (possibly stale) query cache.
-  function commit(next: StrategySelection[]) {
+  // array — never a rebuild from the (possibly stale) query cache. In
+  // the PAYLOAD, a strategy whose params were rejected reverts to its
+  // last-persisted entry: sending the known-bad value again would 400
+  // the whole array and silently drop the unrelated edit being saved.
+  function commit(next: StrategySelection[], clearedErrorId?: string) {
     selectionsRef.current = next;
     setLocalSelections(next);
-    save.mutate(next);
+    const server = new Map((scenario?.selections ?? []).map((s) => [s.strategyId, s]));
+    const payload = next.map((s) =>
+      // clearedErrorId: setParam just replaced that strategy's rejected
+      // value — its NEW input must ship, not the stale server entry
+      // (state updates land after this synchronous commit).
+      erroredIds.has(s.strategyId) && s.strategyId !== clearedErrorId
+        ? (server.get(s.strategyId) ?? s)
+        : s,
+    );
+    save.mutate(payload);
   }
 
   function toggle(s: StrategyListing) {
@@ -149,6 +166,7 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
     setParamErrors((prev) => prev.filter((e) => e.strategyId !== s.id));
     commit(
       cur.map((x) => (x.strategyId === s.id ? { ...x, params: { ...x.params, [key]: value } } : x)),
+      s.id,
     );
   }
 

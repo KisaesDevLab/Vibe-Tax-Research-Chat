@@ -1,5 +1,5 @@
 // TP-12 — unit tests for the semver-collision resolver. The unique index
-// on (strategy_id, semver) covers deprecated rows from rejected drafts,
+// on (strategy_id, semver) covers rejected and deprecated rows too,
 // so the resolver must bump past the numeric max, not just the current
 // published version.
 //
@@ -91,8 +91,8 @@ describe('resolveDraftSemver', () => {
     expect(resolveDraftSemver('1.2.0', ['1.0.0', '1.1.0', '1.2.0'])).toBe('1.3.0');
   });
 
-  it('bumps past a deprecated row above the desired version', async () => {
-    // 1.3.0 was drafted and rejected (deprecated) earlier; a fresh draft
+  it('bumps past a rejected row above the desired version', async () => {
+    // 1.3.0 was drafted and rejected earlier; a fresh draft
     // desiring 1.2.0 must land beyond it, not at 1.2.x again.
     const { resolveDraftSemver } = await import('./strategy-author.js');
     expect(resolveDraftSemver('1.2.0', ['1.1.0', '1.2.0', '1.3.0'])).toBe('1.4.0');

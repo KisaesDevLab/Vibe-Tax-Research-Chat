@@ -26,8 +26,8 @@ function parseSemver(semver: string): [number, number, number] {
 
 /**
  * Resolve the semver to insert for a new draft. The unique index on
- * (strategy_id, semver) spans ALL rows — including deprecated ones from
- * previously rejected drafts — so when the desired version is taken we
+ * (strategy_id, semver) spans ALL rows — including rejected drafts and
+ * deprecated (superseded) versions — so when the desired version is taken we
  * bump past the numeric max existing version (minor bump, patch reset)
  * rather than colliding. Exported for tests.
  */
@@ -195,8 +195,8 @@ export async function draftStrategy(strategyId: string, triggeredBy: string): Pr
   }
 
   // Semver: trust the draft's bump when sane, else force a minor bump —
-  // then resolve collisions against every existing row (deprecated rows
-  // from rejected drafts still occupy their semver in the unique index).
+  // then resolve collisions against every existing row (rejected and
+  // deprecated rows still occupy their semver in the unique index).
   const desiredVersion =
     typeof draft.version === 'string' && /^\d+\.\d+\.\d+$/.test(draft.version)
       ? draft.version

@@ -118,14 +118,21 @@ export function getPaymentProvider(): PaymentProvider {
             `cust-${scope}`,
           )
         ).id;
-      // Invoice FIRST, with pending items excluded, then the line item
-      // attached directly to it: an orphaned item from a failed earlier
-      // attempt can never join this invoice, so a fee change between
-      // attempts cannot over-bill. send_invoice (not the
-      // charge_automatically default): the customer has no payment
-      // method on file — Stripe emails the hosted invoice instead of
-      // attempting a doomed automatic charge that would instantly fail
-      // the engagement.
+      // Invoice FIRST — created INERT (no auto_advance), with pending
+      // items excluded, then the line item attached directly to it, then
+      // an explicit finalize. Three properties this ordering buys:
+      //   - an orphaned item from a failed earlier attempt can never be
+      //     swept into this invoice (a fee change can't over-bill);
+      //   - a draft orphaned by a mid-sequence failure or timeout is
+      //     harmless — it never finalizes, never emails, and never
+      //     auto-pays at $0 (a $0-paid webhook would falsely mark the
+      //     engagement paid);
+      //   - a retry under the same attempt keys REPLAYS the cached
+      //     create/item responses and simply completes the remaining
+      //     steps — never deleting, so the replayed id stays valid.
+      // send_invoice (not the charge_automatically default): the
+      // customer has no payment method on file — finalizing emails the
+      // hosted invoice instead of attempting a doomed automatic charge.
       const invoice = await call(
         '/v1/invoices',
         {
@@ -135,32 +142,25 @@ export function getPaymentProvider(): PaymentProvider {
           collection_method: 'send_invoice',
           days_until_due: '30',
           pending_invoice_items_behavior: 'exclude',
-          auto_advance: 'true',
         },
         `inv-${scope}-${cents}`,
       );
-      try {
-        await call(
-          '/v1/invoiceitems',
-          {
-            customer: customerId,
-            invoice: invoice.id,
-            currency: 'usd',
-            amount: String(cents),
-            description: input.planTitle,
-          },
-          `item-${scope}-${cents}`,
-        );
-      } catch (err) {
-        // Best-effort: delete the still-draft invoice so auto_advance
-        // can't finalize and email an empty $0 invoice later.
-        await fetch(`https://api.stripe.com/v1/invoices/${invoice.id}`, {
-          method: 'DELETE',
-          headers: { authorization: `Bearer ${key}` },
-          signal: AbortSignal.timeout(10_000),
-        }).catch(() => undefined);
-        throw err;
-      }
+      await call(
+        '/v1/invoiceitems',
+        {
+          customer: customerId,
+          invoice: invoice.id,
+          currency: 'usd',
+          amount: String(cents),
+          description: input.planTitle,
+        },
+        `item-${scope}-${cents}`,
+      );
+      await call(
+        `/v1/invoices/${invoice.id}/finalize`,
+        { auto_advance: 'true' },
+        `fin-${scope}-${cents}`,
+      );
       return { invoiceId: invoice.id, customerId };
     },
   };

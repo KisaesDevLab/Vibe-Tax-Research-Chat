@@ -236,6 +236,30 @@ webhooksRouter.post('/stripe', async (req, res) => {
     res.status(200).json({ ok: true, ignored: true });
     return;
   }
+  // When the engagement has a pinned invoice, events for a DIFFERENT
+  // invoice that merely shares the plan metadata must not mutate payment
+  // state — an orphaned or superseded invoice getting paid/failed out of
+  // band would otherwise overwrite the tracked invoice's status. A null
+  // pin still accepts (the manual dashboard-invoice flow).
+  const eventInvoiceId = payload.data?.object?.id;
+  const { engagements: engagementsTable } = await import('@vibe/db/schema');
+  const [existingEngagement] = await getDb()
+    .select({ stripe_invoice_id: engagementsTable.stripe_invoice_id })
+    .from(engagementsTable)
+    .where(eq(engagementsTable.plan_id, planId))
+    .limit(1);
+  if (
+    existingEngagement?.stripe_invoice_id &&
+    eventInvoiceId &&
+    existingEngagement.stripe_invoice_id !== eventInvoiceId
+  ) {
+    logger.warn(
+      { planId, eventInvoiceId, pinned: existingEngagement.stripe_invoice_id },
+      'stripe webhook for non-pinned invoice ignored',
+    );
+    res.status(200).json({ ok: true, ignored: true, reason: 'invoice_mismatch' });
+    return;
+  }
   const { applyEngagementUpdate } = await import('../../lib/engagement/index.js');
   const result = await applyEngagementUpdate(
     planId,

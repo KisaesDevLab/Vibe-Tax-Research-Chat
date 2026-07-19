@@ -406,3 +406,22 @@ residual defects fixed:
   plan A's selections into plan B with one click); profile saves share a
   mutation-key guard with Compute; a rejected param value stays visible next to
   its validation error instead of snapping back.
+
+## QA round 4 — Stripe retry lifecycle and error-hold scope
+
+- **Invoices are now created inert and finalized explicitly**: create draft (no
+  auto_advance, pending items excluded) → attach item → finalize(auto_advance).
+  An orphaned draft from any mid-sequence failure or client timeout is harmless —
+  it never finalizes, never emails, and can never auto-pay at $0 and falsely mark
+  the engagement paid. A same-attempt retry replays the cached create/item
+  responses and completes the remaining steps; the previous delete-on-failure
+  path could wedge sends for 24h by replaying a deleted invoice's id.
+- **Stripe webhooks ignore paid/failed events whose invoice id contradicts the
+  pinned `stripe_invoice_id`** (`invoice_mismatch` ack); a null pin still accepts
+  the manual dashboard-invoice flow.
+- **Web param-error hold is per-strategy**: an errored strategy keeps its
+  rejected value visible while its PATCH payload reverts to the last-persisted
+  entry, so edits to OTHER strategies are no longer collaterally rejected and
+  silently dropped.
+- Coverage added: Stripe adapter sequence tests (ordering, inert draft, key
+  scoping, customer reuse, failure path) and webhook invoice-mismatch tests.
