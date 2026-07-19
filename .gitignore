@@ -29,6 +29,7 @@ Thumbs.db
 workspaces/
 attachments/
 backups/
+dump.rdb
 
 # reference-only material (MASTER-BUILD-PLAN.md ground rule 4) — never committed
 reference/

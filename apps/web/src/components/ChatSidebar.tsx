@@ -1,10 +1,12 @@
 // Phase 13 — chat list sidebar grouped by Today / Yesterday / Earlier.
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { api } from '../lib/api';
 import { useFontSize } from '../lib/font-size';
 import { useActiveClient } from '../lib/active-client';
+import { useAppConfig } from '../lib/app-config';
+import { BulkArchiveDialog } from './BulkArchiveDialog';
 import type { ChatDTO } from '@vibe/shared';
 
 interface ChatSidebarProps {
@@ -21,6 +23,11 @@ export function ChatSidebar({ mobileOpen = false, onClose }: ChatSidebarProps = 
   const navigate = useNavigate();
   const { chatId } = useParams<{ chatId?: string }>();
   const { activeClient } = useActiveClient();
+  // TP-11 — multi-select bulk archive (planning module only).
+  const { config } = useAppConfig();
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showBulkArchive, setShowBulkArchive] = useState(false);
 
   const { data } = useQuery<{ chats: ChatDTO[] }>({
     queryKey: ['chats'],
@@ -79,26 +86,68 @@ export function ChatSidebar({ mobileOpen = false, onClose }: ChatSidebarProps = 
                 <div className="px-3 text-[10px] uppercase tracking-wider text-ink/40 mb-1">
                   {g}
                 </div>
-                {items.map((c) => (
-                  <Link
-                    key={c.id}
-                    to={`/research/${c.id}`}
-                    onClick={onClose}
-                    className={`block px-3 py-1.5 text-sm truncate hover:bg-ink/5 ${chatId === c.id ? 'bg-ink/10' : ''}`}
-                  >
-                    {c.client_id && (
-                      <span
-                        className="inline-block w-1.5 h-1.5 rounded-full bg-moss mr-1.5 align-middle"
-                        title="Linked to a client"
+                {items.map((c) =>
+                  selectMode ? (
+                    <label
+                      key={c.id}
+                      className="flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-ink/5 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selected.has(c.id)}
+                        onChange={(e) => {
+                          const next = new Set(selected);
+                          if (e.target.checked) next.add(c.id);
+                          else next.delete(c.id);
+                          setSelected(next);
+                        }}
                       />
-                    )}
-                    {c.title}
-                  </Link>
-                ))}
+                      <span className="truncate">{c.title}</span>
+                    </label>
+                  ) : (
+                    <Link
+                      key={c.id}
+                      to={`/research/${c.id}`}
+                      onClick={onClose}
+                      className={`block px-3 py-1.5 text-sm truncate hover:bg-ink/5 ${chatId === c.id ? 'bg-ink/10' : ''}`}
+                    >
+                      {c.client_id && (
+                        <span
+                          className="inline-block w-1.5 h-1.5 rounded-full bg-moss mr-1.5 align-middle"
+                          title="Linked to a client"
+                        />
+                      )}
+                      {c.title}
+                    </Link>
+                  ),
+                )}
               </div>
             );
           })}
         </div>
+        {config.planning_enabled && (
+          <div className="px-3 py-2 border-t border-ink/10 flex items-center gap-2 text-xs">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectMode((v) => !v);
+                setSelected(new Set());
+              }}
+              className="underline text-ink/50 hover:text-ink"
+            >
+              {selectMode ? 'Cancel selection' : 'Select…'}
+            </button>
+            {selectMode && selected.size > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowBulkArchive(true)}
+                className="ml-auto px-2 py-1 bg-ink text-paper rounded"
+              >
+                Archive {selected.size}…
+              </button>
+            )}
+          </div>
+        )}
         <div className="p-3 border-t border-ink/10 text-xs text-ink/40 space-y-2">
           <FontSizeSelector />
           <Link to="/admin" className="underline" onClick={onClose}>
@@ -106,6 +155,18 @@ export function ChatSidebar({ mobileOpen = false, onClose }: ChatSidebarProps = 
           </Link>
         </div>
       </aside>
+      {showBulkArchive && (
+        <BulkArchiveDialog
+          chatIds={Array.from(selected)}
+          onClose={() => setShowBulkArchive(false)}
+          onDone={() => {
+            setShowBulkArchive(false);
+            setSelectMode(false);
+            setSelected(new Set());
+            void qc.invalidateQueries({ queryKey: ['chats'] });
+          }}
+        />
+      )}
     </>
   );
 }

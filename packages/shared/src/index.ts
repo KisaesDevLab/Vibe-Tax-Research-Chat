@@ -2,6 +2,7 @@
 export * from './types/auth.js';
 export * from './types/chat.js';
 export * from './types/clients.js';
+export * from './types/archives.js';
 export * from './types/cost.js';
 export * from './types/skills.js';
 export * from './skills/routing.js';

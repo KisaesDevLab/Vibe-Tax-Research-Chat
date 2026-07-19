@@ -26,6 +26,8 @@ export const chats = pgTable(
     // client delete never takes chats with it.
     client_id: uuid('client_id').references(() => clients.id, { onDelete: 'set null' }),
     archived_at: timestamp('archived_at', { withTimezone: true }),
+    // TP-11 — "file to a client?" nudge dismissal for ≥90-day unfiled chats.
+    nudge_dismissed_at: timestamp('nudge_dismissed_at', { withTimezone: true }),
     created_at: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updated_at: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

@@ -43,6 +43,13 @@
       "when": 1784425443559,
       "tag": "0005_lovely_cable",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784426021969,
+      "tag": "0006_smart_shiva",
+      "breakpoints": true
     }
   ]
 }

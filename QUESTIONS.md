@@ -138,3 +138,25 @@ implementation).
 **Decision (user, 2026-07-19):** Local in-process detector (regex + context rules for
 SSN/EIN/account numbers) with the same hits + one-click-redaction UX before the snapshot
 freezes. Swappable for Shield/Presidio later behind the same detect interface.
+
+## Archive search reconciliation (TP-3 vs TP-11)
+
+**Question:** TP-3 requires cross-client search with "no PII in the index"; TP-11 requires
+per-client full-text search over archives. How do both hold at once?
+**Default applied:** Per-client FTS (`GET /api/archives?client_id&q`) runs over the
+POST-redaction `snapshot_text` behind the client scope. Cross-client search
+(`GET /api/clients/search`) matches only client names and archive titles/topic tags —
+snapshot bodies are never in the cross-client index.
+
+## Bulk archive and PII
+
+**Question:** How does bulk multi-select archive interact with the PII detect pass?
+**Default applied:** Bulk uses chat titles (no Claude call) and refuses to silently
+archive any chat with detector hits — those return as `pii_review_required` for
+individual handling in the single-session dialog.
+
+## Claude-drafted title/tags at archive time
+
+**Default applied:** Synchronous Haiku call with a 10 s timeout mirroring the chat-title
+job; on no key / timeout / parse failure the dialog falls back to the chat's existing
+title and empty tags. Archival never blocks on the API.

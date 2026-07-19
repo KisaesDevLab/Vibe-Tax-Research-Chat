@@ -8,6 +8,7 @@ export * from './models.js';
 export * from './skills.js';
 export * from './clients.js';
 export * from './chats.js';
+export * from './research-archives.js';
 export * from './messages.js';
 export * from './attachments.js';
 export * from './usage.js';

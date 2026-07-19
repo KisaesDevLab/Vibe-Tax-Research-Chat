@@ -9,6 +9,7 @@ import { audit } from '../../lib/audit.js';
 import { messagesRouter } from './messages.js';
 import { attachmentsRouter } from './attachments.js';
 import { findAttachableClient } from '../clients/index.js';
+import { chatArchiveRouter } from '../archives.js';
 import type { SkillAttribution } from '@vibe/shared';
 
 // Identifiers the SPA's SkillsPanel uses to colour the chip — kept here
@@ -271,3 +272,4 @@ chatsRouter.delete('/:id', async (req, res) => {
 
 chatsRouter.use('/:id/messages', messagesRouter);
 chatsRouter.use('/:id/attachments', attachmentsRouter);
+chatsRouter.use('/:id/archive', chatArchiveRouter);

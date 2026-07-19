@@ -5,7 +5,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { and, desc, eq, ilike, isNull, or, sql, count } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
-import { clients, chats, audit_log } from '@vibe/db/schema';
+import { clients, chats, audit_log, research_archives } from '@vibe/db/schema';
 import { requireAuth } from '../../middleware/auth.js';
 import { requirePlanning } from '../../middleware/planning-flag.js';
 import { audit } from '../../lib/audit.js';
@@ -81,16 +81,39 @@ const uuidSchema = z.string().uuid();
 clientsRouter.get('/search', async (req, res) => {
   const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
   if (!q) {
-    res.json({ clients: [] });
+    res.json({ clients: [], archives: [] });
     return;
   }
-  const rows = await getDb()
+  const db = getDb();
+  const rows = await db
     .select()
     .from(clients)
     .where(and(isNull(clients.merged_into_id), ilike(clients.name, `%${q}%`)))
     .orderBy(clients.name)
     .limit(50);
-  res.json({ clients: rows });
+  // TP-11 — archive hits by title/topic-tag ONLY. Snapshot bodies are
+  // deliberately excluded from the cross-client index (no PII in it);
+  // body-text FTS lives behind the per-client archive listing.
+  const archiveRows = await db
+    .select({
+      id: research_archives.id,
+      title: research_archives.title,
+      topic_tags: research_archives.topic_tags,
+      client_id: research_archives.client_id,
+      firm_archive: research_archives.firm_archive,
+      archived_at: research_archives.archived_at,
+      status: research_archives.status,
+    })
+    .from(research_archives)
+    .where(
+      or(
+        ilike(research_archives.title, `%${q}%`),
+        sql`${q} = ANY(${research_archives.topic_tags})`,
+      ),
+    )
+    .orderBy(desc(research_archives.archived_at))
+    .limit(50);
+  res.json({ clients: rows, archives: archiveRows });
 });
 
 // ── TP-3 — client detail ─────────────────────────────────────────────────
@@ -109,14 +132,17 @@ clientsRouter.get('/:id', async (req, res) => {
     .select({ n: count() })
     .from(chats)
     .where(eq(chats.client_id, client.id));
+  const [archiveCount] = await db
+    .select({ n: count() })
+    .from(research_archives)
+    .where(and(eq(research_archives.client_id, client.id), eq(research_archives.status, 'active')));
   res.json({
     client,
     counts: {
       chats: chatCount?.n ?? 0,
-      // Populated by later phases: plans (TP-8), archives (TP-11),
-      // documents (TP-9).
+      archives: archiveCount?.n ?? 0,
+      // Populated by later phases: plans (TP-8), documents (TP-9).
       plans: 0,
-      archives: 0,
       documents: 0,
     },
   });
@@ -191,6 +217,11 @@ clientsRouter.post('/:id/merge', async (req, res) => {
       .set({ merged_into_id: target.id, updated_at: new Date() })
       .where(eq(clients.id, source.id));
     await tx.update(chats).set({ client_id: target.id }).where(eq(chats.client_id, source.id));
+    // TP-11 retention (FINAL): archives follow the surviving record.
+    await tx
+      .update(research_archives)
+      .set({ client_id: target.id })
+      .where(eq(research_archives.client_id, source.id));
   });
   await audit({
     actor_user_id: req.auth!.user_id,
@@ -228,7 +259,23 @@ clientsRouter.delete('/:id', async (req, res) => {
     res.status(409).json({ error: 'has_merged_records' });
     return;
   }
-  await db.delete(clients).where(eq(clients.id, client.id));
+  // TP-11 retention (FINAL): archives are NEVER cascade-deleted. Reassign
+  // to the firm-level archive with a tombstone recording the original
+  // client, then delete. The FK on research_archives.client_id is NO
+  // ACTION, so a delete that skipped this step would fail loudly.
+  const tombstone = {
+    original_client: { id: client.id, name: client.name },
+    event: 'client-deleted' as const,
+    actor_user_id: req.auth!.user_id,
+    at: new Date().toISOString(),
+  };
+  await db.transaction(async (tx) => {
+    await tx
+      .update(research_archives)
+      .set({ client_id: null, firm_archive: true, tombstone })
+      .where(eq(research_archives.client_id, client.id));
+    await tx.delete(clients).where(eq(clients.id, client.id));
+  });
   await audit({
     actor_user_id: req.auth!.user_id,
     action: 'client.delete',
