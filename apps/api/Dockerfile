@@ -18,6 +18,9 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 COPY apps/api/package.json apps/api/
 COPY packages/db/package.json packages/db/
 COPY packages/shared/package.json packages/shared/
+COPY packages/schema/package.json packages/schema/
+COPY packages/engine/package.json packages/engine/
+COPY packages/strategies/package.json packages/strategies/
 RUN pnpm install --frozen-lockfile=false
 
 # ── dev stage ───────────────────────────────────────────────────────────
@@ -29,7 +32,12 @@ CMD ["pnpm", "--filter", "@vibe/api", "dev"]
 # ── build stage ─────────────────────────────────────────────────────────
 FROM deps AS builder
 COPY . .
+# Dependency order: shared ← schema/engine ← strategies ← db (seed loads
+# strategy content) ← api.
 RUN pnpm --filter @vibe/shared build \
+ && pnpm --filter @vibe/schema build \
+ && pnpm --filter @vibe/engine build \
+ && pnpm --filter @vibe/strategies build \
  && pnpm --filter @vibe/db build \
  && pnpm --filter @vibe/api build
 
@@ -49,17 +57,27 @@ COPY --from=builder /app/packages/db/drizzle packages/db/drizzle
 COPY --from=builder /app/packages/db/seeds packages/db/seeds
 COPY --from=builder /app/packages/shared/dist packages/shared/dist
 COPY --from=builder /app/packages/shared/package.json packages/shared/
+COPY --from=builder /app/packages/schema/dist packages/schema/dist
+COPY --from=builder /app/packages/schema/package.json packages/schema/
+COPY --from=builder /app/packages/engine/dist packages/engine/dist
+COPY --from=builder /app/packages/engine/package.json packages/engine/
+# strategies dist includes the content/ JSON records the db seed loads.
+COPY --from=builder /app/packages/strategies/dist packages/strategies/dist
+COPY --from=builder /app/packages/strategies/package.json packages/strategies/
 # pnpm's workspace install puts the actual dep store under
 # /app/node_modules/.pnpm and exposes per-package symlinks at
-# /app/<pkg>/node_modules. Without all four COPY lines node's module
-# resolution from `apps/api/dist/*.js` walks up to /app/apps/api/node_modules
-# and finds nothing for deps declared on the api package — the runtime
-# crashes at import with ERR_MODULE_NOT_FOUND on express-async-errors,
-# pdfkit, cookie-parser, etc.
+# /app/<pkg>/node_modules. Without a COPY per workspace package node's
+# module resolution from `apps/api/dist/*.js` walks up to
+# /app/apps/api/node_modules and finds nothing for deps declared on the
+# api package — the runtime crashes at import with ERR_MODULE_NOT_FOUND
+# on express-async-errors, pdfkit, cookie-parser, etc.
 COPY --from=builder /app/node_modules node_modules
 COPY --from=builder /app/apps/api/node_modules apps/api/node_modules
 COPY --from=builder /app/packages/db/node_modules packages/db/node_modules
 COPY --from=builder /app/packages/shared/node_modules packages/shared/node_modules
+COPY --from=builder /app/packages/schema/node_modules packages/schema/node_modules
+COPY --from=builder /app/packages/engine/node_modules packages/engine/node_modules
+COPY --from=builder /app/packages/strategies/node_modules packages/strategies/node_modules
 EXPOSE 4000
 USER node
 CMD ["node", "apps/api/dist/index.js"]

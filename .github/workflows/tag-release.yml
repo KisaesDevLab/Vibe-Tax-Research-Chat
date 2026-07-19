@@ -22,6 +22,11 @@ on:
         description: 'Commit sha the tag points at'
         required: true
         type: string
+      force:
+        description: 'Move the tag if it already exists (pre-release repoint only)'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -39,10 +44,25 @@ jobs:
               core.setFailed(`refusing non-semver tag: ${tag}`);
               return;
             }
-            await github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `refs/tags/${tag}`,
-              sha,
-            });
-            core.info(`created refs/tags/${tag} at ${sha}`);
+            const force =
+              context.payload.inputs.force === true || context.payload.inputs.force === 'true';
+            if (force) {
+              // Repoint an existing tag — only sane BEFORE any release
+              // artifacts were published from it.
+              await github.rest.git.updateRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `tags/${tag}`,
+                sha,
+                force: true,
+              });
+              core.info(`moved refs/tags/${tag} to ${sha}`);
+            } else {
+              await github.rest.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `refs/tags/${tag}`,
+                sha,
+              });
+              core.info(`created refs/tags/${tag} at ${sha}`);
+            }
