@@ -1,0 +1,170 @@
+{
+  "id": "crt",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Charitable Remainder Trust for Appreciated Assets",
+  "category": "income-timing",
+  "modeled": false,
+  "complexity": 5,
+  "riskRating": "moderate",
+  "entityTypes": ["individual"],
+  "typicalSavingsBand": "structural",
+  "advisor": {
+    "summary": "A §664 charitable remainder trust converts a low-basis appreciated asset into a payout stream without a taxable sale: the donor funds the trust, the tax-exempt trust sells and reinvests the full pre-tax proceeds, and the deferred gain flows back out over the term through the four-tier distribution ordering. The donor takes a current deduction equal to the actuarial value of the charitable remainder, which must clear the 10% test, and the charity receives what is left at the end. Nothing here eliminates the gain — it is spread, often across decades and often at lower stacked rates than a lump-sum year. The transaction the IRS actually wins is the mistimed one: fund after the buyer is effectively locked in and assignment-of-income doctrine puts the whole gain back on the donor. This is an advisory record — the engine does not model CRT economics, and every number presented to a client must come from dedicated actuarial software.",
+    "mechanics": [
+      "The trust is exempt from income tax under §664(c), so it sells the contributed asset without current gain and reinvests the entire pre-tax proceeds; the donor's gain is deferred into the payout stream rather than erased.",
+      "Distributions are taxed worst-in, first-out through the §664(b) four tiers — ordinary income first, then capital gain, then other income, then tax-free corpus — so the trapped appreciation typically emerges as tier-two capital gain spread over many years, and the trustee's investment policy controls which tier each payment carries.",
+      "Design choice: a unitrust (CRUT) pays a fixed percentage of annually revalued assets, between 5% and 50%, and accepts later additions; an annuity trust (CRAT) pays a fixed dollar amount, allows no additions, and must survive the exhaustion test. CRUTs dominate in practice.",
+      "The donor's deduction under §170(f)(2)(A) equals the actuarial value of the charitable remainder computed at the §7520 rate; the remainder must be at least 10% of the funding value under §664(d), and gifts of appreciated long-term property run through the 30%-of-AGI ceiling of §170(b)(1)(C) with a five-year carryforward.",
+      "Sequence is everything: the trust must own the asset before any binding sale obligation exists. Rev. Rul. 78-197 draws the line — gain is taxed to the donor where the donee is legally bound, or can be compelled, to complete the sale at the time of the gift — and the negotiation posture at funding must be documented in the file.",
+      "The trust files Form 5227 annually and the four-tier character of each distribution flows to the income beneficiary on a Schedule K-1; a wealth-replacement life insurance trust is the customary pairing when heirs must be made whole for the remainder passing to charity."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §664",
+        "note": "The CRT regime: qualification, the 5%–50% payout corridor, the four-tier distribution ordering of §664(b), the trust's exemption under §664(c), and the 10% minimum-remainder tests of §664(d)."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §§170(f)(2)(A), 170(b)(1)(C)",
+        "note": "The deduction is limited to the remainder interest's actuarial value, and appreciated-property gifts are capped at 30% of AGI with a five-year carryforward."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §7520",
+        "note": "The actuarial rate used to value the remainder — the rate environment materially moves both the deduction and 10%-test feasibility."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Rul. 78-197",
+        "note": "The assignment-of-income bright line: gain lands on the donor where the trust is legally bound to sell at the time of the gift."
+      },
+      {
+        "type": "Case",
+        "cite": "Ferguson v. Commissioner, 174 F.3d 997 (9th Cir. 1999)",
+        "note": "Donors taxed on gain where stock was contributed after a tender offer had made the sale practically certain — the case examiners reach for when funding follows the deal."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 5227 and instructions",
+        "note": "The split-interest trust annual information return; the four-tier accounts and beneficiary K-1 reporting live here."
+      }
+    ],
+    "requirements": [
+      "A highly appreciated, salable asset free of complications — low-basis securities or unmortgaged real estate; debt-financed property creates UBTI exposure inside the trust.",
+      "Funding completed before any binding sale obligation exists, with the state of negotiations memorialized in writing at the contribution date.",
+      "A payout design that lands between 5% and 50% and produces an actuarial remainder of at least 10% of contributed value at the current §7520 rate.",
+      "Genuine charitable intent — the remainder is real money that leaves the family.",
+      "A trustee arrangement capable of annual valuations, four-tier accounting, and Form 5227 compliance for the life of the trust."
+    ],
+    "risks": [
+      "Anticipatory assignment of income is the leading audit theory: Ferguson v. Commissioner, 174 F.3d 997 (9th Cir. 1999) put the gain back on donors who funded after the sale was practically certain, and Rev. Rul. 78-197 supplies the government's bright line. Funding-date documentation is the whole defense.",
+      "The trust is irrevocable — changed family circumstances cannot unwind it, and only the payout stream remains accessible.",
+      "Qualification can fail at drafting: a payout rate that flunks the 10% remainder test, or a CRAT that fails the exhaustion test, means no deduction and a fully taxable sale.",
+      "UBTI — including debt-financed income from mortgaged property — draws a 100% excise tax on that income; encumbered real estate must be restructured before contribution.",
+      "The tier-one trap: a trustee who invests for ordinary income forces distributions to carry out ordinary income first, converting a capital-gain deferral into ordinary-rate payouts."
+    ],
+    "stateNotes": [
+      "States that conform to federal AGI pick up the four-tier character of distributions automatically, but state treatment of the charitable deduction varies — verify the deduction's state value separately in states with their own itemized regimes.",
+      "No PTET interaction — this is individual charitable and capital-gain planning with no entity-level election in play.",
+      "Missouri conforms through its federal-AGI starting point (RSMo §143.121), and under the 2025 capital-gains legislation (RSMo §143.121, HB 594) individuals subtract 100% of federally reported capital gains — so tier-two capital-gain distributions should escape Missouri tax as well; confirm the subtraction's application to K-1 character when the first payout year is filed."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": ["like-kind-1031"],
+      "synergiesWith": ["daf-bunching"]
+    },
+    "reviewChecklist": [
+      "No binding sale obligation exists at funding, and the negotiation posture is memorialized in the file with dates.",
+      "The payout design clears the 10% remainder test (and the CRAT exhaustion test if applicable) at the current §7520 rate.",
+      "The deduction is modeled against the 30%-of-AGI ceiling with a carryforward schedule the client has seen.",
+      "Estate counsel is engaged for drafting, and a qualified appraisal is ordered for any non-marketable asset.",
+      "The client has acknowledged in writing that the trust is irrevocable and the remainder genuinely passes to charity.",
+      "Wealth-replacement insurance has been considered and priced where heirs need to be made whole."
+    ]
+  },
+  "client": {
+    "teaser": "Sell a big winner with no tax due at the sale — and get paid from it for life.",
+    "headline": "Turn one big gain into income for life and a gift you choose",
+    "plainEnglish": [
+      "Selling an asset that has grown for years usually hands a large slice to the IRS first. A charitable remainder trust changes the order. You give the asset to a trust you set up. The trust sells it and pays no tax on the sale. Every dollar goes back to work for you.",
+      "The trust then pays you each year, for life or for a set term. You pay tax on those payments as they arrive, spread over many years. You also get a charitable deduction in the year you fund the trust.",
+      "When the trust ends, what remains goes to a charity you pick. Many families use part of the income to buy life insurance so the kids receive full value too. One thing matters most: the trust must own the asset before any sale is locked in."
+    ],
+    "analogy": "It is like donating an orchard to a foundation that pays you from every future harvest. The trees never stop working for you, and the tax bill on selling the orchard never lands.",
+    "benefits": [
+      "No tax at the sale, so the full value is reinvested for you",
+      "Dependable payments for life or a term you choose",
+      "A charitable deduction in the year you fund the trust",
+      "A real gift to a cause you care about, with options to keep heirs whole"
+    ],
+    "steps": [
+      "WE model the income stream, the deduction, and the tax result next to a plain sale.",
+      "WE coordinate the estate attorney who drafts the trust and the appraiser if one is needed.",
+      "YOU fund the trust before any sale agreement is signed.",
+      "WE handle the trust's annual filings and your tax reporting every year after."
+    ],
+    "clientCommitments": [
+      "Bring us in before you talk price with any buyer — funding must come first",
+      "Accept that the gift is permanent; the asset cannot come back to you",
+      "Keep the trustee's paperwork and annual filings on schedule"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "structural",
+    "annualMaintenance": [
+      "Form 5227 preparation and beneficiary K-1 issuance each year",
+      "Four-tier account tracking and annual asset revaluation for unitrust payouts",
+      "Investment-policy review against the tier ordering so payouts keep their intended character"
+    ],
+    "deliverables": [
+      "CRT design memo — CRAT vs. CRUT, payout rate, and the deduction at the current §7520 rate",
+      "Funding-sequence checklist with negotiation-status documentation for the file",
+      "Annual Form 5227 package with the four-tier accounting schedule"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "longTermCapGain",
+        "op": "gt",
+        "value": 250000
+      }
+    ],
+    "reason": "A CRT spreads a large gain over years while funding charity and an income stream."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §664 and §7520 guidance",
+      "Assignment-of-income case law following Rev. Rul. 78-197"
+    ],
+    "keywords": [
+      "charitable remainder trust",
+      "CRUT",
+      "CRAT",
+      "four-tier ordering",
+      "7520 rate",
+      "assignment of income"
+    ],
+    "reviewTriggers": [
+      "Monthly §7520 rate moves large enough to change 10%-test feasibility",
+      "New case law on pre-arranged sales funded into charitable vehicles",
+      "Any statutory change to §664 or the charitable deduction ceilings"
+    ]
+  }
+}

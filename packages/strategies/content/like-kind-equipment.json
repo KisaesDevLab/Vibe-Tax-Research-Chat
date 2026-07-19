@@ -1,0 +1,172 @@
+{
+  "id": "like-kind-equipment",
+  "version": "1.0.0",
+  "status": "published",
+  "effectiveTaxYears": {
+    "from": 2026,
+    "to": null
+  },
+  "lastReviewed": "2026-07-19",
+  "reviewedBy": null,
+  "changeLog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-19",
+      "note": "Initial original authoring to schema v1.0"
+    }
+  ],
+  "name": "Like-Kind Exchanges on Equipment (Post-TCJA Reality)",
+  "category": "income-timing",
+  "modeled": false,
+  "complexity": 2,
+  "riskRating": "low",
+  "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
+  "typicalSavingsBand": "under-5k",
+  "advisor": {
+    "summary": "Since TCJA, §1031 deferral is available only for real property — every equipment or vehicle trade-in completed after 2017 is a fully taxable disposition at the trade-in allowance, with gain up to prior depreciation recognized as ordinary recapture income. Federally the sting is usually neutralized, because the replacement asset is typically eligible for 100% bonus depreciation or first-year expensing that equals or exceeds the recognized recapture. But the wash is an outcome, not a rule: it fails in states that decouple from bonus depreciation, in loss years where the offsetting deduction is trapped, and whenever the replacement costs less than the trade-in allowance. This advisory record exists to retire stale pre-2018 client expectations and to price the specific pockets where the trade is not a wash before the client signs at the dealership.",
+    "mechanics": [
+      "TCJA (P.L. 115-97) amended §1031(a)(1) to cover real property only, for exchanges completed after December 31, 2017 — equipment, vehicles, machinery, and other personal property no longer qualify for deferral.",
+      "A trade-in bifurcates into two transactions: a sale of the old asset at the trade-in allowance — a §1001 realization event, with gain up to prior depreciation taxed as §1245 ordinary recapture — and a purchase of the new asset at full invoice price with a full cost basis.",
+      "The federal offset: the replacement is generally eligible for 100% bonus depreciation under §168(k) (permanent under OBBBA for property acquired after January 19, 2025) or §179 expensing ($2,560,000 limit with a $4,090,000 phase-out for 2026), so the year-one deduction usually covers the recapture when the replacement costs at least as much as the allowance.",
+      "The character still matters even when the dollars wash: recapture is ordinary income reported on Form 4797, it enjoys no capital-gain rate, and it raises AGI-driven phase-outs in the trade year.",
+      "Real property exchanges remain fully available — qualified intermediary, 45-day identification, 180-day closing — and Reg. §1.1031(a)-3 draws the post-TCJA line on what counts as real property; the invoice description does not."
+    ],
+    "authority": [
+      {
+        "type": "IRC",
+        "cite": "IRC §1031(a)(1), as amended by P.L. 115-97 (TCJA)",
+        "note": "Like-kind deferral limited to real property for exchanges completed after 12/31/2017 — the rule change this record exists to communicate."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1245",
+        "note": "Gain on disposed equipment is ordinary recapture income to the extent of prior depreciation, recognized in the trade year."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §1001",
+        "note": "A trade-in is a realization event: the amount realized is the allowance credited against the replacement."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §168(k), as amended by P.L. 119-21 (OBBBA)",
+        "note": "Permanent 100% bonus depreciation for property acquired after 1/19/2025 — the usual federal offset to the recognized recapture."
+      },
+      {
+        "type": "IRC",
+        "cite": "IRC §179",
+        "note": "The elective-expensing alternative — $2,560,000 limit / $4,090,000 phase-out for 2026 — where bonus is declined or state-limited."
+      },
+      {
+        "type": "Reg",
+        "cite": "Reg. §1.1031(a)-3",
+        "note": "The post-TCJA definition of real property — what still qualifies for §1031 and where the personal-property line sits."
+      },
+      {
+        "type": "Admin",
+        "cite": "Form 4797 and instructions",
+        "note": "Where the trade-in sale and the recapture are reported."
+      },
+      {
+        "type": "Admin",
+        "cite": "Rev. Proc. 2025-32",
+        "note": "The 2026 §179 dollar limits used in the offset math."
+      }
+    ],
+    "requirements": [
+      "Every equipment trade-in reported as a disposition at the trade-in allowance on Form 4797 — no carryover-basis treatment as if pre-2018 law applied.",
+      "Replacement eligibility for bonus or §179 confirmed, including the used-property rules, before the offset is assumed.",
+      "State conformity checked on both sides — the recapture and the replacement deduction — before the trade is called a wash.",
+      "Asset-by-asset depreciation records sufficient to compute recapture on each trade."
+    ],
+    "risks": [
+      "The primary exposure is the unreported disposition: clients and legacy software habits still treat equipment trades as tax-free rollovers, and the mismatch surfaces on exam through Form 4797 and depreciation-schedule review rather than in any leading case.",
+      "State decoupling is a real current-year cost — recapture taxed now while the replacement deduction spreads over the state life.",
+      "Loss-year mismatch: recapture is recognized even when the offsetting bonus deduction is trapped in a limited loss (a §461(l) interaction), turning the wash into a timing cost.",
+      "Fleet and heavy-equipment operations with continuous trade cycles now generate recapture churn that must be tracked asset by asset every year.",
+      "Forcing personal property into §1031 by relabeling it real property invites adjustment — Reg. §1.1031(a)-3 controls, not the invoice."
+    ],
+    "stateNotes": [
+      "The federal wash depends entirely on the state conforming to bonus depreciation and §179 — several states decouple or cap the deductions and tax the recapture currently, so the state answer must be priced trade by trade.",
+      "PTET interaction: recapture recognized inside a pass-through raises the entity's PTET base in the trade year while the offsetting deduction lowers it, so the net PTET effect tracks the federal wash in conforming states.",
+      "Missouri conforms to federal depreciation, including §168(k) bonus, through its federal-AGI starting point (RSMo §143.121), so the wash generally holds for Missouri; note the state's individual capital-gains subtraction does not shelter §1245 recapture, which is ordinary income, not capital gain."
+    ],
+    "interactions": {
+      "requires": [],
+      "conflictsWith": [],
+      "synergiesWith": ["section-179-expensing", "equipment-timing"]
+    },
+    "reviewChecklist": [
+      "Every planned trade is listed with its computed §1245 recapture from the depreciation schedule.",
+      "The bonus vs. §179 election is chosen with the client's state caps in mind, and the state add-back cost is priced before signing.",
+      "Loss-year interactions checked — the offsetting deduction is actually usable in the trade year.",
+      "Form 4797 reporting is confirmed at filing for each trade, with the replacement's basis set at full cost.",
+      "Any real-property exchange is routed through a qualified intermediary with the 45/180-day calendar in the file."
+    ]
+  },
+  "client": {
+    "teaser": "Equipment trade-ins stopped being tax-free in 2018 — we keep yours from becoming a surprise.",
+    "headline": "The new playbook for trading in equipment",
+    "plainEnglish": [
+      "For decades, trading old equipment for new was tax-free. The old machine's value just rolled into the new one. That ended in 2018. Now only real estate gets that treatment. A trade-in of trucks, machines, or gear counts as a sale.",
+      "Any value above what is left on your books is taxable income that year. The good news: you can usually deduct the full cost of the new equipment in the same year. Most of the time the deduction cancels the tax, and the net result is close to zero.",
+      "But 'usually' is not 'always.' Some states do not allow the instant write-off. Some loss years leave the deduction stuck while the trade-in income still counts. Tell us before you trade, and we check both sides first."
+    ],
+    "analogy": "A store that once did even swaps now writes two receipts: one buying your old item, one selling you the new. Most days the receipts cancel out. We read both before you trade.",
+    "benefits": [
+      "No surprises at filing time on equipment and vehicle trades",
+      "The new equipment's full cost is usually deductible right away",
+      "State-level costs identified before you commit, not after",
+      "Trades timed around your income years when waiting helps"
+    ],
+    "steps": [
+      "WE compute the taxable piece and the offsetting deduction, federal and state, before you commit.",
+      "WE pick the write-off election that works best across your states.",
+      "YOU call us before trading equipment or vehicles — a quick review is all it takes.",
+      "WE handle all the tax reporting on each trade."
+    ],
+    "clientCommitments": [
+      "Call before the dealership visit, not after",
+      "Keep the trade paperwork — the allowance amount drives the tax math"
+    ]
+  },
+  "engagement": {
+    "implementationEffort": "one-meeting",
+    "annualMaintenance": [
+      "Annual review of planned trade cycles against projected income",
+      "Asset-by-asset recapture tracking as the fleet turns over"
+    ],
+    "deliverables": [
+      "Trade-in tax memo per planned trade, federal and state",
+      "Form 4797 reporting for each completed trade at filing"
+    ],
+    "feeGuidanceBand": null
+  },
+  "suggest": {
+    "all": [
+      {
+        "field": "hasBusiness",
+        "op": "eq",
+        "value": true
+      }
+    ],
+    "reason": "Equipment trades are taxable now — §1031 is real-property-only — so trade-ins need planning, not habit."
+  },
+  "monitoring": {
+    "watchAuthorities": [
+      "IRC §1031 and Reg. §1.1031(a)-3 developments",
+      "§168(k) and §179 annual limits"
+    ],
+    "keywords": [
+      "equipment trade-in",
+      "1031 real property only",
+      "1245 recapture",
+      "bonus depreciation offset"
+    ],
+    "reviewTriggers": [
+      "Any legislative reinstatement of personal-property exchanges",
+      "State conformity changes on bonus depreciation or §179",
+      "Annual §179 limit updates"
+    ]
+  }
+}
