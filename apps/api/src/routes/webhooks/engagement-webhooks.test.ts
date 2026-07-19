@@ -1,15 +1,14 @@
 // TP-10 — signed-fixture tests for the OpenSign + Stripe webhooks:
-// happy path, bad signature, replay idempotency, stale timestamp.
+// happy path, bad signature, replay idempotency, stale timestamp,
+// unknown-event-type no-op (QA round 1).
 import { describe, it, expect, beforeAll, vi } from 'vitest';
 import crypto from 'node:crypto';
 import express from 'express';
 import request from 'supertest';
 
-const recordWebhookEvent = vi.fn(async () => true);
-const applyEngagementUpdate = vi.fn(async () => ({ engaged: false }));
+const applyEngagementUpdate = vi.fn(async () => ({ engaged: false, replay: false }));
 
 vi.mock('../../lib/engagement/index.js', () => ({
-  recordWebhookEvent: (...args: unknown[]) => recordWebhookEvent(...(args as [])),
   applyEngagementUpdate: (...args: unknown[]) => applyEngagementUpdate(...(args as [])),
 }));
 vi.mock('../../jobs/queues.js', () => ({ skillsSyncQueue: { add: vi.fn() } }));
@@ -48,8 +47,8 @@ describe('POST /api/webhooks/opensign', () => {
   const sign = (body: string, secret = OPENSIGN_SECRET) =>
     crypto.createHmac('sha256', secret).update(body).digest('hex');
 
-  it('accepts a valid signature and applies the update', async () => {
-    recordWebhookEvent.mockResolvedValueOnce(true);
+  it('accepts a valid signature and applies the update atomically with dedupe', async () => {
+    applyEngagementUpdate.mockClear();
     const app = await buildApp();
     const res = await request(app)
       .post('/api/webhooks/opensign')
@@ -61,6 +60,7 @@ describe('POST /api/webhooks/opensign', () => {
       'a4b1c1d1-0000-0000-0000-000000000001',
       expect.objectContaining({ letter_status: 'signed' }),
       null,
+      { provider: 'opensign', externalEventId: 'evt_1' },
     );
   });
 
@@ -74,8 +74,7 @@ describe('POST /api/webhooks/opensign', () => {
   });
 
   it('replayed event ids are acknowledged but not re-applied', async () => {
-    applyEngagementUpdate.mockClear();
-    recordWebhookEvent.mockResolvedValueOnce(false);
+    applyEngagementUpdate.mockResolvedValueOnce({ engaged: false, replay: true });
     const app = await buildApp();
     const res = await request(app)
       .post('/api/webhooks/opensign')
@@ -83,6 +82,22 @@ describe('POST /api/webhooks/opensign', () => {
       .send(payload);
     expect(res.status).toBe(200);
     expect(res.body.replay).toBe(true);
+  });
+
+  it('unknown event types are acknowledged without touching state', async () => {
+    applyEngagementUpdate.mockClear();
+    const viewed = JSON.stringify({
+      event_id: 'evt_viewed',
+      type: 'document.viewed',
+      plan_id: 'a4b1c1d1-0000-0000-0000-000000000001',
+    });
+    const app = await buildApp();
+    const res = await request(app)
+      .post('/api/webhooks/opensign')
+      .set('X-OpenSign-Signature', sign(viewed))
+      .send(viewed);
+    expect(res.status).toBe(200);
+    expect(res.body.ignored).toBe(true);
     expect(applyEngagementUpdate).not.toHaveBeenCalled();
   });
 });
@@ -101,7 +116,6 @@ describe('POST /api/webhooks/stripe', () => {
   };
 
   it('accepts a valid t=/v1= signature', async () => {
-    recordWebhookEvent.mockResolvedValueOnce(true);
     applyEngagementUpdate.mockClear();
     const app = await buildApp();
     const res = await request(app)
@@ -113,6 +127,7 @@ describe('POST /api/webhooks/stripe', () => {
       'a4b1c1d1-0000-0000-0000-000000000002',
       expect.objectContaining({ payment_status: 'paid' }),
       null,
+      { provider: 'stripe', externalEventId: 'evt_stripe_1' },
     );
   });
 
@@ -136,8 +151,7 @@ describe('POST /api/webhooks/stripe', () => {
   });
 
   it('replay is a no-op', async () => {
-    applyEngagementUpdate.mockClear();
-    recordWebhookEvent.mockResolvedValueOnce(false);
+    applyEngagementUpdate.mockResolvedValueOnce({ engaged: false, replay: true });
     const app = await buildApp();
     const res = await request(app)
       .post('/api/webhooks/stripe')
@@ -145,6 +159,24 @@ describe('POST /api/webhooks/stripe', () => {
       .send(payload);
     expect(res.status).toBe(200);
     expect(res.body.replay).toBe(true);
+  });
+
+  it('out-of-order benign events (invoice.finalized) never downgrade state', async () => {
+    applyEngagementUpdate.mockClear();
+    const finalized = JSON.stringify({
+      id: 'evt_stripe_2',
+      type: 'invoice.finalized',
+      data: {
+        object: { id: 'in_123', metadata: { plan_id: 'a4b1c1d1-0000-0000-0000-000000000002' } },
+      },
+    });
+    const app = await buildApp();
+    const res = await request(app)
+      .post('/api/webhooks/stripe')
+      .set('Stripe-Signature', sigHeader(finalized))
+      .send(finalized);
+    expect(res.status).toBe(200);
+    expect(res.body.ignored).toBe(true);
     expect(applyEngagementUpdate).not.toHaveBeenCalled();
   });
 });

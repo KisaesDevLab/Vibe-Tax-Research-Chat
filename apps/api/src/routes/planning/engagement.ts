@@ -5,7 +5,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
-import { plans, clients } from '@vibe/db/schema';
+import { engagements, plans, clients } from '@vibe/db/schema';
 import { requireRole } from '../../middleware/auth.js';
 import {
   ensureEngagement,
@@ -38,9 +38,32 @@ engagementRouter.get('/', async (req, res) => {
     res.status(404).json({ error: 'not_found' });
     return;
   }
+  // A GET must not create rows: below presented there is nothing to
+  // engage, and the insert would give the draft plan a NO ACTION
+  // dependent that blocks deletion. Return the default shape instead.
+  if (!['presented', 'engaged', 'delivered', 'archived'].includes(loaded.plan.status)) {
+    const [existing] = await getDb()
+      .select()
+      .from(engagements)
+      .where(eq(engagements.plan_id, planId))
+      .limit(1);
+    res.json({
+      engagement: existing ?? {
+        plan_id: planId,
+        letter_status: 'none',
+        payment_status: 'none',
+        events: [],
+      },
+    });
+    return;
+  }
   const engagement = await ensureEngagement(planId);
   res.json({ engagement });
 });
+
+// Letters and invoices go to real clients — they must never leave for a
+// plan that hasn't cleared the review gate.
+const PRESENTED_PLUS = ['presented', 'engaged', 'delivered'];
 
 engagementRouter.post('/send-letter', async (req, res) => {
   const planId = (req.params as { id?: string }).id ?? '';
@@ -53,9 +76,14 @@ engagementRouter.post('/send-letter', async (req, res) => {
     res.status(404).json({ error: 'not_found' });
     return;
   }
+  if (!PRESENTED_PLUS.includes(loaded.plan.status)) {
+    res.status(409).json({ error: 'plan_not_presented' });
+    return;
+  }
   try {
     const provider = getSignatureProvider();
     const { envelopeId } = await provider.createEnvelope({
+      planId,
       planTitle: loaded.plan.title,
       clientName: loaded.clientName,
       flatFee: loaded.plan.fee_plan?.flatFee ?? null,
@@ -90,6 +118,10 @@ engagementRouter.post('/send-invoice', async (req, res) => {
     res.status(404).json({ error: 'not_found' });
     return;
   }
+  if (!PRESENTED_PLUS.includes(loaded.plan.status)) {
+    res.status(409).json({ error: 'plan_not_presented' });
+    return;
+  }
   const amount = loaded.plan.fee_plan?.flatFee;
   if (!amount || amount <= 0) {
     res.status(400).json({ error: 'no_fee_configured' });
@@ -98,6 +130,7 @@ engagementRouter.post('/send-invoice', async (req, res) => {
   try {
     const provider = getPaymentProvider();
     const { invoiceId } = await provider.createInvoice({
+      planId,
       planTitle: loaded.plan.title,
       clientName: loaded.clientName,
       amount,

@@ -7,17 +7,28 @@ import { z } from 'zod';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import {
+  deliverables,
+  engagements,
   plans,
   plan_scenarios,
   plan_results,
+  research_archives,
+  strategies as strategiesTable,
   strategy_versions,
   table_sets,
+  users,
 } from '@vibe/db/schema';
 import { composeScenario, ENGINE_VERSION, type ScenarioTransform } from '@vibe/engine';
 import { resolveApply } from '@vibe/strategies';
 import type { BaselineProfile, StrategySelection, TableSetPayload } from '@vibe/shared';
 import { audit } from '../../lib/audit.js';
 import { findAttachableClient } from '../clients/index.js';
+import {
+  baselineProfileSchema,
+  validateParams,
+  type InputsSchema,
+  type ParamError,
+} from '../../lib/planning/validate.js';
 
 export const plansRouter = Router();
 
@@ -118,6 +129,10 @@ plansRouter.post('/', async (req, res) => {
 
 plansRouter.get('/', async (req, res) => {
   const clientId = typeof req.query.client_id === 'string' ? req.query.client_id : null;
+  if (clientId && !uuidSchema.safeParse(clientId).success) {
+    res.status(400).json({ error: 'bad_request', detail: 'invalid client_id' });
+    return;
+  }
   const where = clientId ? eq(plans.client_id, clientId) : undefined;
   const rows = await getDb()
     .select()
@@ -177,9 +192,34 @@ plansRouter.patch('/:id', async (req, res) => {
     res.status(404).json({ error: 'not_found' });
     return;
   }
-  if (FROZEN_STATUSES.includes(plan.status) && parsed.data.baseline_profile !== undefined) {
-    res.status(409).json({ error: 'plan_frozen' });
-    return;
+  // Frozen plans: only post-freeze bookkeeping fields (fee_plan,
+  // reviewer_id) stay mutable. title/years/growth would contradict the
+  // pinned results an issued plan carries.
+  if (FROZEN_STATUSES.includes(plan.status)) {
+    const attempted = Object.keys(parsed.data);
+    const allowedFrozen = new Set(['fee_plan', 'reviewer_id']);
+    if (attempted.some((k) => !allowedFrozen.has(k))) {
+      res.status(409).json({ error: 'plan_frozen' });
+      return;
+    }
+  }
+  if (parsed.data.baseline_profile !== undefined) {
+    const profileCheck = baselineProfileSchema.safeParse(parsed.data.baseline_profile);
+    if (!profileCheck.success) {
+      res.status(400).json({ error: 'invalid_profile', detail: profileCheck.error.flatten() });
+      return;
+    }
+  }
+  if (parsed.data.reviewer_id != null) {
+    const [reviewer] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.id, parsed.data.reviewer_id))
+      .limit(1);
+    if (!reviewer) {
+      res.status(400).json({ error: 'unknown_reviewer' });
+      return;
+    }
   }
   const update: Record<string, unknown> = { updated_at: new Date() };
   if (parsed.data.title !== undefined) update.title = parsed.data.title;
@@ -189,6 +229,11 @@ plansRouter.patch('/:id', async (req, res) => {
   if (parsed.data.growth_pct !== undefined) update.growth_pct = String(parsed.data.growth_pct);
   if (parsed.data.fee_plan !== undefined) update.fee_plan = parsed.data.fee_plan;
   if (parsed.data.reviewer_id !== undefined) update.reviewer_id = parsed.data.reviewer_id;
+  // Editing the profile invalidates review sign-off: what would be
+  // presented is no longer what was ticked (ordering-bypass guard).
+  if (plan.status === 'in-review' && parsed.data.baseline_profile !== undefined) {
+    update.review_state = {};
+  }
   const [row] = await db.update(plans).set(update).where(eq(plans.id, plan.id)).returning();
   await audit({
     actor_user_id: req.auth!.user_id,
@@ -216,7 +261,19 @@ plansRouter.delete('/:id', async (req, res) => {
     res.status(409).json({ error: 'only_draft_plans_deletable' });
     return;
   }
-  await db.delete(plans).where(eq(plans.id, plan.id));
+  // Detach/remove dependents that carry NO ACTION FKs: an engagement row
+  // (created by merely viewing the engagement tab), advisor deliverables
+  // rendered on a draft, and archives filed against the plan would each
+  // otherwise abort the delete with a raw FK violation.
+  await db.transaction(async (tx) => {
+    await tx.delete(engagements).where(eq(engagements.plan_id, plan.id));
+    await tx.delete(deliverables).where(eq(deliverables.plan_id, plan.id));
+    await tx
+      .update(research_archives)
+      .set({ plan_id: null, strategy_id: null })
+      .where(eq(research_archives.plan_id, plan.id));
+    await tx.delete(plans).where(eq(plans.id, plan.id));
+  });
   await audit({
     actor_user_id: req.auth!.user_id,
     action: 'plan.delete',
@@ -242,6 +299,33 @@ const scenarioSchema = z.object({
     .optional(),
 });
 
+/** Selection params are checked against each strategy's PUBLISHED inputs
+ *  schema — a missing required parameter previously computed silently as
+ *  $0 and overstated savings. */
+async function validateSelections(selections: StrategySelection[]): Promise<ParamError[]> {
+  if (selections.length === 0) return [];
+  const db = getDb();
+  const ids = Array.from(new Set(selections.map((s) => s.strategyId)));
+  const rows = await db
+    .select({
+      strategy_id: strategy_versions.strategy_id,
+      inputs_schema: strategy_versions.inputs_schema,
+    })
+    .from(strategy_versions)
+    .innerJoin(strategiesTable, eq(strategiesTable.current_version_id, strategy_versions.id))
+    .where(inArray(strategy_versions.strategy_id, ids));
+  const schemas = new Map(rows.map((r) => [r.strategy_id, r.inputs_schema as InputsSchema]));
+  return selections.flatMap((sel) =>
+    validateParams(sel.strategyId, sel.params ?? {}, schemas.get(sel.strategyId)),
+  );
+}
+
+/** Any change to what would be presented invalidates review sign-off. */
+async function clearReviewTicksIfInReview(planId: string, status: string): Promise<void> {
+  if (status !== 'in-review') return;
+  await getDb().update(plans).set({ review_state: {} }).where(eq(plans.id, planId));
+}
+
 plansRouter.post('/:id/scenarios', async (req, res) => {
   const parsed = scenarioSchema.safeParse(req.body ?? {});
   if (!uuidSchema.safeParse(req.params.id).success || !parsed.success) {
@@ -258,14 +342,21 @@ plansRouter.post('/:id/scenarios', async (req, res) => {
     res.status(409).json({ error: 'plan_frozen' });
     return;
   }
+  const selections = (parsed.data.selections ?? []) as StrategySelection[];
+  const paramErrors = await validateSelections(selections);
+  if (paramErrors.length > 0) {
+    res.status(400).json({ error: 'invalid_params', detail: paramErrors });
+    return;
+  }
   const [scenario] = await db
     .insert(plan_scenarios)
     .values({
       plan_id: plan.id,
       label: parsed.data.label ?? 'Scenario',
-      selections: (parsed.data.selections ?? []) as StrategySelection[],
+      selections,
     })
     .returning();
+  await clearReviewTicksIfInReview(plan.id, plan.status);
   res.status(201).json({ scenario });
 });
 
@@ -279,6 +370,10 @@ plansRouter.patch('/:id/scenarios/:scenarioId', async (req, res) => {
     res.status(400).json({ error: 'bad_request' });
     return;
   }
+  if (parsed.data.label === undefined && parsed.data.selections === undefined) {
+    res.status(400).json({ error: 'bad_request', detail: 'nothing to update' });
+    return;
+  }
   const db = getDb();
   const [plan] = await db.select().from(plans).where(eq(plans.id, req.params.id)).limit(1);
   if (!plan) {
@@ -288,6 +383,13 @@ plansRouter.patch('/:id/scenarios/:scenarioId', async (req, res) => {
   if (FROZEN_STATUSES.includes(plan.status)) {
     res.status(409).json({ error: 'plan_frozen' });
     return;
+  }
+  if (parsed.data.selections !== undefined) {
+    const paramErrors = await validateSelections(parsed.data.selections as StrategySelection[]);
+    if (paramErrors.length > 0) {
+      res.status(400).json({ error: 'invalid_params', detail: paramErrors });
+      return;
+    }
   }
   const update: Record<string, unknown> = {};
   if (parsed.data.label !== undefined) update.label = parsed.data.label;
@@ -300,6 +402,9 @@ plansRouter.patch('/:id/scenarios/:scenarioId', async (req, res) => {
   if (!row) {
     res.status(404).json({ error: 'not_found' });
     return;
+  }
+  if (parsed.data.selections !== undefined) {
+    await clearReviewTicksIfInReview(plan.id, plan.status);
   }
   res.json({ scenario: row });
 });
@@ -437,7 +542,14 @@ plansRouter.post('/:id/compute', async (req, res) => {
         });
       }
     }
-    await tx.update(plans).set({ updated_at: new Date() }).where(eq(plans.id, plan.id));
+    await tx
+      .update(plans)
+      .set({
+        updated_at: new Date(),
+        // Recomputing while in review invalidates existing sign-off.
+        ...(plan.status === 'in-review' ? { review_state: {} } : {}),
+      })
+      .where(eq(plans.id, plan.id));
   });
 
   await audit({

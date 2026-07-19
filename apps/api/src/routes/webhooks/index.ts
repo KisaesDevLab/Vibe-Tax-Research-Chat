@@ -95,20 +95,23 @@ webhooksRouter.post('/opensign', async (req, res) => {
     res.status(400).json({ error: 'missing_fields' });
     return;
   }
-  const { recordWebhookEvent, applyEngagementUpdate } =
-    await import('../../lib/engagement/index.js');
-  const fresh = await recordWebhookEvent('opensign', payload.event_id);
-  if (!fresh) {
-    res.status(200).json({ ok: true, replay: true });
-    return;
-  }
+  // Only event types we actually handle mutate state. Everything else
+  // (viewed, delivered, resent, …) is acknowledged WITHOUT touching the
+  // engagement or the ledger — an unknown type must never downgrade
+  // 'signed' back to 'sent', and not consuming the ledger keeps the
+  // event replayable if a later version learns to handle it.
   const letterStatus =
     payload.type === 'document.signed'
       ? 'signed'
       : payload.type === 'document.declined'
         ? 'declined'
-        : 'sent';
-  await applyEngagementUpdate(
+        : null;
+  if (!letterStatus) {
+    res.status(200).json({ ok: true, ignored: true });
+    return;
+  }
+  const { applyEngagementUpdate } = await import('../../lib/engagement/index.js');
+  const result = await applyEngagementUpdate(
     payload.plan_id,
     {
       letter_status: letterStatus,
@@ -116,8 +119,9 @@ webhooksRouter.post('/opensign', async (req, res) => {
       event: { source: 'opensign', kind: payload.type ?? 'unknown' },
     },
     null,
+    { provider: 'opensign', externalEventId: payload.event_id },
   );
-  res.status(200).json({ ok: true });
+  res.status(200).json(result.replay ? { ok: true, replay: true } : { ok: true });
 });
 
 // Stripe: Stripe-Signature: t=<ts>,v1=<hex hmac over `${t}.${raw}`>,
@@ -170,20 +174,21 @@ webhooksRouter.post('/stripe', async (req, res) => {
     res.status(400).json({ error: 'missing_fields' });
     return;
   }
-  const { recordWebhookEvent, applyEngagementUpdate } =
-    await import('../../lib/engagement/index.js');
-  const fresh = await recordWebhookEvent('stripe', payload.id);
-  if (!fresh) {
-    res.status(200).json({ ok: true, replay: true });
-    return;
-  }
+  // Stripe does not guarantee event ordering: an invoice.finalized
+  // arriving after invoice.paid must not regress 'paid'. Only the two
+  // types we handle mutate state; others are acknowledged untouched.
   const paymentStatus =
     payload.type === 'invoice.paid'
       ? 'paid'
       : payload.type === 'invoice.payment_failed'
         ? 'failed'
-        : 'invoiced';
-  await applyEngagementUpdate(
+        : null;
+  if (!paymentStatus) {
+    res.status(200).json({ ok: true, ignored: true });
+    return;
+  }
+  const { applyEngagementUpdate } = await import('../../lib/engagement/index.js');
+  const result = await applyEngagementUpdate(
     planId,
     {
       payment_status: paymentStatus,
@@ -191,6 +196,7 @@ webhooksRouter.post('/stripe', async (req, res) => {
       event: { source: 'stripe', kind: payload.type ?? 'unknown' },
     },
     null,
+    { provider: 'stripe', externalEventId: payload.id },
   );
-  res.status(200).json({ ok: true });
+  res.status(200).json(result.replay ? { ok: true, replay: true } : { ok: true });
 });

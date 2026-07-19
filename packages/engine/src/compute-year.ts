@@ -62,10 +62,18 @@ export function computeYear(
       x.flow -= Math.round((ownerPayroll.employerHalf * dollars(x.b.ownerWages)) / totalOwnerWages);
     }
   }
-  const positiveFlowTotal = preFlow.reduce((a, x) => a + clampMin0(x.flow), 0);
+  // PTET is an ENTITY-level election: only pass-through entities (S corps,
+  // partnerships) can make it, so the entity deduction is allocated
+  // pro-rata across their positive flows only. A Schedule C cannot elect
+  // PTET and must never see its SE base shrink from someone else's PTET.
+  const electablePositiveTotal = preFlow
+    .filter((x) => x.b.kind === 's-corp' || x.b.kind === 'partnership')
+    .reduce((a, x) => a + clampMin0(x.flow), 0);
   const flows = preFlow.map((x) => {
-    if (ptetPaid <= 0 || positiveFlowTotal <= 0 || x.flow <= 0) return x;
-    return { ...x, flow: x.flow - Math.round((ptetPaid * x.flow) / positiveFlowTotal) };
+    if (ptetPaid <= 0 || electablePositiveTotal <= 0 || x.flow <= 0 || x.b.kind === 'schedule-c') {
+      return x;
+    }
+    return { ...x, flow: x.flow - Math.round((ptetPaid * x.flow) / electablePositiveTotal) };
   });
   const flowThroughTotal = flows.reduce((a, x) => a + x.flow, 0);
 

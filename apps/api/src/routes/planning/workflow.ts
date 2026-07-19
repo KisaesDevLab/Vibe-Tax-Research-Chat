@@ -2,7 +2,7 @@
 // this" launcher. Mounted under /plans/:id (mergeParams).
 import { Router } from 'express';
 import { z } from 'zod';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import {
   plans,
@@ -17,6 +17,7 @@ import {
 import type { PlanStatus, StrategySelection } from '@vibe/shared';
 import { audit } from '../../lib/audit.js';
 import { canTransition, evaluateReviewGate } from '../../lib/planning/workflow.js';
+import { FROZEN_STATUSES as FROZEN_WORKFLOW_STATUSES } from './plans.js';
 
 export const planWorkflowRouter = Router({ mergeParams: true });
 
@@ -94,6 +95,17 @@ planWorkflowRouter.patch('/review-state', async (req, res) => {
     res.status(409).json({ error: 'not_in_review' });
     return;
   }
+  // Four-eyes is identity-enforced: only the ASSIGNED reviewer ticks the
+  // checklist. Without this the preparer could tick everything and
+  // self-present — the reviewer_id field alone proves nothing.
+  if (!plan.reviewer_id) {
+    res.status(409).json({ error: 'no_reviewer_assigned' });
+    return;
+  }
+  if (req.auth!.user_id !== plan.reviewer_id) {
+    res.status(403).json({ error: 'reviewer_only' });
+    return;
+  }
   const [row] = await getDb()
     .update(plans)
     .set({ review_state: parsed.data.review_state, updated_at: new Date() })
@@ -156,6 +168,12 @@ planWorkflowRouter.post('/transition', async (req, res) => {
     return;
   }
   if (plan.status === 'in-review' && to === 'presented') {
+    // Only the assigned reviewer can present — the ticks are theirs, so
+    // the final act must be too.
+    if (req.auth!.user_id !== plan.reviewer_id) {
+      res.status(403).json({ error: 'reviewer_only' });
+      return;
+    }
     const input = await collectGateInput(plan.id);
     const gate = evaluateReviewGate({
       ...input,
@@ -170,7 +188,13 @@ planWorkflowRouter.post('/transition', async (req, res) => {
   }
   const [row] = await getDb()
     .update(plans)
-    .set({ status: to, updated_at: new Date() })
+    .set({
+      status: to,
+      updated_at: new Date(),
+      // The back-edge to draft reopens editing; stale ticks must not
+      // survive the round-trip and pre-satisfy a future gate.
+      ...(plan.status === 'in-review' && to === 'draft' ? { review_state: {} } : {}),
+    })
     .where(eq(plans.id, plan.id))
     .returning();
   await audit({
@@ -255,11 +279,31 @@ planWorkflowRouter.post('/research-links', async (req, res) => {
     res.status(400).json({ error: 'archive_belongs_to_other_client' });
     return;
   }
+  // Duplicate guard that also covers strategy_id = NULL, where the
+  // unique index treats rows as distinct.
+  const strategyId = parsed.data.strategy_id ?? null;
+  const existing = await db
+    .select({ id: plan_research_links.id })
+    .from(plan_research_links)
+    .where(
+      and(
+        eq(plan_research_links.plan_id, plan.id),
+        eq(plan_research_links.research_archive_id, archive.id),
+        strategyId === null
+          ? isNull(plan_research_links.strategy_id)
+          : eq(plan_research_links.strategy_id, strategyId),
+      ),
+    )
+    .limit(1);
+  if (existing.length > 0) {
+    res.status(200).json({ link: null, duplicate: true });
+    return;
+  }
   const [link] = await db
     .insert(plan_research_links)
     .values({
       plan_id: plan.id,
-      strategy_id: parsed.data.strategy_id ?? null,
+      strategy_id: strategyId,
       research_archive_id: archive.id,
       created_by: req.auth!.user_id,
     })
@@ -287,14 +331,41 @@ planWorkflowRouter.delete('/research-links/:linkId', async (req, res) => {
     res.status(400).json({ error: 'bad_request' });
     return;
   }
+  const plan = await loadPlan(planId);
+  if (!plan) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  // On a frozen plan the links ARE the provenance that justified
+  // presentation — the gate evidence must be immutable, like the results.
+  if (FROZEN_WORKFLOW_STATUSES.includes(plan.status)) {
+    res.status(409).json({ error: 'plan_frozen' });
+    return;
+  }
   const deleted = await getDb()
     .delete(plan_research_links)
     .where(and(eq(plan_research_links.id, linkId), eq(plan_research_links.plan_id, planId)))
-    .returning({ id: plan_research_links.id });
+    .returning({
+      id: plan_research_links.id,
+      research_archive_id: plan_research_links.research_archive_id,
+      strategy_id: plan_research_links.strategy_id,
+    });
   if (deleted.length === 0) {
     res.status(404).json({ error: 'not_found' });
     return;
   }
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'plan.research_link.delete',
+    target_type: 'plan',
+    target_id: planId,
+    metadata: {
+      client_id: plan.client_id,
+      research_archive_id: deleted[0]!.research_archive_id,
+      strategy_id: deleted[0]!.strategy_id,
+    },
+    ip: req.ip,
+  });
   res.status(204).end();
 });
 

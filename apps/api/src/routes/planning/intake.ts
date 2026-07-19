@@ -10,6 +10,7 @@ import { getDb } from '@vibe/db';
 import { plans, table_sets } from '@vibe/db/schema';
 import type { TableSetPayload } from '@vibe/shared';
 import { audit } from '../../lib/audit.js';
+import { baselineProfileSchema } from '../../lib/planning/validate.js';
 import { logger } from '../../lib/logger.js';
 import { extractPdfTokens } from '../../lib/intake/pdf-extract.js';
 import { selectAnchors, matchAnchors } from '../../lib/intake/anchors.js';
@@ -102,11 +103,18 @@ intakeRouter.post('/confirm', async (req, res) => {
     res.status(409).json({ error: 'plan_frozen' });
     return;
   }
+  const profileCheck = baselineProfileSchema.safeParse(parsed.data.baseline_profile);
+  if (!profileCheck.success) {
+    res.status(400).json({ error: 'invalid_profile', detail: profileCheck.error.flatten() });
+    return;
+  }
   await getDb()
     .update(plans)
     .set({
       baseline_profile: parsed.data.baseline_profile as never,
       updated_at: new Date(),
+      // Confirming new intake invalidates review sign-off.
+      ...(plan.status === 'in-review' ? { review_state: {} } : {}),
     })
     .where(eq(plans.id, plan.id));
   await audit({

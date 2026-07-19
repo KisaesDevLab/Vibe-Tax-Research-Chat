@@ -58,13 +58,17 @@ export function computeQbiDeduction(opts: {
     combined += tentative - Math.round(shortfall * phaseRatio);
   }
 
+  const overallCap = mulRate(clampMin0(taxableIncomeBeforeQbi - netCapitalGain), t.rate);
+
   if (combined <= 0) {
-    // OBBBA §199A(i): minimum deduction for taxpayers with modest active QBI.
-    if (aggregateQbi >= dollars(t.minDeduction.qbiFloor)) return dollars(t.minDeduction.amount);
+    // OBBBA §199A(i): minimum deduction for taxpayers with modest active
+    // QBI — still bounded by the overall 20%-of-(TI − net capital gain)
+    // cap, same as the positive-combined branch.
+    if (aggregateQbi >= dollars(t.minDeduction.qbiFloor)) {
+      return Math.min(dollars(t.minDeduction.amount), overallCap);
+    }
     return 0;
   }
-
-  const overallCap = mulRate(clampMin0(taxableIncomeBeforeQbi - netCapitalGain), t.rate);
   let deduction = Math.min(combined, overallCap);
   if (aggregateQbi >= dollars(t.minDeduction.qbiFloor)) {
     deduction = Math.max(deduction, Math.min(dollars(t.minDeduction.amount), overallCap));

@@ -7,6 +7,7 @@ import type { ApplyContext, ApplyResult } from '../types.js';
 import { register } from './index.js';
 import {
   aboveTheLine,
+  oneShot,
   capitalGainReduction,
   credit,
   entityDeduction,
@@ -108,7 +109,12 @@ register('spouse-payroll@1.0.0', (ctx: ApplyContext): ApplyResult => {
     profile: {
       ...profile,
       businesses,
-      wages: profile.wages + wages,
+      // Spouse W-2 income routes through otherIncome, NOT profile.wages:
+      // the engine aggregates profile.wages into one household SS wage
+      // base (documented v1 simplification), and letting spouse wages
+      // shrink the owner's SE SS coordination would monetize that
+      // simplification into phantom savings. FICA bases are per person.
+      otherIncome: profile.otherIncome + wages,
       otherTaxes: profile.otherTaxes + employeeFica,
     },
     notes: [
@@ -140,55 +146,64 @@ register('qbi-wage-optimization@1.0.0', (ctx: ApplyContext): ApplyResult => {
 
 register(
   'bad-debt-review@1.0.0',
-  entityDeduction({
-    param: 'worthlessAmount',
-    target: 'any',
-    label: 'Bad-debt write-off (§166)',
-    missingNote: 'No business with receivables to review — not applied.',
-  }),
+  oneShot(
+    'Bad-debt write-off',
+    entityDeduction({
+      param: 'worthlessAmount',
+      target: 'any',
+      label: 'Bad-debt write-off (§166)',
+      missingNote: 'No business with receivables to review — not applied.',
+    }),
+  ),
 );
 
 // daf-bunching: several years of giving front-loaded into a donor-
 // advised fund — an itemized charitable deduction, not a business one.
-register('daf-bunching@1.0.0', (ctx: ApplyContext): ApplyResult => {
-  const { profile, params } = ctx;
-  const amount = Math.max(num(params.contribution), 0);
-  if (amount <= 0) return { profile, notes: ['No DAF contribution configured.'] };
-  return {
-    profile: {
-      ...profile,
-      itemized: { ...profile.itemized, charitable: profile.itemized.charitable + amount },
-    },
-    notes: [
-      `${usd(amount)} contributed to a donor-advised fund — deduction bunched into this year; grants to charities follow on the client's schedule. AGI percentage limits are reviewed outside the model.`,
-    ],
-  };
-});
+register(
+  'daf-bunching@1.0.0',
+  oneShot('DAF bunching', (ctx: ApplyContext): ApplyResult => {
+    const { profile, params } = ctx;
+    const amount = Math.max(num(params.contribution), 0);
+    if (amount <= 0) return { profile, notes: ['No DAF contribution configured.'] };
+    return {
+      profile: {
+        ...profile,
+        itemized: { ...profile.itemized, charitable: profile.itemized.charitable + amount },
+      },
+      notes: [
+        `${usd(amount)} contributed to a donor-advised fund — deduction bunched into this year; grants to charities follow on the client's schedule. AGI percentage limits are reviewed outside the model.`,
+      ],
+    };
+  }),
+);
 
 // heavy-vehicle-179: business-use share of a >6,000 lb GVWR vehicle.
-register('heavy-vehicle-179@1.0.0', (ctx: ApplyContext): ApplyResult => {
-  const { profile, params } = ctx;
-  const idx = profile.businesses.length > 0 ? 0 : -1;
-  if (idx === -1) return { profile, notes: ['No business to place the vehicle in service.'] };
-  const cost = Math.max(num(params.vehicleCost), 0);
-  const pct = Math.min(Math.max(num(params.businessUsePct, 100), 0), 100);
-  const amount = Math.round((cost * pct) / 100);
-  if (amount <= 0 || pct <= 50) {
+register(
+  'heavy-vehicle-179@1.0.0',
+  oneShot('Heavy vehicle §179', (ctx: ApplyContext): ApplyResult => {
+    const { profile, params } = ctx;
+    const idx = profile.businesses.length > 0 ? 0 : -1;
+    if (idx === -1) return { profile, notes: ['No business to place the vehicle in service.'] };
+    const cost = Math.max(num(params.vehicleCost), 0);
+    const pct = Math.min(Math.max(num(params.businessUsePct, 100), 0), 100);
+    const amount = Math.round((cost * pct) / 100);
+    if (amount <= 0 || pct <= 50) {
+      return {
+        profile,
+        notes: ['§179 on a listed vehicle requires >50% business use — not applied.'],
+      };
+    }
+    const businesses = profile.businesses.map((b, i) =>
+      i === idx ? { ...b, netProfit: b.netProfit - amount } : b,
+    );
     return {
-      profile,
-      notes: ['§179 on a listed vehicle requires >50% business use — not applied.'],
+      profile: { ...profile, businesses },
+      notes: [
+        `Heavy vehicle (${usd(cost)} at ${pct}% business use): ${usd(amount)} expensed under §179/bonus in year one.`,
+      ],
     };
-  }
-  const businesses = profile.businesses.map((b, i) =>
-    i === idx ? { ...b, netProfit: b.netProfit - amount } : b,
-  );
-  return {
-    profile: { ...profile, businesses },
-    notes: [
-      `Heavy vehicle (${usd(cost)} at ${pct}% business use): ${usd(amount)} expensed under §179/bonus in year one.`,
-    ],
-  };
-});
+  }),
+);
 
 // home-office-deduction: simplified ($5/sq ft, 300 cap) or actual.
 register('home-office-deduction@1.0.0', (ctx: ApplyContext): ApplyResult => {
@@ -242,12 +257,15 @@ register(
 
 register(
   'prepaid-expenses@1.0.0',
-  entityDeduction({
-    param: 'prepaidAmount',
-    target: 'any',
-    label: '12-month-rule prepayments',
-    missingNote: 'No cash-method business to accelerate deductions into — not applied.',
-  }),
+  oneShot(
+    '12-month-rule prepayments',
+    entityDeduction({
+      param: 'prepaidAmount',
+      target: 'any',
+      label: '12-month-rule prepayments',
+      missingNote: 'No cash-method business to accelerate deductions into — not applied.',
+    }),
+  ),
 );
 
 register(
@@ -340,11 +358,15 @@ register('spouse-health-s-corp@1.0.0', (ctx: ApplyContext): ApplyResult => {
     profile: {
       ...profile,
       businesses,
-      wages: profile.wages + premium,
+      // Box-1-only inclusion (Announcement 92-16): the premium is NOT
+      // FICA/Medicare wages, so it must not enter profile.wages (which
+      // feeds the Additional-Medicare and SS wage-base coordination).
+      // otherIncome is income-tax-equivalent without the payroll bases.
+      otherIncome: profile.otherIncome + premium,
       seHealthInsurance: profile.seHealthInsurance + premium,
     },
     notes: [
-      `${usd(premium)} of premiums run through the S corp: deducted by the entity, added to the 2% shareholder W-2 (no FICA), then deducted above the line under §162(l).`,
+      `${usd(premium)} of premiums run through the S corp: deducted by the entity, included in the 2% shareholder's Box 1 only (no FICA), then deducted above the line under §162(l).`,
     ],
   };
 });
@@ -381,7 +403,10 @@ function dualTargetDeduction(label: string, param: string) {
   };
 }
 
-register('bonus-depreciation@1.0.0', dualTargetDeduction('Bonus depreciation', 'deductionAmount'));
+register(
+  'bonus-depreciation@1.0.0',
+  oneShot('Bonus depreciation', dualTargetDeduction('Bonus depreciation', 'deductionAmount')),
+);
 register(
   'repair-vs-capitalization@1.0.0',
   dualTargetDeduction('Repair expensing (TPR)', 'expensedAmount'),
@@ -389,21 +414,27 @@ register(
 
 register(
   'cost-segregation@1.0.0',
-  rentalDeduction({
-    param: 'firstYearAcceleration',
-    label: 'Cost segregation',
-    missingNote: 'No rental property to study — not applied.',
-  }),
+  oneShot(
+    'Cost segregation',
+    rentalDeduction({
+      param: 'firstYearAcceleration',
+      label: 'Cost segregation',
+      missingNote: 'No rental property to study — not applied.',
+    }),
+  ),
 );
 
 register(
   'energy-179d@1.0.0',
-  entityDeduction({
-    param: 'deductionAmount',
-    target: 'any',
-    label: '§179D energy-efficient building deduction',
-    missingNote: 'No business owning or designing qualifying property — not applied.',
-  }),
+  oneShot(
+    '\u00a7179D deduction',
+    entityDeduction({
+      param: 'deductionAmount',
+      target: 'any',
+      label: '§179D energy-efficient building deduction',
+      missingNote: 'No business owning or designing qualifying property — not applied.',
+    }),
+  ),
 );
 
 register(
@@ -444,31 +475,40 @@ register(
 
 register(
   'partial-asset-disposition@1.0.0',
-  rentalDeduction({
-    param: 'remainingBasis',
-    label: 'Partial asset disposition',
-    missingNote: 'No rental with replaced components — not applied.',
-  }),
+  oneShot(
+    'Partial asset disposition',
+    rentalDeduction({
+      param: 'remainingBasis',
+      label: 'Partial asset disposition',
+      missingNote: 'No rental with replaced components — not applied.',
+    }),
+  ),
 );
 
 register(
   'qip-bonus@1.0.0',
-  entityDeduction({
-    param: 'qipDeduction',
-    target: 'any',
-    label: 'QIP bonus depreciation',
-    missingNote: 'No business with qualified improvement property — not applied.',
-  }),
+  oneShot(
+    'QIP bonus depreciation',
+    entityDeduction({
+      param: 'qipDeduction',
+      target: 'any',
+      label: 'QIP bonus depreciation',
+      missingNote: 'No business with qualified improvement property — not applied.',
+    }),
+  ),
 );
 
 register(
   'section-179-expensing@1.0.0',
-  entityDeduction({
-    param: 'electedAmount',
-    target: 'any',
-    label: '§179 expensing election',
-    missingNote: 'No business placing assets in service — not applied.',
-  }),
+  oneShot(
+    '\u00a7179 expensing',
+    entityDeduction({
+      param: 'electedAmount',
+      target: 'any',
+      label: '§179 expensing election',
+      missingNote: 'No business placing assets in service — not applied.',
+    }),
+  ),
 );
 
 // str-loophole: a short-term rental with material participation is
@@ -478,10 +518,12 @@ register('str-loophole@1.0.0', (ctx: ApplyContext): ApplyResult => {
   if (profile.rentals.length === 0)
     return { profile, notes: ['No rental activity — not applied.'] };
   const targetId = typeof params.rentalId === 'string' ? params.rentalId : profile.rentals[0]!.id;
-  const idx = Math.max(
-    profile.rentals.findIndex((r) => r.id === targetId),
-    0,
-  );
+  const idx = profile.rentals.findIndex((r) => r.id === targetId);
+  if (idx === -1) {
+    // A stale rentalId must surface — never silently reclassify a
+    // different property.
+    return { profile, notes: [`STR treatment: rental "${targetId}" not found — not applied.`] };
+  }
   const target = profile.rentals[idx]!;
   const rentals = profile.rentals.filter((_, i) => i !== idx);
   return {
@@ -641,9 +683,23 @@ register(
 // nol-planning: apply a carried NOL against ~80% of current income
 // (§172(a)(2) limitation, approximated pre-deduction).
 register('nol-planning@1.0.0', (ctx: ApplyContext): ApplyResult => {
-  const { profile, params } = ctx;
-  const nol = Math.max(num(params.nolCarryforward), 0);
-  if (nol <= 0) return { profile, notes: ['No NOL carryforward on file.'] };
+  const { profile, params, carry, yearIndex } = ctx;
+  // The carryforward is FINITE: year one starts from the parameter, later
+  // projection years draw down whatever the prior year left. Without the
+  // carry thread the full NOL would re-deduct every projection year.
+  const opening =
+    yearIndex === 0 ? Math.max(num(params.nolCarryforward), 0) : Math.max(num(carry.remaining), 0);
+  if (opening <= 0) {
+    return {
+      profile,
+      notes: [
+        yearIndex === 0
+          ? 'No NOL carryforward on file.'
+          : 'NOL fully absorbed — nothing left to deduct.',
+      ],
+      carryPatch: { remaining: 0 },
+    };
+  }
   const incomeEstimate =
     Math.max(profile.wages, 0) +
     profile.businesses.reduce(
@@ -654,13 +710,20 @@ register('nol-planning@1.0.0', (ctx: ApplyContext): ApplyResult => {
     Math.max(profile.ordinaryDividends + profile.qualifiedDividends, 0) +
     Math.max(profile.shortTermCapGain + profile.longTermCapGain, 0) +
     Math.max(profile.otherIncome, 0);
-  const allowed = Math.min(nol, Math.round(incomeEstimate * 0.8));
-  if (allowed <= 0) return { profile, notes: ['No income for the NOL to offset this year.'] };
+  const allowed = Math.min(opening, Math.round(incomeEstimate * 0.8));
+  if (allowed <= 0) {
+    return {
+      profile,
+      notes: ['No income for the NOL to offset this year.'],
+      carryPatch: { remaining: opening },
+    };
+  }
   return {
     profile: { ...profile, adjustments: profile.adjustments + allowed },
     notes: [
-      `${usd(allowed)} of NOL absorbed (80%-of-taxable-income limit approximated); ${usd(nol - allowed)} carries forward.`,
+      `${usd(allowed)} of NOL absorbed (80%-of-taxable-income limit approximated); ${usd(opening - allowed)} carries forward.`,
     ],
+    carryPatch: { remaining: opening - allowed },
   };
 });
 
@@ -702,23 +765,29 @@ register(
 
 register(
   'disabled-access-credit@1.0.0',
-  credit({
-    label: '§44 disabled access credit',
-    compute: (params) => {
-      const spend = Math.max(num(params.accessExpenditures), 0);
-      return Math.min(Math.max(spend - 250, 0), 10_000) * 0.5;
-    },
-  }),
+  oneShot(
+    '\u00a744 disabled access credit',
+    credit({
+      label: '§44 disabled access credit',
+      compute: (params) => {
+        const spend = Math.max(num(params.accessExpenditures), 0);
+        return Math.min(Math.max(spend - 250, 0), 10_000) * 0.5;
+      },
+    }),
+  ),
 );
 
 register(
   'energy-credits@1.0.0',
-  credit({
-    label: 'Business energy credits',
-    compute: (params) => Math.max(num(params.creditAmount), 0),
-    note: (amount) =>
-      `${usd(amount)} of business energy credits (ITC/EV charging) — basis reduction and recapture reviewed outside the model.`,
-  }),
+  oneShot(
+    'Business energy credits',
+    credit({
+      label: 'Business energy credits',
+      compute: (params) => Math.max(num(params.creditAmount), 0),
+      note: (amount) =>
+        `${usd(amount)} of business energy credits (ITC/EV charging) — basis reduction and recapture reviewed outside the model.`,
+    }),
+  ),
 );
 
 register(

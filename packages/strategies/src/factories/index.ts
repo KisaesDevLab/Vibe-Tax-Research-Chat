@@ -14,6 +14,25 @@ export const usd = (n: number): string => `$${Math.round(n).toLocaleString('en-U
 
 export type BusinessTarget = 'any' | 'entity' | 'schedule-c' | 's-corp';
 
+/**
+ * One-time transforms (asset placed in service, a study, a bunching
+ * contribution, a write-off) act in YEAR ONE of the projection only.
+ * Without this wrapper composeScenario re-applies the transform every
+ * projection year, silently multiplying a one-shot deduction by the
+ * plan's year count.
+ */
+export function oneShot(label: string, fn: ApplyFn): ApplyFn {
+  return (ctx: ApplyContext): ApplyResult => {
+    if (ctx.yearIndex > 0) {
+      return {
+        profile: ctx.profile,
+        notes: [`${label}: year-one action — no additional deduction modeled in later years.`],
+      };
+    }
+    return fn(ctx);
+  };
+}
+
 export function findBusinessIndex(businesses: BusinessProfile[], target: BusinessTarget): number {
   switch (target) {
     case 'schedule-c':
@@ -139,10 +158,12 @@ export function rentalDeduction(opts: {
     const amount = Math.max(num(params[opts.param]), 0);
     if (amount <= 0) return { profile, notes: [`${opts.label}: no amount to deduct.`] };
     const targetId = typeof params.rentalId === 'string' ? params.rentalId : profile.rentals[0]!.id;
-    const idx = Math.max(
-      profile.rentals.findIndex((r) => r.id === targetId),
-      0,
-    );
+    const idx = profile.rentals.findIndex((r) => r.id === targetId);
+    if (idx === -1) {
+      // Never silently retarget a different property — a stale rentalId
+      // must surface, not shift depreciation onto the wrong activity.
+      return { profile, notes: [`${opts.label}: rental "${targetId}" not found — not applied.`] };
+    }
     const rentals = profile.rentals.map((r, i) =>
       i === idx ? { ...r, netIncome: r.netIncome - amount } : r,
     );

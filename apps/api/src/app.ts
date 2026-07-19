@@ -83,7 +83,22 @@ export function createApp(): Express {
   // UI mounted at /admin/queues) gets authenticated, since browsers
   // don't attach Authorization headers to plain link clicks.
   app.use(cookieParser());
-  app.use(pinoHttp({ logger }));
+  // Signed deliverable links carry a bearer-capability token in the PATH
+  // (/api/dl/:token). The DB stores only sha256(token); the request log
+  // must not undo that, so the req serializer masks the token segment.
+  app.use(
+    pinoHttp({
+      logger,
+      serializers: {
+        req(req: { url?: string } & Record<string, unknown>) {
+          if (typeof req.url === 'string' && req.url.startsWith('/api/dl/')) {
+            req.url = '/api/dl/[REDACTED]';
+          }
+          return req;
+        },
+      },
+    }),
+  );
 
   app.use('/api/health', healthRouter);
   app.use('/api/ping', pingRouter);

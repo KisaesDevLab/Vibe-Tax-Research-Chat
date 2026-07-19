@@ -209,7 +209,7 @@
           "annualWages": 30000
         },
         "expect": {
-          "totalBurdenDelta": -2290,
+          "totalBurdenDelta": -2247,
           "tolerance": 1
         }
       },
@@ -262,7 +262,7 @@
           "annualWages": 50000
         },
         "expect": {
-          "totalBurdenDelta": -3031,
+          "totalBurdenDelta": 2377,
           "tolerance": 1
         }
       }

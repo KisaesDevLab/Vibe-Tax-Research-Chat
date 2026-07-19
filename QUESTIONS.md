@@ -321,3 +321,17 @@ docker Chromium layer. All five kinds re-verified live (advisor/client/handout/
 pitch-deck/slideshow; reveal + entitlement behavior unchanged); the staff slideshow
 web view remains live HTML via a dependency-free string template. playwright-core,
 react, and react-dom were dropped from the API package.
+
+## QA round 1 — deferrals surfaced by the completeness review
+
+Three master-plan line items were found unimplemented and previously unlogged; they
+are now EXPLICIT deferrals (not silent gaps):
+
+- **TP-8 plan-level authority annotations** (inserting authority-server citations as
+  plan annotations) — deferred; the research-archive linking flow carries the
+  authority trail today.
+- **TP-14 weekly partner digest** for strategy-watch — deferred; the heartbeat audit
+  row + review-queue items are the current surface. A digest email needs the email
+  subsystem enabled per install.
+- **TP-14 suggestion narratives** (Claude-written "why this rule-hit fits this
+  client") — deferred; suggest reasons come from the record's template today.

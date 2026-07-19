@@ -151,14 +151,31 @@ async function freezeArchive(opts: FreezeOpts) {
     // launcher flow): create the plan_research_links row the review gate
     // checks, so the elevated-risk gate clears without a second manual
     // linking step. Explicit linking in the Review tab remains available
-    // for archives created without a plan.
+    // for archives created without a plan. Existence check covers the
+    // strategy_id-NULL case where the unique index treats rows as
+    // distinct.
     if (opts.planId) {
-      await tx.insert(plan_research_links).values({
-        plan_id: opts.planId,
-        strategy_id: opts.strategyId,
-        research_archive_id: row!.id,
-        created_by: opts.actorUserId,
-      });
+      const dup = await tx
+        .select({ id: plan_research_links.id })
+        .from(plan_research_links)
+        .where(
+          and(
+            eq(plan_research_links.plan_id, opts.planId),
+            eq(plan_research_links.research_archive_id, row!.id),
+            opts.strategyId === null
+              ? isNull(plan_research_links.strategy_id)
+              : eq(plan_research_links.strategy_id, opts.strategyId),
+          ),
+        )
+        .limit(1);
+      if (dup.length === 0) {
+        await tx.insert(plan_research_links).values({
+          plan_id: opts.planId,
+          strategy_id: opts.strategyId,
+          research_archive_id: row!.id,
+          created_by: opts.actorUserId,
+        });
+      }
     }
     return row!;
   });

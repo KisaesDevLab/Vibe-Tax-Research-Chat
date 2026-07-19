@@ -5,7 +5,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { and, desc, eq, ilike, isNull, or, sql, count } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
-import { clients, chats, audit_log, research_archives } from '@vibe/db/schema';
+import { clients, chats, audit_log, deliverables, plans, research_archives } from '@vibe/db/schema';
 import { requireAuth } from '../../middleware/auth.js';
 import { requirePlanning } from '../../middleware/planning-flag.js';
 import { audit } from '../../lib/audit.js';
@@ -136,14 +136,22 @@ clientsRouter.get('/:id', async (req, res) => {
     .select({ n: count() })
     .from(research_archives)
     .where(and(eq(research_archives.client_id, client.id), eq(research_archives.status, 'active')));
+  const [planCount] = await db
+    .select({ n: count() })
+    .from(plans)
+    .where(eq(plans.client_id, client.id));
+  const [documentCount] = await db
+    .select({ n: count() })
+    .from(deliverables)
+    .innerJoin(plans, eq(plans.id, deliverables.plan_id))
+    .where(and(eq(plans.client_id, client.id), eq(deliverables.status, 'ready')));
   res.json({
     client,
     counts: {
       chats: chatCount?.n ?? 0,
       archives: archiveCount?.n ?? 0,
-      // Populated by later phases: plans (TP-8), documents (TP-9).
-      plans: 0,
-      documents: 0,
+      plans: planCount?.n ?? 0,
+      documents: documentCount?.n ?? 0,
     },
   });
 });
@@ -222,6 +230,11 @@ clientsRouter.post('/:id/merge', async (req, res) => {
       .update(research_archives)
       .set({ client_id: target.id })
       .where(eq(research_archives.client_id, source.id));
+    // Plans follow too — otherwise they strand on the hidden merged
+    // record, and their research-link candidates (scoped to the plan's
+    // client) can never match the just-re-pointed archives again.
+    // Deliverables and engagements ride along via plan_id.
+    await tx.update(plans).set({ client_id: target.id }).where(eq(plans.client_id, source.id));
   });
   await audit({
     actor_user_id: req.auth!.user_id,
@@ -257,6 +270,19 @@ clientsRouter.delete('/:id', async (req, res) => {
     .limit(1);
   if (mergedChild) {
     res.status(409).json({ error: 'has_merged_records' });
+    return;
+  }
+  // plans.client_id is NOT NULL / NO ACTION: a delete with plans present
+  // would abort with a raw FK violation. Plans carry pinned results and
+  // engagement history — they must be deliberately deleted or the client
+  // merged, never silently dropped.
+  const [planRow] = await db
+    .select({ id: plans.id })
+    .from(plans)
+    .where(eq(plans.client_id, client.id))
+    .limit(1);
+  if (planRow) {
+    res.status(409).json({ error: 'has_plans' });
     return;
   }
   // TP-11 retention (FINAL): archives are NEVER cascade-deleted. Reassign
