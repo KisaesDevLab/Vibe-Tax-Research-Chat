@@ -30,6 +30,76 @@ interface LinksResponse {
   candidates: Array<{ id: string; title: string; topic_tags: string[]; archived_at: string }>;
 }
 
+interface EngagementDTO {
+  letter_status: string;
+  payment_status: string;
+  events: Array<{ at: string; source: string; kind: string }>;
+}
+
+function EngagementPanel({ planId, onChanged }: { planId: string; onChanged: () => void }) {
+  const qc = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
+  const { data } = useQuery<{ engagement: EngagementDTO }>({
+    queryKey: ['engagement', planId],
+    queryFn: () => api(`/api/planning/plans/${planId}/engagement`),
+  });
+  const override = useMutation({
+    mutationFn: (step: string) =>
+      api(`/api/planning/plans/${planId}/engagement/override`, {
+        method: 'POST',
+        body: JSON.stringify({ step }),
+      }),
+    onSuccess: () => {
+      setError(null);
+      qc.invalidateQueries({ queryKey: ['engagement', planId] });
+      onChanged();
+    },
+    onError: (err) => setError((err as Error).message),
+  });
+  const e = data?.engagement;
+  if (!e) return null;
+  return (
+    <section className="border border-ink/10 rounded p-4 bg-white">
+      <h3 className="font-display text-lg mb-2">Engagement</h3>
+      <div className="flex flex-wrap gap-4 text-sm mb-2">
+        <span>
+          Letter: <span className="font-medium">{e.letter_status}</span>
+        </span>
+        <span>
+          Payment: <span className="font-medium">{e.payment_status}</span>
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-2 text-xs">
+        {['letter-sent', 'letter-signed', 'invoice-sent', 'payment-received'].map((step) => (
+          <button
+            key={step}
+            onClick={() => override.mutate(step)}
+            disabled={override.isPending}
+            className="px-2 py-1 border border-ink/20 rounded hover:bg-ink/5 disabled:opacity-50"
+            title="Admin manual override — used when OpenSign/Stripe are not configured"
+          >
+            Record {step}
+          </button>
+        ))}
+      </div>
+      <p className="text-[11px] text-ink/40 mt-2">
+        Signed + paid auto-advances the plan to engaged and unlocks strategy names in client
+        deliverables. OpenSign/Stripe webhooks drive this automatically when configured.
+      </p>
+      {error && <div className="text-oxblood text-xs mt-1">{error}</div>}
+      {e.events.length > 0 && (
+        <ul className="mt-2 text-[11px] text-ink/50 space-y-0.5">
+          {e.events.slice(-5).map((ev, i) => (
+            <li key={i}>
+              {new Date(ev.at).toLocaleString()} · {ev.source} · {ev.kind}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 const NEXT_STATUS: Partial<Record<PlanStatus, PlanStatus[]>> = {
   draft: ['in-review'],
   'in-review': ['draft', 'presented'],
@@ -220,6 +290,10 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
             )}
           </section>
         ))
+      )}
+
+      {['presented', 'engaged', 'delivered'].includes(plan.status) && (
+        <EngagementPanel planId={plan.id} onChanged={invalidate} />
       )}
 
       {linksData && linksData.links.length > 0 && (

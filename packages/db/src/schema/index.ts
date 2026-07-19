@@ -14,6 +14,7 @@ export * from './strategies.js';
 export * from './review-queue.js';
 export * from './plans.js';
 export * from './deliverables.js';
+export * from './engagements.js';
 export * from './messages.js';
 export * from './attachments.js';
 export * from './usage.js';
