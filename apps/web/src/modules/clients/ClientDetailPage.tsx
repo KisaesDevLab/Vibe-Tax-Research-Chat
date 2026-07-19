@@ -11,6 +11,7 @@ import { MergeClientDialog } from './MergeClientDialog';
 import { OverviewTab } from './tabs/OverviewTab';
 import { ActivityTab } from './tabs/ActivityTab';
 import { ResearchTab } from './tabs/ResearchTab';
+import { PlansTab } from './tabs/PlansTab';
 
 export interface ClientDetail {
   client: ClientDTO;
@@ -108,9 +109,7 @@ export function ClientDetailPage() {
       </nav>
 
       {activeTab === 'overview' && <OverviewTab detail={data} />}
-      {activeTab === 'plans' && (
-        <EmptyTab text="Plans arrive with the planning workflow. Nothing here yet." />
-      )}
+      {activeTab === 'plans' && <PlansTab client={client} />}
       {activeTab === 'research' && <ResearchTab client={client} counts={counts} />}
       {activeTab === 'documents' && (
         <EmptyTab text="Deliverables land here once plan rendering ships. Nothing here yet." />

@@ -8,7 +8,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { and, desc, eq, isNull, lte, sql } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
-import { chats, clients, research_archives, type Chat } from '@vibe/db/schema';
+import { chats, clients, plans, research_archives, type Chat } from '@vibe/db/schema';
 import { requireAuth } from '../middleware/auth.js';
 import { requirePlanning } from '../middleware/planning-flag.js';
 import { audit } from '../lib/audit.js';
@@ -229,6 +229,18 @@ chatArchiveRouter.post('/', async (req, res) => {
       return;
     }
     clientId = client.id;
+  }
+  // TP-8 — a plan link must stay inside the same client.
+  if (parsed.data.plan_id) {
+    const [plan] = await getDb()
+      .select({ client_id: plans.client_id })
+      .from(plans)
+      .where(eq(plans.id, parsed.data.plan_id))
+      .limit(1);
+    if (!plan || plan.client_id !== clientId) {
+      res.status(400).json({ error: 'plan_belongs_to_other_client' });
+      return;
+    }
   }
   const archive = await freezeArchive({
     chat,

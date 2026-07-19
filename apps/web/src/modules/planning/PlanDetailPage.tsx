@@ -9,6 +9,7 @@ import { api } from '../../lib/api';
 import { StrategiesTab } from './StrategiesTab';
 import { ScenarioCompare } from './ScenarioCompare';
 import { ProfileTab } from './ProfileTab';
+import { ReviewTab } from './ReviewTab';
 
 export interface PlanDetail {
   plan: PlanDTO;
@@ -16,7 +17,7 @@ export interface PlanDetail {
   results: PlanResultDTO[];
 }
 
-const TABS = ['profile', 'strategies', 'results'] as const;
+const TABS = ['profile', 'strategies', 'results', 'review'] as const;
 type PlanTab = (typeof TABS)[number];
 
 export function PlanDetailPage() {
@@ -91,6 +92,7 @@ export function PlanDetailPage() {
       {activeTab === 'profile' && <ProfileTab detail={data} />}
       {activeTab === 'strategies' && <StrategiesTab detail={data} />}
       {activeTab === 'results' && <ScenarioCompare detail={data} />}
+      {activeTab === 'review' && <ReviewTab detail={data} />}
     </div>
   );
 }

@@ -5,7 +5,7 @@
 // with one-click redaction, then freeze the snapshot.
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ArchiveDraftResponse, ChatDTO, ClientDTO, PiiHitDTO } from '@vibe/shared';
+import type { ArchiveDraftResponse, ChatDTO, ClientDTO, PiiHitDTO, PlanDTO } from '@vibe/shared';
 import { api } from '../lib/api';
 import { useActiveClient } from '../lib/active-client';
 
@@ -35,6 +35,14 @@ export function ArchiveDialog({ chat, onClose, onArchived }: ArchiveDialogProps)
   );
   const [acceptedIds, setAcceptedIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  // TP-8 — optional plan/strategy link (same-client plans only).
+  const [planId, setPlanId] = useState<string | null>(null);
+  const [strategyId, setStrategyId] = useState('');
+  const { data: plansData } = useQuery<{ plans: PlanDTO[] }>({
+    queryKey: ['plans', { client: clientId ?? 'none' }],
+    queryFn: () => api(`/api/planning/plans?client_id=${clientId}`),
+    enabled: Boolean(clientId) && !firmArchive,
+  });
 
   // Hydrate once the draft lands: suggested title/tags, all PII hits
   // pre-accepted (the safe default — unchecking is the explicit act).
@@ -56,6 +64,8 @@ export function ArchiveDialog({ chat, onClose, onArchived }: ArchiveDialogProps)
           topic_tags: tags.slice(0, 6),
           note: note.trim() || null,
           accepted_redaction_ids: Array.from(acceptedIds),
+          plan_id: planId,
+          strategy_id: strategyId.trim() || null,
         }),
       }),
     onSuccess: () => {
@@ -173,10 +183,35 @@ export function ArchiveDialog({ chat, onClose, onArchived }: ArchiveDialogProps)
               />
             </label>
 
-            {/* Plan/strategy links unlock with the planning workflow (TP-8). */}
-            <div className="mb-3 text-xs text-ink/40 border border-dashed border-ink/15 rounded p-2">
-              Plan / strategy linking becomes available with the Planning workflow.
-            </div>
+            {!firmArchive && (plansData?.plans.length ?? 0) > 0 && (
+              <div className="mb-3 grid grid-cols-2 gap-2">
+                <label className="block text-sm">
+                  <span className="text-ink/60">Link to plan (optional)</span>
+                  <select
+                    value={planId ?? ''}
+                    onChange={(e) => setPlanId(e.target.value || null)}
+                    className="mt-1 w-full px-2 py-1.5 border border-ink/20 rounded text-sm bg-white"
+                  >
+                    <option value="">none</option>
+                    {plansData!.plans.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.title}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block text-sm">
+                  <span className="text-ink/60">Strategy slug (optional)</span>
+                  <input
+                    value={strategyId}
+                    onChange={(e) => setStrategyId(e.target.value)}
+                    placeholder="e.g. reasonable-comp-study"
+                    disabled={!planId}
+                    className="mt-1 w-full px-2 py-1.5 border border-ink/20 rounded text-sm"
+                  />
+                </label>
+              </div>
+            )}
 
             {hits.length > 0 && (
               <PiiPanel hits={hits} acceptedIds={acceptedIds} onChange={setAcceptedIds} />
