@@ -400,7 +400,10 @@ function renderClientPdf(doc: Doc, d: RenderData): void {
 }
 
 function renderHandout(doc: Doc, d: RenderData, strat: StrategyRenderData): void {
-  h1(doc, strat.name);
+  // Client-facing: the strategy NAME stays hidden until the plan is
+  // engaged — pre-engagement handouts lead with the anonymous teaser,
+  // matching the pitch-deck/slideshow reveal semantics.
+  h1(doc, d.revealStrategies ? strat.name : strat.client.teaser);
   para(doc, `${d.branding.firmName} · prepared for ${d.clientName}`, { size: 9, color: MUTED });
   h2(doc, strat.client.headline);
   for (const p of strat.client.plainEnglish) para(doc, p);

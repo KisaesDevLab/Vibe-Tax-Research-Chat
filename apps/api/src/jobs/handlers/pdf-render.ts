@@ -16,7 +16,10 @@ import type { DeliverableKind } from '../../lib/render/types.js';
 
 const STORAGE_ROOT = path.resolve(process.env.DELIVERABLES_DIR ?? './storage/deliverables');
 
-export async function renderDeliverable(deliverableId: string): Promise<void> {
+export async function renderDeliverable(
+  deliverableId: string,
+  handoutStrategyId?: string,
+): Promise<void> {
   const db = getDb();
   const [row] = await db
     .select()
@@ -33,7 +36,7 @@ export async function renderDeliverable(deliverableId: string): Promise<void> {
     .where(eq(deliverables.id, row.id));
   try {
     const data = await buildRenderData(row.plan_id, row.reveal_strategies);
-    const pdf = await buildDeliverablePdf(row.kind as DeliverableKind, data);
+    const pdf = await buildDeliverablePdf(row.kind as DeliverableKind, data, handoutStrategyId);
     const sha256 = createHash('sha256').update(pdf).digest('hex');
     mkdirSync(STORAGE_ROOT, { recursive: true });
     const storageRef = `${sha256}.pdf`;

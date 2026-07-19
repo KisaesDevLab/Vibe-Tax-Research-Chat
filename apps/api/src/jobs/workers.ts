@@ -96,12 +96,13 @@ export function startWorkers(): void {
     await ingestReferenceDocument(document_id);
   });
 
-  // ── pdf-render — TP-9 deliverable rendering via headless Chromium.
+  // ── pdf-render — deliverable rendering via PDFKit (server-side).
   createWorker('pdf-render', async (job) => {
     const deliverable_id = job.data?.deliverable_id as string | undefined;
     if (!deliverable_id) return;
+    const handout_strategy_id = job.data?.handout_strategy_id as string | undefined;
     const { renderDeliverable } = await import('./handlers/pdf-render.js');
-    await renderDeliverable(deliverable_id);
+    await renderDeliverable(deliverable_id, handout_strategy_id);
   });
 
   // ── strategy-author — TP-12 pipeline draft into the review queue.

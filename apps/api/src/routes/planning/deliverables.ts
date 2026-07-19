@@ -26,6 +26,11 @@ const PRESENTED_PLUS = ['presented', 'engaged', 'delivered'];
 
 const createSchema = z.object({
   kind: z.enum(['advisor-pdf', 'client-pdf', 'handout', 'pitch-deck', 'slideshow']),
+  /** handout only: which selected strategy to feature (defaults to the first). */
+  strategy_id: z
+    .string()
+    .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/)
+    .optional(),
 });
 
 deliverablesRouter.post('/', async (req, res) => {
@@ -54,8 +59,10 @@ deliverablesRouter.post('/', async (req, res) => {
       return;
     }
   }
-  // Pitch decks hide names until the plan is engaged.
-  const reveal = kind !== 'pitch-deck' || ['engaged', 'delivered'].includes(plan.status);
+  // Strategy names stay hidden in client-facing artifacts until the plan
+  // is engaged; the advisor copy always shows them. (The renderers key
+  // teaser-vs-name off this flag for pitch-deck, slideshow, and handout.)
+  const reveal = kind === 'advisor-pdf' || ['engaged', 'delivered'].includes(plan.status);
   const [row] = await db
     .insert(deliverables)
     .values({
@@ -66,7 +73,12 @@ deliverablesRouter.post('/', async (req, res) => {
       created_by: req.auth!.user_id,
     })
     .returning();
-  await pdfRenderQueue.add('render', { deliverable_id: row!.id });
+  await pdfRenderQueue.add('render', {
+    deliverable_id: row!.id,
+    ...(kind === 'handout' && parsed.data.strategy_id
+      ? { handout_strategy_id: parsed.data.strategy_id }
+      : {}),
+  });
   await audit({
     actor_user_id: req.auth!.user_id,
     action: 'deliverable.create',

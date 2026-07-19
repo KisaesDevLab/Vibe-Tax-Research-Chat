@@ -110,4 +110,13 @@ describe('buildDeliverablePdf', () => {
     const d = { ...fixture(), strategies: [] };
     await expect(buildDeliverablePdf('handout', d)).rejects.toThrow('no strategy for handout');
   });
+
+  it('handout hides the strategy name until revealed', async () => {
+    const hidden = await buildDeliverablePdf('handout', fixture());
+    const revealed = await buildDeliverablePdf('handout', {
+      ...fixture(),
+      revealStrategies: true,
+    });
+    expect(hidden.toString('latin1')).not.toBe(revealed.toString('latin1'));
+  });
 });
