@@ -22,8 +22,9 @@
     "@vibe/shared": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@vibe/schema": "workspace:*",
     "typescript": "^5.7.3",
-    "vitest": "^2.1.8",
-    "@vibe/schema": "workspace:*"
+    "vitest": "^2.1.8"
   }
 }
