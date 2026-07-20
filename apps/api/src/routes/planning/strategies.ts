@@ -3,7 +3,7 @@
 // shared predicate-AST evaluator server-side.
 import { Router } from 'express';
 import { z } from 'zod';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, isNull } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import { strategies, strategy_versions } from '@vibe/db/schema';
 import { evaluateSuggestRule, type SuggestRule } from '@vibe/shared';
@@ -26,7 +26,9 @@ async function loadPublished() {
     })
     .from(strategy_versions)
     .innerJoin(strategies, eq(strategies.id, strategy_versions.strategy_id))
-    .where(and(eq(strategy_versions.status, 'published')));
+    // Retired strategies never appear in the picker or suggestions;
+    // plans that already pinned a version keep computing regardless.
+    .where(and(eq(strategy_versions.status, 'published'), isNull(strategies.retired_at)));
   // Only the strategy's CURRENT version is offered for new selections.
   return rows.filter((r) => r.current_version_id === r.version_id);
 }

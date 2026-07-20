@@ -30,7 +30,8 @@ vi.mock('./handlers/strategy-author.js', () => ({
 const strategyRows = [{ id: 's1' }, { id: 's2' }, { id: 's3' }];
 vi.mock('@vibe/db', () => ({
   getDb: () => ({
-    select: () => ({ from: () => Promise.resolve(strategyRows) }),
+    // The sweep filters retired strategies: .where() resolves the rows.
+    select: () => ({ from: () => ({ where: () => Promise.resolve(strategyRows) }) }),
   }),
 }));
 

@@ -214,7 +214,12 @@ export async function runStrategyRefresh(jobData: {
   const one = typeof jobData.strategy_id === 'string' ? jobData.strategy_id : undefined;
   const db = getDb();
   const { strategies } = await import('@vibe/db/schema');
-  const targets = one ? [{ id: one }] : await db.select({ id: strategies.id }).from(strategies);
+  const { isNull } = await import('drizzle-orm');
+  // Retired strategies are excluded from the sweep — Claude calls cost
+  // money and their drafts would park review items nobody wants.
+  const targets = one
+    ? [{ id: one }]
+    : await db.select({ id: strategies.id }).from(strategies).where(isNull(strategies.retired_at));
   for (const t of targets) {
     try {
       const result = await draftStrategy(t.id, triggered_by);

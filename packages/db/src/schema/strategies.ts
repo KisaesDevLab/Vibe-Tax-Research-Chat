@@ -20,6 +20,11 @@ import { table_sets } from './table-sets.js';
 export const strategies = pgTable('strategies', {
   id: text('id').primaryKey(), // kebab-case slug, immutable
   current_version_id: uuid('current_version_id'),
+  // Retired strategies disappear from the picker/suggest and the
+  // refresh sweep, but plans that already pinned a version keep
+  // computing — retirement is a soft removal, never a delete (versions
+  // are FK'd by plan history).
+  retired_at: timestamp('retired_at', { withTimezone: true }),
   created_at: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
