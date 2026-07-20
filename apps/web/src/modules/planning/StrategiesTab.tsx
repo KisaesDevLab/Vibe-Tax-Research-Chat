@@ -257,6 +257,7 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
                           required={required.has(key)}
                           value={selected.get(s.id)?.params[key]}
                           onChange={(v) => setParam(s, key, v)}
+                          profile={plan.baseline_profile}
                         />
                       ))}
                     </div>
@@ -292,6 +293,7 @@ function ParamField({
   required,
   value,
   onChange,
+  profile,
 }: {
   name: string;
   prop: {
@@ -304,6 +306,10 @@ function ParamField({
   required: boolean;
   value: unknown;
   onChange: (v: unknown) => void;
+  profile: {
+    rentals: Array<{ id: string; name: string }>;
+    businesses: Array<{ id: string; name: string }>;
+  };
 }) {
   const labelText = (
     <>
@@ -339,6 +345,55 @@ function ParamField({
             </option>
           ))}
         </select>
+      </label>
+    );
+  }
+  // Params that reference a profile entity (rentalId → the plan's
+  // rentals, businessId → its businesses) are pickers over the entities
+  // that actually exist — hand-typing an internal id is unguessable and
+  // the apply module refuses unknown ids rather than silently
+  // retargeting.
+  const entityOptions =
+    name === 'rentalId' ? profile.rentals : name === 'businessId' ? profile.businesses : null;
+  if (entityOptions) {
+    const entityNoun = name === 'rentalId' ? 'rental' : 'business';
+    return (
+      <label className="block">
+        {label}
+        <select
+          value={(value as string) ?? ''}
+          onChange={(e) => onChange(e.target.value)}
+          className="mt-0.5 w-full px-2 py-1 border border-ink/20 rounded text-sm bg-white"
+        >
+          <option value="" disabled>
+            {entityOptions.length === 0
+              ? `no ${entityNoun}s on the profile — add one in the Profile tab`
+              : `select a ${entityNoun}…`}
+          </option>
+          {entityOptions.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.name}
+            </option>
+          ))}
+        </select>
+      </label>
+    );
+  }
+  // Plain string params are free text — the numeric input below would
+  // coerce them to numbers and the server would reject the type.
+  if (prop.type === 'string') {
+    return (
+      <label className="block">
+        {label}
+        <input
+          type="text"
+          defaultValue={value === undefined || value === null ? '' : String(value)}
+          onBlur={(e) => {
+            const v = e.target.value.trim();
+            onChange(v === '' ? undefined : v);
+          }}
+          className="mt-0.5 w-full px-2 py-1 border border-ink/20 rounded text-sm bg-white"
+        />
       </label>
     );
   }

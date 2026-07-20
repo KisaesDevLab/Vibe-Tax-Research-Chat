@@ -6,7 +6,7 @@
 // table set; nothing publishes any other way.
 import { Router } from 'express';
 import { z } from 'zod';
-import { and, desc, eq, ne, sql } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, isNull, ne, sql } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import { review_queue, strategies, strategy_versions, table_sets } from '@vibe/db/schema';
 import { listModuleRefs } from '@vibe/strategies';
@@ -346,6 +346,109 @@ export const adminStrategyDraftRouter = Router();
 // Same planning-flag gate as the review queue the drafts land in — with
 // the module off, triggering drafts would park items nobody can see.
 adminStrategyDraftRouter.use(requireAuth, requireRole('admin'), requirePlanning);
+
+// ── library management: GET /api/admin/strategies ──────────────────────
+// The full registry (retired included) with current-version summary —
+// the admin management page's data source. The planning picker's list
+// intentionally hides retired rows; this one never does.
+adminStrategyDraftRouter.get('/', async (_req, res) => {
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: strategies.id,
+      retired_at: strategies.retired_at,
+      current_version_id: strategies.current_version_id,
+      version_id: strategy_versions.id,
+      semver: strategy_versions.semver,
+      version_status: strategy_versions.status,
+      content: strategy_versions.content,
+      created_by: strategy_versions.created_by,
+    })
+    .from(strategies)
+    .leftJoin(strategy_versions, eq(strategy_versions.id, strategies.current_version_id));
+  const openItems = await db
+    .select({ payload: review_queue.payload })
+    .from(review_queue)
+    .where(and(eq(review_queue.status, 'open'), eq(review_queue.kind, 'strategy-draft')));
+  const openDraftIds = new Set(
+    openItems.map((i) => (i.payload as { strategy_id?: string }).strategy_id).filter(Boolean),
+  );
+  res.json({
+    strategies: rows
+      .map((r) => {
+        const c = (r.content ?? {}) as Record<string, unknown>;
+        return {
+          id: r.id,
+          name: c.name ?? r.id,
+          category: c.category ?? null,
+          modeled: c.modeled ?? false,
+          riskRating: c.riskRating ?? null,
+          complexity: c.complexity ?? null,
+          semver: r.semver,
+          version_status: r.version_status,
+          authored_by: r.created_by,
+          retired_at: r.retired_at,
+          open_draft: openDraftIds.has(r.id),
+        };
+      })
+      .sort((a, b) => String(a.name).localeCompare(String(b.name))),
+  });
+});
+
+// ── retire / reactivate ────────────────────────────────────────────────
+// Soft removal only: retired strategies vanish from the picker, suggest,
+// and the refresh sweep, but versions stay (plan history FKs them) and
+// pinned selections keep computing. Conditional updates keep the two
+// actions honest under double-clicks.
+adminStrategyDraftRouter.post('/:id/retire', async (req, res) => {
+  const db = getDb();
+  const [row] = await db
+    .update(strategies)
+    .set({ retired_at: new Date() })
+    .where(and(eq(strategies.id, req.params.id), isNull(strategies.retired_at)))
+    .returning({ id: strategies.id });
+  if (!row) {
+    const [exists] = await db
+      .select({ id: strategies.id })
+      .from(strategies)
+      .where(eq(strategies.id, req.params.id))
+      .limit(1);
+    res.status(exists ? 409 : 404).json({ error: exists ? 'already_retired' : 'not_found' });
+    return;
+  }
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'strategy.retire',
+    target_type: 'strategy',
+    target_id: row.id,
+  });
+  res.json({ ok: true });
+});
+
+adminStrategyDraftRouter.post('/:id/reactivate', async (req, res) => {
+  const db = getDb();
+  const [row] = await db
+    .update(strategies)
+    .set({ retired_at: null })
+    .where(and(eq(strategies.id, req.params.id), isNotNull(strategies.retired_at)))
+    .returning({ id: strategies.id });
+  if (!row) {
+    const [exists] = await db
+      .select({ id: strategies.id })
+      .from(strategies)
+      .where(eq(strategies.id, req.params.id))
+      .limit(1);
+    res.status(exists ? 409 : 404).json({ error: exists ? 'not_retired' : 'not_found' });
+    return;
+  }
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'strategy.reactivate',
+    target_type: 'strategy',
+    target_id: row.id,
+  });
+  res.json({ ok: true });
+});
 
 adminStrategyDraftRouter.post('/:id/draft', async (req, res) => {
   const db = getDb();
