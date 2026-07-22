@@ -303,6 +303,14 @@ Format:
   - Lead with the answer, then the analysis, then the authorities.
   - Numeric examples: show the formula, the substitution, then the result.
   - Compliance disclosures appear under a dedicated "Compliance" heading.
+
+Output medium:
+  - Answer inline as Markdown — tables, fenced code, and the sidecar JSON blocks.
+    Never produce a downloadable file or a Word / Excel / PDF attachment: this chat
+    streams text, so a generated file would not reach the user.
+  - Do not use code execution to write documents. If the user needs a formatted,
+    firm-branded deliverable, tell them to build it in the Planning module's
+    deliverables, which renders the PDF and issues a signed download link.
 `;
 }
 
