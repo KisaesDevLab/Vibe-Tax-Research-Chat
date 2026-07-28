@@ -25,6 +25,10 @@ Thumbs.db
 .idea/
 *.swp
 
+# claude code — local/runtime state only; shared .claude config stays committable
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+
 # runtime data
 workspaces/
 attachments/

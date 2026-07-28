@@ -60,6 +60,7 @@ export async function discoverAnthropicModels(): Promise<DiscoveryResult> {
   const headers = {
     'x-api-key': key,
     'anthropic-version': ANTHROPIC_VERSION,
+    accept: 'application/json',
   };
 
   const all: DiscoveredModel[] = [];
@@ -95,6 +96,21 @@ export async function discoverAnthropicModels(): Promise<DiscoveryResult> {
     }
     if (pageCount >= MAX_PAGES) {
       logger.warn({ pageCount }, 'anthropic models discovery hit max pages');
+    }
+    // Empty-success guard. A 200 OK with zero models almost always
+    // means the API key has no model entitlements — a revoked or
+    // misconfigured key, a newly-provisioned account, or a regional
+    // outage. Treating it as success would mass-flag every DB row as
+    // `removed[]` in the refresh diff (only the active default would
+    // survive apply, thanks to the default-model guard). Better to
+    // surface as a discovery failure and fall back to the manifest-
+    // only diff path, leaving the DB intact.
+    if (all.length === 0) {
+      return {
+        ok: false,
+        models: [],
+        error: 'no_models_available_for_api_key',
+      };
     }
     return { ok: true, models: all };
   } catch (err) {

@@ -97,6 +97,16 @@ interface ManifestEntry {
   pricing_unknown?: boolean;
 }
 
+// Validate the structural shape of a pricing manifest. Defensive
+// against an upstream CDN that returns 200 OK with valid JSON of the
+// wrong shape (e.g., an error envelope, a different schema, or simply
+// nothing) — without this guard, `manifest.models` could be undefined
+// when the discovery API also failed, and the diff loop would throw on
+// `for (const m of manifest.models)`.
+function isManifestShape(v: unknown): v is { models: ManifestEntry[] } {
+  return !!v && typeof v === 'object' && Array.isArray((v as { models?: unknown }).models);
+}
+
 // Resolve the bundled seed manifest. The seed file lives in the @vibe/db
 // package so we walk up from this compiled file's location to find it.
 // Compiled dist path: apps/api/dist/routes/admin/models.js
@@ -123,32 +133,64 @@ async function loadBundledManifest(): Promise<{ models: ManifestEntry[] } | null
   return null;
 }
 
+// Strip a trailing -YYYYMMDD date snapshot from a model ID. Anthropic's
+// /v1/models endpoint emits the canonical ID per generation: dateless
+// from Claude 4.6 forward (e.g., claude-opus-4-7), dated for 4.5 and
+// earlier (e.g., claude-haiku-4-5-20251001, claude-sonnet-4-5-20250929).
+// Our pricing manifest keys every entry by the dateless alias form so
+// that a single seed row can serve all snapshots of a model. Normalizing
+// API IDs on the way in joins the two formats cleanly without an
+// explicit alias table.
+//
+// Edge case: the regex only matches an 8-digit suffix that resembles a
+// date (YYYYMMDD). Unrelated 8-digit suffixes would also be stripped,
+// but no current Claude ID schema uses a non-date 8-digit suffix.
+export function normalizeModelId(id: string): string {
+  return id.replace(/-\d{8}$/, '');
+}
+
 // Map an Anthropic Models API discovery result into our ManifestEntry
 // shape by joining against the pricing manifest. Models present in the
 // API but absent from the pricing manifest are emitted with
 // pricing_unknown:true so the apply step can refuse them until an
 // admin has set real pricing.
-function mergeDiscoveryWithPricing(
+//
+// Discovered IDs are normalized to the dateless alias form before
+// joining and before emitting, so the diff against the DB (which also
+// stores aliases) lines up regardless of which snapshot Anthropic
+// surfaces.
+export function mergeDiscoveryWithPricing(
   discovered: DiscoveredModel[],
   pricingManifest: { models: ManifestEntry[] } | null,
 ): ManifestEntry[] {
   const pricingById = new Map<string, ManifestEntry>(
     (pricingManifest?.models ?? []).map((m) => [m.model_id, m]),
   );
-  const out: ManifestEntry[] = [];
+  // Dedup by normalized ID — if Anthropic ever surfaces both the
+  // dated and dateless forms of the same model, keep the newer
+  // record (by created_at lexical compare; ISO-8601 sorts correctly).
+  const byNormalized = new Map<string, DiscoveredModel>();
   for (const d of discovered) {
-    const pricing = pricingById.get(d.id);
+    const key = normalizeModelId(d.id);
+    const existing = byNormalized.get(key);
+    if (!existing || (d.created_at ?? '') > (existing.created_at ?? '')) {
+      byNormalized.set(key, d);
+    }
+  }
+  const out: ManifestEntry[] = [];
+  for (const [normalized, d] of byNormalized) {
+    // Look up by alias form first, then by full API id as a courtesy
+    // for any pricing manifest that someday keys by dated form.
+    const pricing = pricingById.get(normalized) ?? pricingById.get(d.id);
     if (pricing) {
-      // Use bundled pricing; let Anthropic's display_name override only
-      // when the seed left it as the model id itself (typo guard).
       out.push({
         ...pricing,
-        model_id: d.id,
+        model_id: normalized,
         display_name: pricing.display_name || d.display_name,
       });
     } else {
       out.push({
-        model_id: d.id,
+        model_id: normalized,
         display_name: d.display_name,
         input_per_mtok: 0,
         output_per_mtok: 0,
@@ -190,13 +232,19 @@ adminModelsRouter.post('/refresh', async (_req, res) => {
     if (!r.ok) {
       upstream_error = `HTTP ${r.status}`;
     } else {
-      pricingManifest = (await r.json()) as { models: ManifestEntry[] };
+      const body = (await r.json()) as unknown;
+      if (isManifestShape(body)) {
+        pricingManifest = body;
+      } else {
+        upstream_error = 'upstream_manifest_shape_invalid';
+      }
     }
   } catch (err) {
     upstream_error = (err as Error).message;
   }
   if (!pricingManifest) {
-    pricingManifest = await loadBundledManifest();
+    const bundled = await loadBundledManifest();
+    pricingManifest = isManifestShape(bundled) ? bundled : null;
   }
 
   let manifest: { models: ManifestEntry[] } | null = null;
@@ -237,6 +285,14 @@ adminModelsRouter.post('/refresh', async (_req, res) => {
     const cur = byDbId.get(m.model_id);
     if (!cur) {
       added.push(m);
+      continue;
+    }
+    // Discovered model is already in the DB. If pricing_unknown is set,
+    // we emitted 0-placeholders during merge — never propagate those
+    // into the diff, otherwise apply would zero out the real DB
+    // pricing. The DB stays the source of truth for known models that
+    // happen to be absent from the pricing manifest.
+    if (m.pricing_unknown) {
       continue;
     }
     const changedFields: Record<string, [unknown, unknown]> = {};
@@ -284,16 +340,39 @@ adminModelsRouter.post('/refresh', async (_req, res) => {
   });
 });
 
+// Stricter than `z.array(z.any())` so that a malformed client can't
+// push primitives into the loops below. Each `added`/`updated.after`
+// entry must carry the full pricing shape — otherwise the DB insert
+// would try `undefined.toString()` and 500. Unknown extra fields pass
+// through (passthrough), preserving forward compatibility with any
+// future enrichments emitted by /refresh.
+const manifestEntryApplySchema = z
+  .object({
+    model_id: z.string().min(1),
+    display_name: z.string().min(1),
+    input_per_mtok: z.number().nonnegative(),
+    output_per_mtok: z.number().nonnegative(),
+    cache_write_per_mtok: z.number().nonnegative(),
+    cache_read_per_mtok: z.number().nonnegative(),
+    tokenizer_factor: z.number().positive().optional(),
+    web_fetch_unit_cost: z.number().nonnegative().optional(),
+    web_search_unit_cost: z.number().nonnegative().optional(),
+    is_active: z.boolean().optional(),
+    notes: z.string().nullable().optional(),
+    pricing_unknown: z.boolean().optional(),
+  })
+  .passthrough();
+
 const applySchema = z.object({
-  added: z.array(z.any()).default([]),
-  updated: z.array(z.any()).default([]),
-  removed: z.array(z.any()).default([]),
+  added: z.array(manifestEntryApplySchema).default([]),
+  updated: z.array(z.object({ after: manifestEntryApplySchema }).passthrough()).default([]),
+  removed: z.array(z.object({ model_id: z.string().min(1) }).passthrough()).default([]),
 });
 
 adminModelsRouter.post('/refresh/apply', async (req, res) => {
   const parsed = applySchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: 'bad_request' });
+    res.status(400).json({ error: 'bad_request', detail: parsed.error.flatten() });
     return;
   }
 
@@ -302,7 +381,7 @@ adminModelsRouter.post('/refresh/apply', async (req, res) => {
   // by the Anthropic Models API that have no entry in the pricing
   // manifest. Letting them through would create a $0-priced model
   // that silently undercounts spend until an admin notices.
-  const addedEntries = parsed.data.added as ManifestEntry[];
+  const addedEntries = parsed.data.added;
   const unpriced = addedEntries.filter((m) => m.pricing_unknown);
   if (unpriced.length > 0) {
     res.status(400).json({
@@ -333,7 +412,7 @@ adminModelsRouter.post('/refresh/apply', async (req, res) => {
       })
       .onConflictDoNothing({ target: models.model_id });
   }
-  for (const u of parsed.data.updated as Array<{ after: ManifestEntry }>) {
+  for (const u of parsed.data.updated) {
     const m = u.after;
     await db
       .update(models)
@@ -356,17 +435,24 @@ adminModelsRouter.post('/refresh/apply', async (req, res) => {
   // may temporarily 404 a model (capacity blip, regional rollout) and
   // we should not lose pricing history, usage_events foreign keys, or
   // audit trail. The admin can re-activate via the Models page.
-  for (const rem of parsed.data.removed as Array<{ model_id: string }>) {
-    if (!rem.model_id) continue;
+  //
+  // Read the default model once up front instead of polling on every
+  // iteration; the default rarely changes mid-apply and the previous
+  // N+1 round-tripping also opened a thin race window where a default
+  // swap could partly process.
+  const currentDefault = await getSetting<string>(SETTING_KEYS.DEFAULT_MODEL_ID);
+  const skippedDefaultIds: string[] = [];
+  const deactivatedIds: string[] = [];
+  for (const rem of parsed.data.removed) {
     // Guard: never auto-deactivate the current default model. If
     // Anthropic ever drops it from the list, surface a manual decision
     // rather than locking the appliance out of chat.
-    const currentDefault = await getSetting<string>(SETTING_KEYS.DEFAULT_MODEL_ID);
     if (currentDefault === rem.model_id) {
       logger.warn(
         { model_id: rem.model_id },
         'refresh.apply: refusing to deactivate current default model; admin must choose a new default first',
       );
+      skippedDefaultIds.push(rem.model_id);
       continue;
     }
     await db
@@ -378,14 +464,23 @@ adminModelsRouter.post('/refresh/apply', async (req, res) => {
         updated_by: req.auth!.user_id,
       })
       .where(eq(models.model_id, rem.model_id));
+    deactivatedIds.push(rem.model_id);
   }
+  // Audit log records the actual IDs touched, not just counts — the
+  // CLAUDE.md mandates an auditable trail for every admin action, and
+  // for forensics (who deactivated which model, when) the IDs are the
+  // load-bearing field.
   await audit({
     actor_user_id: req.auth!.user_id,
     action: 'admin.model.refresh.apply',
     metadata: {
       added_count: parsed.data.added.length,
+      added_ids: addedEntries.map((m) => m.model_id),
       updated_count: parsed.data.updated.length,
+      updated_ids: parsed.data.updated.map((u) => u.after.model_id),
       removed_count: parsed.data.removed.length,
+      removed_ids: deactivatedIds,
+      skipped_default_ids: skippedDefaultIds,
     },
     ip: req.ip,
   });
