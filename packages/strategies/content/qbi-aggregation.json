@@ -1,6 +1,6 @@
 {
   "id": "qbi-aggregation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "§199A Aggregation Election",
@@ -23,35 +28,35 @@
   "entityTypes": ["s-corp", "partnership"],
   "typicalSavingsBand": "5k-25k",
   "advisor": {
-    "summary": "Reg. §1.199A-4 lets commonly controlled trades or businesses elect aggregation so the §199A wage and UBIA limitation tests the combined bases. The target fact pattern: a profit-rich, payroll-thin entity whose deduction is wage-capped beside a sibling with real payroll — separately, the limit starves one while the other's wage capacity goes to waste; aggregated, those wages support the combined deduction. Eligibility requires 50% common ownership (with family attribution) for a majority of the year including the last day, identical taxable years, no SSTBs, and two of three integration factors, disclosed annually and binding once made. The engine merges eligible non-SSTB S corporations and lets the deterministic tables apply the wage limit to the pooled base; the 2026 thresholds are $403,500 MFJ and $201,750 single, with the OBBBA-widened $150,000/$75,000 phase-in.",
+    "summary": "Reg. §1.199A-4 lets commonly controlled trades or businesses elect aggregation so the §199A wage and UBIA limitation tests their combined bases. The target fact pattern: a profit-rich, payroll-thin entity sits beside a sibling with real payroll — tested separately, the limit starves one while the other's wage capacity goes to waste; aggregated, those wages support the combined deduction. Eligibility takes 50% common ownership (with family attribution) for a majority of the year including the last day, identical taxable years, no SSTBs, and two of three integration factors, disclosed annually and binding once made. The engine merges eligible non-SSTB S corporations and lets the deterministic tables apply the wage limit to the pooled base; the 2026 thresholds are $403,500 MFJ and $201,750 single, with the OBBBA-widened $150,000/$75,000 phase-in.",
     "mechanics": [
-      "Above the threshold, each unaggregated business is limited to the greater of 50% of its own W-2 wages or 25% of wages plus 2.5% of its own UBIA under §199A(b)(2)(B); aggregation pools wages and UBIA across the group before the limit applies.",
-      "Eligibility under Reg. §1.199A-4(b)(1): the same person or group owns 50% or more of each business for a majority of the year including the last day, all businesses share a taxable year, and none is an SSTB.",
-      "Plus two of three integration factors: products or services that are the same or customarily offered together; shared facilities or significant centralized elements (payroll, accounting, HR, purchasing, IT); or operation in coordination with, or reliance upon, one another.",
-      "Family attribution — spouse, children, grandchildren, parents — applies to the 50% test under Reg. §1.199A-4(b)(3), so entities split across a household can still aggregate.",
-      "The election rides an annual disclosure statement under Reg. §1.199A-4(c) and binds all later years; qualifying new businesses may join, but a chosen group cannot be cherry-picked apart.",
+      "Above the threshold, each unaggregated business is capped at the greater of 50% of its own W-2 wages or 25% of wages plus 2.5% of its own UBIA under §199A(b)(2)(B); aggregation pools wages and UBIA across the group before the limit applies.",
+      "Eligibility under Reg. §1.199A-4(b)(1): the same person or group owns 50% or more of each business for a majority of the year including the last day, every business shares a taxable year, and none is an SSTB.",
+      "Plus two of three integration factors: products or services that are the same or customarily offered together; shared facilities or significant centralized elements (payroll, accounting, HR, purchasing, IT); or businesses operated in coordination with, or reliance upon, one another.",
+      "Family attribution — spouse, children, grandchildren, parents — counts toward the 50% test under Reg. §1.199A-4(b)(3), so entities split across a household can still aggregate.",
+      "The election rides on an annual disclosure statement under Reg. §1.199A-4(c) and binds all later years; qualifying new businesses may join, but a chosen group cannot be cherry-picked apart.",
       "W-2 wages must be properly allocable to QBI and timely reported under Reg. §1.199A-2, computed under a Rev. Proc. 2019-11 method; the engine merges eligible non-SSTB S corporations and applies the limit to the combined wage base."
     ],
     "authority": [
       {
         "type": "Reg",
         "cite": "Reg. §1.199A-4(b)(1)",
-        "note": "The aggregation requirements: 50% common ownership for a majority of the year including the last day, same taxable year, no SSTBs, and two of three integration factors."
+        "note": "The aggregation tests: 50% common ownership for a majority of the year including the last day, a shared taxable year, no SSTBs, and two of three integration factors."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.199A-4(b)(3)",
-        "note": "Family attribution — spouse, children, grandchildren, parents — for the 50% common-ownership test."
+        "note": "Family attribution — spouse, children, grandchildren, and parents — for the 50% common-ownership test."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.199A-4(c)",
-        "note": "The annual disclosure statement and the consistency rule that makes the election binding in later years."
+        "note": "The annual disclosure statement and the consistency rule that binds the election in later years."
       },
       {
         "type": "IRC",
         "cite": "IRC §199A(b)(2)(B)",
-        "note": "The wage/UBIA limitation the election is applied against — computed on the group's combined wages and UBIA."
+        "note": "The wage/UBIA limitation the election targets — computed on the group's combined wages and UBIA."
       },
       {
         "type": "Reg",
@@ -61,30 +66,30 @@
       {
         "type": "Admin",
         "cite": "Rev. Proc. 2019-11",
-        "note": "The permitted methods for computing W-2 wages for the limitation."
+        "note": "The permitted methods for computing W-2 wages under the limitation."
       },
       {
         "type": "IRC",
         "cite": "P.L. 119-21 (OBBBA) §70105",
-        "note": "Made §199A permanent and widened the 2026 phase-in range to $75,000 single / $150,000 MFJ."
+        "note": "Makes §199A permanent and widens the 2026 phase-in range to $75,000 single / $150,000 MFJ."
       }
     ],
     "requirements": [
-      "50%-or-greater common ownership of each aggregated business (attribution counts), held a majority of the year including the last day.",
+      "Common ownership of 50% or more in each aggregated business (attribution counts), held for a majority of the year including the last day.",
       "Identical taxable years and no SSTB anywhere in the proposed group.",
       "Two of three integration factors documented in the file, not asserted from memory.",
-      "The annual disclosure statement attached to the return — first year and every year after."
+      "The annual disclosure statement attached to the return — the first year and every year after."
     ],
     "risks": [
-      "The election is effectively permanent, and that is the leading exposure: a group aggregated in a good year stays aggregated when the wage-rich entity is sold or a member turns loss-making (aggregated losses net against aggregated QBI) — the consistency rule of Reg. §1.199A-4(c) is the controlling authority, so both directions get modeled before electing.",
+      "The election is effectively permanent, and that is the leading exposure: a group aggregated in a good year stays aggregated when the wage-rich entity is sold or a member turns loss-making (aggregated losses net against aggregated QBI) — the consistency rule of Reg. §1.199A-4(c) controls, so model both directions before electing.",
       "Thin integration-factor documentation is the exam soft spot; a bare claim of centralized management needs shared-services agreements and common back-office proof behind it.",
-      "Ownership slipping below 50%, or a member recharacterized as an SSTB, unwinds the aggregation and the wage support with it.",
+      "Ownership slipping below 50%, or a member recharacterized as an SSTB, unwinds the aggregation — and the wage support with it.",
       "A missed annual disclosure invites the Commissioner to disaggregate on exam."
     ],
     "stateNotes": [
       "Conformity: the aggregation election is a federal §199A computation most states do not conform to — state returns are typically unaffected either way.",
-      "PTET: aggregation does not change PTET elections, but PTET deductions reduce each entity's QBI before the aggregated computation — model the interaction rather than assuming independence.",
-      "Missouri: Missouri's business income deduction (RSMo §143.022) is computed from Missouri business income without the federal wage limit, so the election's value is federal-only; PTET-electing Missouri entities (RSMo §143.436) keep their elections entity by entity regardless of federal aggregation."
+      "PTET: aggregation does not disturb PTET elections, but PTET deductions reduce each entity's QBI before the aggregated computation — model the interaction rather than assuming independence.",
+      "Missouri: Missouri's business income deduction (RSMo §143.022) is computed from Missouri business income without the federal wage limit, so the election's value is federal-only; Missouri PTET electors (RSMo §143.436) keep their elections entity by entity regardless of federal aggregation."
     ],
     "interactions": {
       "requires": [],
@@ -92,10 +97,10 @@
       "synergiesWith": ["qbi-wage-optimization", "multi-entity-qbi"]
     },
     "reviewChecklist": [
-      "Ownership map with attribution supports 50% common control for the required period.",
+      "Ownership map, with attribution, supports 50% common control for the required period.",
       "No SSTB in the group; taxable years match.",
       "Two integration factors evidenced by documents in the file.",
-      "Both-ways model run: with and without aggregation, including a stress case (member sale, loss year).",
+      "Model run both ways — with and without aggregation — including a stress case (member sale, loss year).",
       "Disclosure statement prepared and calendared for every future return."
     ]
   },
@@ -104,37 +109,37 @@
     "headline": "Combine your businesses' payroll for a bigger deduction",
     "plainEnglish": [
       "Business owners can deduct up to 20% of business income. At higher incomes, though, each company's deduction is capped by that company's own payroll. If one company earns the profit and another carries the payroll, the default math short-changes you.",
-      "An election fixes this. If your companies are under common ownership and truly operate together — shared staff, shared systems, or one serving the other — the IRS will treat them as one group when the cap is figured.",
-      "Then the payroll of one supports the deduction of the other. Nothing changes in how you run the businesses. Only the math changes. One caution: the choice is binding for future years, so we test it both ways first."
+      "An election fixes this. If your companies share ownership and truly operate together — shared staff, shared systems, or one serving the other — the IRS will treat them as one group when the cap is figured.",
+      "Then the payroll of one supports the deduction of the other. Nothing changes in how you run the businesses. Only the math changes. One caution: the choice binds future years too, so we test it both ways first."
     ],
-    "analogy": "It is like a family phone plan. Separately, one line wastes data while another keeps hitting its cap. Pooled, nothing goes to waste.",
+    "analogy": "It is like a family phone plan. On separate plans, one line wastes data while another keeps hitting its cap. Pooled, nothing goes to waste.",
     "benefits": [
-      "A bigger 20% deduction using payroll you already pay",
-      "No restructuring — a statement filed with your return",
+      "A bigger 20% deduction from payroll you already pay",
+      "No restructuring — just a statement filed with your return",
       "Repeats every year once elected"
     ],
     "steps": [
       "WE map the ownership and operations of each business.",
-      "WE model the deduction with and without the election — including future what-ifs.",
+      "WE model the deduction with and without the election — future what-ifs included.",
       "WE attach the election statement to your return.",
       "YOU keep us posted on ownership changes; WE renew the disclosure each year."
     ],
     "clientCommitments": [
-      "Tell us before selling or restructuring any company in the group — the election is binding",
+      "Tell us before you sell or restructure any company in the group — the election is binding",
       "Keep the shared-operations facts real: common systems, staff, or services"
     ]
   },
   "engagement": {
     "implementationEffort": "multi-step",
     "annualMaintenance": [
-      "Annual disclosure statement filed with the return",
-      "Ownership and SSTB status re-verification",
+      "File the annual disclosure statement with the return",
+      "Re-verify ownership and SSTB status",
       "Re-model when any member's profit or payroll shifts materially"
     ],
     "deliverables": [
-      "Aggregation eligibility memo with ownership map",
+      "Aggregation eligibility memo with the ownership map",
       "Integration-factor evidence file",
-      "Both-ways deduction model",
+      "Deduction model run both ways",
       "Annual disclosure statement"
     ],
     "feeGuidanceBand": null

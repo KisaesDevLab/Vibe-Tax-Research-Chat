@@ -1,6 +1,6 @@
 {
   "id": "de-minimis-fringe",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,16 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-07-28",
+      "note": "Added the §274(o) carve-out: occasional overtime meal money remains 50% deductible after 2025 as a de minimis fringe."
     }
   ],
   "name": "De Minimis Fringe Benefits",
@@ -23,53 +33,53 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "under-5k",
   "advisor": {
-    "summary": "Section 132(e) excludes from employee income any property or service whose value is so small and provision so infrequent that accounting for it is administratively impracticable — occasional snacks, group meals, modest holiday gifts of property, flowers for life events. Classified correctly, these stay deductible to the employer, tax-free to the employee, and entirely off payroll. The two hard edges do all the damage in practice: cash and gift cards are never de minimis at any amount, and frequency is half the test, so a routine perk becomes wages. Employer-provided phones ride their own safe harbor under Notice 2011-72. The 2026 wrinkle is deduction-side: §274(o) makes employer eating-facility and convenience-of-the-employer meal costs nondeductible for amounts paid after 2025, so on-site meal programs keep the employee exclusion but lose the write-off.",
+    "summary": "Section 132(e) excludes from an employee's income property or services so small in value, and provided so infrequently, that accounting for them is administratively impracticable — occasional snacks, group meals, modest holiday gifts of property, flowers marking life events. Properly classified, these items remain deductible to the employer, tax-free to the employee, and off payroll altogether. Two hard edges cause nearly every failure in practice: cash and gift cards are never de minimis at any amount, and frequency is half the test — a routine perk is wages. Employer-provided phones travel under their own safe harbor, Notice 2011-72. The 2026 change is deduction-side: §274(o) denies the employer deduction for eating-facility and convenience-of-the-employer meal costs paid after 2025, so on-site meal programs keep the employee exclusion but lose the write-off.",
     "mechanics": [
-      "The test of §132(e)(1) weighs value and frequency together: a small item provided occasionally is excludable, while the identical item provided routinely fails because frequency makes accounting practicable — and there is no statutory dollar line to hide behind.",
-      "Reg. §1.132-6(c) makes cash and cash equivalents — gift cards and general-purpose certificates — taxable wages regardless of amount; the narrow exception is occasional meal money or cab fare for overtime work, and 'occasional' carries all the weight.",
-      "Employer-provided cell phones have a separate safe harbor: under Notice 2011-72, a phone provided for noncompensatory business reasons is a working-condition fringe and its personal use is de minimis, with no logging required.",
-      "The regulations' own examples calibrate the category — occasional parties and picnics, holiday gifts of low-value property, coffee and doughnuts, occasional supper money: small, irregular, and impractical to track.",
-      "For amounts paid after December 31, 2025, §274(o) denies the employer deduction for eating-facility and §119 convenience meals; the §132(e) employee-side exclusion survives, but the employer economics of on-site meal programs changed."
+      "The §132(e)(1) test weighs value and frequency together: a small item given occasionally is excludable, while the identical item given routinely fails, because frequency makes accounting practicable — and no statutory dollar threshold offers cover.",
+      "Under Reg. §1.132-6(c), cash and cash equivalents — gift cards and general-purpose certificates — are taxable wages at any amount; the lone exception is occasional meal money or cab fare for overtime work, and 'occasional' does all the work.",
+      "Employer-provided cell phones carry a separate safe harbor: under Notice 2011-72, a phone furnished for noncompensatory business reasons is a working-condition fringe, its personal use is de minimis, and no usage logs are required.",
+      "The regulations' own examples set the category's scale — occasional parties and picnics, low-value holiday gifts of property, coffee and doughnuts, occasional supper money: small, irregular, impractical to track.",
+      "For amounts paid after December 31, 2025, §274(o) denies the employer deduction for eating-facility and §119 convenience meals; the employee-side §132(e) exclusion survives, but the employer economics of on-site meal programs have changed — occasional overtime meal money, by contrast, keeps a 50% deduction because it is a de minimis fringe rather than a §119 convenience meal."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §132(a)(4), (e)",
-        "note": "The exclusion and its impracticability standard — value and frequency judged together."
+        "note": "The exclusion itself and its impracticability standard — value and frequency weighed as one test."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.132-6",
-        "note": "Operative rules and examples; subsection (c) is the absolute no-cash, no-gift-card rule."
+        "note": "The operative rules and examples; subsection (c) states the absolute bar on cash and gift cards."
       },
       {
         "type": "Admin",
         "cite": "Notice 2011-72",
-        "note": "The employer cell-phone safe harbor: business-reason phones excludable, personal use de minimis, no records required."
+        "note": "The employer cell-phone safe harbor: business-reason phones are excludable, personal use is de minimis, and no records are required."
       },
       {
         "type": "IRC",
         "cite": "IRC §§274(o), 119",
-        "note": "The 2026 deduction disallowance for employer eating facilities and convenience-of-the-employer meals."
+        "note": "The 2026 disallowance of the employer deduction for eating facilities and convenience-of-the-employer meals."
       }
     ],
     "requirements": [
-      "Benefits that are genuinely small and genuinely occasional — frequency is half the test.",
-      "A written policy listing the perks provided and stating the no-cash, no-gift-card rule.",
-      "Payroll coordination: anything cash-like goes on the W-2; qualifying items stay off entirely.",
-      "For phones: a documented noncompensatory business reason — one memo covers the program."
+      "Perks that are genuinely small and genuinely occasional — frequency carries half the test.",
+      "A written policy that lists the perks offered and states the no-cash, no-gift-card rule.",
+      "Payroll coordination: anything cash-like lands on the W-2; qualifying items never touch it.",
+      "For phones, a documented noncompensatory business reason — a single memo covers the program."
     ],
     "risks": [
-      "Gift cards are the universal exam finding: they are wages at any amount, and a payroll audit reclassifies them across every employee and every open year with back taxes and penalties — the cost of the cleanup always exceeds the cost of the policy.",
-      "Frequency creep converts perks into compensation — daily meal money or a standing monthly gift fails even at trivial dollar values.",
-      "There is no safe-harbor dollar amount; an adviser promising a fixed figure is calibrating, not citing.",
-      "Perks flowing mainly to owners read as disguised distributions rather than fringe benefits.",
+      "Gift cards are the universal exam finding: wages at any amount, and a payroll audit reclassifies them across every employee and every open year, with back taxes and penalties — the cleanup always costs more than the policy would have.",
+      "Frequency creep turns perks into compensation — daily meal money or a standing monthly gift fails even at trivial dollar amounts.",
+      "No safe-harbor dollar amount exists; an adviser quoting a fixed figure is estimating, not citing.",
+      "Perks that flow mainly to owners read as disguised distributions, not fringe benefits.",
       "On-site meal programs lose the employer deduction in 2026 under §274(o) — clients budgeting on the old treatment will overstate the write-off."
     ],
     "stateNotes": [
-      "Conformity: states starting from federal AGI or federal taxable income conform to the §132(e) exclusion automatically — properly classified perks never enter the state base.",
-      "PTET interaction: perk costs are ordinary entity deductions that already reduce the base of any pass-through entity tax election; no separate PTET step exists.",
-      "Missouri: conforms through its federal starting point (RSMo §143.121) with no fringe-benefit addback."
+      "Conformity: states that start from federal AGI or federal taxable income conform to the §132(e) exclusion automatically — properly classified perks never reach the state base.",
+      "PTET interaction: perk costs are ordinary entity deductions that already reduce the base of any pass-through entity tax election; no separate PTET step is needed.",
+      "Missouri: conforms through its federal starting point (RSMo §143.121), with no fringe-benefit addback."
     ],
     "interactions": {
       "requires": [],
@@ -77,48 +87,48 @@
       "synergiesWith": ["achievement-awards"]
     },
     "reviewChecklist": [
-      "Perk inventory completed and each item classified: de minimis, working-condition, taxable wage, or 2026 deduction-limited meals.",
-      "Written fringe policy adopted with the no-cash rule and frequency guardrails.",
-      "Gift-card practices ended or deliberately routed through payroll as bonuses.",
-      "Phone-program business-reason memo on file."
+      "Perk inventory complete, with each item classified: de minimis, working-condition, taxable wage, or 2026 deduction-limited meals.",
+      "Written fringe policy adopted, with the no-cash rule and frequency guardrails.",
+      "Gift-card practices stopped or deliberately run through payroll as bonuses.",
+      "Phone-program business-reason memo in the file."
     ]
   },
   "client": {
-    "teaser": "The small perks you already give can stay off everyone's tax forms.",
-    "headline": "Keep the small stuff tax-free — for you and your team",
+    "teaser": "The small perks you already give your team can stay off everyone's tax forms.",
+    "headline": "Keep the small stuff tax-free — for your business and your team",
     "plainEnglish": [
-      "The tax law has a common-sense rule. Perks too small to be worth tracking do not count as taxable pay. Coffee and snacks, an occasional team lunch, flowers for a new baby, a modest holiday gift — the business deducts them, the employee owes nothing, and nothing touches a W-2.",
-      "There are two tripwires. Cash and gift cards never qualify. A $20 gift card is taxable wages, no matter how festive. And 'occasional' is part of the deal — the same perk given routinely becomes taxable pay.",
-      "Most businesses stumble on one of these without knowing it. It surfaces during a payroll audit, multiplied across every employee and every year. A simple one-page policy prevents the whole problem."
+      "The tax law has a common-sense rule. Perks too small to be worth tracking are not taxable pay. Coffee and snacks, an occasional team lunch, flowers for a new baby, a modest holiday gift — the business deducts them, the employee owes nothing, and nothing shows up on a W-2.",
+      "There are two tripwires. Cash and gift cards never qualify. A $20 gift card is taxable pay, no matter the occasion. And 'occasional' matters — give the same perk all the time and it becomes taxable pay.",
+      "Most businesses trip one of these without knowing it. The problem surfaces in a payroll audit, multiplied across every employee and every year. A simple one-page policy stops it before it starts."
     ],
-    "analogy": "It is like the express lane at the store. Genuinely small and occasional sails right through. Push a full cart into it and the whole load gets pulled aside.",
+    "analogy": "It is like the express lane at the store. Small and occasional sails right through. Push a full cart in, and the whole load gets pulled aside.",
     "benefits": [
-      "Team perks that cost less than equivalent raises",
-      "Nothing added to W-2s and no payroll tax",
-      "Company phones handled cleanly with one memo",
+      "Team perks that cost less than a matching raise would",
+      "Nothing added to W-2s, and no payroll tax",
+      "Company phones handled cleanly with a single memo",
       "Protection from the gift-card mistake most businesses make"
     ],
     "steps": [
-      "WE review the perks you currently give and flag anything mislabeled.",
-      "WE write the one-page policy with the do's and don'ts.",
-      "YOU follow the policy — real items, given occasionally, never cards or cash.",
+      "WE review the perks you give now and flag anything mislabeled.",
+      "WE write a one-page policy with the do's and don'ts.",
+      "YOU follow the policy — real items, given now and then, never cash or cards.",
       "WE check in each year to keep the program clean."
     ],
     "clientCommitments": [
-      "No cash or gift cards as perks — route those through payroll instead",
-      "Keep perks occasional, and tell us before making any perk routine"
+      "No cash or gift cards as perks — run those through payroll instead",
+      "Keep perks occasional, and tell us before any perk becomes routine"
     ]
   },
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
-      "Annual perk-inventory review for frequency creep and mislabeled items",
-      "Year-end confirmation that payroll captured any non-qualifying gifts"
+      "Yearly perk-inventory review to catch frequency creep and mislabeled items",
+      "Year-end check that payroll captured any gifts that did not qualify"
     ],
     "deliverables": [
-      "One-page fringe benefit policy",
-      "Perk classification chart for the bookkeeper",
-      "Phone-program business-purpose memo"
+      "One-page fringe-benefit policy",
+      "Perk-classification chart for the bookkeeper",
+      "Business-purpose memo for the phone program"
     ],
     "feeGuidanceBand": null
   },

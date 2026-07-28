@@ -1,6 +1,6 @@
 {
   "id": "buy-sell-agreement",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Buy-Sell Agreement Funded with Life Insurance",
@@ -23,70 +28,70 @@
   "entityTypes": ["s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "structural",
   "advisor": {
-    "summary": "A funded buy-sell agreement fixes who buys a deceased or departing owner's interest, at what price, with cash that actually exists — life insurance proceeds arriving income-tax-free under §101(a). Connelly v. United States, 602 U.S. 257 (2024) rewrote the default architecture: corporate-owned proceeds funding a redemption increase the estate-tax value of the decedent's shares with no offset for the redemption obligation, so cross-purchase and special-purpose insurance-LLC designs are now generally preferred and every pre-2024 entity-purchase plan needs review. Two other bodies of law shape the drafting: the transfer-for-value rules of §101(a)(2), which can convert tax-free proceeds into taxable income when policies are shuffled during a restructuring, and §2703, which ignores the agreement's price for estate-valuation purposes unless it is a bona fide business arrangement, not a testamentary device, and comparable to arm's-length terms. Premiums are nondeductible under §264(a)(1) — the after-tax cost of liquidity and price certainty.",
+    "summary": "A funded buy-sell agreement settles who buys a deceased or departing owner's interest, at what price, with cash that actually exists — life insurance proceeds arriving income-tax-free under §101(a). Connelly v. United States, 602 U.S. 257 (2024) rewrote the default architecture: corporate-owned proceeds funding a redemption raise the estate-tax value of the decedent's shares with no offset for the redemption obligation, so cross-purchase and special-purpose insurance-LLC designs are now generally preferred, and every pre-2024 entity-purchase plan needs review. Two other bodies of law drive the drafting: the transfer-for-value rules of §101(a)(2), which can turn tax-free proceeds into taxable income when policies are shuffled during a restructuring, and §2703, which disregards the agreement's price for estate-valuation purposes unless it is a bona fide business arrangement, not a testamentary device, and comparable to arm's-length terms. Premiums are nondeductible under §264(a)(1) — the after-tax price of liquidity and price certainty.",
     "mechanics": [
-      "Entity-purchase (redemption) designs put the policies and the proceeds inside the company — post-Connelly, those proceeds inflate the value of the decedent's shares for estate tax with no liability offset, and surviving owners get no basis step-up in their retained interests.",
-      "Cross-purchase designs have each owner buy the others' interests directly: proceeds never enter the entity, buyers take cost basis in what they purchase, and the Connelly problem never arises — at the cost of n×(n−1) policies and premium burdens that follow age and health.",
-      "A special-purpose insurance LLC taxed as a partnership holds one policy per insured and effects the cross-purchase centrally; transfers among partners fit the §101(a)(2)(B) exceptions to the transfer-for-value rule.",
-      "Proceeds are income-tax-free under §101(a), but a transfer of a policy for valuable consideration strips the exclusion above basis-plus-premiums unless an exception applies — and there is no exception for a transfer to a mere co-shareholder, the trap that springs when old redemption plans are unwound by handing policies around.",
-      "For the contract price to fix estate-tax value, §2703(b) demands a bona fide business arrangement, no testamentary-device purpose, and terms comparable to arm's-length deals — supported in practice by appraisal or a Rev. Rul. 59-60-consistent formula that is actually updated.",
-      "Insureds must hold no incidents of ownership in policies on their own lives, or §2042 pulls the proceeds into their gross estates; §302(b)(3) gives the estate exchange treatment on a complete redemption, usually harmless gain against date-of-death basis."
+      "Entity-purchase (redemption) designs keep the policies and proceeds inside the company — post-Connelly, those proceeds inflate the estate-tax value of the decedent's shares with no liability offset, and surviving owners receive no basis step-up in their retained interests.",
+      "Cross-purchase designs have each owner buy the others' interests directly: proceeds never touch the entity, buyers take cost basis in what they purchase, and the Connelly problem never arises — at the cost of n×(n−1) policies and premium burdens that track age and health.",
+      "A special-purpose insurance LLC taxed as a partnership holds one policy per insured and executes the cross-purchase centrally; transfers among partners fall within the §101(a)(2)(B) exceptions to the transfer-for-value rule.",
+      "Proceeds are income-tax-free under §101(a), but transferring a policy for valuable consideration strips the exclusion above basis-plus-premiums unless an exception applies — and no exception covers a transfer to a mere co-shareholder, the trap that springs when old redemption plans are unwound by handing policies around.",
+      "For the contract price to fix estate-tax value, §2703(b) requires a bona fide business arrangement, no testamentary-device purpose, and terms comparable to arm's-length deals — supported in practice by appraisal or a Rev. Rul. 59-60-consistent formula that is actually kept current.",
+      "Insureds must hold no incidents of ownership in policies on their own lives, or §2042 sweeps the proceeds into their gross estates; §302(b)(3) gives the estate exchange treatment on a complete redemption — usually harmless gain against date-of-death basis."
     ],
     "authority": [
       {
         "type": "Case",
         "cite": "Connelly v. United States, 602 U.S. 257 (2024)",
-        "note": "Unanimous holding that company-owned proceeds increase the value of the decedent's shares with no offset for the redemption obligation — the decision that reordered buy-sell design."
+        "note": "Unanimous holding that company-owned proceeds raise the value of the decedent's shares with no offset for the redemption obligation — the decision that reordered buy-sell design."
       },
       {
         "type": "IRC",
         "cite": "IRC §101(a)",
-        "note": "The income exclusion for death proceeds, and the transfer-for-value rule with its exceptions in §101(a)(2)."
+        "note": "The income exclusion for death proceeds, together with the transfer-for-value rule and its exceptions in §101(a)(2)."
       },
       {
         "type": "IRC",
         "cite": "IRC §2703",
-        "note": "The gate a family agreement's price must pass to fix estate-tax value."
+        "note": "The gate a family agreement's price must clear before it fixes estate-tax value."
       },
       {
         "type": "IRC",
         "cite": "IRC §2042",
-        "note": "Incidents of ownership pull proceeds into the insured's estate — the reason ownership architecture matters."
+        "note": "Incidents of ownership draw proceeds into the insured's estate — the reason ownership architecture matters."
       },
       {
         "type": "IRC",
         "cite": "IRC §264(a)(1)",
-        "note": "Premiums are nondeductible where the payor benefits — buy-sell funding is an after-tax cost."
+        "note": "Premiums are nondeductible where the payor benefits — buy-sell funding runs on after-tax dollars."
       },
       {
         "type": "IRC",
         "cite": "IRC §302(b)(3)",
-        "note": "Complete-redemption exchange treatment for the estate rather than dividend treatment."
+        "note": "Gives the estate complete-redemption exchange treatment rather than dividend treatment."
       },
       {
         "type": "Admin",
         "cite": "Rev. Rul. 59-60",
-        "note": "The valuation framework the pricing mechanism should track to survive §2703 review."
+        "note": "The valuation framework the pricing mechanism should follow to survive §2703 review."
       }
     ],
     "requirements": [
-      "Two or more co-owners (or an identified successor) with a genuine continuity need — a single owner needs a different exit tool.",
-      "A written agreement covering all triggers — death, disability, divorce, termination, voluntary exit — with a pricing mechanism the parties actually maintain.",
+      "Two or more co-owners (or an identified successor) with a genuine continuity need — a sole owner needs a different exit tool.",
+      "A written agreement covering every trigger — death, disability, divorce, termination, voluntary exit — with a pricing mechanism the parties actually maintain.",
       "Policy ownership and beneficiary designations aligned to the chosen structure before signing, with no insured holding incidents of ownership over their own coverage.",
-      "For family businesses, a §2703(b) support file: appraisal or a benchmarked formula.",
+      "For family businesses, a §2703(b) support file: an appraisal or a benchmarked formula.",
       "Insurable owners, confirmed early — underwriting surprises force sinking-fund or installment fallbacks."
     ],
     "risks": [
-      "The leading exposure is Connelly itself: every existing entity-purchase plan holding corporate-owned policies carries a built-in estate-tax markup for taxable estates, and Connelly v. United States, 602 U.S. 257 (2024) is the controlling authority — review and likely restructure any pre-2024 redemption design.",
+      "The leading exposure is Connelly itself: every existing entity-purchase plan holding corporate-owned policies carries a built-in estate-tax markup for taxable estates, and Connelly v. United States, 602 U.S. 257 (2024) is the controlling authority — review, and likely restructure, any pre-2024 redemption design.",
       "Restructuring is where the transfer-for-value trap fires: distributing corporate policies to co-shareholders has no statutory exception and converts tax-free proceeds into taxable income above basis — route transfers to the insured or through a genuine partnership of the insureds.",
-      "A below-market fixed price that fails §2703 is disregarded for valuation: the estate pays tax on full value while the heirs are contractually bound to sell for less — the worst of both worlds.",
-      "Stale pricing invites both the family fight and the IRS challenge; an agreement pegged to a decade-old number is barely better than none.",
-      "Cross-purchase premium discipline drifts once the entity stops writing the check — lapsed policies surface exactly when the funding is needed."
+      "A below-market fixed price that fails §2703 is disregarded for valuation: the estate pays tax on full value while the heirs remain contractually bound to sell for less — the worst of both worlds.",
+      "Stale pricing invites the family fight and the IRS challenge alike; an agreement pegged to a decade-old number is barely better than none.",
+      "Cross-purchase premium discipline drifts once the entity stops writing the check — and lapsed policies surface exactly when the funding is needed."
     ],
     "stateNotes": [
-      "Missouri conforms on the income side through the federal starting point (RSMo §143.121): §101(a)-excluded proceeds never enter the Missouri return, and Missouri has no estate tax to layer onto the Connelly analysis.",
-      "No PTET interaction — premiums are nondeductible under federal law, so there is no entity deduction to move a Missouri pass-through entity tax base.",
-      "Missouri-specific: buy-sell transfer restrictions and any insurance-LLC operating agreement are creatures of Missouri entity and insurable-interest law — coordinate drafting with Missouri counsel, and note that owners residing in other states may face estate-tax thresholds far below the federal exemption."
+      "Missouri conforms on the income side through the federal starting point (RSMo §143.121): §101(a)-excluded proceeds never reach the Missouri return, and Missouri has no estate tax to layer onto the Connelly analysis.",
+      "No PTET interaction — premiums are nondeductible under federal law, so no entity deduction exists to move a Missouri pass-through entity tax base.",
+      "Missouri-specific: buy-sell transfer restrictions and any insurance-LLC operating agreement are creatures of Missouri entity and insurable-interest law — coordinate drafting with Missouri counsel, and remember that owners residing in other states may face estate-tax thresholds far below the federal exemption."
     ],
     "interactions": {
       "requires": [],
@@ -94,22 +99,22 @@
       "synergiesWith": ["esop-exit"]
     },
     "reviewChecklist": [
-      "Existing agreement and every policy's owner and beneficiary inventoried; Connelly exposure and transfer-for-value risk mapped before any restructuring step.",
-      "Chosen structure (cross-purchase, insurance LLC, or residual redemption) matches the owner count, ages, and premium economics.",
-      "Pricing mechanism supported by appraisal or an updated formula, with the §2703(b) comparability file assembled for family deals.",
-      "Policy ownership confirmed free of §2042 incidents of ownership.",
+      "Existing agreement and every policy's owner and beneficiary inventoried; Connelly exposure and transfer-for-value risk mapped before any restructuring step is taken.",
+      "Chosen structure (cross-purchase, insurance LLC, or residual redemption) fits the owner count, ages, and premium economics.",
+      "Pricing mechanism supported by an appraisal or an updated formula, with the §2703(b) comparability file assembled for family deals.",
+      "Policy ownership confirmed clear of §2042 incidents of ownership.",
       "Annual review calendared: valuation refresh, premiums paid, policies in force, coverage tested against current value."
     ]
   },
   "client": {
-    "teaser": "A signed plan and ready cash so your family gets full value and your partners keep the company.",
-    "headline": "A committed buyer, a fair price, and the cash already in place",
+    "teaser": "A signed plan and ready cash, so your family gets full value and your partners keep the company.",
+    "headline": "A committed buyer, a fair price, and cash already in place",
     "plainEnglish": [
-      "If you co-own a business, ask one hard question. What happens to your share if you die tomorrow? Without a plan, your family inherits a stake they cannot run or sell. Your partners inherit co-owners they never chose. And everyone argues about price at the worst possible moment.",
-      "A buy-sell agreement answers all of it in advance: who buys, at what price, on what timeline. Life insurance supplies the money, so the buyout happens in cash instead of years of IOUs. Your family is paid full value. Your partners keep the business.",
+      "If you co-own a business, ask one hard question. What happens to your share if you die tomorrow? Without a plan, your family inherits a stake they cannot run or sell. Your partners inherit co-owners they never chose. And everyone argues over price at the worst possible time.",
+      "A buy-sell agreement settles all of it in advance: who buys, at what price, on what timeline. Life insurance supplies the money, so the buyout happens in cash instead of years of IOUs. Your family gets paid full value. Your partners keep the business.",
       "A 2024 Supreme Court case changed how these plans should be built. The old, most common setup can now add estate tax for larger estates. If you already have an agreement, it needs a fresh look. If you do not, the right structure from day one avoids the problem."
     ],
-    "analogy": "It is a prenup for business partners — everyone agrees on fair terms while everyone is healthy and friendly, so no one negotiates in a crisis.",
+    "analogy": "It is a prenup for business partners. Everyone agrees on fair terms while everyone is healthy and on good terms, so no one has to negotiate in a crisis.",
     "benefits": [
       "Your family receives full, fair value for your share — in cash",
       "Your partners keep control without scrambling for money",
@@ -132,12 +137,12 @@
     "implementationEffort": "structural",
     "annualMaintenance": [
       "Annual valuation or formula refresh with the owners",
-      "Policy audit — premiums paid, coverage in force, ownership still aligned to the agreement",
+      "Policy audit — premiums paid, coverage in force, ownership still matched to the agreement",
       "Trigger-event readiness check as owners' circumstances change"
     ],
     "deliverables": [
       "Buy-sell structure memo (cross-purchase, insurance LLC, or redemption residual) with Connelly analysis",
-      "Coordination package for counsel: agreement terms, pricing mechanism, §2703 support file",
+      "Coordination package for counsel: agreement terms, pricing mechanism, and the §2703 support file",
       "Policy ownership and beneficiary alignment schedule",
       "Annual review report on valuation and funding adequacy"
     ],

@@ -1,6 +1,6 @@
 {
   "id": "reps-qualification",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Real Estate Professional Status (REPS)",
@@ -23,63 +28,63 @@
   "entityTypes": ["rental", "individual"],
   "typicalSavingsBand": "25k-100k",
   "advisor": {
-    "summary": "§469(c)(2) makes every rental activity passive per se, no matter how hard the owner works — §469(c)(7) is the override. A taxpayer who spends more than 750 hours and more than half of all personal-service time in real property trades or businesses in which they materially participate sheds the per-se label, and rental losses become fully usable against wages and business income. The status is tested one spouse at a time (either spouse can qualify on a joint return, but alone), and the rentals must still clear material participation individually unless the Reg. §1.469-9(g) election aggregates the portfolio into one activity. REPS is the master key that makes cost segregation and bonus depreciation pay currently, and it is also the most heavily litigated status in the passive-loss area: contemporaneous time logs decide these cases, and Moss confirms that on-call and reconstructed hours do not count. The engine models qualification by treating all rental results as non-passive; the hour tests must hold in fact, every year.",
+    "summary": "§469(c)(2) labels every rental activity passive per se, however hard the owner works — §469(c)(7) is the override. A taxpayer who spends more than 750 hours, and more than half of all personal-service time, in real property trades or businesses in which they materially participate sheds the per-se label, and rental losses become fully usable against wages and business income. The status is tested one spouse at a time (either spouse can qualify on a joint return, but only alone), and each rental must still clear material participation individually unless the Reg. §1.469-9(g) election aggregates the portfolio into one activity. REPS is the master key that makes cost segregation and bonus depreciation pay off currently, and it is also the most heavily litigated status in the passive-loss area: contemporaneous time logs decide these cases, and Moss confirms that on-call and reconstructed hours do not count. The engine models qualification by treating all rental results as non-passive; the hour tests must hold in fact, every year.",
     "mechanics": [
-      "The two-prong test of §469(c)(7)(B) is applied to one spouse individually: more than 750 hours in real property trades or businesses — development, construction, acquisition, management, brokerage, rental operations — and more than half of that spouse’s total personal services for the year; a full-time job outside real estate makes the second prong nearly unreachable.",
-      "Qualification removes only the per-se passive label; each rental must still pass a material participation test under Reg. §1.469-5T(a) — 500 hours, substantially-all, or more-than-100-hours-and-more-than-anyone-else — property by property unless aggregated.",
-      "The Reg. §1.469-9(g) election treats all rental real estate as a single activity so material participation is tested once across the portfolio; it is filed as a statement with a timely return and binds future years until facts materially change.",
-      "Hours as an employee count only where the taxpayer owns more than 5% of the employer under §469(c)(7)(D) — a salaried property manager with no equity accrues nothing toward the test.",
-      "The engine treats qualification as flipping every rental result to non-passive in the modeled year; the documentation burden — contemporaneous logs of dates, hours, and tasks — is the entire audit defense and is not something the model can supply."
+      "The two-prong test of §469(c)(7)(B) applies to one spouse individually: more than 750 hours in real property trades or businesses — development, construction, acquisition, management, brokerage, rental operations — and more than half of that spouse's total personal services for the year; a full-time job outside real estate puts the second prong nearly out of reach.",
+      "Qualification removes only the per-se passive label; each rental must still satisfy a material participation test under Reg. §1.469-5T(a) — 500 hours, substantially-all, or more-than-100-hours-and-more-than-anyone-else — property by property unless aggregated.",
+      "The Reg. §1.469-9(g) election treats all rental real estate as a single activity, so material participation is tested once across the portfolio; it is filed as a statement with a timely return and binds future years until the facts materially change.",
+      "Employee hours count only where the taxpayer owns more than 5% of the employer under §469(c)(7)(D) — a salaried property manager with no equity accrues nothing toward the test.",
+      "The engine treats qualification as flipping every rental result to non-passive in the modeled year; the documentation burden — contemporaneous logs of dates, hours, and tasks — is the entire audit defense, and the model cannot supply it."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §469(c)(2), (c)(4)",
-        "note": "The per-se passive rule for rentals — the treatment REPS overrides."
+        "note": "The per-se passive rule for rentals — the default treatment REPS overrides."
       },
       {
         "type": "IRC",
         "cite": "IRC §469(c)(7)",
-        "note": "The real estate professional exception: the 750-hour and more-than-half prongs, with the >5% ownership rule for employee hours in (c)(7)(D)."
+        "note": "The real estate professional exception: the 750-hour and more-than-half prongs, plus the >5% ownership rule for employee hours in (c)(7)(D)."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.469-9",
-        "note": "Operative REPS rules, including the (g) election to aggregate all rental real estate as one activity."
+        "note": "The operative REPS rules, including the (g) election aggregating all rental real estate into one activity."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.469-5T(a)",
-        "note": "The seven material participation tests each rental — or the aggregated activity — must satisfy."
+        "note": "The seven material participation tests that each rental — or the aggregated activity — must satisfy."
       },
       {
         "type": "Case",
         "cite": "Moss v. Commissioner, 135 T.C. 365 (2010)",
-        "note": "On-call and standby time does not count toward the hour tests — only hours actually worked."
+        "note": "On-call and standby time does not count toward the hour tests — only hours actually worked do."
       },
       {
         "type": "Admin",
         "cite": "IRS Passive Activity Loss Audit Technique Guide (exam guidance)",
-        "note": "The exam playbook: agents test the more-than-half prong first and attack reconstructed logs."
+        "note": "The exam playbook: agents test the more-than-half prong first and go after reconstructed logs."
       }
     ],
     "requirements": [
-      "One spouse individually clears both prongs — more than 750 hours and more than half of total personal-service time — in real property trades or businesses.",
+      "One spouse clears both prongs alone — more than 750 hours and more than half of total personal-service time — in real property trades or businesses.",
       "Material participation in each rental, or the §1.469-9(g) aggregation election filed with a timely return.",
-      "Contemporaneous time records: dates, hours, and specific tasks, kept as the year happens.",
-      "More than 5% ownership in any real estate employer whose hours are counted."
+      "Contemporaneous time records — dates, hours, and specific tasks — kept as the year unfolds.",
+      "More than 5% ownership of any real estate employer whose hours are counted."
     ],
     "risks": [
-      "Reconstructed and inflated time logs are the most-litigated fact pattern in the passive-loss area: Moss v. Commissioner, 135 T.C. 365 (2010), holds that on-call availability is not participation, and the Passive Activity Loss Audit Technique Guide tells examiners to attack the more-than-half prong first — after-the-fact estimates lose.",
+      "Reconstructed and inflated time logs are the most-litigated fact pattern in the passive-loss area: Moss v. Commissioner, 135 T.C. 365 (2010), holds that on-call availability is not participation, and the Passive Activity Loss Audit Technique Guide directs examiners to attack the more-than-half prong first — after-the-fact estimates lose.",
       "The status is annual: qualifying in 2026 proves nothing about 2027, and the plan must survive re-testing every year.",
-      "A missed aggregation election forces per-property material participation — frequently fatal for multi-property portfolios.",
-      "The aggregation election is binding and reshapes disposition-year loss release; it should be elected deliberately, with the exit modeled.",
-      "This is an elevated-risk position by design — large losses against large W-2 income is precisely the return profile exam selection favors, so the file must be exam-ready when filed."
+      "A missed aggregation election forces per-property material participation — often fatal for multi-property portfolios.",
+      "The aggregation election is binding and reshapes disposition-year loss release; elect it deliberately, with the exit modeled.",
+      "This is an elevated-risk position by design — large losses against large W-2 income is exactly the return profile exam selection favors, so the file must be exam-ready the day it is filed."
     ],
     "stateNotes": [
-      "Conformity: states conform to the federal passive-loss architecture through their federal starting points, so REPS treatment carries into state returns automatically in most footprints.",
-      "Missouri conforms via federal AGI (RSMo §143.121); no separate Missouri election or statement exists.",
-      "PTET interaction: none directly — REPS changes owner-level loss character, not entity income, so there is no PTET interaction to model."
+      "Conformity: states conform to the federal passive-loss architecture through their federal starting points, so REPS treatment flows into state returns automatically in most footprints.",
+      "Missouri conforms through federal AGI (RSMo §143.121); no separate Missouri election or statement exists.",
+      "PTET interaction: none directly — REPS changes the character of owner-level losses, not entity income, so there is no PTET effect to model."
     ],
     "interactions": {
       "requires": [],
@@ -87,25 +92,25 @@
       "synergiesWith": ["cost-segregation", "grouping-election"]
     },
     "reviewChecklist": [
-      "Hour budget built prospectively and the two prongs screened honestly before the status is claimed — including the other spouse’s role.",
+      "Hour budget built prospectively and both prongs screened honestly before the status is claimed — including the other spouse's role.",
       "Contemporaneous log system in place and sampled for quality during the year, not after it.",
-      "Aggregation election evaluated, and the statement filed with the timely return where chosen.",
-      "The specific §1.469-5T(a) test being relied on is identified and documented per activity.",
-      "Loss size sanity-checked against the client’s documented hours — the return should tell the same story as the log."
+      "Aggregation election evaluated, with the statement filed on a timely return where chosen.",
+      "The specific §1.469-5T(a) test relied on is identified and documented for each activity.",
+      "Loss size sanity-checked against the client's documented hours — the return should tell the same story as the log."
     ]
   },
   "client": {
-    "teaser": "Work in real estate full time? Your rental losses can offset all your income.",
-    "headline": "Make rental losses count against your other income",
+    "teaser": "Work in real estate full time? Your rental losses can offset all of your income.",
+    "headline": "Put rental losses to work against your other income",
     "plainEnglish": [
-      "Rental losses normally live in a locked box. They can offset other rental income, but not your salary or business profits. For most landlords, big depreciation deductions just pile up unused.",
-      "There is an exception for people whose main work is real estate. Spend more than 750 hours a year on real estate — and more than half of your total working time — while staying hands-on with your rentals, and the box unlocks. Your rental losses can then offset everything.",
-      "For a married couple, only one spouse needs to qualify. One spouse runs the real estate, the other earns the paycheck, and the losses shelter the household income. The price of entry is proof: a real diary of hours, kept as you go. The IRS checks this status closely, so we build the file like it will be read."
+      "Rental losses normally sit in a locked box. They can offset other rental income, but not your salary or business profits. For most landlords, big depreciation deductions just pile up unused.",
+      "There is an exception for people whose main work is real estate. Spend more than 750 hours a year on real estate — and more than half of your total working time — while staying hands-on with your rentals, and the box opens. Your rental losses can then offset everything.",
+      "For a married couple, only one spouse needs to qualify. One spouse runs the real estate, the other earns the paycheck, and the losses shelter the household income. The price of entry is proof: a real diary of hours, kept as you go. The IRS checks this status closely, so we build the file as if it will be read."
     ],
-    "analogy": "It is like a season pass earned with logged hours — hold the pass, and your rental losses ride along with your paycheck income.",
+    "analogy": "It is like a season pass you earn with logged hours — hold the pass, and your rental losses ride along with your paycheck income.",
     "benefits": [
       "Rental losses offset salary and business income in the same year",
-      "Unlocks the full value of accelerated depreciation",
+      "Turns accelerated depreciation into savings you can use now",
       "Only one spouse needs to qualify on a joint return"
     ],
     "steps": [
@@ -115,21 +120,21 @@
       "YOU log your hours as they happen — dates, tasks, and time."
     ],
     "clientCommitments": [
-      "Keep the hour log current all year — not rebuilt at tax time",
+      "Keep the hour log current all year — never rebuilt at tax time",
       "Stay genuinely hands-on with the properties",
-      "Tell us if your work mix changes — the status is re-earned every year"
+      "Tell us when your work mix changes — the status is re-earned every year"
     ]
   },
   "engagement": {
     "implementationEffort": "structural",
     "annualMaintenance": [
       "Annual re-test of both prongs with a sampled review of the time log",
-      "Re-confirm the material participation test being relied on for each activity",
+      "Re-confirm the material participation test relied on for each activity",
       "Coordinate the year's depreciation strategies with the documented status"
     ],
     "deliverables": [
       "REPS qualification memo with the hour analysis",
-      "Time-log system and quarterly check-in cadence",
+      "Time-log system and a quarterly check-in cadence",
       "Aggregation election statement filed with the return where appropriate"
     ],
     "feeGuidanceBand": null

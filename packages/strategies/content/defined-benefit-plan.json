@@ -1,6 +1,6 @@
 {
   "id": "defined-benefit-plan",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Defined Benefit / Cash Balance Plan",
@@ -23,73 +28,73 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership"],
   "typicalSavingsBand": "100k-plus",
   "advisor": {
-    "summary": "A defined benefit plan promises a future benefit — up to a $290,000 annual life annuity at 2026 limits under §415(b) — and deducts whatever the actuary certifies is needed to fund the promise under §404(o). Because the constraint is a benefit rather than a contribution cap, an owner in their fifties with high, stable income routinely supports $150,000–$300,000 of annual deductions — multiples of the $72,000 defined-contribution world. The cash balance variant states the promise as a hypothetical account (pay credit plus interest credit), which is easier to communicate and to divide among partners. The admission price is commitment: minimum funding is mandatory every year under §§412, 430, and the plan needs an enrolled actuary, a TPA, and a multi-year horizon. The engine applies whatever contribution is entered, capped at owner compensation — the real number must come from the actuarial valuation each year, and it will drift.",
+    "summary": "A defined benefit plan promises a future benefit — up to a $290,000 annual life annuity at 2026 limits under §415(b) — and deducts whatever the actuary certifies is required to fund that promise under §404(o). Because the constraint is a benefit rather than a contribution cap, an owner in their fifties with high, stable income routinely supports $150,000–$300,000 of annual deductions — multiples of the $72,000 defined-contribution world. The cash balance variant states the promise as a hypothetical account (pay credit plus interest credit), easier to communicate and to divide among partners. The price of admission is commitment: minimum funding is mandatory every year under §§412, 430, and the plan requires an enrolled actuary, a TPA, and a multi-year horizon. The engine applies whatever contribution is entered, capped at owner compensation — the real number must come from the annual actuarial valuation, and it will drift.",
     "mechanics": [
-      "The actuary works backward from the promised benefit — capped at a $290,000-per-year annuity under §415(b) for 2026 — to a required annual contribution; fewer years to retirement means a larger required amount, which is why the design structurally favors owners roughly 45 to 62.",
-      "The deduction follows the actuarial funding target under §404(o) rather than a percent-of-compensation cap — the mechanism that lets funding run to multiples of any defined-contribution limit.",
-      "Minimum funding under §§412, 430 is compulsory each year once the plan is adopted; the benefit formula must be set at a level the business can sustain through a weak year.",
-      "Compensation counts only up to the §401(a)(17) cap ($360,000 for 2026), and the benefit formula needs W-2 wages or self-employment earnings large enough to support it — for S corporation owners this is a reasonable-compensation conversation before it is a plan-design conversation.",
-      "In cash balance form each participant receives a stated pay credit plus an interest credit — legally a defined benefit plan, visually an account, and far easier to explain and to split among partners.",
+      "The actuary works backward from the promised benefit — capped for 2026 at a $290,000-per-year annuity under §415(b) — to the required annual contribution; fewer years until retirement means larger required funding, which is why the design structurally favors owners roughly 45 to 62.",
+      "The deduction tracks the actuarial funding target under §404(o) rather than a percent-of-compensation cap — the mechanism that lets funding run to multiples of any defined-contribution limit.",
+      "Minimum funding under §§412, 430 is compulsory every year once the plan is adopted; set the benefit formula at a level the business can sustain through a weak year.",
+      "Compensation counts only up to the §401(a)(17) cap ($360,000 for 2026), and the benefit formula needs W-2 wages or self-employment earnings large enough to support it — for S corporation owners, that is a reasonable-compensation conversation before it is a plan-design conversation.",
+      "In cash balance form, each participant receives a stated pay credit plus an interest credit — legally a defined benefit plan, visually an account, and far easier to explain and to divide among partners.",
       "For a self-employed owner the deduction is above-the-line and reduces the §199A QBI base — often deliberately, since it can pull income back under the QBI phase-out; the engine models the contribution the same way, capped at earned income."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §415(b)",
-        "note": "The maximum annual benefit — $290,000 for 2026 — that the actuary funds toward."
+        "note": "The maximum annual benefit — $290,000 for 2026 — the actuary funds toward."
       },
       {
         "type": "IRC",
         "cite": "IRC §404(o)",
-        "note": "The deduction limit for defined benefit plans tracks the actuarially determined funding target — the statutory engine of the six-figure deduction."
+        "note": "Ties the defined benefit deduction limit to the actuarially determined funding target — the statutory engine behind the six-figure deduction."
       },
       {
         "type": "IRC",
         "cite": "IRC §§412, 430",
-        "note": "Minimum funding standards: the contribution is mandatory every year the plan exists."
+        "note": "The minimum funding standards: the contribution is mandatory in every year the plan exists."
       },
       {
         "type": "IRC",
         "cite": "IRC §401(a)(17)",
-        "note": "Caps compensation counted in the benefit formula at $360,000 for 2026."
+        "note": "Caps the compensation counted in the benefit formula at $360,000 for 2026."
       },
       {
         "type": "IRC",
         "cite": "IRC §199A",
-        "note": "Owner-side plan deductions reduce qualified business income; near the phase-out the interaction can add to — or subtract from — the modeled benefit."
+        "note": "Owner-side plan deductions reduce qualified business income; near the phase-out, the interaction can add to — or subtract from — the modeled benefit."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.401-1(b)(2)",
-        "note": "The permanency requirement — a plan funded briefly and then frozen or terminated risks disqualification."
+        "note": "The permanency requirement — a plan funded briefly, then frozen or terminated, risks disqualification."
       },
       {
         "type": "Admin",
         "cite": "Notice 2025-67",
-        "note": "2026 COLA figures for the §415(b) and §401(a)(17) limits relied on in this record."
+        "note": "The 2026 COLA figures for the §415(b) and §401(a)(17) limits this record relies on."
       },
       {
         "type": "Admin",
         "cite": "Form 5500 and Schedule SB instructions",
-        "note": "The annual filing on which an enrolled actuary certifies the funding target and minimum required contribution."
+        "note": "The annual filing on which an enrolled actuary certifies the funding target and the minimum required contribution."
       }
     ],
     "requirements": [
-      "High, stable income sufficient to sustain the certified contribution for several consecutive years — a commitment, not an annual election.",
-      "An enrolled actuary and TPA engagement covering the design study, annual valuation, and Schedule SB certification.",
-      "Owner age generally 45 or older for the math to dominate defined-contribution alternatives, with W-2 or self-employment compensation that supports the benefit formula.",
+      "High, stable income able to sustain the certified contribution for several consecutive years — a commitment, not an annual election.",
+      "An enrolled actuary and TPA engaged for the design study, the annual valuation, and the Schedule SB certification.",
+      "Owner age generally 45 or older for the math to beat defined-contribution alternatives, with W-2 or self-employment compensation that supports the benefit formula.",
       "If employees exist: a census-priced design study first, because nondiscrimination testing will require meaningful staff benefits."
     ],
     "risks": [
-      "The leading challenge theory is permanency: a plan funded hard for a year or two and then frozen or terminated invites disqualification arguments under Reg. §1.401-1(b)(2) — set the benefit at a level sustainable across the commitment period, typically three to five years or more.",
-      "Funding is mandatory in down years; a missed minimum contribution triggers §4971 excise taxes and a funding-deficiency spiral.",
-      "Investment risk stays with the employer: returns above the assumption overfund the plan, while poor returns raise the required contribution.",
-      "Ongoing costs — actuary, TPA, Form 5500/Schedule SB, and PBGC premiums when staff are covered — typically run $2,000–$5,000+ per year against the deduction.",
-      "Distributions are ordinary income later: this is deferral plus bracket arbitrage, not permanent exclusion, and the endgame (terminate near retirement and roll to an IRA) needs its own plan."
+      "The leading challenge theory is permanency: a plan funded hard for a year or two, then frozen or terminated, invites disqualification arguments under Reg. §1.401-1(b)(2) — set the benefit at a level sustainable across the commitment period, typically three to five years or more.",
+      "Funding stays mandatory in down years; a missed minimum contribution triggers §4971 excise taxes and a funding-deficiency spiral.",
+      "Investment risk sits with the employer: returns above the assumption overfund the plan, while poor returns raise the required contribution.",
+      "Ongoing costs — actuary, TPA, Form 5500/Schedule SB, and PBGC premiums where staff are covered — typically run $2,000–$5,000+ per year against the deduction.",
+      "Distributions are ordinary income later: this is deferral plus bracket arbitrage, not permanent exclusion, and the endgame — terminate near retirement and roll to an IRA — needs its own plan."
     ],
     "stateNotes": [
-      "States that conform to federal AGI or federal taxable income allow the deduction in full with no addback — verify conformity in separate-computation states in the client's footprint.",
-      "PTET interaction: when the entity funds the plan, the deduction shrinks the pass-through income base a PTET election is computed on — re-project PTET estimates after the funding decision.",
+      "States conforming to federal AGI or federal taxable income allow the deduction in full with no addback — verify conformity in any separate-computation states in the client's footprint.",
+      "PTET interaction: when the entity funds the plan, the deduction shrinks the pass-through income base on which a PTET election is computed — re-project PTET estimates after the funding decision.",
       "Missouri conforms through RSMo §143.121; for Missouri SALT Parity Act PTET electors (RSMo §143.436), fourth-quarter PTET estimates should reflect the certified contribution."
     ],
     "interactions": {
@@ -98,52 +103,52 @@
       "synergiesWith": ["sstb-threshold-management"]
     },
     "reviewChecklist": [
-      "Actuarial design study is in the file and the modeled contribution equals the certified number, not an aspiration.",
-      "Multi-year cash-flow stress test done — the client can fund the minimum in a weak year without borrowing.",
+      "Actuarial design study in the file, and the modeled contribution equals the certified number — not an aspiration.",
+      "Multi-year cash-flow stress test complete — the client can fund the minimum in a weak year without borrowing.",
       "Owner compensation supports the benefit formula and passes reasonable-compensation review (S corporation owners).",
       "Census reviewed and staff cost priced where employees exist; the conflicting cash-balance-stack strategy is not also selected.",
-      "Adoption and funding deadlines calendared: document by the filing deadline, funding no later than 8½ months after year-end.",
-      "QBI phase-out interplay reviewed so the modeled benefit reflects the client's real marginal picture."
+      "Adoption and funding deadlines calendared: document signed by the filing deadline, funding no later than 8½ months after year-end.",
+      "QBI phase-out interplay reviewed so the modeled benefit reflects the client's true marginal picture."
     ]
   },
   "client": {
-    "teaser": "A pension for your own business — with deductions far past normal plan limits.",
-    "headline": "The six-figure deduction built for owners closer to retirement",
+    "teaser": "A pension for your own business — with deductions far beyond normal plan limits.",
+    "headline": "A six-figure deduction designed for owners nearing retirement",
     "plainEnglish": [
-      "Remember pensions? They promised workers a set monthly check for life. Big firms mostly dropped them. But the law still allows them, and you can set one up for your own business.",
-      "Here is why that matters. Normal retirement accounts cap what goes in each year. A pension works backward from the benefit you are promised at retirement. The closer you are to that date, the more you may put in now — and every dollar is deductible. For an owner in their fifties with strong income, that often means $150,000 or more per year.",
+      "Remember pensions? They promised workers a set monthly check for life. Most big firms dropped them. But the law still allows them — and you can set one up for your own business.",
+      "Here is why that matters. Normal retirement accounts cap what goes in each year. A pension works backward from the benefit promised at retirement. The closer you are to that date, the more you can put in now — and every dollar is deductible. For an owner in their fifties with strong income, that often means $150,000 or more each year.",
       "The trade-off is commitment. A specialist sets the amount, and you must fund it every year, for several years. So we only recommend it when your income is strong and steady."
     ],
-    "analogy": "Filling a bucket by age 65 from age 30 takes only a slow drip. Starting at 55, you are allowed to pour much faster — and deduct every gallon.",
+    "analogy": "Filling a bucket by age 65 from age 30 takes only a slow drip. Start at 55 and you are allowed to pour much faster — and deduct every gallon.",
     "benefits": [
       "Deductions of $150,000 to $300,000 a year are common for older owners",
-      "The older you are, the more you can put away",
-      "Builds a large retirement fund in a short span of years",
+      "The older you are, the more you can set aside",
+      "Builds a large retirement fund in just a few years",
       "Can pair with a 401(k) layer for even more (we model that separately)"
     ],
     "steps": [
       "WE commission a design study with a pension specialist to find your exact number.",
-      "WE stress-test your cash flow so the required funding fits even a slow year.",
+      "WE stress-test your cash flow to be sure the required funding fits even a slow year.",
       "WE set up the plan and calendar every funding and filing deadline.",
       "YOU fund the certified amount each year and send the specialist your payroll data."
     ],
     "clientCommitments": [
       "Fund the required amount every year — it is not optional once the plan exists",
-      "Keep the plan in place for several years; quick exits cause problems",
-      "Get us the census and payroll data the actuary needs each year"
+      "Keep the plan running for several years; a quick exit causes problems",
+      "Send us the census and payroll data the actuary needs each year"
     ]
   },
   "engagement": {
     "implementationEffort": "structural",
     "annualMaintenance": [
-      "Annual actuarial valuation and recertification of the required contribution",
+      "Annual actuarial valuation with recertification of the required contribution",
       "Form 5500 with Schedule SB filed; PBGC premiums handled where staff are covered",
-      "Yearly design check — compensation, demographics, funding level, and the eventual termination plan"
+      "Yearly design review — compensation, demographics, funding level, and the eventual termination plan"
     ],
     "deliverables": [
-      "Actuarial design study with the target benefit and funding schedule",
-      "Executed plan document and adoption resolutions",
-      "Annual funding certification and deduction support for the return"
+      "Actuarial design study setting the target benefit and funding schedule",
+      "Executed plan document with adoption resolutions",
+      "Annual funding certification and deduction support for the tax return"
     ],
     "feeGuidanceBand": null
   },

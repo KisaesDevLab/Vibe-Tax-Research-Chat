@@ -1,6 +1,6 @@
 {
   "id": "equipment-timing",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Equipment Purchase Timing",
@@ -23,56 +28,56 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "5k-25k",
   "advisor": {
-    "summary": "Depreciation — including §179 expensing and permanent 100 percent bonus — begins when property is placed in service, meaning ready and available for its assigned function, not when it is ordered, paid for, or sitting crated on a dock. That makes year-end equipment decisions a pure timing lever: pull a planned first-quarter purchase into December to deduct it a year earlier, or push it to January when next year's bracket will be materially higher. The traps are mechanical: loading more than 40 percent of the year's personal property into the fourth quarter forces the mid-quarter convention, and §179 cannot exceed business taxable income while bonus has no such limit. Advisory by design — the deductions themselves are modeled through the §179, bonus, and heavy-vehicle records; this one drives the when.",
+    "summary": "Depreciation — including §179 expensing and permanent 100 percent bonus — begins when property is placed in service: ready and available for its assigned function, not ordered, paid for, or sitting crated on a dock. That makes year-end equipment decisions a pure timing lever: pull a planned first-quarter purchase into December to deduct it a year earlier, or push it to January when next year's bracket will be materially higher. The traps are mechanical: loading more than 40 percent of the year's personal property into the fourth quarter forces the mid-quarter convention, and §179 cannot exceed business taxable income while bonus carries no such limit. Advisory by design — the deductions themselves are modeled through the §179, bonus, and heavy-vehicle records; this strategy drives the when.",
     "mechanics": [
-      "The placed-in-service standard of Reg. §1.46-3(d) — readiness and availability for the specifically assigned function — controls the deduction year: installed and operable by December 31 counts; delivered but not commissioned does not.",
-      "Acceleration: a purchase planned for early next year, in service by year end, moves the whole §179/bonus deduction forward a year — a full year of time value on the write-off.",
+      "The placed-in-service standard of Reg. §1.46-3(d) — readiness and availability for the specifically assigned function — fixes the deduction year: installed and operable by December 31 counts; delivered but not commissioned does not.",
+      "Acceleration: a purchase planned for early next year, in service by year end, pulls the entire §179/bonus deduction forward a year — a full year of time value on the write-off.",
       "Deferral: when next year's marginal rate will be materially higher — an income spike, expiring losses — a January in-service date makes each deduction dollar worth more; the rate differential, not the calendar, is the decision variable.",
-      "The mid-quarter trap of §168(d)(3): more than 40 percent of the year's MACRS personal property placed in service in the fourth quarter puts all of it on the mid-quarter convention; permanent bonus mutes this federally, but it still bites non-bonus property and bonus-decoupled states.",
-      "§179(b)(3) caps expensing at aggregate business taxable income with a carryforward for the excess, while §168(k) bonus has no income limit — sequencing the two matters for loss-year purchases; 2026 capacity ($2,560,000 of expensing, phase-out from $4,090,000) is rarely the constraint."
+      "The mid-quarter trap of §168(d)(3): placing more than 40 percent of the year's MACRS personal property in service in the fourth quarter puts all of it on the mid-quarter convention; permanent bonus mutes this federally, but it still bites non-bonus property and bonus-decoupled states.",
+      "§179(b)(3) caps expensing at aggregate business taxable income, with a carryforward for the excess, while §168(k) bonus has no income limit — sequencing the two matters for loss-year purchases; 2026 capacity ($2,560,000 of expensing, phase-out from $4,090,000) is rarely the constraint."
     ],
     "authority": [
       {
         "type": "Reg",
         "cite": "Reg. §1.46-3(d)",
-        "note": "The readiness-and-availability standard that fixes the placed-in-service date."
+        "note": "The readiness-and-availability test that fixes the placed-in-service date."
       },
       {
         "type": "IRC",
         "cite": "IRC §168(d)(3), (4)",
-        "note": "The 40 percent fourth-quarter test and the mid-quarter convention it forces."
+        "note": "The 40 percent fourth-quarter test and the mid-quarter convention it triggers."
       },
       {
         "type": "IRC",
         "cite": "IRC §179(b)(3)",
-        "note": "The taxable-income ceiling on expensing, with carryforward of the excess."
+        "note": "The taxable-income ceiling on expensing, with a carryforward for the excess."
       },
       {
         "type": "IRC",
         "cite": "IRC §168(k), as amended by P.L. 119-21 (OBBBA)",
-        "note": "Permanent 100 percent bonus for property acquired after January 19, 2025 — the tool with no income limit."
+        "note": "Permanent 100 percent bonus depreciation for property acquired after January 19, 2025 — the tool with no income limit."
       },
       {
         "type": "Admin",
         "cite": "Rev. Proc. 2025-32",
-        "note": "2026 inflation adjustments, including the $2,560,000 §179 ceiling and the $4,090,000 phase-out threshold."
+        "note": "The 2026 inflation adjustments, including the $2,560,000 §179 ceiling and the $4,090,000 phase-out threshold."
       }
     ],
     "requirements": [
-      "A planned purchase with real flexibility on the in-service date.",
+      "A planned purchase with genuine flexibility on the in-service date.",
       "A defensible projection of this year's and next year's marginal rates.",
-      "Delivery, installation, and commissioning achievable by the target date, with documentation retained."
+      "Delivery, installation, and commissioning achievable by the target date, with the documentation retained."
     ],
     "risks": [
-      "The recurring exam adjustment is the calendar itself: equipment invoiced in December but not operable until January deducts nothing this year, and the position fails for lack of commissioning and first-use records — the placed-in-service test is factual, and the proof must be kept in real time.",
+      "The recurring exam adjustment is the calendar itself: equipment invoiced in December but not operable until January deducts nothing this year, and the position fails for want of commissioning and first-use records — the placed-in-service test is factual, and the proof must be kept in real time.",
       "A December buying spree can trip the 40 percent mid-quarter test and shrink first-year MACRS on non-bonus property.",
       "Accelerating into a low-bracket year wastes the deduction against 12 percent income when next year's higher-rate income was the better target.",
-      "Buying unneeded equipment for a deduction spends a dollar to save a fraction of one — timing only adds value to purchases the business already needs."
+      "Buying unneeded equipment for a deduction spends a dollar to save a fraction of one — timing adds value only to purchases the business already needs."
     ],
     "stateNotes": [
-      "Conformity: many states decouple from bonus depreciation or cap §179 below federal levels, so the federal timing answer and the state timing answer can differ — check conformity in every filing state before choosing the §179/bonus mix.",
-      "PTET interaction: a large accelerated deduction reduces entity income and with it the base of any pass-through entity tax election — reset PTET estimates when a major purchase moves.",
-      "Missouri: conforms to federal depreciation, including bonus and §179, through rolling conformity (RSMo §143.091), so the federal in-service decision carries straight into the Missouri return."
+      "Conformity: many states decouple from bonus depreciation or cap §179 below federal levels, so the federal timing answer and the state timing answer can diverge — check conformity in every filing state before setting the §179/bonus mix.",
+      "PTET interaction: a large accelerated deduction shrinks entity income and with it the base of any pass-through entity tax election — reset PTET estimates whenever a major purchase moves.",
+      "Missouri: conforms to federal depreciation, including bonus and §179, through rolling conformity (RSMo §143.091), so the federal in-service decision carries straight onto the Missouri return."
     ],
     "interactions": {
       "requires": [],
@@ -80,21 +85,21 @@
       "synergiesWith": ["section-179-expensing", "bonus-depreciation"]
     },
     "reviewChecklist": [
-      "Fourth-quarter planning list of purchases for the next six months with expected in-service dates.",
-      "Both years' marginal rates projected and the accelerate/defer call documented per item.",
+      "Fourth-quarter planning list of the next six months' purchases with expected in-service dates.",
+      "Both years' marginal rates projected and the accelerate/defer call documented item by item.",
       "Fourth-quarter personal-property concentration tested against the 40 percent threshold.",
-      "In-service evidence requirements (delivery, installation, first use) communicated to the client in writing."
+      "In-service evidence requirements (delivery, installation, first use) given to the client in writing."
     ]
   },
   "client": {
-    "teaser": "When you buy can be worth almost as much as what you buy.",
+    "teaser": "When you buy can matter almost as much as what you buy.",
     "headline": "Time equipment purchases so the tax savings land where they help most",
     "plainEnglish": [
-      "Big equipment purchases usually come with big deductions — often the whole cost in year one. What most owners miss: the deduction lands in the year the equipment is up and running. Not the year you order it or pay for it.",
-      "That gives you a lever. A machine planned for February can cut this year's tax bill if it is delivered and working by New Year's Eve. Sometimes the smart move is the opposite: if next year's income will be higher, waiting a few weeks makes the same deduction worth more.",
-      "This is a planning conversation, not a form. Each fall we look at what you plan to buy, compare the two years, and pick the dates that squeeze the most from purchases you were making anyway."
+      "Big equipment purchases usually bring big deductions — often the whole cost in year one. Here is what most owners miss: the deduction lands in the year the equipment is up and running. Not the year you order it or pay for it.",
+      "That gives you a lever. A machine planned for February can cut this year's tax bill if it is delivered and working by New Year's Eve. Sometimes the smart move is the opposite. If next year's income will be higher, waiting a few weeks makes the same deduction worth more.",
+      "This is a planning conversation, not a form. Each fall we look at what you plan to buy, compare the two years, and pick the dates that get the most from purchases you were making anyway."
     ],
-    "analogy": "It is like a coupon worth more on certain days. Same purchase, same coupon — redeeming it on the right day gets more back.",
+    "analogy": "It is like a coupon worth more on certain days. Same purchase, same coupon — redeem it on the right day and you get more back.",
     "benefits": [
       "More value from equipment you were buying anyway",
       "Deductions land in your highest-tax year",
@@ -103,20 +108,20 @@
     ],
     "steps": [
       "WE review your planned purchases each fall.",
-      "WE compare this year's and next year's tax picture and recommend dates.",
+      "WE compare this year's and next year's tax picture and recommend the dates.",
       "YOU schedule delivery and installation to hit the chosen dates.",
       "YOU keep the delivery and setup records — we tell you exactly what to save."
     ],
     "clientCommitments": [
       "Loop us in on big purchases, ideally by October",
-      "Save the records showing when equipment was installed and ready to use"
+      "Save the records that show when equipment was installed and ready to use"
     ]
   },
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
       "Fall purchase-timing review against both years' projected brackets",
-      "Year-end check of fourth-quarter in-service concentration before final purchases"
+      "Year-end check of fourth-quarter in-service concentration before the final purchases"
     ],
     "deliverables": [
       "Annual purchase-timing memo with accelerate/defer recommendations",

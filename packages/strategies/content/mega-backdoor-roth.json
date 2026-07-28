@@ -1,6 +1,6 @@
 {
   "id": "mega-backdoor-roth",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Mega Backdoor Roth (After-Tax 401(k))",
@@ -23,67 +28,67 @@
   "entityTypes": ["sole-prop", "s-corp", "individual"],
   "typicalSavingsBand": "structural",
   "advisor": {
-    "summary": "The gap between elective deferrals plus employer money and the §415(c) annual-additions ceiling — $72,000 for 2026 — can be filled with non-Roth after-tax employee contributions and then converted immediately, either through an in-plan Roth rollover under §402A(c)(4) or by rollover to a Roth IRA. After a maxed $24,500 deferral and typical employer contributions, that moves $30,000–$45,000 or more per year into Roth status. There is no current deduction — after-tax means after-tax — so the record is advisory: the value is decades of tax-free growth, not a line on this year's return. Unlike the IRA backdoor, the §408(d)(2) pro-rata rule does not reach this play: the plan accounts for the after-tax subaccount separately, and Notice 2014-54 lets basis and earnings split cleanly at rollover. The two gating questions are always the plan document and, in staff plans, ACP testing.",
+    "summary": "Non-Roth after-tax employee contributions can fill the gap between elective deferrals plus employer money and the §415(c) annual-additions ceiling — $72,000 for 2026 — and then convert immediately, either through an in-plan Roth rollover under §402A(c)(4) or by rollover to a Roth IRA. After a maxed $24,500 deferral and typical employer contributions, that shifts $30,000–$45,000 or more per year into Roth status. There is no current deduction — after-tax means after-tax — so the record is advisory: the payoff is decades of tax-free growth, not a line on this year's return. Unlike the IRA backdoor, the §408(d)(2) pro-rata rule never reaches this play: the plan accounts for the after-tax subaccount separately, and Notice 2014-54 splits basis and earnings cleanly at rollover. Two questions gate everything: the plan document and, in staff plans, ACP testing.",
     "mechanics": [
-      "Capacity equals the $72,000 §415(c) ceiling (2026) minus elective deferrals minus employer contributions — for example, a $24,500 deferral plus $12,500 of employer money leaves $35,000 of after-tax room.",
-      "The plan document must permit both non-Roth after-tax employee contributions and in-plan Roth conversion (or in-service distribution of the after-tax account); most off-the-shelf documents allow neither, so read first and amend if needed.",
-      "Convert immediately: earnings accrued between contribution and conversion are taxable at conversion, and a same-payroll automatic sweep — many providers offer one — keeps the taxable slice near zero.",
-      "In plans with staff, after-tax contributions are tested under the §401(m) ACP test; heavy owner use against low staff participation fails the test and gets refunded — an owner-only solo 401(k) has no ACP test and is the cleanest chassis.",
-      "The §408(d)(2) pro-rata fraction that haunts the IRA backdoor does not apply: the plan's separate accounting for the after-tax subaccount, combined with the Notice 2014-54 allocation rules, sends basis to Roth and earnings to pre-tax cleanly."
+      "Capacity is the $72,000 §415(c) ceiling (2026) minus elective deferrals minus employer contributions — a $24,500 deferral plus $12,500 of employer money, for example, leaves $35,000 of after-tax room.",
+      "The plan document must allow both non-Roth after-tax employee contributions and in-plan Roth conversion (or in-service distribution of the after-tax account); most off-the-shelf documents permit neither — read first, amend if needed.",
+      "Convert immediately: earnings that accrue between contribution and conversion are taxable at conversion, and a same-payroll automatic sweep — many providers offer one — holds the taxable slice near zero.",
+      "In plans with staff, after-tax contributions run through the §401(m) ACP test; heavy owner use against thin staff participation fails the test and comes back as refunds — an owner-only solo 401(k) faces no ACP test and is the cleanest chassis.",
+      "The §408(d)(2) pro-rata fraction that haunts the IRA backdoor does not apply here: the plan's separate accounting for the after-tax subaccount, paired with the Notice 2014-54 allocation rules, routes basis to Roth and earnings to pre-tax cleanly."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §415(c)",
-        "note": "The $72,000 annual-additions ceiling (2026) whose unused headroom after-tax contributions fill."
+        "note": "The 2026 annual-additions ceiling of $72,000 — the unused headroom after-tax contributions fill."
       },
       {
         "type": "IRC",
         "cite": "IRC §402A(c)(4)",
-        "note": "Authorizes in-plan Roth rollovers, including otherwise nondistributable amounts — the conversion leg."
+        "note": "The statutory basis for in-plan Roth rollovers, including otherwise nondistributable amounts — the conversion leg."
       },
       {
         "type": "IRC",
         "cite": "IRC §401(m)",
-        "note": "The ACP nondiscrimination test that applies to employee after-tax contributions in plans with staff."
+        "note": "The ACP nondiscrimination test governing employee after-tax contributions in plans with staff."
       },
       {
         "type": "IRC",
         "cite": "IRC §408(d)(2)",
-        "note": "The IRA pro-rata rule — cited to document why it does not reach plan-level after-tax conversions."
+        "note": "The IRA pro-rata rule — cited to show why it does not reach plan-level after-tax conversions."
       },
       {
         "type": "Admin",
         "cite": "Notice 2014-54",
-        "note": "Permits allocation of pre-tax and after-tax amounts among simultaneous rollover destinations — the clean basis-separation authority."
+        "note": "Allows pre-tax and after-tax amounts to be allocated among simultaneous rollover destinations — the clean basis-separation authority."
       },
       {
         "type": "Admin",
         "cite": "Notice 2013-74",
-        "note": "In-plan Roth rollover guidance covering nondistributable amounts and plan-amendment requirements."
+        "note": "In-plan Roth rollover guidance on nondistributable amounts and required plan amendments."
       },
       {
         "type": "Admin",
         "cite": "Notice 2025-67",
-        "note": "The 2026 dollar limits used here: $24,500 deferral and $72,000 annual additions."
+        "note": "Source of the 2026 dollar limits used here: the $24,500 deferral and $72,000 annual additions."
       }
     ],
     "requirements": [
-      "A 401(k) document permitting after-tax contributions and prompt conversion — amend or restate if absent; solo plans should sit with a provider whose document includes both.",
-      "Surplus cash flow after deferrals and employer contributions are already maxed, since these dollars produce no deduction.",
-      "An owner-only plan, or a staff plan the TPA projects will pass ACP testing with the owner's after-tax dollars included.",
+      "A 401(k) document that permits after-tax contributions and prompt conversion — amend or restate if it does not; solo plans belong with a provider whose document includes both.",
+      "Surplus cash flow once deferrals and employer contributions are already maxed, since these dollars produce no deduction.",
+      "An owner-only plan, or a staff plan the TPA projects will pass ACP testing with the owner's after-tax dollars counted.",
       "A provider or process that converts every payroll, ideally automatically."
     ],
     "risks": [
-      "ACP failure is the leading testing risk in plans with employees: the owner's after-tax dollars come back as refunds, unwinding the year — have the TPA project the test before funding, not after.",
-      "Conversion lag quietly builds a tax bill: earnings that accrue in the after-tax account before conversion are taxable when finally moved.",
-      "Contributing after-tax dollars a plan does not actually permit is an operational failure requiring correction under the EPCRS framework of Rev. Proc. 2021-30.",
-      "Recurring legislative proposals target after-tax conversions; funded-and-converted dollars have historically been grandfathered, which argues for using capacity while it exists."
+      "ACP failure is the leading testing risk where employees participate: the owner's after-tax dollars return as refunds and unwind the year — have the TPA project the test before funding, not after.",
+      "Conversion lag quietly builds a tax bill: earnings that sit in the after-tax account before conversion are taxable when finally moved.",
+      "Funding after-tax dollars a plan does not actually permit is an operational failure that requires correction under the EPCRS framework of Rev. Proc. 2021-30.",
+      "Legislative proposals recur that would curb after-tax conversions; dollars already funded and converted have historically been grandfathered — an argument for using capacity while it exists."
     ],
     "stateNotes": [
-      "Conformity: after-tax contributions are in state income the year earned, and qualified Roth distributions are excluded in states that conform to federal AGI — so state treatment generally tracks federal automatically.",
-      "No PTET interaction — after-tax employee contributions create no entity-level deduction for a pass-through entity tax election to leverage.",
-      "Missouri conforms through RSMo §143.121; converted earnings, if any, are Missouri income in the conversion year, and qualified Roth distributions escape Missouri tax just as they do federally."
+      "Conformity: after-tax contributions sit in state income the year earned, and states that conform to federal AGI exclude qualified Roth distributions — so state treatment generally tracks federal automatically.",
+      "No PTET interaction — after-tax employee contributions create no entity-level deduction for a pass-through entity tax election to work with.",
+      "Missouri conforms through RSMo §143.121; converted earnings, if any, land in Missouri income in the conversion year, and qualified Roth distributions escape Missouri tax just as they do federally."
     ],
     "interactions": {
       "requires": ["solo-401k"],
@@ -91,50 +96,50 @@
       "synergiesWith": ["backdoor-roth"]
     },
     "reviewChecklist": [
-      "Plan or adoption-agreement language for after-tax contributions and in-plan conversion verified in writing — or the amendment executed — before any funding.",
-      "Current-year capacity computed ($72,000 minus deferrals minus employer contributions) and refreshed whenever employer amounts change.",
-      "Staff plans: TPA ACP projection in the file before the owner funds.",
-      "Automatic or calendared conversion process in place so earnings exposure stays near zero.",
-      "Conversion 1099-R reconciled — only post-contribution earnings show as taxable."
+      "Plan or adoption-agreement language for after-tax contributions and in-plan conversion verified in writing — or the amendment executed — before a dollar is funded.",
+      "Current-year capacity computed ($72,000 minus deferrals minus employer contributions) and refreshed whenever employer amounts move.",
+      "Staff plans: the TPA's ACP projection in the file before the owner funds.",
+      "An automatic or calendared conversion process in place so earnings exposure stays near zero.",
+      "Conversion 1099-R reconciled — only post-contribution earnings appear as taxable."
     ]
   },
   "client": {
-    "teaser": "Move an extra $30,000 or more each year into savings the IRS never taxes again.",
+    "teaser": "Shift an extra $30,000 or more each year into savings the IRS never taxes again.",
     "headline": "Supercharge your Roth: tens of thousands more each year, tax-free for good",
     "plainEnglish": [
-      "A Roth account is the best deal in retirement saving. The money grows for decades, and you never pay tax on it again. The problem is the front door is small. Normal Roth deposits cap out at a few thousand dollars, and high earners are shut out.",
-      "Inside a 401(k) there is a much bigger door. The law allows total plan deposits of up to $72,000 a year, if your plan accepts a special extra type of deposit. We move those dollars to the Roth side right away, where they grow tax-free for good.",
-      "These extra deposits do not cut this year's tax bill. You fund them with money you already paid tax on. The payoff comes later, and it compounds: decades of growth the IRS never touches, and no forced withdrawals on the government's schedule."
+      "A Roth account is the best deal in retirement saving. The money grows for decades, and you never pay tax on it again. The catch is that the front door is small. Regular Roth deposits cap out at a few thousand dollars, and high earners are shut out.",
+      "Inside a 401(k) there is a much bigger door. The law allows total plan deposits of up to $72,000 a year — if your plan accepts a special extra type of deposit. We move those dollars to the Roth side right away, where they grow tax-free for good.",
+      "These extra deposits do not lower this year's tax bill. You fund them with money you already paid tax on. The payoff comes later, and it compounds: decades of growth the IRS never touches, and no forced withdrawals on the government's timetable."
     ],
-    "analogy": "It is like learning the building has a freight elevator. Same destination as the small one everyone crowds into — but it moves far more per trip.",
+    "analogy": "It is like finding out the building has a freight elevator. It goes to the same place as the small one everyone crowds into — but it carries far more per trip.",
     "benefits": [
-      "Move an extra $30,000 to $45,000 a year into never-taxed-again savings",
+      "Move an extra $30,000 to $45,000 a year into savings that are never taxed again",
       "Works even when your income is too high for a regular Roth",
       "No forced withdrawals later — the money compounds on your schedule"
     ],
     "steps": [
-      "WE check your plan for the two features this needs, and fix the document if it lacks them.",
-      "WE compute your exact extra room for the year.",
-      "YOU fund the extra deposits from cash flow after your normal 401(k) money is maxed.",
-      "WE set conversions to run automatically, so growth is tax-free from day one."
+      "WE check your plan for the two features this needs, and fix the document if either is missing.",
+      "WE calculate your exact extra room for the year.",
+      "YOU fund the extra deposits from cash flow once your normal 401(k) money is maxed.",
+      "WE set the conversions to run automatically, so growth is tax-free from day one."
     ],
     "clientCommitments": [
-      "Fund these deposits with after-tax cash — they do not lower this year's bill",
-      "Keep the automatic conversion running; never let deposits sit unconverted",
+      "Fund the deposits with after-tax cash — they will not cut this year's bill",
+      "Leave the automatic conversion on; never let deposits sit unconverted",
       "Tell us when employer contributions change so we can re-size your room"
     ]
   },
   "engagement": {
     "implementationEffort": "multi-step",
     "annualMaintenance": [
-      "Recompute after-tax capacity each year as deferrals and employer contributions move",
-      "Staff plans: ACP projection before owner funding and year-end confirmation after",
-      "Reconcile conversion 1099-Rs and confirm the Roth subaccount tracking"
+      "Recompute after-tax capacity each year as deferrals and employer contributions shift",
+      "Staff plans: project the ACP test before owner funding and confirm at year end",
+      "Reconcile conversion 1099-Rs and verify the Roth subaccount tracking"
     ],
     "deliverables": [
-      "Plan-document feature review (and amendment, where required)",
+      "Plan-document feature review (with amendment where required)",
       "Annual capacity worksheet and funding calendar",
-      "Conversion confirmations and basis-tracking file for the return"
+      "Conversion confirmations and a basis-tracking file for the return"
     ],
     "feeGuidanceBand": null
   },

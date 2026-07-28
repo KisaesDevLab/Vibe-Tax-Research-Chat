@@ -1,6 +1,6 @@
 {
   "id": "qsehra",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "QSEHRA",
@@ -23,25 +28,25 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership"],
   "typicalSavingsBand": "under-5k",
   "advisor": {
-    "summary": "Section 9831(d) lets an employer with fewer than 50 full-time-equivalent employees and no group health plan reimburse individual-market premiums and out-of-pocket medical care without violating the ACA market reforms, because a compliant QSEHRA is statutorily not a group health plan. The 2026 caps are $6,450 self-only and $13,100 family (Rev. Proc. 2025-32), indexed annually; benefits must be entirely employer-funded and offered to all eligible employees on the same terms. This is an employee-benefit play: the modeled number is the employer's deduction, and the owner's own family generally cannot participate tax-free — self-employed owners, partners, and >2% S corporation shareholders sit outside the exclusion. Notice 2017-67 is the operating manual: minimum essential coverage, substantiation, the 90-day notice, and W-2 reporting.",
+    "summary": "Section 9831(d) lets an employer with fewer than 50 full-time-equivalent employees and no group health plan reimburse individual-market premiums and out-of-pocket medical care without tripping the ACA market reforms — a compliant QSEHRA is, by statute, not a group health plan. The 2026 caps are $6,450 self-only and $13,100 family (Rev. Proc. 2025-32), indexed annually; benefits must be funded entirely by the employer and offered to every eligible employee on the same terms. This is an employee-benefit play: the modeled number is the employer's deduction, and the owner's own family generally cannot participate tax-free — self-employed owners, partners, and >2% S corporation shareholders sit outside the exclusion. Notice 2017-67 remains the operating manual: minimum essential coverage, substantiation, the 90-day notice, and W-2 reporting.",
     "mechanics": [
-      "The employer funds reimbursements entirely — no salary reductions — and payments for individual premiums and §213(d) medical care are excluded from employee income under §106(a) and §105(b) when the employee holds minimum essential coverage.",
-      "Eligibility gates under §9831(d): not an applicable large employer (fewer than 50 FTEs) and no group health plan offered to any employee — including group dental or vision unless excepted.",
-      "Same-terms rule: every eligible employee gets the same benefit, varied only by age and family size; new hires under 90 days, employees under 25, part-time, and seasonal workers may be excluded by class.",
+      "The employer funds every reimbursement — no salary reductions — and payments for individual premiums and §213(d) medical care are excluded from employee income under §106(a) and §105(b) when the employee holds minimum essential coverage.",
+      "Two eligibility gates under §9831(d): not an applicable large employer (fewer than 50 FTEs), and no group health plan offered to any employee — including group dental or vision unless excepted.",
+      "Same-terms rule: every eligible employee receives the same benefit, varied only by age and family size; new hires under 90 days, employees under 25, part-time, and seasonal workers may be excluded by class.",
       "The 2026 caps — $6,450 self-only and $13,100 family under Rev. Proc. 2025-32 — bind per employee per year; the permitted benefit is reported in W-2 Box 12 code FF, and reimbursing above the cap disqualifies the arrangement.",
       "Employee-side coordination: the QSEHRA benefit reduces any §36B premium tax credit through the affordability computation — for subsidized employees the net value can be smaller than it looks.",
-      "The engine deducts total reimbursements against the sponsoring business's income; for a Schedule C sponsor the deduction also reduces SE earnings through the engine's ordinary sequence."
+      "The engine deducts total reimbursements against the sponsoring business's income; for a Schedule C sponsor the deduction also flows through to reduce SE earnings in the engine's ordinary sequence."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §9831(d)",
-        "note": "The QSEHRA statute: the under-50-FTE and no-group-plan conditions, employer-only funding, same-terms rule, and indexed dollar caps."
+        "note": "The QSEHRA statute: the under-50-FTE and no-group-plan conditions, employer-only funding, the same-terms rule, and the indexed dollar caps."
       },
       {
         "type": "Admin",
         "cite": "Notice 2017-67",
-        "note": "The comprehensive Q&A: eligibility, substantiation, minimum-essential-coverage requirement, W-2 reporting, and PTC coordination."
+        "note": "The comprehensive Q&A: eligibility, substantiation, the minimum-essential-coverage requirement, W-2 reporting, and PTC coordination."
       },
       {
         "type": "Admin",
@@ -51,12 +56,12 @@
       {
         "type": "IRC",
         "cite": "IRC §§105(b), 106(a)",
-        "note": "Exclude the reimbursements from employee income where minimum essential coverage is maintained."
+        "note": "Exclude the reimbursements from employee income while minimum essential coverage is maintained."
       },
       {
         "type": "IRC",
         "cite": "IRC §162(a)",
-        "note": "The employer's deduction for the reimbursements — the modeled quantity."
+        "note": "The employer's deduction for the reimbursements — the quantity the model prices."
       },
       {
         "type": "IRC",
@@ -66,7 +71,7 @@
       {
         "type": "IRC",
         "cite": "IRC §6652(o)",
-        "note": "The penalty — $50 per employee, capped annually — for failing the 90-day advance notice."
+        "note": "The penalty for missing the 90-day advance notice — $50 per employee, capped annually."
       },
       {
         "type": "IRC",
@@ -76,21 +81,21 @@
     ],
     "requirements": [
       "Fewer than 50 full-time equivalents and no group health plan offered to any employee.",
-      "A written plan funded solely by the employer, offered to all eligible employees on the same terms.",
-      "The 90-day advance written notice each year — §6652(o) penalties attach to misses.",
-      "Proof of minimum essential coverage before reimbursing, plus expense substantiation.",
+      "A written plan funded solely by the employer and offered to all eligible employees on the same terms.",
+      "The 90-day advance written notice delivered each year — §6652(o) penalties attach to misses.",
+      "Proof of minimum essential coverage before any reimbursement, plus expense substantiation.",
       "W-2 Box 12 code FF reporting of the permitted benefit."
     ],
     "risks": [
-      "The structural failure mode dominates: offering any group health plan — even one inherited in an acquisition — or exceeding the indexed caps takes the arrangement outside §9831(d), and a failed QSEHRA is an ordinary non-compliant group health plan facing §4980D exposure at $100 per employee per day; Notice 2017-67 is the controlling ruling on where the line sits.",
+      "The structural failure mode dominates: offering any group health plan — even one inherited in an acquisition — or exceeding the indexed caps takes the arrangement outside §9831(d), and a failed QSEHRA becomes an ordinary non-compliant group health plan facing §4980D exposure at $100 per employee per day; Notice 2017-67 is the controlling ruling on where the line sits.",
       "Notice failures draw §6652(o) penalties of $50 per employee, capped annually.",
-      "Reimbursements to employees without minimum essential coverage are taxable to them.",
-      "Owner expectation management is part of the engagement: the owner's family generally receives no tax-free benefit — the value is the deduction and the workforce benefit."
+      "Reimbursements to employees who lack minimum essential coverage are taxable to them.",
+      "Owner expectation management belongs in the engagement: the owner's family generally receives no tax-free benefit — the value lies in the deduction and the workforce benefit."
     ],
     "stateNotes": [
-      "Conformity: federal-AGI states exclude QSEHRA reimbursements from employee income just as federal law does; the employer deduction follows the federal business-income computation.",
-      "PTET: for S corporation and partnership sponsors the reimbursement deduction shrinks the entity income base a PTET election taxes — order of operations, not a stacked benefit.",
-      "Missouri: conforms via RSMo §143.121; a Missouri pass-through electing the RSMo §143.436 PTET computes it after this deduction, and Schedule C sponsors have no PTET interaction."
+      "Conformity: federal-AGI states exclude QSEHRA reimbursements from employee income just as federal law does, and the employer deduction follows the federal business-income computation.",
+      "PTET: for S corporation and partnership sponsors, the reimbursement deduction shrinks the entity income base a PTET election taxes — order of operations, not a stacked benefit.",
+      "Missouri: conforms via RSMo §143.121; a Missouri pass-through electing the RSMo §143.436 PTET computes it after this deduction, while Schedule C sponsors have no PTET interaction."
     ],
     "interactions": {
       "requires": [],
@@ -99,21 +104,21 @@
     },
     "reviewChecklist": [
       "FTE count documented below 50 and no group plan in force (or termination dated before the QSEHRA effective date).",
-      "Current-year caps pulled from the applicable Rev. Proc. and coded into the plan.",
-      "90-day notice delivered with proof of distribution.",
+      "Current-year caps pulled from the applicable Rev. Proc. and written into the plan.",
+      "90-day notice delivered, with proof of distribution retained.",
       "Minimum-essential-coverage attestations and substantiation collected before each reimbursement.",
       "W-2 code FF amounts reconcile to the plan records."
     ]
   },
   "client": {
-    "teaser": "Help employees with health costs — without buying a group insurance plan.",
+    "teaser": "Help employees with health costs — no group insurance plan required.",
     "headline": "A health benefit for small teams, without group insurance",
     "plainEnglish": [
-      "If your business is small and has no group health plan, this program was built for you. Instead of buying a costly group policy, the business repays each employee for their own health insurance and medical bills, up to a yearly cap set by the IRS.",
-      "The business deducts every dollar. Employees get the money tax-free. You choose the amount, up to the cap, so the cost never surprises you.",
-      "One honest note: this program is built for your employees, not for you as the owner. The rules keep most owners from being repaid tax-free. Your win is the deduction and a stronger team, and we pair it with other tools for your own family's health costs."
+      "If your business is small and has no group health plan, this program was made for you. Instead of buying a costly group policy, the business pays each employee back for their own health insurance and medical bills, up to a yearly cap set by the IRS.",
+      "The business deducts every dollar. Employees get the money tax-free. You pick the amount, up to the cap, so the cost never surprises you.",
+      "One honest note: this program is built for your employees, not for you as the owner. The rules keep most owners from being paid back tax-free. Your win is the deduction and a stronger team, and we pair it with other tools for your own family's health costs."
     ],
-    "analogy": "Rather than buying everyone the same one-size jacket, you hand each employee a tax-free allowance for the coat they already picked.",
+    "analogy": "Instead of buying everyone the same one-size jacket, you hand each employee a tax-free allowance for the coat they already picked.",
     "benefits": [
       "Every reimbursement is a business deduction",
       "Employees receive the money tax-free",
@@ -121,23 +126,23 @@
       "A real hiring edge for a small team"
     ],
     "steps": [
-      "WE confirm you qualify and set the reimbursement levels within the caps.",
+      "WE confirm you qualify and set reimbursement levels within the caps.",
       "WE prepare the written plan and the required employee notices.",
-      "YOU reimburse employees after they show proof of coverage and expenses.",
+      "YOU reimburse employees once they show proof of coverage and expenses.",
       "WE handle the deduction and the W-2 reporting at year-end."
     ],
     "clientCommitments": [
       "Never reimburse without proof of coverage and a receipt",
       "Send the employee notice on time every year",
-      "Tell us if headcount approaches 50 or anyone proposes a group plan"
+      "Tell us if headcount nears 50 or anyone proposes a group plan"
     ]
   },
   "engagement": {
     "implementationEffort": "multi-step",
     "annualMaintenance": [
       "Update the plan caps to each year's Rev. Proc. figures",
-      "Recount FTEs and confirm no group plan crept in",
-      "Notice distribution and substantiation audit"
+      "Recount FTEs and confirm no group plan has crept in",
+      "Audit notice distribution and substantiation records"
     ],
     "deliverables": [
       "QSEHRA plan document",

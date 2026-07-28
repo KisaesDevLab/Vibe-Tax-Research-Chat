@@ -1,6 +1,6 @@
 {
   "id": "qbi-wage-optimization",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "§199A W-2 Wage / UBIA Optimization",
@@ -23,69 +28,69 @@
   "entityTypes": ["s-corp"],
   "typicalSavingsBand": "5k-25k",
   "advisor": {
-    "summary": "Above the §199A threshold ($403,500 MFJ / $201,750 single for 2026, with the OBBBA-widened phase-in), a non-SSTB's deduction is capped at the greater of 50% of W-2 wages or 25% of wages plus 2.5% of UBIA under §199A(b)(2)(B). When the wage prong binds, raising S-corp owner salary is counterintuitively accretive: each wage dollar cuts QBI by roughly $1.08 after employer FICA but lifts the cap by fifty cents, and the net deduction grows until the prongs cross near the classic two-sevenths wages-to-profit ratio. The same salary number carries reasonable-compensation exposure in the other direction — Watson is the standing reminder that the floor is enforced — so the target is set inside the defensible comp range, not just at the math optimum. The engine resets owner wages and prices the full interaction through the deterministic tables, modeling the 50% wage prong only; where UBIA is material, the alternative prong is computed off-model first.",
+    "summary": "Above the §199A threshold ($403,500 MFJ / $201,750 single for 2026, with the phase-in range OBBBA widened), a non-SSTB's deduction caps at the greater of 50% of W-2 wages or 25% of wages plus 2.5% of UBIA under §199A(b)(2)(B). When the wage prong binds, raising S-corp owner salary works counterintuitively in the taxpayer's favor: each wage dollar trims QBI by roughly $1.08 after employer FICA yet lifts the cap by fifty cents, so the net deduction keeps growing until the prongs cross near the classic two-sevenths wages-to-profit ratio. The same salary number carries reasonable-compensation exposure from the other direction — Watson stands as the reminder that the floor is enforced — so the target lands inside the defensible comp range, not merely at the mathematical optimum. The engine resets owner wages and prices the full interaction through the deterministic tables, modeling only the 50% wage prong; where UBIA is material, the alternative prong is computed off-model first.",
     "mechanics": [
-      "For taxable income past the threshold plus the phase-in range ($150,000 MFJ / $75,000 single from 2026), the deduction is the lesser of 20% of QBI and the greater of 50% of W-2 wages or 25% of wages plus 2.5% of UBIA — §199A(b)(2)(B) supplies the limitation this strategy tunes.",
-      "On the wage prong alone, the crossover sits where 20% of (profit minus wages and employer payroll tax) equals 50% of wages — roughly 27-29% of pre-wage profit; below that ratio, added salary grows the total deduction even as it shrinks QBI.",
-      "Each added wage dollar costs employer FICA under §3111 (6.2% to the Social Security wage base plus 1.45% Medicare, uncapped), and owner wages past $200,000/$250,000 pick up the 0.9% additional Medicare tax of §3101(b)(2) — the optimum is where marginal deduction value equals marginal payroll cost, so the model decides, not the heuristic.",
-      "Only W-2 wages properly allocable to QBI and timely reported count, computed under a Rev. Proc. 2019-11 method per Reg. §1.199A-2; partner guaranteed payments are not W-2 wages and cannot support the limit — this lever belongs to S corporations and entities with genuine employees.",
-      "Non-owner payroll counts too: accelerating a planned hire or year-end bonus raises the cap without adding owner-side Medicare drag.",
-      "The engine resets the S corporation's owner wages to the target and reprices the year end-to-end; it models the 50%-of-wages prong only, so capital-heavy businesses check the UBIA prong off-model before any salary change."
+      "Once taxable income clears the threshold plus the phase-in range ($150,000 MFJ / $75,000 single from 2026), the deduction becomes the lesser of 20% of QBI and the greater of 50% of W-2 wages or 25% of wages plus 2.5% of UBIA — §199A(b)(2)(B) supplies the limitation this strategy tunes.",
+      "On the wage prong alone, the crossover falls where 20% of (profit minus wages and employer payroll tax) equals 50% of wages — roughly 27-29% of pre-wage profit; below that ratio, each added salary dollar grows the total deduction even as it shrinks QBI.",
+      "Every added wage dollar costs employer FICA under §3111 (6.2% up to the Social Security wage base plus 1.45% Medicare, uncapped), and owner wages beyond $200,000/$250,000 pick up the 0.9% additional Medicare tax of §3101(b)(2) — the optimum sits where marginal deduction value equals marginal payroll cost, so the model decides, not a heuristic.",
+      "Only W-2 wages properly allocable to QBI and timely reported enter the base, computed under a Rev. Proc. 2019-11 method per Reg. §1.199A-2; guaranteed payments to partners are not W-2 wages and cannot support the limit — this lever belongs to S corporations and entities with genuine employees.",
+      "Non-owner payroll counts equally: pulling a planned hire or year-end bonus into the current year raises the cap without adding owner-side Medicare drag.",
+      "The engine resets the S corporation's owner wages to the target and reprices the year end-to-end; because it models only the 50%-of-wages prong, capital-heavy businesses should screen the UBIA prong off-model before any salary change."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §199A(b)(2)(B)",
-        "note": "The limitation: the greater of 50% of W-2 wages, or 25% of W-2 wages plus 2.5% of UBIA of qualified property."
+        "note": "The limitation itself: the greater of 50% of W-2 wages, or 25% of W-2 wages plus 2.5% of the UBIA of qualified property."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.199A-2",
-        "note": "Determines W-2 wages (properly allocable to QBI, timely reported) and UBIA; guaranteed payments are excluded from the wage base."
+        "note": "Defines W-2 wages (properly allocable to QBI, timely reported) and UBIA; excludes guaranteed payments from the wage base."
       },
       {
         "type": "Admin",
         "cite": "Rev. Proc. 2019-11",
-        "note": "The three permitted W-2 wage computation methods; the chosen method must tie to the W-3/941 filings."
+        "note": "The three permitted W-2 wage computation methods; whichever is chosen must tie to the W-3/941 filings."
       },
       {
         "type": "IRC",
         "cite": "IRC §§3111, 3101(b)(2)",
-        "note": "The employer FICA cost of each added wage dollar and the 0.9% additional Medicare tax that steepens the marginal cost above $200k/$250k."
+        "note": "Prices each added wage dollar: employer FICA plus the 0.9% additional Medicare tax that steepens marginal cost above $200k/$250k."
       },
       {
         "type": "Case",
         "cite": "David E. Watson, P.C. v. United States, 668 F.3d 1008 (8th Cir. 2012)",
-        "note": "The reasonable-compensation floor: artificially low S-corp owner wages are recharacterized — the same salary number this strategy tunes upward is bounded below by this line of cases."
+        "note": "The reasonable-compensation floor: artificially low S-corp owner wages get recharacterized — the very salary this strategy tunes upward is bounded below by this line of cases."
       },
       {
         "type": "Admin",
         "cite": "Rev. Rul. 74-44",
-        "note": "The IRS's foundational position that S corporation distributions can be recharacterized as wages for services actually rendered."
+        "note": "The IRS's foundational position that S corporation distributions may be recharacterized as wages for services actually rendered."
       },
       {
         "type": "IRC",
         "cite": "P.L. 119-21 (OBBBA) §70105",
-        "note": "Made §199A permanent and widened the phase-in range for 2026 — the thresholds this optimization is calibrated against."
+        "note": "Made §199A permanent and widened the phase-in range for 2026 — the thresholds this optimization is calibrated to."
       }
     ],
     "requirements": [
-      "A non-SSTB S corporation (or an entity with common-law employees) whose deduction is actually wage-limited — verify which constraint binds before touching payroll.",
+      "A non-SSTB S corporation (or an entity with common-law employees) whose deduction is genuinely wage-limited — confirm which constraint binds before touching payroll.",
       "Wages paid and reported within the calendar year on Forms W-2 and 941, tied to a Rev. Proc. 2019-11 computation.",
-      "A reasonable-compensation file supporting the chosen salary in both directions.",
-      "The UBIA prong screened off-model where the business holds substantial qualified property."
+      "A reasonable-compensation file that supports the chosen salary in both directions.",
+      "The UBIA prong screened off-model wherever the business holds substantial qualified property."
     ],
     "risks": [
-      "Reasonable compensation is the two-sided audit theory: David E. Watson, P.C. v. United States, 668 F.3d 1008 (8th Cir. 2012) is the standing warning that artificially low owner wages get recharacterized — and a QBI-motivated salary set below the defensible range walks straight into it.",
-      "If the deduction is income-limited rather than wage-limited, added salary is pure payroll-tax cost; the constraint check comes first.",
-      "The engine ignores the UBIA prong; for capital-heavy businesses the 25%-plus-2.5% prong may already lift the cap, making added wages a dead cost.",
+      "Reasonable compensation cuts both ways at exam: David E. Watson, P.C. v. United States, 668 F.3d 1008 (8th Cir. 2012) stands as the warning that artificially low owner wages get recharacterized — and a QBI-driven salary set below the defensible range walks straight into it.",
+      "If the deduction is income-limited rather than wage-limited, added salary is pure payroll-tax cost — run the constraint check first.",
+      "The engine ignores the UBIA prong; in capital-heavy businesses the 25%-plus-2.5% prong may already lift the cap, leaving added wages a dead cost.",
       "Wages above the additional-Medicare thresholds steepen the marginal cost curve, and state payroll costs and salary-keyed benefit formulas move with the W-2.",
-      "An SSTB past the phase-in gets nothing regardless of wages — threshold management, not wage tuning, is the SSTB play."
+      "An SSTB past the phase-in gets nothing at any wage level — threshold management, not wage tuning, is the SSTB play."
     ],
     "stateNotes": [
-      "Conformity: §199A is federal-only in most states, so the state effect of a wage change is payroll-tax and withholding mechanics rather than a deduction change.",
-      "PTET: shifting profit into wages shrinks the pass-through income base a PTET election taxes — re-run the PTET arithmetic at the new wage level rather than assuming last year's benefit.",
-      "Missouri: Missouri's business income deduction (RSMo §143.022) has no wage limit, so moving profit into wages shrinks the Missouri-side deduction base — a real, if modest, offset to price when Missouri is in the picture; SALT Parity PTET elections (RSMo §143.436) re-price at the new wage split."
+      "Conformity: most states never adopted §199A, so a wage change plays out at the state level as payroll-tax and withholding mechanics rather than a deduction change.",
+      "PTET: shifting profit into wages shrinks the pass-through income base a PTET election taxes — re-run the PTET arithmetic at the new wage level instead of assuming last year's benefit.",
+      "Missouri: Missouri's business income deduction (RSMo §143.022) carries no wage limit, so moving profit into wages shrinks the Missouri-side deduction base — a real, if modest, offset to price whenever Missouri is in play; SALT Parity PTET elections (RSMo §143.436) re-price at the new wage split."
     ],
     "interactions": {
       "requires": ["s-corp-election"],
@@ -93,48 +98,48 @@
       "synergiesWith": ["qbi-aggregation", "reasonable-comp-study"]
     },
     "reviewChecklist": [
-      "Binding-constraint analysis in the file: 20% of QBI versus 50% of wages (and the UBIA prong where relevant).",
+      "Binding-constraint analysis in the file: 20% of QBI against 50% of wages (and the UBIA prong where relevant).",
       "Target salary sits inside the documented reasonable-compensation range.",
-      "Payroll change executed before December 31 with W-2/941 reporting confirmed.",
-      "Additional Medicare tax and state payroll costs included in the marginal math.",
+      "Payroll change executed before December 31, with W-2/941 reporting confirmed.",
+      "Additional Medicare tax and state payroll costs built into the marginal math.",
       "PTET arithmetic re-run at the new wage level."
     ]
   },
   "client": {
-    "teaser": "The right salary number can unlock a bigger 20% deduction than the one you have now.",
-    "headline": "Tune your own salary to unlock the full 20% deduction",
+    "teaser": "The right salary number can unlock a bigger 20% deduction than you get today.",
+    "headline": "Set your salary to capture the full 20% deduction",
     "plainEnglish": [
-      "Business owners can deduct up to 20% of business profit. At higher incomes there is a catch: the deduction is capped by how much W-2 payroll the business pays.",
-      "Here is the surprise. If the cap is squeezing your deduction, paying yourself a somewhat larger salary can raise the cap faster than it shrinks the profit. Done right, the deduction grows even though salary went up.",
-      "There is a sweet spot. Too little salary and the cap chokes the deduction. Too much and payroll taxes eat the gain. We find the exact point for your numbers, check it against a fair-pay standard, and set payroll there."
+      "Business owners can deduct up to 20% of their profit. At higher incomes there is a catch: the deduction is capped by how much W-2 payroll the business pays.",
+      "Here is the surprise. If the cap is squeezing you, a somewhat bigger salary can raise the cap faster than it shrinks the profit. Done right, the deduction grows even though the salary went up.",
+      "There is a sweet spot. Too little salary and the cap chokes the deduction. Too much and payroll taxes eat the gain. We find the exact point for your numbers, test it against a fair-pay standard, and set payroll there."
     ],
-    "analogy": "Your payroll is the hand on a valve, and the deduction is the water flowing through. We open the valve to the exact point where the flow is strongest without wasting a drop.",
+    "analogy": "Your payroll is a hand on a valve, and the deduction is the water flowing through. We open the valve to the exact point where the flow runs strongest without wasting a drop.",
     "benefits": [
-      "A larger 20% deduction, often worth thousands each year",
+      "A bigger 20% deduction, often worth thousands each year",
       "Uses a number you already control — no new spending",
-      "Doubles as support for your salary if the IRS ever asks"
+      "Doubles as proof for your salary if the IRS ever asks"
     ],
     "steps": [
-      "WE test whether the cap is actually limiting your deduction.",
-      "WE calculate the salary level that nets you the most after payroll tax.",
+      "WE test whether the cap is really limiting your deduction.",
+      "WE find the salary level that nets you the most after payroll tax.",
       "YOU approve the change; WE adjust payroll before year-end.",
-      "WE re-run the math every year as profit moves."
+      "WE re-run the math each year as profit moves."
     ],
     "clientCommitments": [
       "Run the approved salary through real payroll before December 31",
-      "Keep us informed of profit swings so the target stays current"
+      "Tell us about profit swings so the target stays current"
     ]
   },
   "engagement": {
     "implementationEffort": "multi-step",
     "annualMaintenance": [
-      "Annual re-solve of the wage target as profit and thresholds move",
-      "Reasonable-compensation file refresh",
-      "Year-end payroll execution check (W-2/941 tie-out)"
+      "Re-solve the wage target each year as profit and thresholds move",
+      "Refresh the reasonable-compensation file",
+      "Confirm year-end payroll execution (W-2/941 tie-out)"
     ],
     "deliverables": [
       "Binding-constraint analysis memo",
-      "Wage-optimization model with the marginal math",
+      "Wage-optimization model showing the marginal math",
       "Reasonable-compensation documentation",
       "Payroll adjustment instructions"
     ],

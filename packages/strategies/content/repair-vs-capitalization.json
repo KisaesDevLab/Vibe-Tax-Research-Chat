@@ -1,6 +1,6 @@
 {
   "id": "repair-vs-capitalization",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Repair vs. Capitalization (Tangible Property Regs)",
@@ -23,20 +28,20 @@
   "entityTypes": ["rental", "sole-prop", "s-corp", "partnership"],
   "typicalSavingsBand": "5k-25k",
   "advisor": {
-    "summary": "The tangible property regulations govern the line between deducting property spending now under §162 and capitalizing it into a 27.5- or 39-year schedule under §263(a). Three safe harbors carry most of the planning weight: de minimis (per-item expensing up to $2,500 without an applicable financial statement, $5,000 with one, elected annually), routine maintenance (building upkeep expected more than once in ten years), and the small-taxpayer safe harbor (buildings up to $1 million of basis, annual spending within the lesser of $10,000 or 2% of basis). Everything above the harbors runs through the betterment/adaptation/restoration analysis applied system by system — roof, HVAC, plumbing, electrical — not against the building as a whole. The repair-versus-improvement cases, FedEx's engine-overhaul litigation among them, show that well-documented maintenance positions win; the planning is contract scoping, invoice discipline, and the annual election statements. The engine models the year's supportable expensing against the chosen rental or business activity.",
+    "summary": "The tangible property regulations draw the line between deducting property spending now under §162 and capitalizing it onto a 27.5- or 39-year schedule under §263(a). Three safe harbors carry most of the planning weight: de minimis (per-item expensing up to $2,500 without an applicable financial statement, $5,000 with one, elected annually), routine maintenance (building upkeep expected more than once in ten years), and the small-taxpayer safe harbor (buildings up to $1 million of basis, annual spending within the lesser of $10,000 or 2% of basis). Spending above the harbors runs through the betterment/adaptation/restoration analysis, applied system by system — roof, HVAC, plumbing, electrical — never against the building as a whole. The repair-versus-improvement cases, FedEx's engine-overhaul litigation among them, show that well-documented maintenance positions win; the planning lives in contract scoping, invoice discipline, and the annual election statements. The engine models the year's supportable expensing against the chosen rental or business activity.",
     "mechanics": [
-      "The de minimis safe harbor of Reg. §1.263(a)-1(f) expenses items up to $2,500 per invoice or item without an applicable financial statement ($5,000 with an audited AFS and a written policy in place at the start of the year); Notice 2015-82 set the $2,500 tier, and the election is an annual statement with the return.",
-      "The routine maintenance safe harbor of Reg. §1.263(a)-3(i) deducts recurring upkeep a building owner reasonably expects to perform more than once in ten years — HVAC servicing, repainting, resealing — even where the work is substantial.",
-      "The small-taxpayer safe harbor of Reg. §1.263(a)-3(h) lets an owner with gross receipts of $10 million or less deduct a year’s entire repair-and-improvement spend on a building with unadjusted basis of $1 million or less, if the total stays within the lesser of $10,000 or 2% of basis — elected annually, per building.",
-      "Above the harbors, capitalization is required only for betterments, adaptations, or restorations under Reg. §1.263(a)-3(j)-(l), tested against each building system rather than the whole structure — replacing a third of a roof membrane is analyzed against the roof system.",
-      "Where capitalization is unavoidable, the partial asset disposition election on the replaced component recovers the retired basis — the two strategies are designed to run together.",
-      "The model applies the year’s supportable expensing to the selected rental or business activity; passive-loss gating on rental-side results is applied by the engine."
+      "The de minimis safe harbor of Reg. §1.263(a)-1(f) expenses items up to $2,500 per invoice or item without an applicable financial statement ($5,000 with an audited AFS and a written policy in place at the start of the year); Notice 2015-82 set the $2,500 tier, and the election is an annual statement filed with the return.",
+      "The routine maintenance safe harbor of Reg. §1.263(a)-3(i) deducts recurring upkeep a building owner reasonably expects to perform more than once in ten years — HVAC servicing, repainting, resealing — even when the work is substantial.",
+      "The small-taxpayer safe harbor of Reg. §1.263(a)-3(h) lets an owner with gross receipts of $10 million or less deduct a year's entire repair-and-improvement spend on a building with unadjusted basis of $1 million or less, provided the total stays within the lesser of $10,000 or 2% of basis — elected annually, building by building.",
+      "Above the harbors, capitalization is required only for betterments, adaptations, or restorations under Reg. §1.263(a)-3(j)-(l), each tested against the relevant building system rather than the whole structure — replacing a third of a roof membrane is measured against the roof system.",
+      "Where capitalization is unavoidable, a partial asset disposition election on the replaced component recovers the retired basis — the two strategies are built to run together.",
+      "The model applies the year's supportable expensing to the selected rental or business activity; the engine handles passive-loss gating on rental-side results."
     ],
     "authority": [
       {
         "type": "Reg",
         "cite": "Reg. §1.263(a)-1(f)",
-        "note": "De minimis safe harbor: $2,500 per item without an AFS, $5,000 with one; annual election statement and the written-policy requirement."
+        "note": "De minimis safe harbor: $2,500 per item without an AFS, $5,000 with one; sets the annual election statement and the written-policy requirement."
       },
       {
         "type": "Admin",
@@ -46,46 +51,46 @@
       {
         "type": "Reg",
         "cite": "Reg. §1.263(a)-3(h), (i)",
-        "note": "The small-taxpayer and routine-maintenance safe harbors — the per-building annual election and the more-than-once-in-ten-years standard."
+        "note": "The small-taxpayer and routine-maintenance safe harbors: the per-building annual election and the more-than-once-in-ten-years standard."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.263(a)-3(j), (k), (l)",
-        "note": "The betterment, restoration, and adaptation standards applied per building system."
+        "note": "The betterment, restoration, and adaptation standards, applied building system by building system."
       },
       {
         "type": "IRC",
         "cite": "IRC §§162(a), 263(a)",
-        "note": "The deduct-now versus capitalize divide the entire framework administers."
+        "note": "The deduct-now versus capitalize divide that the entire framework administers."
       },
       {
         "type": "IRC",
         "cite": "IRC §469",
-        "note": "Passive-loss gating on rental-side losses created by heavy repair years."
+        "note": "Passive-loss gating on the rental losses that heavy repair years create."
       },
       {
         "type": "Case",
         "cite": "FedEx Corp. v. United States, 291 F. Supp. 2d 699 (W.D. Tenn. 2003)",
-        "note": "Engine-overhaul costs held deductible as repairs on a documented unit-of-property analysis — the template for winning a well-papered maintenance position."
+        "note": "Engine-overhaul costs held deductible as repairs on a documented unit-of-property analysis — the template for a well-papered maintenance position that wins."
       }
     ],
     "requirements": [
-      "Invoice-level detail: the safe harbors apply per item or invoice, so contractors must bill in a way that shows the components.",
-      "De minimis: a capitalization policy in place at the start of the year (written for the $5,000 AFS tier) and the annual election statement with the return.",
-      "Small-taxpayer harbor: building unadjusted basis of $1 million or less and the year’s spending inside the lesser-of cap.",
-      "A documented per-system analysis for anything outside the safe harbors."
+      "Invoice-level detail: the safe harbors apply per item or invoice, so contractor bills must break out the components.",
+      "De minimis: a capitalization policy in place at the start of the year (written, for the $5,000 AFS tier) plus the annual election statement filed with the return.",
+      "Small-taxpayer harbor: building unadjusted basis of $1 million or less, with the year's spending inside the lesser-of cap.",
+      "A documented per-system analysis for anything that falls outside the safe harbors."
     ],
     "risks": [
-      "The leading audit theory is expensing a true improvement — a major-component replacement or capacity upgrade dressed as a repair; taxpayers with documented facts have won the big fights (FedEx Corp. v. United States, 291 F. Supp. 2d 699 (W.D. Tenn. 2003)), but the wins belong to files built before exam, not after.",
+      "The leading audit theory is expensing a true improvement — a major-component replacement or capacity upgrade dressed up as a repair; taxpayers with documented facts have won the big fights (FedEx Corp. v. United States, 291 F. Supp. 2d 699 (W.D. Tenn. 2003)), but the wins belong to files built before exam, not after.",
       "The de minimis election is all-or-nothing for the year and forfeits depreciation and §179 treatment on covered items — rarely costly, occasionally decisive.",
-      "Splitting one improvement into artificial invoices to duck the thresholds is a substance-over-form loser; separately scoping genuinely distinct work is legitimate — the difference is the contract, not the arithmetic.",
-      "The annual election statements are quietly missable; a skipped statement forfeits the safe harbor for the year.",
-      "Heavy repair years on rentals still face §469 loss gating."
+      "Splitting one improvement into artificial invoices to duck the thresholds is a substance-over-form loser; separately scoping genuinely distinct work is legitimate — the difference lies in the contract, not the arithmetic.",
+      "The annual election statements are easy to overlook; a skipped statement forfeits the safe harbor for the year.",
+      "Heavy repair years on rentals still run into §469 loss gating."
     ],
     "stateNotes": [
-      "Conformity: the tangible property regulations are federal method rules that states inherit through their federal starting points — expensed repairs stay expensed on conforming state returns.",
-      "Missouri conforms via federal AGI (RSMo §143.121); no separate Missouri election or addback applies.",
-      "PTET interaction: repairs deducted at the entity level shrink the income base a PTET election is computed on — re-project the PTET accrual in heavy repair years."
+      "Conformity: the tangible property regulations are federal method rules that states inherit through their federal starting points — repairs expensed federally stay expensed on conforming state returns.",
+      "Missouri conforms through federal AGI (RSMo §143.121); no separate Missouri election or addback applies.",
+      "PTET interaction: repairs deducted at the entity level shrink the income base on which a PTET election is computed — re-project the PTET accrual in heavy repair years."
     ],
     "interactions": {
       "requires": [],
@@ -93,36 +98,36 @@
       "synergiesWith": ["partial-asset-disposition"]
     },
     "reviewChecklist": [
-      "Written capitalization policy in place before January 1 for the AFS tier; refreshed as amounts change.",
-      "Annual de minimis and small-taxpayer election statements attached to the return where eligible.",
+      "Written capitalization policy in place before January 1 for the AFS tier, refreshed as amounts change.",
+      "Annual de minimis and small-taxpayer election statements attached to the return wherever eligible.",
       "Per-building-system analysis documented for items above the safe harbors.",
-      "Contractor invoices itemized by scope; repair and improvement line items separately stated.",
-      "Partial disposition election paired with any forced capitalization of replacements."
+      "Contractor invoices itemized by scope, with repair and improvement line items separately stated.",
+      "Partial disposition election paired with any forced capitalization of a replacement."
     ]
   },
   "client": {
-    "teaser": "The same property spending can be deducted now or over 39 years — the paperwork decides.",
-    "headline": "Deduct property work now instead of over decades",
+    "teaser": "The same property spending can be deducted now or over 39 years — the paperwork decides which.",
+    "headline": "Deduct building work now, not over decades",
     "plainEnglish": [
-      "Money spent on a building falls into two piles at tax time. Repairs are deducted right away. Improvements are deducted over as long as 39 years. The line between the piles is blurrier than most people think.",
-      "The IRS offers several friendly shortcuts. Items under $2,500 on an invoice can simply be expensed. Routine upkeep — servicing the HVAC, repainting, resealing the lot — is deductible even when it costs real money. Owners of smaller buildings can often deduct a whole year of work under a special cap.",
+      "Money spent on a building lands in one of two piles at tax time. Repairs are deducted right away. Improvements are deducted over as long as 39 years. The line between the piles is blurrier than most people think.",
+      "The IRS offers several friendly shortcuts. Items under $2,500 on an invoice can simply be written off. Routine upkeep — servicing the HVAC, repainting, resealing the lot — is deductible even when it costs real money. Owners of smaller buildings can often deduct a whole year of work under a special cap.",
       "The planning happens before the work does. How contracts are written, how invoices are itemized, and which elections we attach to your return decide the outcome. Same projects, same spending — but a deduction today is worth far more than one that drips out until 2065."
     ],
-    "analogy": "It is the difference between being repaid today or in tiny monthly checks for 39 years — same total, very different value.",
+    "analogy": "It is the difference between being repaid today and being repaid in tiny monthly checks for 39 years — same total, very different value.",
     "benefits": [
       "Immediate deductions for spending others put on a 39-year schedule",
-      "Simple annual elections capture the IRS's own safe harbors",
-      "Smarter invoices, same work — no change to the project",
-      "Cleaner audit position because the rules are followed on purpose"
+      "Simple annual elections that capture the IRS's own safe harbors",
+      "Smarter invoices, same work — the project itself never changes",
+      "A cleaner audit position because the rules are followed on purpose"
     ],
     "steps": [
       "WE put the right written policy in place before the year starts.",
       "WE attach the annual elections to your return — every year they help.",
-      "WE analyze big projects before contracts are signed.",
+      "WE analyze big projects before the contracts are signed.",
       "YOU ask contractors to itemize invoices the way we coach."
     ],
     "clientCommitments": [
-      "Send us project plans before signing large repair or renovation contracts",
+      "Send us project plans before you sign large repair or renovation contracts",
       "Keep itemized invoices for all building work"
     ]
   },
@@ -131,12 +136,12 @@
     "annualMaintenance": [
       "Refresh the capitalization policy before each January 1",
       "Attach the annual safe-harbor election statements to every return",
-      "Review the year's building spending against the improvement standards before filing"
+      "Screen the year's building spending against the improvement standards before filing"
     ],
     "deliverables": [
       "Written capitalization policy",
       "Annual election statements filed with the return",
-      "Building-system analysis memo for projects above the safe harbors"
+      "Building-system analysis memo for any project above the safe harbors"
     ],
     "feeGuidanceBand": null
   },

@@ -1,6 +1,6 @@
 {
   "id": "gain-loss-harvesting",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Capital Gain & Loss Harvesting",
@@ -23,67 +28,67 @@
   "entityTypes": ["individual"],
   "typicalSavingsBand": "5k-25k",
   "advisor": {
-    "summary": "Loss harvesting realizes the portfolio's unrealized losses against the year's recognized gains, with any net loss absorbing up to $3,000 of ordinary income and the excess carrying forward with its character intact. The mechanics are settled law; the entire discipline is operational — selling the right lots, staying invested through a non-substantially-identical replacement, and keeping every household account outside the §1091 wash-sale window. Short-term losses that absorb short-term gains save ordinary rates and are the highest-value harvest. The mirror-image move, realizing long-term gains inside the 0% bracket in low-income years, is a companion this model does not compute — the modeled inputs are harvested losses only, with netting, the $3,000 limit, and carryforward all handled by the engine. Nothing here should ever drive an investment decision the portfolio would not survive on its own merits.",
+    "summary": "Loss harvesting realizes the portfolio's unrealized losses against the year's recognized gains, with any net loss absorbing up to $3,000 of ordinary income and the excess carrying forward with its character intact. The mechanics are settled law; the entire discipline is operational — sell the right lots, stay invested through a non-substantially-identical replacement, and keep every household account outside the §1091 wash-sale window. Short-term losses that absorb short-term gains save ordinary rates and are the highest-value harvest. The mirror-image move — realizing long-term gains inside the 0% bracket in low-income years — is a companion this model does not compute: the modeled inputs are harvested losses only, with netting, the $3,000 limit, and carryforward all handled by the engine. Nothing here should ever drive an investment decision the portfolio could not justify on its own merits.",
     "mechanics": [
-      "Netting runs short-against-short and long-against-long before cross-netting; a remaining net capital loss offsets up to $3,000 of ordinary income per year under §1211(b), and the unused balance carries forward indefinitely with its short- or long-term character preserved under §1212(b).",
-      "Character targeting drives the value: short-term losses that absorb short-term gains save ordinary rates, while long-term losses absorbing long-term gains save preferential rates. The model takes the two harvested amounts separately and the engine performs the netting, the $3,000 ordinary offset, and the carryforward.",
-      "§1091 disallows a loss when substantially identical securities are acquired within 30 days before or after the sale — a 61-day window that counts dividend reinvestments, a spouse's accounts, and IRA purchases; the disallowed loss ordinarily shifts into the replacement's basis, but a purchase inside an IRA destroys it permanently (Rev. Rul. 2008-5). Staying invested means swapping into a similar but not substantially identical position.",
-      "The unmodeled companion: in low-income years, long-term gains stack on ordinary income under §1(h) and are taxed at 0% up to $98,900 MFJ / $49,450 single of 2026 taxable income. §1091 applies only to losses, so gains can be sold and immediately repurchased, resetting basis to market with no wash-sale issue — run it in a separate projection.",
-      "Harvested gains raise MAGI even when taxed at 0%, so §1411 NIIT thresholds, ACA premium credits, and IRMAA lookbacks all need checking before sizing either side of the play."
+      "Netting runs short-against-short and long-against-long before cross-netting; any remaining net capital loss offsets up to $3,000 of ordinary income per year under §1211(b), and the unused balance carries forward indefinitely with its short- or long-term character preserved under §1212(b).",
+      "Character targeting drives the value: short-term losses absorbing short-term gains save ordinary rates, while long-term losses absorbing long-term gains save only preferential rates. The model takes the two harvested amounts separately; the engine performs the netting, the $3,000 ordinary offset, and the carryforward.",
+      "§1091 disallows a loss when substantially identical securities are acquired within 30 days before or after the sale — a 61-day window that sweeps in dividend reinvestments, a spouse's accounts, and IRA purchases. The disallowed loss ordinarily shifts into the replacement's basis, but a purchase inside an IRA destroys it permanently (Rev. Rul. 2008-5). Staying invested means swapping into a similar but not substantially identical position.",
+      "The unmodeled companion: in low-income years, long-term gains stack on ordinary income under §1(h) and are taxed at 0% up to $98,900 MFJ / $49,450 single of 2026 taxable income. §1091 reaches only losses, so gains can be sold and immediately repurchased — basis resets to market with no wash-sale issue. Run it in a separate projection.",
+      "Harvested gains raise MAGI even when taxed at 0%, so check §1411 NIIT thresholds, ACA premium credits, and IRMAA lookbacks before sizing either side of the play."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §1211(b)",
-        "note": "Capital losses allowed against capital gains plus up to $3,000 of ordinary income per year — the ordinary-income kicker on a net-loss year."
+        "note": "Capital losses allowed against capital gains plus up to $3,000 of ordinary income per year — the ordinary-income kicker in a net-loss year."
       },
       {
         "type": "IRC",
         "cite": "IRC §1212(b)",
-        "note": "Indefinite carryforward of unused capital losses, retaining short/long character — why over-harvesting is banked, not wasted."
+        "note": "Indefinite carryforward of unused capital losses with short/long character retained — why over-harvesting is banked, not wasted."
       },
       {
         "type": "IRC",
         "cite": "IRC §1091",
-        "note": "The wash-sale disallowance and its 61-day window — the operational rule the whole strategy is built around."
+        "note": "The wash-sale disallowance and its 61-day window — the operational rule the entire strategy is built around."
       },
       {
         "type": "Admin",
         "cite": "Rev. Rul. 2008-5",
-        "note": "A repurchase inside an IRA within the window disallows the loss with no basis adjustment anywhere — the foot-fault that permanently destroys the harvest."
+        "note": "A repurchase inside an IRA within the window disallows the loss with no basis adjustment anywhere — the foot-fault that destroys the harvest permanently."
       },
       {
         "type": "IRC",
         "cite": "IRC §1(h)",
-        "note": "The LTCG rate stacking that creates the 0% bracket used by the gain-harvesting companion move."
+        "note": "The LTCG rate stacking that creates the 0% bracket the gain-harvesting companion move relies on."
       },
       {
         "type": "IRC",
         "cite": "IRC §1411",
-        "note": "NIIT attaches on MAGI over $200k/$250k — harvested gains count toward the threshold even when taxed at 0%."
+        "note": "NIIT attaches at MAGI over $200k/$250k — harvested gains count toward the threshold even when taxed at 0%."
       },
       {
         "type": "Admin",
         "cite": "Rev. Proc. 2025-32",
-        "note": "The 2026 breakpoints — 0% bracket to $98,900 MFJ / $49,450 single taxable income — the sizing math depends on."
+        "note": "The 2026 breakpoints the sizing math depends on — 0% bracket to $98,900 MFJ / $49,450 single taxable income."
       }
     ],
     "requirements": [
       "A taxable brokerage account — none of this applies inside IRAs or 401(k)s.",
-      "Lot-level basis records and a specific-identification election with the broker, so the intended lots are actually the ones sold.",
-      "A replacement security that is similar but not substantially identical, and 61-day-window discipline across every household account, including IRAs and a spouse's accounts.",
-      "A current-year projection showing the gains to be offset (or, for the companion move, the room under the 0% breakpoint)."
+      "Lot-level basis records and a specific-identification election with the broker, so the lots sold are actually the lots intended.",
+      "A replacement security that is similar but not substantially identical, plus 61-day-window discipline across every household account, including IRAs and a spouse's accounts.",
+      "A current-year projection showing the gains to be offset — or, for the companion move, the room left under the 0% breakpoint."
     ],
     "risks": [
-      "Wash-sale foot-faults are the leading failure mode: a dividend reinvestment, a spouse's purchase, or an IRA buy inside the 61-day window disallows the loss, and under Rev. Rul. 2008-5 the IRA variant destroys it permanently rather than deferring it.",
-      "Tracking error: the replacement position can diverge from the original during the holding window, and a harvested loss on a position about to rebound costs more than the tax it saved.",
-      "Specific-identification failures — average-cost defaults or instructions given after the trade — mean the broker's 1099-B reports different lots than the plan assumed.",
-      "Harvested gains sized past the 0% breakpoint spill into the 15% bracket and can trip AGI-driven cliffs (ACA credits, IRMAA) that cost more than the harvest saved."
+      "Wash-sale foot-faults are the leading failure mode: a dividend reinvestment, a spouse's purchase, or an IRA buy inside the 61-day window disallows the loss — and under Rev. Rul. 2008-5 the IRA variant destroys it permanently rather than deferring it.",
+      "Tracking error: the replacement position can drift from the original during the holding window, and a loss harvested on a position about to rebound costs more than the tax it saved.",
+      "Specific-identification failures — average-cost defaults, or instructions delivered after the trade — leave the broker's 1099-B reporting different lots than the plan assumed.",
+      "Harvested gains sized past the 0% breakpoint spill into the 15% bracket and can trip AGI-driven cliffs (ACA credits, IRMAA) costing more than the harvest saved."
     ],
     "stateNotes": [
-      "Most states conform to the federal gain and loss computation through a federal-AGI starting point, but nearly all tax gains at ordinary state rates with no 0% bracket — the federal 0% is not a state 0%.",
-      "No PTET interaction — this is individual portfolio-level planning with no entity election involved.",
-      "Missouri is the special case: the 2025 capital-gains legislation (RSMo §143.121, HB 594) lets individuals subtract 100% of federally reported capital gains, so Missouri no longer taxes these gains at all — harvesting is a federal-only play for Missouri residents, and a harvested loss produces no additional Missouri benefit."
+      "Most states conform to the federal gain and loss computation through a federal-AGI starting point, but nearly all tax gains at ordinary state rates with no 0% bracket — a federal 0% is not a state 0%.",
+      "No PTET interaction — this is individual portfolio-level planning with no entity election in play.",
+      "Missouri is the special case: the 2025 capital-gains legislation (RSMo §143.121, HB 594) lets individuals subtract 100% of federally reported capital gains, so Missouri no longer taxes these gains at all — for Missouri residents, harvesting is a federal-only play, and a harvested loss produces no additional Missouri benefit."
     ],
     "interactions": {
       "requires": [],
@@ -91,27 +96,27 @@
       "synergiesWith": ["bracket-management", "daf-bunching"]
     },
     "reviewChecklist": [
-      "Lot-level unrealized gain/loss report pulled, holding periods confirmed, and the modeled short/long harvested amounts match actual harvestable lots.",
-      "Replacement securities vetted as not substantially identical, and the 61-day calendar checked across every household account including IRAs.",
-      "Specific-lot identification instructions delivered to the broker before the trades, not after.",
-      "Dividend reinvestment switched off on positions slated for harvest.",
+      "Lot-level unrealized gain/loss report pulled, holding periods confirmed, and the modeled short/long harvest amounts matched to actual harvestable lots.",
+      "Replacement securities vetted as not substantially identical, and the 61-day calendar cleared across every household account, IRAs included.",
+      "Specific-lot identification instructions delivered to the broker before the trades, never after.",
+      "Dividend reinvestment switched off on every position slated for harvest.",
       "Carryforward schedule updated in the permanent file and reconciled to the 1099-B at filing."
     ]
   },
   "client": {
-    "teaser": "Your portfolio's down positions can pay you back at tax time.",
+    "teaser": "The down positions in your portfolio can pay you back at tax time.",
     "headline": "Use market dips to cut your tax bill — without leaving the market",
     "plainEnglish": [
-      "In any account, some holdings are up and some are down. The tax law lets you use the down ones. Sell a losing position and the loss cancels out gains elsewhere. It can also erase up to $3,000 of regular income each year. Anything left over rolls forward to future years.",
+      "In any account, some holdings are up and some are down. The tax law lets you put the down ones to work. Sell a losing position and the loss cancels out gains elsewhere. It can also erase up to $3,000 of regular income each year. Anything left over rolls forward to future years.",
       "You do not have to sit out of the market. Right away, you buy a similar — but not identical — investment. Your money stays invested the whole time. One rule matters most: do not buy the same thing back within 30 days, in any of your accounts.",
-      "In a low-income year, the reverse move can work too. Some profits can be sold at a zero federal rate, up to a limit. We watch for both chances every year."
+      "In a low-income year, the reverse move can work too. Some profits can be sold at a zero federal rate, up to a limit. We watch for both openings every year."
     ],
-    "analogy": "It is like clipping coupons the market prints for you. Down days print one kind. Low-income years print another. They only go to waste if you never clip them.",
+    "analogy": "It is like clipping coupons the market prints for you. Down days print one kind. Low-income years print another. They go to waste only if you never clip them.",
     "benefits": [
-      "Market losses become real tax savings while you stay fully invested",
+      "Market losses turn into real tax savings while you stay fully invested",
       "Up to $3,000 a year can offset your regular income",
       "Unused losses bank automatically for future years",
-      "In low-income years, some profits can be sold federal-tax-free"
+      "In low-income years, some profits can be sold free of federal tax"
     ],
     "steps": [
       "WE scan your accounts each fall for positions worth harvesting.",
@@ -121,14 +126,14 @@
     ],
     "clientCommitments": [
       "Tell us about every account — the 30-day rule counts your IRA and your spouse's accounts too",
-      "Turn off automatic dividend reinvestment on positions we plan to harvest",
-      "Place the trades on the schedule we give you, not before or after"
+      "Turn off automatic dividend reinvestment on any position we plan to harvest",
+      "Place the trades on the schedule we give you — not before, not after"
     ]
   },
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
-      "Fall harvest scan and year-end execution check across all household accounts",
+      "Fall harvest scan and a year-end execution check across all household accounts",
       "Carryforward reconciliation against the 1099-B at filing"
     ],
     "deliverables": [

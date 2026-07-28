@@ -1,6 +1,6 @@
 {
   "id": "basis-step-up-planning",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Basis Step-Up Planning at Death",
@@ -23,74 +28,74 @@
   "entityTypes": ["individual", "rental"],
   "typicalSavingsBand": "structural",
   "advisor": {
-    "summary": "Section 1014 gives assets included in a decedent's estate a fresh fair-market-value basis — appreciation held to death never faces income tax, and real-estate depreciation recapture dies with the owner. With the exemption permanently at $15M single / $30M married under OBBBA, most clients will never owe federal estate tax, which inverts the classic playbook: the objective becomes getting the right assets into the estate at death, not out of it. That means holding appreciated winners, harvesting losses in life (the reset also steps down), auditing old credit-shelter structures that strand assets outside the second step-up, using §675(4) swap powers to pull low-basis assets back from old grantor trusts under Rev. Rul. 85-13, and — carefully — upstream gifts to under-exemption elders drafted around the §1014(e) one-year clawback. For a Missouri practice the community-property double step-up of §1014(b)(6) is the exception rather than the rule: it matters mainly for clients who imported community property from a community-property state.",
+    "summary": "Section 1014 hands assets included in a decedent's estate a fresh fair-market-value basis — appreciation held to death never faces income tax, and real-estate depreciation recapture dies with the owner. With the exemption permanently at $15M single / $30M married under OBBBA, most clients will never owe federal estate tax, and that inverts the classic playbook: the goal becomes getting the right assets into the estate at death, not out of it. In practice: hold appreciated winners, harvest losses during life (the reset also steps down), audit old credit-shelter structures that strand assets outside the second step-up, use §675(4) swap powers to pull low-basis assets back from old grantor trusts under Rev. Rul. 85-13, and — carefully — deploy upstream gifts to under-exemption elders drafted around the §1014(e) one-year clawback. For a Missouri practice, the community-property double step-up of §1014(b)(6) is the exception, not the rule: it matters mainly for clients who imported community property from a community-property state.",
     "mechanics": [
-      "§1014(a) resets basis to date-of-death FMV (or the §2032 alternate valuation date) — and the reset runs both directions, so built-in losses step down; harvest loss positions during life rather than burying them.",
-      "Hold-versus-sell arithmetic: a lifetime sale pays up to 23.8% federal on the gain plus state, while the same asset held to death under a $15M exemption commonly pays nothing — for income-tax-driven estates, deferral into the step-up beats realization the client does not otherwise need.",
+      "§1014(a) resets basis to date-of-death FMV (or the §2032 alternate valuation date) — and the reset runs both ways, so built-in losses step down; harvest loss positions during life instead of burying them.",
+      "Hold-versus-sell arithmetic: a lifetime sale pays up to 23.8% federal on the gain plus state, while the same asset held to death under a $15M exemption commonly pays nothing — in income-tax-driven estates, deferral into the step-up beats any realization the client does not otherwise need.",
       "§1014(b)(6) gives community property a full double step-up at the first spouse's death — relevant here for couples who accumulated community property before moving to Missouri, where preserving that character through titling and documentation is the whole battle.",
-      "A §675(4) power of substitution lets the grantor swap high-basis assets or cash into an old irrevocable grantor trust for its low-basis holdings — non-recognition under Rev. Rul. 85-13 — repositioning appreciation inside the estate for the reset; substituted values must be equivalent and appraised.",
-      "Upstream gifts to an under-exemption elder can capture a step-up a generation early, but §1014(e) denies it if the elder dies within one year and the property returns to the donor or the donor's spouse — route the bequest elsewhere or accept the mortality risk.",
-      "Structure review: credit-shelter trusts funded at the first death deny a second step-up at the survivor's; for estates safely under the exemption, portability under §2010(c) via a timely Form 706 plus marital-format dispositions usually wins."
+      "A §675(4) power of substitution lets the grantor swap high-basis assets or cash into an old irrevocable grantor trust for its low-basis holdings — non-recognition under Rev. Rul. 85-13 — repositioning the appreciation inside the estate for the reset; substituted values must be equivalent and appraised.",
+      "Upstream gifts to an under-exemption elder can capture a step-up a generation early, but §1014(e) denies it when the elder dies within one year and the property returns to the donor or the donor's spouse — route the bequest elsewhere or accept the mortality risk.",
+      "Structure review: credit-shelter trusts funded at the first death forfeit a second step-up at the survivor's; for estates safely under the exemption, portability under §2010(c) via a timely Form 706 plus marital-format dispositions usually wins."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §1014(a)",
-        "note": "The FMV basis reset at death, up and down — the provision the whole strategy orbits."
+        "note": "The FMV basis reset at death, up and down — the provision the entire strategy orbits."
       },
       {
         "type": "IRC",
         "cite": "IRC §1014(b)(6)",
-        "note": "Both halves of community property step up at the first death — a live issue for clients with community-property history."
+        "note": "Steps up both halves of community property at the first death — a live issue for clients with community-property history."
       },
       {
         "type": "IRC",
         "cite": "IRC §1014(e)",
-        "note": "The one-year clawback constraining upstream gifts that round-trip back to the donor."
+        "note": "The one-year clawback that constrains upstream gifts round-tripping back to the donor."
       },
       {
         "type": "IRC",
         "cite": "IRC §675(4)",
-        "note": "The substitution power that makes low-basis assets retrievable from old grantor trusts."
+        "note": "The substitution power that lets low-basis assets be retrieved from old grantor trusts."
       },
       {
         "type": "Admin",
         "cite": "Rev. Rul. 85-13",
-        "note": "Grantor-trust transactions are disregarded for income tax — why a swap is not a taxable sale."
+        "note": "Grantor-trust transactions are disregarded for income tax purposes — why a swap is not a taxable sale."
       },
       {
         "type": "IRC",
         "cite": "IRC §2010(c)",
-        "note": "The $15M exemption (2026, permanent under OBBBA) and portability — the numbers that make most estates income-tax-driven."
+        "note": "The $15M exemption (2026, permanent under OBBBA) and portability — the numbers that render most estates income-tax-driven."
       },
       {
         "type": "IRC",
         "cite": "IRC §1015",
-        "note": "Carryover basis for lifetime gifts — the alternative every hold-to-death decision is measured against."
+        "note": "Carryover basis for lifetime gifts — the benchmark every hold-to-death decision is measured against."
       },
       {
         "type": "IRC",
         "cite": "IRC §2032",
-        "note": "The six-month alternate valuation election where values fall after death."
+        "note": "The six-month alternate valuation election for values that fall after death."
       }
     ],
     "requirements": [
-      "A basis-mapped balance sheet — value and basis for every material asset, flagging high-gain holds, loss positions, and depreciated real estate.",
+      "A basis-mapped balance sheet — value and basis for every material asset, with high-gain holds, loss positions, and depreciated real estate flagged.",
       "An estate-size determination against the federal exemption (and any other state's tax for multi-state families) before unwinding or skipping transfer structures.",
       "For swaps: an irrevocable grantor trust whose instrument actually grants the substitution power, plus liquid high-basis assets to exchange.",
-      "For upstream gifts: a trustworthy under-exemption elder, cooperative estate documents, and a clear-eyed §1014(e), creditor, and Medicaid review."
+      "For upstream gifts: a trustworthy under-exemption elder, cooperative estate documents, and a clear-eyed review of §1014(e), creditor, and Medicaid exposure."
     ],
     "risks": [
-      "The leading failure is step-down blindness — loss assets held to death waste deductions permanently — and its mirror image: selling appreciated winners late in life that the reset would have wiped clean.",
-      "Upstream gifts place assets legally in the elder's hands: their creditors, remarriage, Medicaid spend-down, and freedom to rewrite the will all become the client's exposure, and §1014(e) voids the play on a within-one-year round trip.",
-      "Sloppy swaps — unequal values, no appraisal — invite both fiduciary claims and gift-tax arguments.",
-      "Legacy AB-trust documents on autopilot can strand decades of appreciation outside the survivor's step-up; old documents need review, not administration by habit.",
-      "Clients whose estates may yet outgrow the exemption, or who face another state's estate tax, still need removal strategies — step-up maximization and estate reduction must be balanced deliberately."
+      "The leading failure is step-down blindness — loss assets held to death waste their deductions permanently — and its mirror image: selling appreciated winners late in life when the reset would have wiped the gain clean.",
+      "Upstream gifts place assets legally in the elder's hands: their creditors, remarriage, Medicaid spend-down, and freedom to rewrite the will all become the client's exposure — and §1014(e) voids the play on a within-one-year round trip.",
+      "Sloppy swaps — unequal values, no appraisal — invite fiduciary claims and gift-tax arguments alike.",
+      "Legacy AB-trust documents left on autopilot can strand decades of appreciation outside the survivor's step-up; old documents demand review, not administration by habit.",
+      "Clients whose estates may yet outgrow the exemption, or who face another state's estate tax, still need removal strategies — balance step-up maximization against estate reduction deliberately."
     ],
     "stateNotes": [
-      "Missouri conforms automatically: the stepped-up federal basis carries into Missouri gain computations through the federal-AGI starting point (RSMo §143.121), and Missouri imposes no estate or inheritance tax of its own.",
+      "Missouri conforms automatically: the stepped-up federal basis flows into Missouri gain computations through the federal-AGI starting point (RSMo §143.121), and Missouri imposes no estate or inheritance tax of its own.",
       "No PTET interaction — this is asset-holding and estate-structure planning, not an entity deduction.",
-      "Missouri-specific: Missouri is a separate-property state, so only the decedent's interest resets under the default rule; couples who built community property elsewhere should document and preserve its character with counsel, and multi-state families should map any other state's estate tax before assuming a purely federal analysis."
+      "Missouri-specific: Missouri is a separate-property state, so under the default rule only the decedent's interest resets; couples who built community property elsewhere should document and preserve its character with counsel, and multi-state families should map any other state's estate tax before assuming a purely federal analysis."
     ],
     "interactions": {
       "requires": [],
@@ -98,36 +103,36 @@
       "synergiesWith": ["annual-gifting-program", "like-kind-1031"]
     },
     "reviewChecklist": [
-      "Basis-mapped balance sheet current within the year, with hold/sell/harvest flags on every material position.",
-      "Estate classified income-tax-driven or estate-tax-driven against the exemption — and the file says which.",
-      "Existing irrevocable trusts audited for substitution powers; any executed swap supported by equivalent-value appraisals.",
-      "Legacy AB-trust or credit-shelter documents reviewed against a portability alternative.",
-      "Form 706 portability election calendared at any first death, even when no tax is due."
+      "Basis-mapped balance sheet is current within the year, with hold/sell/harvest flags on every material position.",
+      "Estate is classified income-tax-driven or estate-tax-driven against the exemption — and the file says which.",
+      "Existing irrevocable trusts are audited for substitution powers; any executed swap is supported by equivalent-value appraisals.",
+      "Legacy AB-trust or credit-shelter documents are weighed against a portability alternative.",
+      "Form 706 portability election is calendared at any first death, even when no tax is due."
     ]
   },
   "client": {
-    "teaser": "The biggest tax break in the code goes to families who plan what they hold — not what they sell.",
+    "teaser": "The biggest tax break in the code rewards families for what they hold — not what they sell.",
     "headline": "Erase a lifetime of gains by holding the right assets to the finish line",
     "plainEnglish": [
       "Here is one of the most generous rules in the tax code. When you pass away, the taxable gain on what you own is wiped clean. A rental bought for $200,000 and worth $900,000 passes to your heirs with no income tax on that $700,000 of growth. Sell it a year early, and the tax is very real.",
       "For most families, estate tax is no longer the worry — the exemption is now very high. So the smart plan flips: hold your winners, sell your losers while you are alive, and make sure your paperwork does not give the break away by accident.",
-      "There are advanced moves too. Older trusts can be restocked so low-basis assets come back where the break can reach them. In the right case, an asset can even pass through an elderly parent's estate to pick up the break early. Each move has strict rules, and each starts with knowing what you own and what you paid."
+      "There are advanced moves too. Older trusts can be restocked so low-cost assets come back where the break can reach them. In the right case, an asset can even pass through an elderly parent's estate and pick up the break early. Each move has strict rules. Each one starts with knowing what you own and what you paid."
     ],
-    "analogy": "Every appreciated asset carries a tax meter that has run for decades. Handled right at the right moment, the meter resets to zero. Handled carelessly, the family pays the full fare.",
+    "analogy": "Every asset that has grown in value carries a tax meter that has run for decades. Handled right at the right moment, the meter resets to zero. Handled carelessly, the family pays the full fare.",
     "benefits": [
       "Decades of gains can pass to heirs with no capital gains tax",
       "Losses get used while they still count instead of vanishing",
       "Old trusts and wills get tuned so they stop working against you",
-      "A clear hold-versus-sell answer for every major asset"
+      "A clear hold-or-sell answer for every major asset"
     ],
     "steps": [
       "WE build a full list of what you own, what you paid, and how each asset is titled.",
       "WE mark each asset — hold, sell, or fix the titling — and coordinate changes with your attorney.",
       "YOU sign off on the plan and any trust updates.",
-      "WE revisit it as values, health, and the law change."
+      "WE revisit the plan as values, health, and the law change."
     ],
     "clientCommitments": [
-      "Talk to us before selling any long-held, highly appreciated asset",
+      "Talk to us before selling any long-held asset that has grown a lot in value",
       "Share complete cost records so the basis map stays accurate"
     ]
   },
@@ -141,7 +146,7 @@
     "deliverables": [
       "Basis-mapped balance sheet with hold/sell/harvest designations",
       "Trust and titling review memo coordinated with counsel",
-      "Swap or upstream-gift execution package where applicable, with appraisals"
+      "Swap or upstream-gift execution package with appraisals, where applicable"
     ],
     "feeGuidanceBand": null
   },

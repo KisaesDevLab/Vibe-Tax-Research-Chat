@@ -1,6 +1,6 @@
 {
   "id": "vehicle-expense-method",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,16 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-07-28",
+      "note": "Attributed the mid-year 76-cent rate to Announcement 2026-11 (modifying Notice 2026-10) and added it as an authority; Notice 2026-10 set only the 72.5-cent rate."
     }
   ],
   "name": "Vehicle Expense Method (Standard vs. Actual)",
@@ -23,68 +33,73 @@
   "entityTypes": ["sole-prop", "single-member-llc", "s-corp", "partnership"],
   "typicalSavingsBand": "under-5k",
   "advisor": {
-    "summary": "A proprietor deducting business use of a personal vehicle chooses between the standard mileage rate — 72.5 cents per mile for the first half of 2026, raised to 76 cents for miles driven July through December — and actual expenses times the business-use percentage. The choice is stickier than clients expect: Rev. Proc. 2019-46 requires the standard rate to be elected in the vehicle's first business year to preserve later flexibility, and claiming accelerated depreciation in year one locks the vehicle into actual expenses for life. Either way the deduction stands on a §274(d) contemporaneous mileage log. The engine applies the advisor-computed incremental deduction — the margin of the better method over the current baseline — as an entity deduction; the method comparison itself is workpaper arithmetic.",
+    "summary": "A proprietor deducting business use of a personal vehicle picks between the standard mileage rate — 72.5 cents per mile for the first half of 2026, raised to 76 cents for miles driven July through December — and actual expenses multiplied by the business-use percentage. The choice is stickier than clients expect: Rev. Proc. 2019-46 requires electing the standard rate in the vehicle's first business year to preserve later flexibility, and claiming accelerated depreciation in year one locks the vehicle into actual expenses for life. Under either method the deduction stands or falls on a §274(d) contemporaneous mileage log. The engine applies the advisor-computed incremental deduction — the margin of the better method over the current baseline — as an entity deduction; the method comparison itself is workpaper arithmetic.",
     "mechanics": [
-      "Standard mileage bundles depreciation, fuel, insurance, and repairs into one per-mile rate — 72.5 cents for January through June 2026 and 76 cents for July through December under the IRS's mid-year adjustment — with parking and tolls deductible on top; it is unavailable for fleets of five or more simultaneous vehicles or after accelerated depreciation was claimed.",
-      "Actual expenses deduct operating costs plus depreciation, multiplied by the business-use percentage (business miles over total miles), with the §280F luxury-auto caps metering depreciation on passenger vehicles.",
-      "Rev. Proc. 2019-46 sets the sequencing rule: standard mileage in year one deems straight-line depreciation and preserves the right to alternate later; claiming MACRS, first-year expensing, or bonus in year one forecloses the standard rate for that vehicle permanently.",
-      "The standard rate's per-mile depreciation component reduces basis every year, so long-time standard-rate users meet unexpected gain at sale or trade-in.",
-      "§274(d) strict substantiation governs: date, mileage, destination, and business purpose recorded at or near the time — reconstructed logs and estimates are disallowed, and commuting to a regular work location is never business mileage (a qualifying home office converts home-to-client trips).",
-      "The model deducts the advisor-computed incremental benefit of the better method over the client's current practice; it does not choose the method — the comparison worksheet does."
+      "The standard rate folds depreciation, fuel, insurance, and repairs into a single per-mile figure — 72.5 cents for January through June 2026 and 76 cents for July through December under the IRS's mid-year adjustment — with parking and tolls deductible on top; it is unavailable to fleets of five or more simultaneous vehicles or after accelerated depreciation has been claimed.",
+      "The actual method deducts operating costs plus depreciation, multiplied by the business-use percentage (business miles over total miles), with the §280F luxury-auto caps metering depreciation on passenger vehicles.",
+      "Rev. Proc. 2019-46 supplies the sequencing rule: electing standard mileage in year one deems depreciation straight-line and preserves the right to alternate later, while claiming MACRS, first-year expensing, or bonus in year one permanently forecloses the standard rate for that vehicle.",
+      "The standard rate's per-mile depreciation component reduces basis every year, so long-time standard-rate users encounter unexpected gain at sale or trade-in.",
+      "§274(d) strict substantiation controls: date, mileage, destination, and business purpose recorded at or near the time — reconstructed logs and estimates fail, and commuting to a regular work location is never business mileage (a qualifying home office converts home-to-client trips).",
+      "The model deducts the advisor-computed incremental benefit of the better method over the client's current practice; the comparison worksheet — not the model — selects the method."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §162(a)",
-        "note": "The deduction's statutory home — ordinary and necessary business transportation."
+        "note": "The statutory home of the deduction — ordinary and necessary business transportation."
       },
       {
         "type": "IRC",
         "cite": "IRC §274(d)",
-        "note": "Strict substantiation for listed property: no contemporaneous log, no deduction."
+        "note": "Strict substantiation for listed property — no contemporaneous log, no deduction."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.274-5T",
-        "note": "The adequate-records standard — a log kept at or near the time of use."
+        "note": "The adequate-records standard: a log maintained at or near the time of use."
       },
       {
         "type": "Admin",
         "cite": "Rev. Proc. 2019-46",
-        "note": "The standard-mileage regime: first-year election, deemed depreciation, fleet exclusion, and switching rules."
+        "note": "The standard-mileage regime — first-year election, deemed depreciation, fleet exclusion, and the switching rules."
       },
       {
         "type": "Admin",
         "cite": "Notice 2026-10",
-        "note": "The 2026 standard mileage rates — 72.5 cents per business mile, adjusted mid-year to 76 cents for July through December 2026."
+        "note": "Sets the optional 2026 standard mileage rates, including 72.5 cents per business mile effective January 1, 2026; the mid-year rate increase came separately by announcement."
+      },
+      {
+        "type": "Admin",
+        "cite": "Announcement 2026-11",
+        "note": "Modifies Notice 2026-10 and raises the business standard mileage rate to 76 cents per mile for miles driven July 1 through December 31, 2026, responding to fuel-price increases."
       },
       {
         "type": "Case",
         "cite": "Sanford v. Commissioner, 50 T.C. 823 (1968), aff'd, 412 F.2d 201 (2d Cir. 1969)",
-        "note": "Section 274(d) displaces estimation — the reason mileage cases are lost on records, not law."
+        "note": "Section 274(d) displaces estimation — why mileage cases are lost on records, not law."
       },
       {
         "type": "IRC",
         "cite": "IRC §280F",
-        "note": "Luxury-auto caps and listed-property rules that shape actual-method depreciation."
+        "note": "The luxury-auto caps and listed-property rules shaping actual-method depreciation."
       }
     ],
     "requirements": [
-      "A contemporaneous mileage log — app, diary, or spreadsheet — under any method.",
-      "Standard rate: elected in the vehicle's first business year, with fewer than five vehicles in simultaneous use.",
-      "Actual method: cost receipts and a defensible business-use percentage."
+      "A contemporaneous mileage log — app, diary, or spreadsheet — whichever method applies.",
+      "Standard rate: election made in the vehicle's first business year, with fewer than five vehicles in simultaneous use.",
+      "Actual method: expense receipts and a defensible business-use percentage."
     ],
     "risks": [
-      "The leading audit theory is the absent log: §274(d) mileage is among the most commonly disallowed deductions in exam, and Sanford v. Commissioner forecloses the estimate that would rescue it — the app is cheaper than the adjustment.",
-      "A defaulted year-one choice of actual-plus-accelerated permanently forecloses the standard rate for that vehicle; the first-year decision deserves a worksheet, not a habit.",
-      "Near-100-percent business-use claims on a household's only vehicle draw scrutiny, and miscounted commuting is the recurring adjustment.",
-      "Standard-rate depreciation quietly consumes basis — expect taxable gain at trade-in after years on the rate.",
-      "If business use of a MACRS-depreciated vehicle drops to half or below, §280F recaptures the excess over straight line."
+      "The absent log is the leading audit theory: §274(d) mileage ranks among the most commonly disallowed deductions on exam, and Sanford v. Commissioner forecloses the estimate that might rescue it — the app costs less than the adjustment.",
+      "Defaulting into actual-plus-accelerated in year one permanently forecloses the standard rate for that vehicle; the first-year decision deserves a worksheet, not a habit.",
+      "Near-100-percent business-use claims on a household's only vehicle invite scrutiny, and miscounted commuting is the recurring adjustment.",
+      "Standard-rate depreciation quietly erodes basis — expect taxable gain at trade-in after years on the rate.",
+      "If business use of a MACRS-depreciated vehicle falls to half or below, §280F recaptures the excess over straight line."
     ],
     "stateNotes": [
-      "Conformity: the deduction rides inside federal business income and conformity states absorb it without adjustment; states do not publish separate mileage rates for this purpose.",
-      "PTET interaction: for entity owners the economics run through an accountable-plan reimbursement, which reduces electing-entity income ahead of any pass-through entity tax; for a Schedule C filer there is no PTET interaction.",
-      "Missouri: conforms through its federal starting point (RSMo §143.121); the Missouri return simply reflects the reduced business income."
+      "Conformity: the deduction rides inside federal business income, so conforming states absorb it without adjustment; states publish no separate mileage rates for this purpose.",
+      "PTET interaction: for entity owners the economics run through an accountable-plan reimbursement, which reduces electing-entity income before any pass-through entity tax; a Schedule C filer has no PTET interaction.",
+      "Missouri: conforms through its federal starting point (RSMo §143.121); the Missouri return simply carries the reduced business income."
     ],
     "interactions": {
       "requires": [],
@@ -92,50 +107,50 @@
       "synergiesWith": ["accountable-plan"]
     },
     "reviewChecklist": [
-      "Log method in place and producing contemporaneous entries — sample-checked, not assumed.",
-      "First-business-year vehicles: both methods modeled over the expected holding period before filing.",
-      "The modeled incremental deduction computed from the actual comparison worksheet.",
-      "Cumulative standard-rate depreciation tracked against basis in the permanent file.",
-      "Entity-owner vehicles routed through an accountable plan rather than a personal deduction."
+      "Log method in place and generating contemporaneous entries — sample-checked, never assumed.",
+      "First-business-year vehicles: both methods projected over the expected holding period before filing.",
+      "Modeled incremental deduction tied to the actual comparison worksheet.",
+      "Cumulative standard-rate depreciation carried against basis in the permanent file.",
+      "Entity-owner vehicles reimbursed through an accountable plan rather than deducted personally."
     ]
   },
   "client": {
-    "teaser": "Two ways to claim the same driving — we pick the one that pays more.",
-    "headline": "Make every business mile count",
+    "teaser": "There are two ways to deduct the same driving — we pick the one that pays more.",
+    "headline": "Make every business mile pay off",
     "plainEnglish": [
-      "When you use your own car for business, the IRS allows two ways to deduct it. The simple way pays a flat rate per business mile — 72.5 cents early in 2026, and 76 cents for the second half of the year. The detailed way deducts the business share of what the car really costs: gas, insurance, repairs, and wear.",
-      "Which wins depends on your car and your driving. Many miles in an economical car favors the flat rate. An expensive car driven less favors actual costs. The first-year choice can lock you in, so it pays to do the math up front.",
-      "Every option needs one thing: a record of your business trips. A phone app does it automatically. That record is the difference between a deduction that survives questions and one that disappears."
+      "When you drive your own car for business, the IRS gives you two ways to deduct it. The simple way pays a flat rate per business mile — 72.5 cents early in 2026, then 76 cents for the second half of the year. The detailed way deducts the business share of what the car truly costs: gas, insurance, repairs, and wear.",
+      "Which one wins depends on your car and your driving. Lots of miles in a thrifty car favors the flat rate. A pricey car driven less favors actual costs. The first-year choice can lock you in, so it pays to do the math up front.",
+      "Every option needs one thing: a record of your business trips. A phone app does this automatically. That record is the difference between a deduction that survives questions and one that disappears."
     ],
-    "analogy": "It is like choosing between a flat per-mile reimbursement and an expense report. Same trips, two ways to count — we run both and hand you the bigger number.",
+    "analogy": "It is like choosing between a flat per-mile reimbursement and an expense report. Same trips, two ways to count them — we run both and hand you the bigger number.",
     "benefits": [
-      "Turns driving you already do into a real deduction",
-      "Saves income tax and self-employment tax for sole proprietors",
-      "We run the method comparison so nothing is left behind",
-      "A phone app makes the records nearly effortless"
+      "Turns the driving you already do into a real deduction",
+      "Cuts income tax and self-employment tax for sole proprietors",
+      "We run the comparison both ways so nothing is left on the table",
+      "A phone app makes record-keeping nearly effortless"
     ],
     "steps": [
-      "WE set you up with an easy mileage-tracking app.",
-      "WE compute the deduction both ways and choose the better one.",
-      "WE handle the election and forms with your return.",
-      "YOU let the app log your trips and confirm the business ones."
+      "WE set you up with a simple mileage-tracking app.",
+      "WE figure the deduction both ways and pick the better one.",
+      "WE handle the election and the forms with your return.",
+      "YOU let the app record your trips and confirm which ones are business."
     ],
     "clientCommitments": [
-      "Keep the mileage app running and review trips monthly",
-      "Tell us before buying or replacing a business vehicle — the first-year choice matters"
+      "Keep the mileage app running and review your trips monthly",
+      "Tell us before you buy or replace a business vehicle — the first-year choice matters"
     ]
   },
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
-      "Annual method comparison with current-year miles and costs",
-      "Split-rate mileage computation when the IRS changes rates mid-year",
-      "Basis tracking for the standard-rate depreciation component"
+      "Annual method comparison using current-year miles and costs",
+      "Split-rate mileage computation whenever the IRS changes rates mid-year",
+      "Basis tracking of the standard-rate depreciation component"
     ],
     "deliverables": [
-      "Method comparison worksheet",
-      "Mileage-log setup and annual mileage summary",
-      "Vehicle basis schedule for the permanent file"
+      "Standard-versus-actual comparison worksheet",
+      "Mileage-log setup plus an annual mileage summary",
+      "Vehicle basis schedule maintained in the permanent file"
     ],
     "feeGuidanceBand": null
   },

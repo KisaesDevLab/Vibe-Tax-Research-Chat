@@ -1,6 +1,6 @@
 {
   "id": "accident-health-c-corp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Accident & Health Plans for C-Corp Owner-Employees",
@@ -23,79 +28,79 @@
   "entityTypes": ["c-corp"],
   "typicalSavingsBand": "5k-25k",
   "advisor": {
-    "summary": "Among the operating entities, only the C corporation lets an owner-employee take family health coverage as a genuinely unreduced fringe benefit: the corporation deducts premiums and reimbursements under §162(a) as compensation expense, the owner excludes the coverage under §106(a) and reimbursements under §105(b), and nothing touches FICA, the §162(l) earned-income limit, or the Schedule A floor. Section 1372 denies exactly this treatment to >2% S corporation shareholders and partners, which is why heavy recurring family medical spend is a legitimate input to entity choice. Two compliance gates do the real work: self-insured reimbursement features must survive §105(h) nondiscrimination testing, and any arrangement covering two or more employees must clear the ACA market reforms through integration or a sanctioned design. The record is advisory — the dollar benefit lives in the specific plan design (see the C-corp HRA record) and cannot be computed honestly from return inputs alone.",
+    "summary": "Of the operating entities, only the C corporation delivers family health coverage to an owner-employee as a truly unreduced fringe benefit: the corporation deducts premiums and reimbursements under §162(a) as compensation expense, the owner excludes the coverage under §106(a) and the reimbursements under §105(b), and nothing touches FICA, the §162(l) earned-income limit, or the Schedule A floor. Section 1372 denies precisely this treatment to >2% S corporation shareholders and partners — which makes heavy recurring family medical spend a legitimate input to entity choice. Two compliance gates carry the load: self-insured reimbursement features must survive §105(h) nondiscrimination testing, and any arrangement covering two or more employees must clear the ACA market reforms through integration or a sanctioned design. The record is advisory — the dollar benefit lives in the specific plan design (see the C-corp HRA record) and cannot be computed honestly from return inputs alone.",
     "mechanics": [
-      "The corporation pays or reimburses the owner-employee's family health, dental, and vision premiums; the payment is deductible compensation expense under §162(a) and excluded from the owner's W-2 under §106(a), with no FICA on either side.",
+      "The corporation pays or reimburses the owner-employee's family health, dental, and vision premiums; the payment is deductible compensation expense under §162(a) and stays off the owner's W-2 under §106(a), with no FICA on either side.",
       "A written self-insured reimbursement feature extends the exclusion to out-of-pocket costs: amounts reimbursing medical care described in §213(d) for the employee, spouse, and dependents are excluded under §105(b).",
-      "Section 105(h) tests only self-insured features: if eligibility or benefits favor highly compensated individuals, the HCI's excess reimbursement becomes taxable — fully insured premium-only coverage sits outside §105(h) entirely, which makes premium-only the low-friction starting design.",
-      "The ACA market reforms govern any reimbursement arrangement covering two or more current employees — it must be integrated with group coverage or fit a sanctioned design — while a plan with fewer than two current-employee participants is exempt under §9831(a)(2).",
-      "The same benefits are unavailable to pass-through owners: §1372 treats >2% S corporation shareholders as partners, pushing their premiums onto the W-2 and through the §162(l) personal deduction instead — the contrast that confines this record to C corporations."
+      "Section 105(h) tests self-insured features only: where eligibility or benefits favor highly compensated individuals, the HCI's excess reimbursement turns taxable — fully insured premium-only coverage sits entirely outside §105(h), which makes premium-only the low-friction starting design.",
+      "The ACA market reforms govern any reimbursement arrangement covering two or more current employees — it must integrate with group coverage or fit a sanctioned design — while a plan with fewer than two current-employee participants is exempt under §9831(a)(2).",
+      "Pass-through owners get none of this: §1372 treats >2% S corporation shareholders as partners, forcing their premiums onto the W-2 and through the §162(l) personal deduction instead — the contrast that confines this record to C corporations."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §106(a)",
-        "note": "Excludes employer-provided accident and health coverage from the employee's income — the premium side of the exclusion."
+        "note": "Keeps employer-provided accident and health coverage out of the employee's income — the premium side of the exclusion."
       },
       {
         "type": "IRC",
         "cite": "IRC §105(b)",
-        "note": "Excludes employer reimbursements of medical expenses of the employee, spouse, and dependents — the out-of-pocket side."
+        "note": "Excludes employer reimbursements of medical expenses for the employee, spouse, and dependents — the out-of-pocket side."
       },
       {
         "type": "IRC",
         "cite": "IRC §162(a)",
-        "note": "The corporate deduction for premiums and reimbursements as ordinary compensation expense; total compensation must remain reasonable."
+        "note": "The corporate deduction for premiums and reimbursements as ordinary compensation expense; total compensation must stay reasonable."
       },
       {
         "type": "IRC",
         "cite": "IRC §105(h)",
-        "note": "Nondiscrimination for self-insured features; a discriminatory plan taxes the highly compensated individual's excess reimbursement."
+        "note": "Nondiscrimination testing for self-insured features; a discriminatory plan taxes the highly compensated individual's excess reimbursement."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.105-11",
-        "note": "Operating rules for §105(h): HCI definitions, the eligibility and benefits tests, and the excess-reimbursement computation."
+        "note": "The operating rules for §105(h): HCI definitions, the eligibility and benefits tests, and the excess-reimbursement computation."
       },
       {
         "type": "IRC",
         "cite": "IRC §1372",
-        "note": ">2% S corporation shareholders are treated as partners for fringe purposes — the provision that makes this a C-corp-only design."
+        "note": "Treats >2% S corporation shareholders as partners for fringe purposes — the provision that makes this a C-corp-only design."
       },
       {
         "type": "Admin",
         "cite": "Notice 2013-54",
-        "note": "The ACA market-reform framework any reimbursement arrangement covering two or more employees must clear."
+        "note": "The ACA market-reform framework that any reimbursement arrangement covering two or more employees must clear."
       },
       {
         "type": "IRC",
         "cite": "IRC §9831(a)(2)",
-        "note": "Exempts plans with fewer than two current-employee participants from the market reforms — the owner-only escape hatch."
+        "note": "Exempts plans with fewer than two current-employee participants from the market reforms — the owner-only exit."
       },
       {
         "type": "IRC",
         "cite": "IRC §213(d)",
-        "note": "Defines the medical care a reimbursement feature may cover tax-free."
+        "note": "Defines the medical care a reimbursement feature can cover tax-free."
       }
     ],
     "requirements": [
-      "A C corporation with the owner as a bona fide W-2 employee performing real services, with total compensation (cash plus benefits) defensible as reasonable.",
-      "Written plan documents — a premium-payment resolution at minimum, plus a MERP/HRA document for any reimbursement feature — adopted before benefits are paid.",
-      "A chosen ACA compliance path for any feature covering two or more employees: integration with group coverage, a sanctioned HRA design, or the fewer-than-two-participant exemption.",
-      "§105(h) testing against the current employee census for any self-insured feature.",
+      "A C corporation with the owner as a bona fide W-2 employee performing real services, and total compensation (cash plus benefits) defensible as reasonable.",
+      "Written plan documents — at minimum a premium-payment resolution, plus a MERP/HRA document for any reimbursement feature — adopted before benefits are paid.",
+      "A documented ACA compliance path for any feature covering two or more employees: integration with group coverage, a sanctioned HRA design, or the fewer-than-two-participant exemption.",
+      "§105(h) testing run against the current employee census for any self-insured feature.",
       "Substantiation (receipts or EOBs) retained for every reimbursed expense."
     ],
     "risks": [
-      "The leading audit theory is constructive dividend: corporate payment of the owner's family medical bills with no written plan and no employment substance is recharacterized as a nondeductible distribution rather than an excludable benefit — the paperwork must exist before the payments do.",
-      "A standalone reimbursement arrangement covering two or more employees that fails the market reforms draws the §4980D excise tax of $100 per employee per day — exposure that can exceed the benefit by an order of magnitude; Notice 2013-54 is the controlling ruling on the compliance framework.",
-      "§105(h) failures tax the owner's excess reimbursements — the routine finding when a C corporation with a real workforce runs an owner-tilted self-insured feature.",
-      "Keeping or choosing C status for this benefit alone ignores double taxation on the rest of the earnings; the entity comparison must be run whole.",
-      "Later hires quietly change the analysis: a clean one-participant plan acquires testing and market-reform obligations the day a second employee becomes eligible."
+      "The leading audit theory is constructive dividend: when the corporation pays the owner's family medical bills with no written plan and no employment substance, the payment is recharacterized as a nondeductible distribution rather than an excludable benefit — the paperwork must exist before the payments do.",
+      "A standalone reimbursement arrangement covering two or more employees that fails the market reforms draws the §4980D excise tax of $100 per employee per day — exposure that can dwarf the benefit by an order of magnitude; Notice 2013-54 is the controlling ruling on the compliance framework.",
+      "§105(h) failures tax the owner's excess reimbursements — the routine exam finding when a C corporation with a real workforce runs an owner-tilted self-insured feature.",
+      "Keeping or choosing C status for this benefit alone ignores double taxation on the remaining earnings; run the entity comparison whole.",
+      "Later hires quietly rewrite the analysis: a clean one-participant plan picks up testing and market-reform obligations the day a second employee becomes eligible."
     ],
     "stateNotes": [
-      "Conformity: states that begin from federal AGI or federal taxable income inherit both the corporate deduction and the owner-level exclusions automatically; confirm treatment in any nonconforming state in the client's footprint.",
+      "Conformity: states starting from federal AGI or federal taxable income inherit both the corporate deduction and the owner-level exclusions automatically; confirm treatment in any nonconforming state in the client's footprint.",
       "PTET: none — the payor is a C corporation, so there is no pass-through entity tax interaction to model or elect around.",
-      "Missouri: conforms on both sides — the corporate deduction flows into the Missouri corporate return, which starts from federal taxable income (RSMo §143.431), and the owner-level exclusion never enters Missouri AGI under the federal starting point of RSMo §143.121."
+      "Missouri: conforms on both sides — the corporate deduction flows into the Missouri corporate return, which begins from federal taxable income (RSMo §143.431), and the owner-level exclusion never enters Missouri AGI under the federal starting point of RSMo §143.121."
     ],
     "interactions": {
       "requires": ["c-corp-conversion"],
@@ -103,22 +108,22 @@
       "synergiesWith": ["hra-c-corp"]
     },
     "reviewChecklist": [
-      "Entity is a C corporation in good standing and the owner is on payroll with a reasonable-compensation file.",
-      "Written plan documents are executed and dated before any benefit payment.",
-      "ACA compliance path is documented for the current participant count: exemption, integration, or sanctioned design.",
-      "§105(h) test results are in the file for any self-insured feature, refreshed for the current census.",
-      "No S election is pending or contemplated that would silently convert the owner into a §1372 shareholder."
+      "Entity is a C corporation in good standing with the owner on payroll and a reasonable-compensation file behind the number.",
+      "Written plan documents executed and dated before any benefit is paid.",
+      "ACA compliance path documented for the current participant count: exemption, integration, or sanctioned design.",
+      "§105(h) test results in the file for any self-insured feature, refreshed against the current census.",
+      "No S election pending or contemplated that would silently convert the owner into a §1372 shareholder."
     ]
   },
   "client": {
     "teaser": "A C corporation can pay your family's health costs with money that is never taxed to you.",
     "headline": "Health coverage through your C corporation — deductible to it, tax-free to you",
     "plainEnglish": [
-      "If your company is a regular C corporation and you work in it, the company can pay for your family's health coverage. The company deducts the cost. You do not pay tax on the benefit. No other business type gets treatment this clean.",
-      "With the right written plan, this can go beyond premiums. The company can also repay you for out-of-pocket costs like deductibles, dental, and vision. Those payments are tax-free to you as well.",
+      "If your company is a regular C corporation and you work in it, the company can pay for your family's health coverage. The company deducts the cost. You pay no tax on the benefit. No other business type gets treatment this clean.",
+      "With the right written plan, this reaches past premiums. The company can also pay you back for out-of-pocket costs like deductibles, dental, and vision. Those payments are tax-free to you as well.",
       "The rules are strict about setup. The plan must be in writing before money moves, and other employees must be treated fairly. We handle the design work and keep the records exam-ready."
     ],
-    "analogy": "Most people pay medical bills with money that was taxed first. Here the company pays the bill before any tax is taken — the whole dollar goes to the doctor, not a shrunken one.",
+    "analogy": "Most people pay medical bills with money that was taxed first. Here the company pays the bill before any tax comes out — the whole dollar goes to the doctor, not a shrunken one.",
     "benefits": [
       "Family health premiums become a company deduction, tax-free to you",
       "Out-of-pocket costs can be covered too, with the right plan",
@@ -127,8 +132,8 @@
     ],
     "steps": [
       "WE confirm your corporation and payroll status qualify.",
-      "WE draft the written plan and board resolution before any payment.",
-      "YOU submit receipts for costs the plan reimburses.",
+      "WE draft the written plan and board resolution before any payment moves.",
+      "YOU submit receipts for the costs the plan reimburses.",
       "WE test the plan each year as your team changes."
     ],
     "clientCommitments": [
@@ -140,9 +145,9 @@
   "engagement": {
     "implementationEffort": "multi-step",
     "annualMaintenance": [
-      "Re-run §105(h) testing whenever headcount or compensation changes",
+      "Re-run §105(h) testing whenever headcount or compensation shifts",
       "Confirm the ACA compliance path still holds at each renewal",
-      "Year-end reconciliation of reimbursements to substantiation and to the corporate deduction"
+      "Reconcile reimbursements at year-end against substantiation and the corporate deduction"
     ],
     "deliverables": [
       "Board resolution and written plan documents (premium policy; MERP/HRA if reimbursing)",

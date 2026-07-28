@@ -1,6 +1,6 @@
 {
   "id": "energy-179d",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,16 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-07-28",
+      "note": "Corrected per-square-foot figures to the 2026 inflation-adjusted amounts under Rev. Proc. 2025-32 ($0.59–$1.19 base; $2.97–$5.94 with PWA); prior figures were 2025 maximums."
     }
   ],
   "name": "§179D Energy-Efficient Commercial Building Deduction",
@@ -23,63 +33,63 @@
   "entityTypes": ["s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "25k-100k",
   "advisor": {
-    "summary": "§179D allows an immediate deduction for energy-efficient commercial building property — interior lighting, HVAC and hot water, and envelope — certified against an ASHRAE 90.1 baseline, at a 2026 sliding scale that tops out near $5.81 per square foot when prevailing wage and apprenticeship standards are met. The controlling fact for 2026 planning is the OBBBA sunset: no deduction for property whose construction begins after June 30, 2026, so pipeline triage comes before any modeling. Government and tax-exempt owners cannot use the deduction and may allocate it to the building's designer, which makes §179D a recurring sweep for architecture and engineering clients with public work. The deduction reduces the property's basis, so this is acceleration against a 39-year schedule plus rate arbitrage — not new money — and the engine models it as a certified deduction amount against the owning entity's income.",
+    "summary": "§179D grants an immediate deduction for energy-efficient commercial building property — interior lighting, HVAC and hot water, and envelope — certified against an ASHRAE 90.1 baseline, on a 2026 sliding scale that tops out at $5.94 per square foot when prevailing wage and apprenticeship standards are met. The controlling fact for 2026 planning is the OBBBA sunset: property whose construction begins after June 30, 2026 earns no deduction, so pipeline triage precedes any modeling. Government and tax-exempt owners cannot use the deduction but may allocate it to the building's designer, which makes §179D a recurring sweep for architecture and engineering clients with public work. Because the deduction reduces the property's basis, the benefit is acceleration against a 39-year schedule plus rate arbitrage — not new money — and the engine models it as a certified deduction amount against the owning entity's income.",
     "mechanics": [
-      "Qualifying property is limited to three systems — interior lighting, HVAC and hot water, and building envelope — with the savings percentage established by energy modeling against the applicable ASHRAE 90.1 reference standard and certified by a qualified third party.",
-      "The 2026 deduction slides with modeled energy-cost savings from a base floor to roughly $1.16 per square foot, and multiplies five-fold — to about $5.81 at the top — when prevailing wage and apprenticeship requirements are documented from the start of construction.",
-      "P.L. 119-21 terminates §179D for property whose construction begins after June 30, 2026; projects with construction started by that date remain eligible when placed in service, which makes contemporaneous documentation of the start date part of the deliverable.",
-      "Buildings owned by governmental and tax-exempt entities generate a deduction the owner cannot use; §179D(d) lets the owner allocate it to the primary designer by written allocation letter — a recurring benefit for design firms with schools and municipal work.",
-      "The deduction is claimed on Form 7205 and reduces the energy property's depreciable basis, so the modeled benefit is the certified amount taken now instead of ratably over the 39-year schedule."
+      "Qualifying property covers three systems only — interior lighting, HVAC and hot water, and building envelope — with the savings percentage set by energy modeling against the applicable ASHRAE 90.1 reference standard and certified by a qualified third party.",
+      "The 2026 deduction slides with modeled energy-cost savings from a $0.59-per-square-foot floor to a $1.19 cap, and multiplies five-fold — $2.97 up to $5.94 at the top — when prevailing wage and apprenticeship compliance is documented from the start of construction; these are the 2026 inflation-adjusted amounts set by Rev. Proc. 2025-32.",
+      "P.L. 119-21 terminates §179D for property whose construction begins after June 30, 2026; projects that start construction by that date remain eligible when placed in service, so contemporaneous documentation of the start date belongs in the deliverable.",
+      "Buildings owned by governmental and tax-exempt entities generate a deduction the owner cannot use; §179D(d) lets the owner allocate it to the primary designer through a written allocation letter — a recurring benefit for design firms with schools and municipal work.",
+      "The deduction is claimed on Form 7205 and reduces the energy property's depreciable basis, so the modeled benefit is the certified amount taken now rather than ratably over the 39-year schedule."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §179D",
-        "note": "The deduction itself: qualifying systems, the certified-savings sliding scale, and the prevailing-wage multiplier."
+        "note": "The deduction itself: the qualifying systems, the certified-savings sliding scale, and the prevailing-wage multiplier."
       },
       {
         "type": "IRC",
         "cite": "P.L. 119-21 (OBBBA) — §179D termination",
-        "note": "Ends the deduction for property whose construction begins after June 30, 2026 — the deadline that drives this strategy."
+        "note": "Ends the deduction for property whose construction begins after June 30, 2026 — the deadline this entire strategy runs on."
       },
       {
         "type": "IRC",
         "cite": "IRC §179D(d)",
-        "note": "Designer-allocation mechanics for buildings owned by governmental and tax-exempt entities."
+        "note": "The designer-allocation mechanics for buildings owned by governmental and tax-exempt entities."
       },
       {
         "type": "Admin",
         "cite": "Rev. Proc. 2025-32",
-        "note": "Source of the inflation-indexed 2026 per-square-foot amounts; pull exact figures here before quantifying for a client."
+        "note": "Source of the inflation-indexed 2026 per-square-foot amounts — pull the exact figures here before quantifying for a client."
       },
       {
         "type": "Admin",
         "cite": "Form 7205 and instructions",
-        "note": "The required claiming form: building identity, savings percentage, wage-and-apprenticeship status, and any allocation."
+        "note": "The required claiming form: building identity, savings percentage, wage-and-apprenticeship status, and any designer allocation."
       },
       {
         "type": "Admin",
         "cite": "ASHRAE Standard 90.1 baseline provisions",
-        "note": "The reference standard the certified energy-cost savings are measured against."
+        "note": "The reference standard against which the certified energy-cost savings are measured."
       }
     ],
     "requirements": [
-      "A commercial building (or residential building four stories or taller) with qualifying lighting, HVAC, or envelope work — and construction begun by June 30, 2026.",
+      "A commercial building (or a residential building four stories or taller) with qualifying lighting, HVAC, or envelope work — and construction begun by June 30, 2026.",
       "Third-party energy modeling and certification using IRS-approved software.",
-      "Prevailing wage and apprenticeship compliance tracked from the first day of construction if the multiplied rate is sought — it cannot be reconstructed later.",
-      "For designer allocations, a signed allocation letter from the government or tax-exempt owner, retained with the file."
+      "Prevailing wage and apprenticeship compliance tracked from the first day of construction if the multiplied rate is sought — it cannot be reconstructed after the fact.",
+      "For designer allocations, a signed allocation letter from the government or tax-exempt owner, retained in the file."
     ],
     "risks": [
-      "The sunset is the dominant risk: a project that slips past the June 30, 2026 construction-start date gets nothing, so 'physical work of a significant nature' should be documented contemporaneously — the begin-construction standard, not the placed-in-service date, controls.",
-      "Prevailing-wage or apprenticeship failures collapse the deduction to the base rate — roughly an 80% haircut — and the leading exam focus is certification quality and wage documentation rather than any single litigated case.",
-      "The deduction reduces basis: later depreciation shrinks and gain on sale grows, so the benefit is timing plus rate arbitrage and should be presented that way.",
-      "Indexed per-square-foot figures change annually; quoting last year's numbers misstates the benefit.",
-      "Allocation letters that are unsigned, late, or ambiguous about the 'primary designer' fail at exam — paper them at project close-out, not at return time."
+      "The sunset dominates every other risk: a project that slips past the June 30, 2026 construction-start date gets nothing, so document 'physical work of a significant nature' contemporaneously — the begin-construction standard, not the placed-in-service date, controls.",
+      "A prevailing-wage or apprenticeship failure collapses the deduction to the base rate — roughly an 80% haircut — and the leading exam focus is certification quality and wage documentation, not any single litigated case.",
+      "The deduction reduces basis: later depreciation shrinks and gain on sale grows, so the benefit is timing plus rate arbitrage and should be presented as exactly that.",
+      "The indexed per-square-foot figures change annually; quoting last year's numbers misstates the benefit.",
+      "Allocation letters that are unsigned, late, or vague about the 'primary designer' fail on exam — paper them at project close-out, not at return time."
     ],
     "stateNotes": [
       "Conformity: states that start from federal taxable income or AGI generally conform to §179D automatically; verify any decoupled or selective-conformity state in the client’s footprint before combining benefits.",
-      "Missouri conforms through its federal starting point (RSMo §143.091, §143.121), so the federal deduction carries into the Missouri computation without a separate addback.",
-      "PTET interaction: for a pass-through owner, the §179D deduction reduces the entity income a PTET election is computed on; for designer allocations to a firm with a PTET election, the same sequencing applies."
+      "Missouri conforms through its federal starting point (RSMo §143.091, §143.121), so the federal deduction flows into the Missouri computation with no separate addback.",
+      "PTET interaction: for a pass-through owner, the §179D deduction shrinks the entity income a PTET election is computed on; designer allocations to a firm with a PTET election follow the same sequencing."
     ],
     "interactions": {
       "requires": [],
@@ -89,20 +99,20 @@
     "reviewChecklist": [
       "Construction-start date documented and safely before July 1, 2026.",
       "Certification package complete: qualified certifier, approved software, ASHRAE baseline identified, savings percentage stated.",
-      "Wage-and-apprenticeship records support the multiplied rate if claimed.",
-      "Designer allocation letter signed by the owner and identifying the primary designer, where applicable.",
-      "Basis reduction posted to the fixed-asset records, and the modeled amount matches the certification."
+      "Wage-and-apprenticeship records support the multiplied rate where claimed.",
+      "Designer allocation letter signed by the owner and naming the primary designer, where applicable.",
+      "Basis reduction posted to the fixed-asset records, with the modeled amount tied to the certification."
     ]
   },
   "client": {
-    "teaser": "Energy-smart building work earns a large deduction — but only for projects that start soon.",
-    "headline": "A big deduction for efficient buildings, with a firm deadline",
+    "teaser": "Energy-smart building work earns a sizable deduction — but only for projects that start soon.",
+    "headline": "A big deduction for efficient buildings — and a firm deadline",
     "plainEnglish": [
-      "When you build or upgrade a commercial building with efficient lighting, heating and cooling, or a better shell, the tax law rewards you. Instead of deducting those costs over 39 years, you can deduct a set amount per square foot right away. On a large building, that adds up fast.",
-      "There is a catch. Congress ended this break for projects that begin construction after June 30, 2026. Work that starts before then stays eligible. So the calendar matters more than anything else right now.",
-      "The deduction grows with the building's certified energy savings. It grows five times larger when construction crews are paid at certain wage standards. An independent engineer certifies the savings, and that certificate is your proof."
+      "When you build or upgrade a commercial building with efficient lighting, heating and cooling, or a better shell, the tax law rewards you. Instead of spreading those costs over 39 years, you deduct a set amount per square foot right away. On a large building, that adds up fast.",
+      "There is a catch. Congress ended this break for projects that begin construction after June 30, 2026. Work that starts before then stays eligible. Right now, the calendar matters more than anything else.",
+      "The deduction grows with the building's certified energy savings. It grows five times larger when the crews are paid at certain wage standards. An independent engineer certifies the savings, and that certificate is your proof."
     ],
-    "analogy": "It is like a rebate program in its final season — the reward is real, but the window to enter closes on June 30, 2026.",
+    "analogy": "It is like a rebate program in its final season — the reward is real, but the entry window closes on June 30, 2026.",
     "benefits": [
       "A deduction of up to several dollars per square foot, taken right away",
       "Five times larger when wage standards are met on the job",
@@ -111,9 +121,9 @@
     ],
     "steps": [
       "WE check your project dates against the June 30, 2026 start deadline — first.",
-      "WE line up the certified energy modeling and review the results.",
-      "WE claim the deduction on the right IRS form and adjust your building records.",
-      "YOU keep construction contracts and payroll records that prove dates and wages."
+      "WE arrange the certified energy modeling and review the results.",
+      "WE claim the deduction on the right IRS form and update your building records.",
+      "YOU keep the construction contracts and payroll records that prove dates and wages."
     ],
     "clientCommitments": [
       "Start qualifying construction before the deadline and keep proof of the start date",
@@ -123,11 +133,11 @@
   "engagement": {
     "implementationEffort": "multi-step",
     "annualMaintenance": [
-      "Sweep the project pipeline each year for buildings placed in service with open certification opportunities",
-      "For design-firm clients, request allocation letters on eligible public projects as they close out"
+      "Sweep the project pipeline each year for buildings placed in service with certification still open",
+      "For design-firm clients, collect allocation letters on eligible public projects as they close out"
     ],
     "deliverables": [
-      "Deadline triage memo mapping each project against the construction-start cutoff",
+      "Deadline-triage memo mapping every project against the construction-start cutoff",
       "Certification package (energy model, certifier statement, wage documentation)",
       "Form 7205 filing and basis-adjustment schedule"
     ],
@@ -156,7 +166,7 @@
           "value": true
         }
       ],
-      "reason": "Efficient commercial buildings placed in service before the OBBBA sunset still earn up to $5.81/sq ft."
+      "reason": "Efficient commercial buildings placed in service before the OBBBA sunset still earn up to $5.94/sq ft."
     },
     "goldenTests": [
       {

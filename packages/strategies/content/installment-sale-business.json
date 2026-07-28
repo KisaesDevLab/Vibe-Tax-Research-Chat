@@ -1,6 +1,6 @@
 {
   "id": "installment-sale-business",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Installment Sale on Business Sale",
@@ -23,82 +28,82 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership"],
   "typicalSavingsBand": "25k-100k",
   "advisor": {
-    "summary": "When at least one payment on a business sale arrives after the year of closing, §453 spreads gain recognition across the payment years in proportion to the gross profit ratio — automatically, unless the seller elects out. Instead of one year that rides the 20% bracket and the net investment income tax for most of the gain, each installment year restarts the capital-gain stacking from the bottom, and years with modest other income can keep meaningful gain in the 15% bracket or below the NIIT threshold entirely. The method has sharp edges: depreciation recapture is taxed in full in the sale year regardless of cash received, large outstanding obligations carry an interest charge, and the seller is a creditor of the business's new owner for the life of the note. The engine's transform spreads only the capital gain into equal annual slices — recapture, note interest income, and the interest charge are outside the model and must be layered on in review.",
+    "summary": "When at least one payment on a business sale arrives after the closing year, §453 spreads gain recognition across the payment years in proportion to the gross profit ratio — automatically, unless the seller elects out. Instead of a single year where most of the gain rides the 20% bracket and the net investment income tax, each installment year restacks the capital gain from the bottom of the brackets, and years with modest other income can hold meaningful gain at 15% or under the NIIT threshold entirely. The method has sharp edges: depreciation recapture is taxed in full in the sale year regardless of cash received, large outstanding obligations draw an interest charge, and the seller remains the new owner's creditor for the life of the note. The engine's transform spreads only the capital gain into equal annual slices — recapture, note interest income, and the interest charge sit outside the model and must be layered on in review.",
     "mechanics": [
-      "The gross profit ratio — gross profit over total contract price — fixes the taxable slice of each payment under §453; the remainder of each payment is basis recovery, and stated or imputed interest on the note is ordinary income under §§483 and 1274.",
-      "The bracket play: capital gain stacks year by year, so five annual slices each start at the bottom of the LTCG brackets, keeping gain in the 15% bracket and — in lighter years — below the §1411 NIIT thresholds that a lump-sum year would blow through.",
-      "All §1245 and §1250 depreciation recapture is recognized in the year of sale regardless of payments received (§453(i)) — heavily depreciated asset sales create year-one ordinary income with little matching cash, so the closing-year liquidity must be planned. The model does not compute recapture.",
-      "In a business sale, the §1060 asset-class allocation (reported on Form 8594) determines which assets produce installment-eligible capital gain and which produce year-one ordinary income; buyer and seller must file consistent allocations.",
-      "Ineligible property cannot use the method — inventory, dealer property, and marketable securities — and a related-party buyer who resells within two years accelerates the seller's remaining gain under §453(e).",
-      "The §453A interest charge applies where obligations from sales over $150,000 exceed $5 million outstanding at year-end, and pledging the note as loan collateral is treated as a payment — large deals give back part of the deferral.",
-      "Installment treatment is the default; electing out under §453(d) on a timely return recognizes everything in year one, worth modeling when the sale year is unusually low-rate or the seller expects rates to rise."
+      "The gross profit ratio — gross profit over total contract price — sets the taxable share of each payment under §453; the balance of each payment is recovery of basis, and stated or imputed interest on the note is ordinary income under §§483 and 1274.",
+      "The bracket play: capital gain stacks year by year, so five annual slices each restart at the bottom of the LTCG brackets — holding gain in the 15% bracket and, in lighter years, under the §1411 NIIT thresholds a lump-sum year would blow through.",
+      "All §1245 and §1250 depreciation recapture is recognized in the sale year regardless of payments received (§453(i)); a heavily depreciated asset sale therefore creates year-one ordinary income with little matching cash, and the closing-year liquidity must be planned. The model does not compute recapture.",
+      "In a business sale, the §1060 asset-class allocation reported on Form 8594 decides which assets yield installment-eligible capital gain and which yield year-one ordinary income; buyer and seller must file consistent allocations.",
+      "Ineligible property — inventory, dealer property, and marketable securities — cannot use the method, and a related-party buyer who resells within two years accelerates the seller's remaining gain under §453(e).",
+      "The §453A interest charge attaches where obligations from sales over $150,000 exceed $5 million outstanding at year-end, and pledging the note as loan collateral is treated as a payment — large deals give back part of the deferral.",
+      "Installment treatment is the default; electing out under §453(d) on a timely return recognizes everything in year one — worth modeling when the sale year is unusually low-rate or the seller expects rates to rise."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §453",
-        "note": "The installment method: gain recognized proportionally as payments arrive, automatic unless the seller elects out under §453(d); §453(e) polices related-party resales."
+        "note": "The installment method — gain recognized in proportion to payments received, automatic unless the seller elects out under §453(d); §453(e) polices related-party resales."
       },
       {
         "type": "IRC",
         "cite": "IRC §453(i)",
-        "note": "Recapture income is recognized in full in the year of disposition regardless of the payment schedule — the year-one cash trap."
+        "note": "Recapture income lands in full in the year of disposition no matter the payment schedule — the year-one cash trap."
       },
       {
         "type": "IRC",
         "cite": "IRC §453A",
-        "note": "The interest charge on deferred tax where obligations from >$150k sales exceed $5M outstanding, and the pledge rule treating loans against the note as payments."
+        "note": "The interest charge on deferred tax once obligations from >$150k sales exceed $5M outstanding, plus the pledge rule treating loans against the note as payments."
       },
       {
         "type": "IRC",
         "cite": "IRC §§1245, 1250",
-        "note": "The recapture character rules that determine how much of the sale is ordinary income excluded from the spread."
+        "note": "The recapture character rules fixing how much of the sale is ordinary income excluded from the spread."
       },
       {
         "type": "IRC",
         "cite": "IRC §§483, 1274",
-        "note": "Imputed and unstated interest — deferred payments on a below-AFR note are partly recharacterized as ordinary interest."
+        "note": "Imputed and unstated interest — part of each deferred payment on a below-AFR note is recharacterized as ordinary interest."
       },
       {
         "type": "IRC",
         "cite": "IRC §1060",
-        "note": "The residual-method allocation across asset classes that decides which gain is installment-eligible."
+        "note": "The residual-method allocation across asset classes that determines which gain qualifies for installment reporting."
       },
       {
         "type": "IRC",
         "cite": "IRC §1411",
-        "note": "The 3.8% NIIT — spreading can hold individual years under the MAGI thresholds a lump sum would exceed."
+        "note": "The 3.8% NIIT — spreading can keep individual years under MAGI thresholds a lump sum would exceed."
       },
       {
         "type": "Admin",
         "cite": "Temp. Reg. §15a.453-1 (installment method operating provisions)",
-        "note": "Contract price, gross profit ratio, and contingent-payment mechanics."
+        "note": "Operating rules for contract price, the gross profit ratio, and contingent payments."
       },
       {
         "type": "Admin",
         "cite": "Form 6252 and instructions",
-        "note": "Filed in the sale year and every collection year — the compliance spine of the method."
+        "note": "Filed in the sale year and every collection year — the method's compliance spine."
       }
     ],
     "requirements": [
-      "At least one payment due after the close of the sale year, documented by a written note with stated interest at the AFR or better.",
-      "Eligible property — not inventory, dealer property, or marketable securities — identified through the §1060 allocation.",
-      "Seller tolerance for buyer credit risk, backed by a security interest, personal guarantee, or letter of credit.",
-      "Year-one liquidity for the recapture tax, which arrives whether or not cash does.",
-      "A multi-year projection comparing the spread against a lump sum, including the election-out alternative."
+      "At least one payment falling due after the close of the sale year, documented by a written note bearing stated interest at the AFR or better.",
+      "Eligible property — not inventory, dealer property, or marketable securities — confirmed through the §1060 allocation.",
+      "Seller appetite for buyer credit risk, backed by a security interest, personal guarantee, or letter of credit.",
+      "Year-one liquidity for the recapture tax, which comes due whether or not cash arrives.",
+      "A multi-year projection weighing the spread against a lump sum, including the election-out alternative."
     ],
     "risks": [
-      "Buyer default is the dominant economic risk: the seller can end up repossessing a weakened business after paying tax on early installments — collateral, covenants, and remedies matter more than the tax math.",
-      "The recapture surprise: §453(i) puts all prior depreciation into year-one ordinary income even in an all-note deal, and sellers who spent the modeled savings find the first April painful.",
-      "The §453A interest charge and pledge rule erode the deferral above $5M of outstanding obligations, and borrowing against the note accelerates gain outright.",
-      "Rate risk runs against the seller: the spread bets that capital-gain rates and the seller's bracket stay flat or fall across the term.",
-      "Death during the term leaves the note as income in respect of a decedent — the deferred gain never gets a basis step-up (§691; §1014(c)) — so estate planning must account for the note.",
+      "Buyer default is the dominant economic risk: the seller can end up repossessing a weakened business after paying tax on the early installments — collateral, covenants, and remedies matter more than the tax math.",
+      "The recapture surprise: §453(i) drops all prior depreciation into year-one ordinary income even in an all-note deal, and sellers who spent the modeled savings find the first April painful.",
+      "Above $5M of outstanding obligations, the §453A interest charge and pledge rule erode the deferral, and borrowing against the note accelerates gain outright.",
+      "Rate risk runs against the seller: the spread is a bet that capital-gain rates and the seller's bracket hold flat or fall across the term.",
+      "Death mid-term leaves the note as income in respect of a decedent — the deferred gain never receives a basis step-up (§691; §1014(c)) — so estate planning must account for the note.",
       "A related-party buyer who flips the business inside two years accelerates the seller's gain with no cash to show for it."
     ],
     "stateNotes": [
-      "Most states conform to §453 through a federal starting point, but several accelerate deferred gain when a seller changes residency mid-note — the seller's relocation plans belong in the term-length decision.",
-      "PTET interaction: when the entity itself sells assets and holds the note, each year's gain slice flows through the entity, and PTET elections can cover the installment years — the election calendar should be set for the full note term, not just the closing year.",
-      "Missouri conforms through its federal-AGI starting point (RSMo §143.121), and the 2025 individual capital-gains subtraction (HB 594) removes the capital-gain slices from Missouri income entirely — the ordinary recapture and note-interest income remain Missouri-taxable."
+      "Most states conform to §453 through a federal starting point, but several accelerate deferred gain when a seller changes residency mid-note — factor the seller's relocation plans into the term-length decision.",
+      "PTET interaction: when the entity itself sells the assets and holds the note, each year's gain slice flows through the entity, and PTET elections can cover the installment years — set the election calendar for the full note term, not just the closing year.",
+      "Missouri conforms through its federal-AGI starting point (RSMo §143.121), and the 2025 individual capital-gains subtraction (HB 594) removes the capital-gain slices from Missouri income entirely — the ordinary recapture and note-interest income stay Missouri-taxable."
     ],
     "interactions": {
       "requires": [],
@@ -106,53 +111,53 @@
       "synergiesWith": ["bracket-management"]
     },
     "reviewChecklist": [
-      "Lump-sum, spread, and elect-out scenarios are modeled before the letter of intent — payment terms are negotiated, not retrofitted.",
-      "Recapture is quantified from the depreciation schedules and the year-one cash need is confirmed with the client.",
-      "Note terms — AFR-plus rate, security, default remedies — are reviewed by transaction counsel.",
-      "The Form 8594 allocation is consistent between buyer and seller and matches the installment computation.",
-      "§453A exposure is computed against the $5M outstanding-obligation threshold each December of the term.",
-      "The model's simplifications (no recapture, no note interest, no §453A charge) are disclosed alongside the projected saving.",
-      "Any related-party buyer has the two-year resale window calendared."
+      "Lump-sum, spread, and elect-out scenarios modeled before the letter of intent — payment terms are negotiated, not retrofitted.",
+      "Recapture quantified from the depreciation schedules and the year-one cash need confirmed with the client.",
+      "Note terms — AFR-plus rate, security, default remedies — reviewed by transaction counsel.",
+      "Form 8594 allocation consistent between buyer and seller and tied to the installment computation.",
+      "§453A exposure computed against the $5M outstanding-obligation threshold each December of the term.",
+      "The model's simplifications (no recapture, no note interest, no §453A charge) disclosed alongside the projected saving.",
+      "Two-year resale window calendared for any related-party buyer."
     ]
   },
   "client": {
-    "teaser": "Get paid for your business over several years — and tax each slice at lower rates.",
-    "headline": "Sell the business, spread the tax",
+    "teaser": "Get paid for your business over several years — so each slice is taxed at lower rates.",
+    "headline": "Sell your business, spread the tax bill",
     "plainEnglish": [
-      "Sell a business for one lump sum and the whole profit lands on one tax return. A big number in one year gets pushed into the top rates. You can lose a much larger slice than you need to.",
-      "In an installment sale, the buyer pays you over several years. You pay tax only as the money arrives. Each year's slice is smaller, so more of it is taxed at lower rates. Some extra surcharges may not apply at all.",
-      "You also earn interest on the unpaid balance, so the buyer pays you for the time. We build in protections — security and terms — in case the buyer hits trouble. One caution: tax on certain past equipment write-offs is due in year one no matter what, so we plan the first year's cash with care."
+      "Sell your business for one lump sum and the whole profit hits one tax return. A big number in one year gets pushed into the top rates. You can lose a far bigger slice than you need to.",
+      "With an installment sale, the buyer pays you over several years. You pay tax only as the money arrives. Each year's slice is smaller, so more of it is taxed at lower rates. Some extra surcharges may never apply at all.",
+      "You also earn interest on the unpaid balance, so the buyer pays you for the wait. We build in protections — security and terms — in case the buyer hits trouble. One caution: tax on certain past equipment write-offs is due in year one no matter what, so we plan the first year's cash with care."
     ],
-    "analogy": "Pour a gallon of water into a small funnel all at once and it overflows. Pour it steadily and every drop gets through. Spreading the payments moves more of your sale price through the low-tax funnel.",
+    "analogy": "Pour a gallon of water into a small funnel all at once and it spills over. Pour it slowly and every drop gets through. Spreading the payments moves more of your sale price through the low-tax funnel.",
     "benefits": [
       "More of your sale profit taxed at lower rates instead of the top rate",
-      "Tax is due as cash arrives — no giant year-one bill on money you have not received",
-      "Interest earned on the unpaid balance",
-      "A steady income stream if you are stepping back or retiring"
+      "Tax comes due as cash arrives — no giant year-one bill on money you have not received",
+      "Interest income on the unpaid balance",
+      "Steady income if you are stepping back or retiring"
     ],
     "steps": [
-      "WE model the lump-sum tax bill next to several payment schedules before you negotiate.",
-      "WE work with your attorney on the note — schedule, interest rate, and security protecting you.",
+      "WE model the lump-sum tax bill against several payment schedules before you negotiate.",
+      "WE work with your attorney on the note — payment schedule, interest rate, and security that protects you.",
       "YOU negotiate the deal knowing the after-tax value of each payment option.",
       "WE file the installment forms in the sale year and every payment year after."
     ],
     "clientCommitments": [
       "Bring us in before the letter of intent — the payment terms set the tax",
       "Hold the note as planned; borrowing against it can trigger the deferred tax early",
-      "Plan for the year-one tax on past depreciation even if little cash arrives"
+      "Plan for year-one tax on past depreciation even if little cash arrives"
     ]
   },
   "engagement": {
     "implementationEffort": "structural",
     "annualMaintenance": [
-      "Form 6252 filing and gain tracking each collection year",
-      "December check of outstanding obligations against the §453A threshold",
-      "Buyer payment and credit monitoring with the note file"
+      "File Form 6252 and track recognized gain each collection year",
+      "Check outstanding obligations against the §453A threshold each December",
+      "Monitor buyer payments and credit alongside the note file"
     ],
     "deliverables": [
-      "Sale structuring memo — lump sum vs. spread, recapture, and the interest-charge exposure",
+      "Sale structuring memo — lump sum vs. spread, recapture, and interest-charge exposure",
       "Note-term checklist for transaction counsel",
-      "Annual installment reporting package with the running gain schedule"
+      "Annual installment reporting package with a running gain schedule"
     ],
     "feeGuidanceBand": null
   },

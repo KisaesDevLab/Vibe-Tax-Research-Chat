@@ -1,6 +1,6 @@
 {
   "id": "multi-entity-qbi",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,16 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-07-28",
+      "note": "Corrected Reg. §1.199A-5(c)(2) description to the final-regulation rule: at 50%+ common ownership the SSTB-facing portion is a separate SSTB (pro-rata taint at any level); removed the proposed-reg 80% cliff."
     }
   ],
   "name": "Multi-Entity QBI Structuring",
@@ -23,74 +33,74 @@
   "entityTypes": ["s-corp", "partnership"],
   "typicalSavingsBand": "structural",
   "advisor": {
-    "summary": "An SSTB owner above the §199A threshold loses the deduction on specified-service income, but the fence is drawn activity by activity: practice-owned real estate, product lines, and service operations with genuine outside customers are not specified services and can hold or recover QBI status in their own entities. The final regulations killed the paper version — under Reg. §1.199A-5(c)(2), a 50%-commonly-owned entity providing 80% or more of its property or services to the SSTB is treated as part of the SSTB, with pro-rata taint below 80%. What survives is separation with substance: real employees, arm's-length contracts, and meaningful third-party revenue. Advisory-only, because the value turns on facts — revenue mix, pricing, operational substance — that cannot be computed honestly from return inputs.",
+    "summary": "Above the §199A threshold, an SSTB owner loses the deduction on specified-service income — but the fence runs activity by activity: practice-owned real estate, product lines, and service operations with genuine outside customers are not specified services and can keep or regain QBI status in their own entities. The final regulations killed the paper version — under Reg. §1.199A-5(c)(2), when common ownership is 50% or more, whatever portion of an entity's property or services goes to the SSTB is treated as a separate SSTB, a pro-rata taint that applies at any level of SSTB-facing revenue. What survives is separation with substance: real employees, arm's-length contracts, and meaningful third-party revenue. Advisory-only, because the value turns on facts — revenue mix, pricing, operational substance — that no return input can compute honestly.",
     "mechanics": [
-      "SSTB status attaches to each trade or business separately under the field definitions of Reg. §1.199A-5(b) — a medical practice is a specified service, but its building, a device or products line, an imaging operation, or a billing company serving many practices need not be.",
-      "The anti-abuse rule of Reg. §1.199A-5(c)(2): with 50%-or-greater common ownership (attribution applies), a separated entity providing at least 80% of its property or services to the SSTB is treated entirely as part of the SSTB; below 80%, the SSTB-serving portion is tainted pro rata.",
-      "The reverse trap in Reg. §1.199A-5(c)(1): a business with gross receipts of $25 million or less is wholly an SSTB if more than 10% of receipts come from specified services (5% above $25 million) — keep professional-service revenue out of the clean entity entirely.",
-      "Self-rental can serve the structure: rental to a commonly controlled pass-through is a §199A trade or business under Reg. §1.199A-1(b)(14), but rental income from a commonly owned SSTB tenant is itself treated as SSTB income — outside or non-SSTB tenants keep rental QBI clean.",
-      "Substance carries the structure: the separated entity needs its own employees, contracts, market pricing, books, and licenses, or it invites §482 reallocation and the separate-entity baseline of Moline Properties.",
-      "Composition: once separated, the clean non-SSTB entities can layer W-2 wage optimization and aggregation under Reg. §1.199A-4 among themselves — an SSTB can never aggregate with anything."
+      "SSTB status attaches trade by trade under the field definitions of Reg. §1.199A-5(b) — a medical practice is a specified service, but its building, a device or products line, an imaging operation, or a billing company serving many practices need not be.",
+      "The anti-abuse rule of Reg. §1.199A-5(c)(2): at 50%-or-greater common ownership (attribution applies), the portion of a separated entity's property or services provided to the SSTB is treated as a separate SSTB — the final regulations dropped the proposed 80% all-or-nothing cliff, so the taint is pro rata at every level and only the truly outside-facing share stays clean.",
+      "The reverse trap in Reg. §1.199A-5(c)(1): a business with gross receipts of $25 million or less becomes wholly an SSTB when more than 10% of receipts come from specified services (5% above $25 million) — keep professional-service revenue out of the clean entity entirely.",
+      "Self-rental can anchor the structure: rental to a commonly controlled pass-through is a §199A trade or business under Reg. §1.199A-1(b)(14), but rental income from a commonly owned SSTB tenant is itself treated as SSTB income — outside or non-SSTB tenants keep rental QBI clean.",
+      "Substance carries everything: the separated entity needs its own employees, contracts, market pricing, books, and licenses, or it invites §482 reallocation and the separate-entity baseline of Moline Properties.",
+      "Composition: once separated, the clean non-SSTB entities can layer W-2 wage optimization and Reg. §1.199A-4 aggregation among themselves — an SSTB can never aggregate with anything."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §199A(d)(2)",
-        "note": "The SSTB definition — the fence this structuring works around; non-SSTB activities sit outside it even under common ownership."
+        "note": "The SSTB definition — the fence this structuring works around; non-SSTB activities stand outside it even under common ownership."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.199A-5(c)(2)",
-        "note": "The anti-crack-and-pack rule: a 50%-commonly-owned entity providing 80% or more of its property or services to the SSTB is treated as part of it; below 80%, tainted pro rata."
+        "note": "The anti-crack-and-pack rule: with 50%-or-more common ownership, the portion of an entity's property or services provided to the SSTB is treated as a separate SSTB — pro-rata taint at any level; the proposed regulations' 80% cliff did not survive to the final rule."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.199A-5(c)(1)",
-        "note": "The de minimis rule: more than 10% of gross receipts from specified services (5% above $25M) taints the entire business as an SSTB."
+        "note": "The de minimis rule: more than 10% of gross receipts from specified services (5% above $25M) taints the whole business as an SSTB."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.199A-5(b)",
-        "note": "The field-by-field map of specified services — what can and cannot be separated cleanly."
+        "note": "The field-by-field map of specified services — what can and cannot be cleanly separated."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.199A-1(b)(14)",
-        "note": "Self-rental to a commonly controlled pass-through is a §199A trade or business — the hook that gives separated real estate QBI status, subject to the SSTB-tenant taint."
+        "note": "Self-rental to a commonly controlled pass-through is a §199A trade or business — the hook giving separated real estate QBI status, subject to the SSTB-tenant taint."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.199A-4",
-        "note": "The aggregation rules the clean entities can use among themselves after separation."
+        "note": "The aggregation rules the clean entities may use among themselves after separation."
       },
       {
         "type": "IRC",
         "cite": "IRC §482",
-        "note": "IRS authority to reallocate income among commonly controlled entities where intercompany pricing is not arm's length."
+        "note": "IRS authority to reallocate income among commonly controlled entities when intercompany pricing is not arm's length."
       },
       {
         "type": "Case",
         "cite": "Moline Properties, Inc. v. Commissioner, 319 U.S. 436 (1943)",
-        "note": "A separate entity is respected only if it carries on actual business activity — the substance floor every spun-off entity must clear."
+        "note": "A separate entity is respected only when it carries on actual business activity — the substance floor every spun-off entity must clear."
       }
     ],
     "requirements": [
-      "A genuinely separable non-SSTB activity — owned real estate, products, equipment, or services — with real or realistically attainable third-party customers.",
-      "Either meaningful outside revenue keeping the entity under the 80% test, or common ownership below 50% after attribution.",
-      "Full operational substance in the separated entity: employees, intercompany contracts at market pricing, separate books, accounts, licenses, and insurance.",
-      "Professional-service receipts in the clean entity held below the 10% (or 5%) de minimis line."
+      "A genuinely separable non-SSTB activity — owned real estate, products, equipment, or services — with third-party customers that exist or are realistically attainable.",
+      "Either enough genuine outside revenue to leave a non-tainted share worth the structure — at 50%-or-more common ownership the SSTB-facing portion is tainted pro rata no matter how small — or common ownership below 50% after attribution.",
+      "Full operational substance in the separated entity: employees, market-priced intercompany contracts, separate books, accounts, licenses, and insurance.",
+      "Professional-service receipts in the clean entity kept below the 10% (or 5%) de minimis line."
     ],
     "risks": [
-      "Recharacterization under Reg. §1.199A-5(c)(2) is the leading theory: a captive entity serving mostly the commonly owned SSTB is simply treated as the SSTB, so the structure buys nothing but cost — the regulation is the controlling authority, written specifically to kill this fact pattern.",
-      "Off-market intercompany pricing draws §482 reallocation; management fees and rents set to move income rather than reflect value are the classic finding.",
-      "A spun-off entity with no employees or independent activity fails the baseline of Moline Properties, Inc. v. Commissioner, 319 U.S. 436 (1943) — separate existence is respected only with actual business activity.",
+      "Recharacterization under Reg. §1.199A-5(c)(2) is the leading theory: everything a captive entity provides to the commonly owned SSTB is simply treated as SSTB income, so an entity with little real outside revenue buys nothing but cost — the regulation is the controlling authority, written specifically to kill this fact pattern.",
+      "Off-market intercompany pricing invites §482 reallocation; management fees and rents set to move income rather than reflect value are the classic finding.",
+      "A spun-off entity with no employees or independent activity fails the baseline of Moline Properties, Inc. v. Commissioner, 319 U.S. 436 (1943) — separate existence is respected only where actual business activity exists.",
       "The recovered deduction must clear a real annual hurdle: separate returns, payroll, insurance, licensing, and intercompany accounting.",
-      "Each new entity multiplies state consequences — franchise tax, nexus, and PTET eligibility all fragment."
+      "Every new entity multiplies state consequences — franchise tax, nexus, and PTET eligibility all fragment."
     ],
     "stateNotes": [
-      "Conformity: §199A is a federal below-AGI deduction most states never conform to, so the state benefit of the structure is usually zero — the state case rests on liability protection and operations, not tax.",
-      "PTET: restructuring changes which entities can elect a pass-through entity tax and how the PTET deduction allocates, and PTET paid also reduces the QBI the structure is trying to protect — sequence the modeling.",
-      "Missouri: Missouri's own business income deduction (RSMo §143.022) is computed without the federal SSTB limitation, so Missouri-side value does not depend on this structuring; a restructured group re-evaluates SALT Parity Act PTET elections (RSMo §143.436) entity by entity."
+      "Conformity: §199A is a federal below-AGI deduction most states never conform to, so the structure's state-tax benefit is usually zero — the state case rests on liability protection and operations, not tax.",
+      "PTET: restructuring changes which entities can elect a pass-through entity tax and how the PTET deduction allocates — and PTET paid also reduces the QBI the structure is trying to protect, so sequence the modeling.",
+      "Missouri: Missouri's own business income deduction (RSMo §143.022) is computed without the federal SSTB limitation, so Missouri-side value does not hinge on this structuring; a restructured group re-evaluates SALT Parity Act PTET elections (RSMo §143.436) entity by entity."
     ],
     "interactions": {
       "requires": [],
@@ -98,51 +108,51 @@
       "synergiesWith": ["qbi-aggregation", "multi-entity-structuring"]
     },
     "reviewChecklist": [
-      "The 80%/50% and de minimis tests are modeled on realistic revenue projections, not aspirations.",
-      "The outside-revenue plan is credible; if the separated entity cannot win third-party business, the recommendation is to stop.",
-      "Transfer-pricing support exists for every intercompany charge.",
+      "The 50%-common-ownership pro-rata taint and de minimis tests modeled on realistic revenue projections, not aspirations.",
+      "The outside-revenue plan holds up; if the separated entity cannot win third-party business, the recommendation is to stop.",
+      "Transfer-pricing support on file for every intercompany charge.",
       "Substance checklist complete: employees, books, accounts, licenses, insurance.",
-      "Annual re-test calendared — revenue-mix drift can re-taint the structure.",
-      "State fragmentation (nexus, franchise, PTET) costed into the net benefit."
+      "Annual re-test on the calendar — revenue-mix drift can re-taint the structure.",
+      "State fragmentation (nexus, franchise, PTET) priced into the net benefit."
     ]
   },
   "client": {
-    "teaser": "Parts of your business may still qualify for the 20% deduction — if they stand on their own.",
-    "headline": "Separate what qualifies, and win back part of the 20% deduction",
+    "teaser": "Parts of your business may still earn the 20% deduction — if they can stand on their own.",
+    "headline": "Split off what qualifies, and win back part of the 20% deduction",
     "plainEnglish": [
-      "For certain professions, the 20% business deduction goes away at higher incomes. But the rule targets the professional work itself, not everything the business does. The building you own, products you sell, or services sold to other companies can still qualify.",
-      "When everything sits in one company, the tax law paints it all the same color. Move the qualifying pieces into their own real companies — with their own staff, contracts, and customers — and each piece gets judged on its own.",
-      "The word that matters is real. The IRS wrote rules against paper spin-offs. A new entity that only serves your practice changes nothing. We design structures with true substance, and we tell you honestly if yours will not clear the bar."
+      "For certain professions, the 20% business deduction disappears at higher incomes. But the rule targets the professional work itself, not everything the business does. The building you own, the products you sell, or services sold to other companies can still qualify.",
+      "When everything sits in one company, the tax law paints it all the same color. Move the qualifying pieces into their own real companies — with their own staff, contracts, and customers — and each piece is judged on its own.",
+      "The word that matters is real. The IRS wrote rules against paper spin-offs. A new company that only serves your practice changes nothing. We design structures with true substance, and we tell you honestly if yours will not clear the bar."
     ],
-    "analogy": "Think of one house where a single smoker gets the whole place labeled a smoking zone. Give the other activities their own buildings, and each is judged on its own air.",
+    "analogy": "Picture one house where a single smoker gets the whole place labeled a smoking zone. Give the other activities their own buildings, and each one is judged on its own air.",
     "benefits": [
-      "Recovers the 20% deduction on income that can qualify",
+      "Wins back the 20% deduction on income that can qualify",
       "Often adds liability protection and cleaner books",
-      "Creates building blocks for other strategies later"
+      "Creates building blocks for future strategies"
     ],
     "steps": [
       "WE inventory everything your business does and earns.",
       "WE test which pieces can truly qualify on their own — and say so if none can.",
-      "WE design the entities, contracts, and pricing to meet the rules.",
-      "YOU run the new entities as real businesses — staff, invoices, separate accounts."
+      "WE design the companies, contracts, and pricing to meet the rules.",
+      "YOU run the new companies as real businesses — staff, invoices, separate accounts."
     ],
     "clientCommitments": [
-      "Treat each entity as a real business — its own account, records, and contracts",
-      "Grow genuine outside revenue in the separated companies",
+      "Treat each company as a real business — its own account, records, and contracts",
+      "Build genuine outside revenue in the separated companies",
       "Accept the ongoing cost of extra returns and bookkeeping"
     ]
   },
   "engagement": {
     "implementationEffort": "structural",
     "annualMaintenance": [
-      "Annual re-test of the 80% and de minimis revenue mixes",
-      "Transfer-pricing refresh for intercompany charges",
-      "Entity-by-entity PTET and state filing review"
+      "Re-test the SSTB-facing revenue portion and de minimis mix each year",
+      "Refresh transfer pricing for intercompany charges",
+      "Review PTET elections and state filings entity by entity"
     ],
     "deliverables": [
-      "Activity and revenue-stream inventory",
-      "Structuring memo with the 80%/50% and de minimis analysis",
-      "Intercompany agreements and pricing support",
+      "Inventory of activities and revenue streams",
+      "Structuring memo with the common-ownership taint and de minimis analysis",
+      "Intercompany agreements with pricing support",
       "Annual re-test workpaper"
     ],
     "feeGuidanceBand": null

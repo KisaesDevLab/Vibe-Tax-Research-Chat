@@ -1,6 +1,6 @@
 {
   "id": "family-management-company",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Family Management Company (FMC)",
@@ -23,69 +28,69 @@
   "entityTypes": ["s-corp", "partnership"],
   "typicalSavingsBand": "5k-25k",
   "advisor": {
-    "summary": "The under-18 FICA exemption in §3121(b)(3)(A) turns on who the employer is: it applies when a child works for a parent — a sole proprietorship or a partnership owned only by the parents — and it dies when the employer is a corporation, including the family's own S corporation. The family management company restores it: the parents form a sole-prop or parent-only-partnership management entity that employs the children and sells genuine support services — scheduling, content, filing, mailings — to the operating S corporation under a written agreement for an arm's-length fee. The S corp deducts the fee under §162(a); the FMC pays the children FICA-free; and because the fee roughly equals wages plus costs, the parent picks up little or no SE income. Every link in that chain is defensible only if the services are real and the fee is priced — this is a documentation structure, and it earns its elevated risk rating whenever the paper trail thins.",
+    "summary": "The under-18 FICA exemption in §3121(b)(3)(A) turns entirely on who the employer is: it applies when a child works for a parent — a sole proprietorship or a partnership owned only by the parents — and it dies the moment the employer is a corporation, including the family's own S corporation. The family management company restores it: the parents form a sole-prop or parent-only-partnership management entity that employs the children and sells genuine support services — scheduling, content, filing, mailings — to the operating S corporation under a written agreement at an arm's-length fee. The S corp deducts the fee under §162(a); the FMC pays the children FICA-free; and because the fee roughly equals wages plus costs, the parent picks up little or no SE income. Every link in that chain holds only if the services are real and the fee is priced — this is a documentation structure, and it earns its elevated risk rating the moment the paper trail thins.",
     "mechanics": [
       "The FMC must be a sole proprietorship of one parent or a partnership owned only by the two parents — a corporate form, a corporate tax election, or any non-parent owner forfeits the §3121(b)(3)(A) exemption at the door.",
-      "Wages the FMC pays to a child under 18 are exempt from FICA under §3121(b)(3)(A), and exempt from FUTA to age 21 under §3306(c)(5), because the employer is the parent.",
-      "The operating S corporation deducts the management fee under §162(a) only if it is reasonable for services actually delivered — and the arm's-length standard of §482 hovers over every commonly controlled fee arrangement.",
-      "Price the fee at child wages plus payroll costs plus a thin admin margin: any FMC net profit beyond that is SE income to the parent under §1402(a) and erodes the benefit.",
-      "The endpoint matches the sole-prop hiring play: deductible to the operating business, FICA-free to the child, and income-tax-free to the child up to the $16,100 standard deduction for 2026 under §63(c)(5)(B).",
-      "Cadence proves substance: monthly invoices from the FMC to the S corp, traceable payment, regular payroll runs into accounts the children own, timesheets, and W-2s each January."
+      "Because the employer is the parent, wages the FMC pays a child under 18 are exempt from FICA under §3121(b)(3)(A) and exempt from FUTA to age 21 under §3306(c)(5).",
+      "The operating S corporation deducts the management fee under §162(a) only if it is reasonable for services actually delivered — and the arm's-length standard of §482 hangs over every commonly controlled fee arrangement.",
+      "Price the fee at child wages plus payroll costs plus a thin admin margin: any FMC net profit beyond that becomes SE income to the parent under §1402(a) and erodes the benefit.",
+      "The endpoint mirrors the sole-prop hiring play: deductible to the operating business, FICA-free to the child, and income-tax-free to the child up to the $16,100 standard deduction for 2026 under §63(c)(5)(B).",
+      "Cadence proves substance: monthly FMC invoices to the S corp, traceable payment, regular payroll runs into accounts the children own, timesheets, and W-2s every January."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §3121(b)(3)(A)",
-        "note": "The FICA exemption for a child under 18 employed by a parent — the provision the structure exists to reach, and the reason the FMC's form and ownership are non-negotiable."
+        "note": "The FICA exemption for a child under 18 employed by a parent — the provision this structure exists to reach, and the reason the FMC's form and ownership are non-negotiable."
       },
       {
         "type": "IRC",
         "cite": "IRC §3306(c)(5)",
-        "note": "The parallel FUTA exemption through age 20 for a child employed by a parent."
+        "note": "The companion FUTA exemption through age 20 for a child employed by a parent."
       },
       {
         "type": "IRC",
         "cite": "IRC §162(a)",
-        "note": "The S corporation's deduction for the management fee — ordinary, necessary, and reasonable for services actually rendered."
+        "note": "The S corporation's management-fee deduction — ordinary, necessary, and reasonable for services actually rendered."
       },
       {
         "type": "IRC",
         "cite": "IRC §482",
-        "note": "The Commissioner's authority to reallocate income among commonly controlled businesses — the arm's-length yardstick the fee must survive."
+        "note": "The Commissioner's power to reallocate income among commonly controlled businesses — the arm's-length yardstick the fee must survive."
       },
       {
         "type": "IRC",
         "cite": "IRC §1402(a)",
-        "note": "FMC net profit after wages and costs is SE income to the parent — the reason the fee is priced at cost plus a thin margin."
+        "note": "FMC net profit remaining after wages and costs is SE income to the parent — the reason the fee is priced at cost plus a thin margin."
       },
       {
         "type": "IRC",
         "cite": "IRC §63(c)(5)(B)",
-        "note": "The dependent standard deduction tracks earned income — up to $16,100 for 2026 — keeping the child's wages income-tax-free."
+        "note": "The dependent standard deduction tracks earned income — up to $16,100 for 2026 — so the child's wages stay income-tax-free."
       },
       {
         "type": "Case",
         "cite": "Denman v. Commissioner, 48 T.C. 439 (1967)",
-        "note": "Wages to the taxpayer's young children were disallowed where the proof of services did not match the pay — the substantiation standard every family-payroll file is tested against."
+        "note": "Wages paid to the taxpayer's young children were disallowed where the proof of services did not match the pay — the substantiation standard every family-payroll file is measured against."
       }
     ],
     "requirements": [
-      "An FMC formed as a parent sole prop or parent-only partnership with its own EIN, bank account, and payroll registration.",
-      "A written management services agreement between the FMC and the S corporation, with the fee methodology documented.",
-      "Children performing genuine, age-appropriate work at market-rate wages, tracked with timesheets.",
-      "Monthly invoicing and actual traceable payment — no year-end journal-entry catch-ups."
+      "An FMC formed as a parent sole prop or parent-only partnership, with its own EIN, bank account, and payroll registration.",
+      "A written management services agreement between the FMC and the S corporation that documents the fee methodology.",
+      "Children performing genuine, age-appropriate work at market-rate wages, backed by timesheets.",
+      "Monthly invoicing and actual, traceable payment — no year-end journal-entry catch-ups."
     ],
     "risks": [
-      "The leading audit theory is that the structure is a fee conduit with no substance — a management fee that exactly equals the kids' wages, no invoices, no timesheets — inviting disallowance under §162(a) or reallocation on §482 principles, with Denman v. Commissioner, 48 T.C. 439 (1967) the standing warning on unsubstantiated family wages.",
-      "Form failure is total failure: an FMC organized as (or electing to be taxed as) a corporation, or admitting any non-parent owner, loses the §3121(b)(3)(A) exemption entirely.",
-      "A second entity is a second audit surface and a second compliance bill — registrations, payroll accounts, and filings all recur annually.",
-      "FMC net profit above wages and costs picks up SE tax at the parent level; the pricing has to be re-checked each year as wages change.",
-      "The exemption — and this structure's purpose — ends at each child's 18th birthday; running it past that date adds cost with no FICA benefit."
+      "The leading audit theory is that the structure is a fee conduit with no substance — a management fee exactly equal to the kids' wages, no invoices, no timesheets — inviting disallowance under §162(a) or reallocation on §482 principles, with Denman v. Commissioner, 48 T.C. 439 (1967) the standing warning on unsubstantiated family wages.",
+      "Form failure is total failure: an FMC organized as (or electing to be taxed as) a corporation, or admitting any non-parent owner, forfeits the §3121(b)(3)(A) exemption entirely.",
+      "A second entity means a second audit surface and a second compliance bill — registrations, payroll accounts, and filings all recur annually.",
+      "FMC net profit above wages and costs picks up SE tax at the parent level, so the pricing must be re-checked each year as wages change.",
+      "The exemption — and with it this structure's purpose — ends at each child's 18th birthday; running it past that date adds cost with no FICA benefit."
     ],
     "stateNotes": [
-      "Missouri conforms through its federal-AGI starting point (RSMo §143.121): the S corp's fee deduction, the FMC's Schedule C or 1065 result, and the children's wages all carry into the Missouri returns as filed federally.",
-      "PTET interaction: the management fee reduces the S corporation's income and therefore the base for a Missouri pass-through entity tax election under the SALT Parity Act (RSMo §143.436) — coordinate the fee level with the PTET projection.",
-      "Missouri-specific: register the FMC for Missouri withholding, and observe Missouri child-labor rules — work certificates apply to workers under 16, and duties must be age-appropriate."
+      "Missouri conforms through its federal-AGI starting point (RSMo §143.121): the S corp's fee deduction, the FMC's Schedule C or 1065 result, and the children's wages all flow into the Missouri returns as filed federally.",
+      "PTET interaction: the management fee reduces the S corporation's income, and with it the base for a Missouri pass-through entity tax election under the SALT Parity Act (RSMo §143.436) — coordinate the fee level with the PTET projection.",
+      "Missouri-specific: register the FMC for Missouri withholding and observe Missouri child-labor rules — work certificates apply to workers under 16, and duties must be age-appropriate."
     ],
     "interactions": {
       "requires": ["hire-children"],
@@ -93,36 +98,36 @@
       "synergiesWith": ["kids-roth-ira"]
     },
     "reviewChecklist": [
-      "FMC ownership and form verified — parent sole prop or parent-only partnership, no corporate election, no other owners.",
-      "Signed services agreement on file with a fee methodology tied to wages plus costs plus a thin margin.",
+      "FMC ownership and form verified: parent sole prop or parent-only partnership, no corporate election, no other owners.",
+      "Signed services agreement on file, with a fee methodology tied to wages plus costs plus a thin margin.",
       "Timesheets and job descriptions support each child's wages at market rates.",
-      "Monthly invoices and bank records show the fee actually paid and payroll actually run.",
-      "Each child's age confirmed — the FICA exemption and the structure's purpose end at 18."
+      "Monthly invoices and bank records prove the fee was actually paid and payroll actually run.",
+      "Each child's age confirmed — the FICA exemption, and the structure's purpose, end at 18."
     ]
   },
   "client": {
-    "teaser": "A small side company that restores a family tax break your S corporation blocks.",
+    "teaser": "A small side company that brings back a family tax break your S corporation blocks.",
     "headline": "Get the kids-on-payroll tax break back — even with an S corporation",
     "plainEnglish": [
-      "Paying your kids for real work is one of the best family tax moves there is. The business deducts their wages. And when a parent is the employer, the wages are free of Social Security and Medicare tax.",
-      "There is a catch. That payroll-tax break only works when the parent is the employer. If your business is an S corporation, the corporation is the employer — and the break vanishes.",
-      "The fix is a small side company owned just by you. It handles family-run tasks for your business — filing, mailings, content, scheduling — and your business pays it a fair monthly fee. The side company employs your kids. Since they now work for their parents, the break is back. It holds up only if it runs like a real arrangement, and we build every piece."
+      "Paying your kids for real work is one of the best family tax moves there is. The business deducts their wages. And when a parent is the employer, those wages carry no Social Security or Medicare tax.",
+      "There is a catch. That payroll-tax break works only when the parent is the employer. If your business is an S corporation, the corporation is the employer — and the break disappears.",
+      "The fix is a small side company owned just by you. It handles family-run tasks for your business — filing, mailings, content, scheduling — and your business pays it a fair monthly fee. The side company employs your kids. Because they now work for their parents, the break is back. It holds up only if it runs like a real arrangement, and we build every piece."
     ],
-    "analogy": "Your business already pays outside vendors for cleaning or marketing. This makes your family the vendor — through a setup that qualifies for a tax break the corporation itself cannot claim.",
+    "analogy": "Your business already pays outside vendors for cleaning or marketing. This makes your family the vendor — through a setup that earns a tax break the corporation itself cannot claim.",
     "benefits": [
       "No Social Security or Medicare tax on your kids' wages",
       "Your company deducts the fee like any other vendor bill",
-      "Kids can earn up to $16,100 in 2026 with zero income tax",
+      "Each kid can earn up to $16,100 in 2026 with zero income tax",
       "Their pay can seed Roth IRAs and college savings"
     ],
     "steps": [
       "WE form the family company, get its tax ID, and open its bank account.",
       "WE draft the services agreement and set a fair monthly fee.",
       "YOU make sure the kids do the work and log their hours.",
-      "WE run the payroll, send the monthly invoices, and file the W-2s each January."
+      "WE run the payroll, send the monthly invoices, and file the W-2s every January."
     ],
     "clientCommitments": [
-      "The kids do real, age-appropriate work — every hour on the timesheet happened",
+      "The kids do real, age-appropriate work — every hour on the timesheet actually happened",
       "The fee gets paid monthly from the business account, on schedule",
       "Tell us before any child turns 18 or the ownership of either company changes"
     ]
@@ -131,12 +136,12 @@
     "implementationEffort": "structural",
     "annualMaintenance": [
       "Re-price the management fee each year against actual wages and costs",
-      "Review timesheets, invoices, and payroll cadence for the file",
+      "Review timesheets, invoices, and payroll cadence for the audit file",
       "File the FMC's return, issue W-2s, and confirm each child's age and duties still qualify"
     ],
     "deliverables": [
       "FMC formation package — EIN, bank account, payroll registration",
-      "Management services agreement with fee-methodology memo",
+      "Management services agreement with a fee-methodology memo",
       "Timesheet and job-description templates for each child",
       "Annual invoice ledger and W-2 filing package"
     ],

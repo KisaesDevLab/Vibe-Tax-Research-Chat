@@ -1,6 +1,6 @@
 {
   "id": "nol-planning",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "NOL Carryforward Planning",
@@ -23,63 +28,63 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership", "individual"],
   "typicalSavingsBand": "25k-100k",
   "advisor": {
-    "summary": "Post-2017 net operating losses carry forward indefinitely, cannot be carried back outside a narrow farming exception, and are deductible only against 80% of taxable income computed before the NOL. Because the carryforward never expires, the planning question is not whether the loss gets used but when — an NOL burned against 22%-bracket income is worth roughly half the same NOL absorbed in a 37% year, so the play is often to accelerate discretionary income (Roth conversions, gain recognition, bonus timing) into the shielded year. Two traps recur: the 80% cap leaves a fifth of every big year exposed, and the QBI regime runs its own parallel loss carryforward that quietly reduces future §199A deductions even while the NOL shelters ordinary income. The engine applies the carryforward as an adjustment and approximates the 80% limit against a pre-deduction income estimate — close, but the filed return computes the true number.",
+    "summary": "Post-2017 net operating losses carry forward indefinitely, cannot be carried back outside a narrow farming exception, and offset only 80% of taxable income computed before the NOL. Because the carryforward never expires, the planning question is not whether the loss gets used but when — an NOL burned against 22%-bracket income is worth roughly half the same NOL absorbed in a 37% year, so the play is often to accelerate discretionary income (Roth conversions, gain recognition, bonus timing) into the shielded year. Two traps recur: the 80% cap leaves a fifth of every big year exposed, and the QBI regime runs its own parallel loss carryforward that quietly erodes future §199A deductions even while the NOL shelters ordinary income. The engine applies the carryforward as an adjustment and approximates the 80% limit against a pre-deduction income estimate — close, but the filed return computes the true number.",
     "mechanics": [
-      "§172(a)(2) limits the deduction for post-2017 losses to 80% of taxable income computed without the NOL, and §172(b)(1)(A) forbids carryback (two-year farming exception) while allowing indefinite carryforward. Pre-2018 vintages remain 100%-usable with 20-year lives, so vintages must be ordered and tracked separately.",
-      "The upstream gate feeds the pipeline: a §461(l) excess business loss disallowed this year becomes part of next year's NOL, so one large loss year commonly produces both a current deduction and a carryforward.",
-      "Rate arbitrage is the core play: hold discretionary income — Roth conversions, asset-sale timing, controlled distributions — for the shielded years, and avoid burning carryforward against income that would have been taxed in low brackets anyway.",
-      "§172 and §199A run on separate tracks: the NOL deduction does not reduce current-year QBI, but a negative-QBI year generates its own §199A(c)(2) qualified business loss carryforward that reduces future QBI deductions — a hidden cost most loss-year projections miss.",
-      "The model applies the carryforward as an above-the-line adjustment and approximates the 80% cap against an estimate of income before deductions; the statutory limit is computed on taxable income, so treat the modeled figure as a close approximation, not the filed number."
+      "§172(a)(2) caps the deduction for post-2017 losses at 80% of taxable income computed without the NOL, and §172(b)(1)(A) bars carryback (two-year farming exception) while permitting indefinite carryforward. Pre-2018 vintages stay 100%-usable with 20-year lives, so vintages must be ordered and tracked separately.",
+      "The upstream gate feeds the pipeline: a §461(l) excess business loss disallowed this year becomes part of next year's NOL, so one large loss year commonly yields both a current deduction and a carryforward.",
+      "Rate arbitrage is the core play: reserve discretionary income — Roth conversions, asset-sale timing, controlled distributions — for the shielded years, and avoid burning carryforward against income that would have landed in low brackets anyway.",
+      "§172 and §199A run on separate tracks: the NOL deduction does not reduce current-year QBI, but a negative-QBI year generates its own §199A(c)(2) qualified business loss carryforward that cuts future QBI deductions — a hidden cost most loss-year projections miss.",
+      "The model applies the carryforward as an above-the-line adjustment and approximates the 80% cap against an estimate of income before deductions; the statute computes the limit on taxable income, so treat the modeled figure as a close approximation, not the filed number."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §172(a)(2)",
-        "note": "The 80%-of-taxable-income limitation on post-2017 NOL deductions — the cap the model approximates."
+        "note": "The 80%-of-taxable-income cap on post-2017 NOL deductions — the limit the model approximates."
       },
       {
         "type": "IRC",
         "cite": "IRC §172(b)(1)(A)",
-        "note": "No carryback, indefinite carryforward for post-2017 losses — why absorption timing is a pure planning choice."
+        "note": "No carryback and indefinite carryforward for post-2017 losses — why absorption timing is purely a planning choice."
       },
       {
         "type": "IRC",
         "cite": "IRC §461(l)(2)",
-        "note": "The excess-business-loss conversion that feeds trapped current losses into the following year's NOL."
+        "note": "The excess-business-loss conversion feeding trapped current losses into the following year's NOL."
       },
       {
         "type": "IRC",
         "cite": "IRC §199A(c)(2)",
-        "note": "The parallel qualified business loss carryforward that reduces future QBI — separate from, and easy to miss beside, the NOL."
+        "note": "The parallel qualified business loss carryforward that reduces future QBI — separate from the NOL, and easy to miss beside it."
       },
       {
         "type": "Admin",
         "cite": "IRS Publication 536",
-        "note": "The individual NOL computation — the business/nonbusiness adjustments that determine how much loss actually carries."
+        "note": "The individual NOL computation — the business/nonbusiness adjustments that decide how much loss actually carries."
       },
       {
         "type": "Case",
         "cite": "Lone Manor Farms, Inc. v. Commissioner, 61 T.C. 436 (1974)",
-        "note": "The Commissioner may recompute loss-year items when a carryforward is claimed in an open year — the substantiation burden follows the NOL for its whole life."
+        "note": "The Commissioner may recompute loss-year items when a carryforward is claimed in an open year — the substantiation burden travels with the NOL for its whole life."
       }
     ],
     "requirements": [
-      "A computed and documented carryforward, with the loss-year return correctly separating business from nonbusiness income and deductions per the Publication 536 worksheet.",
-      "Vintage tracking — pre-2018 losses (100% usable, 20-year life) applied in the proper order against post-2017 losses (80% cap, indefinite).",
-      "A multi-year bracket projection so absorption is aimed at the highest-rate years.",
-      "Coordination with §461(l) in the loss year and the QBI loss carryover in the years that follow."
+      "A computed and documented carryforward, with the loss-year return correctly splitting business from nonbusiness income and deductions per the Publication 536 worksheet.",
+      "Vintage tracking — pre-2018 losses (100% usable, 20-year life) ordered properly against post-2017 losses (80% cap, indefinite).",
+      "A multi-year bracket projection so absorption targets the highest-rate years.",
+      "Coordination with §461(l) in the loss year and with the QBI loss carryover in the years that follow."
     ],
     "risks": [
-      "Substantiation is the leading exam theory: the IRS can challenge a carryforward in any open year it is claimed, reaching back into the closed loss year to recompute it — Lone Manor Farms, Inc. v. Commissioner, 61 T.C. 436 (1974) — so loss-year workpapers must survive as long as the NOL does.",
-      "The 80% cap leaves 20% of a big year exposed; clients who plan on a no-tax year get a surprise on the residual, and estimated payments must cover it.",
-      "Absorbing the NOL against 12–22% bracket income when a 32–37% year is coming is a permanent value loss, not a timing cost.",
-      "The parallel §199A qualified business loss carryover quietly reduces future QBI deductions — projections that ignore it overstate the loss year's silver lining.",
-      "Loss-year computation errors (nonbusiness deduction adjustments are the usual culprit) compound silently for years before they surface."
+      "Substantiation is the leading exam theory: the IRS can challenge a carryforward in any open year it is claimed, reaching back into the closed loss year to recompute it — Lone Manor Farms, Inc. v. Commissioner, 61 T.C. 436 (1974) — so loss-year workpapers must live as long as the NOL does.",
+      "The 80% cap leaves 20% of a big year exposed; clients counting on a no-tax year get surprised by the residual, and estimated payments must cover it.",
+      "Burning the NOL against 12–22% bracket income when a 32–37% year is coming is a permanent value loss, not a timing cost.",
+      "The parallel §199A qualified business loss carryover quietly shrinks future QBI deductions — projections that ignore it overstate the loss year's silver lining.",
+      "Loss-year computation errors (nonbusiness deduction adjustments are the usual culprit) compound silently for years before surfacing."
     ],
     "stateNotes": [
-      "State NOL treatment varies widely — some states conform to the federal deduction through their federal starting points, others run separate state NOL schedules with their own caps, carryforward periods, or outright disallowance; map every state in the client's footprint.",
-      "PTET interaction: an NOL-shielded year usually has little pass-through income worth electing an entity-level tax on — aim the entity's PTET elections at the income years the NOL will not fully cover.",
-      "Missouri individual filers start from federal AGI (RSMo §143.121), so the federal NOL deduction generally flows into Missouri income without a separate state schedule."
+      "State NOL treatment varies widely — some states conform to the federal deduction through their federal starting points, while others run separate state NOL schedules with their own caps, carryforward periods, or outright disallowance; map every state in the client's footprint.",
+      "PTET interaction: an NOL-shielded year usually carries little pass-through income worth electing an entity-level tax on — aim the entity's PTET elections at the income years the NOL will not fully cover.",
+      "Missouri individual filers start from federal AGI (RSMo §143.121), so the federal NOL deduction generally flows into Missouri income with no separate state schedule."
     ],
     "interactions": {
       "requires": [],
@@ -87,50 +92,50 @@
       "synergiesWith": ["excess-business-loss", "bracket-management"]
     },
     "reviewChecklist": [
-      "The carryforward is reconstructed and vintaged, with the Publication 536 computation for each loss year in the permanent file.",
-      "The 80% cap is applied against the current-year projection before any benefit is quoted — the model's approximation is checked against a real taxable-income estimate.",
-      "The absorption year is chosen from a 3–5 year bracket projection, not defaulted to the current year.",
-      "The §199A qualified business loss carryover is reflected in the QBI projections alongside the NOL.",
-      "The annual NOL statement is attached to the return and the running balance updated."
+      "Carryforward reconstructed and vintaged, with each loss year's Publication 536 computation in the permanent file.",
+      "The 80% cap applied to the current-year projection before any benefit is quoted — the model's approximation checked against a real taxable-income estimate.",
+      "The absorption year picked from a 3–5 year bracket projection, not defaulted to the current year.",
+      "The §199A qualified business loss carryover reflected in the QBI projections alongside the NOL.",
+      "The annual NOL statement attached to the return and the running balance updated."
     ]
   },
   "client": {
-    "teaser": "A past loss year can erase tax in your best years — if it is aimed well.",
+    "teaser": "A past loss year can wipe out tax in your best years — if it is aimed well.",
     "headline": "Turn a loss year into a tax shield",
     "plainEnglish": [
-      "If your business ever lost money on paper, the tax law remembers. That loss becomes a shield you carry forward. It can cancel out income in future years.",
-      "The shield is worth more in some years than others. Used against a modest year, it erases tax at low rates. Used against a big year, it erases tax at the highest rates. Same shield, nearly double the savings.",
+      "If your business ever lost money on paper, the tax law does not forget. That loss becomes a shield you carry forward. It can cancel out income in future years.",
+      "The shield is worth more in some years than others. Use it against a modest year, and it erases tax at low rates. Use it against a big year, and it erases tax at the highest rates. Same shield, nearly double the savings.",
       "There is one limit. The shield can cover only about 80 percent of a year's income, so some tax is still due even in a shielded year. We track your balance, project your income, and aim the shield at your most expensive dollars."
     ],
-    "analogy": "It is like a stack of gift cards that never expire. You get the most value spending them on the priciest purchase. So we save them for exactly that.",
+    "analogy": "Think of a stack of gift cards that never expire. They deliver the most value on the priciest purchase. So we save them for exactly that.",
     "benefits": [
-      "A past loss becomes real dollars saved on future returns",
-      "The shield never expires under current law — no pressure to waste it",
+      "A past loss turns into real dollars saved on future returns",
+      "The shield never expires under current law — no rush to waste it",
       "Big planned events like conversions or sales can be sheltered on purpose",
-      "The running balance is tracked so nothing is lost to a filing mistake"
+      "We track the running balance so nothing is lost to a filing mistake"
     ],
     "steps": [
       "WE verify and document exactly how much carryforward you have, year by year.",
       "WE project your next several years and pick the smartest year to use it.",
       "YOU time big income events — conversions, sales, bonuses — into the shielded year with us.",
-      "WE attach the supporting schedule each year and update the remaining balance."
+      "WE attach the supporting schedule each year and update what remains."
     ],
     "clientCommitments": [
-      "Keep the old loss-year records — the IRS can ask about them years later",
-      "Check with us before big income events so the shield lands where it should"
+      "Hold on to the old loss-year records — the IRS can ask about them years later",
+      "Talk to us before big income events so the shield lands where it should"
     ]
   },
   "engagement": {
     "implementationEffort": "multi-step",
     "annualMaintenance": [
-      "Annual carryforward statement and running-balance update",
-      "Absorption-year projection refresh against the next 3–5 years of brackets",
-      "QBI loss-carryover tracking alongside the NOL schedule"
+      "Update the carryforward statement and running balance each year",
+      "Refresh the absorption-year projection against the next 3–5 years of brackets",
+      "Track the QBI loss carryover alongside the NOL schedule"
     ],
     "deliverables": [
-      "NOL vintage schedule with the supporting loss-year computations",
+      "NOL vintage schedule with supporting loss-year computations",
       "Multi-year absorption plan memo",
-      "Annual return statement documenting the balance used and remaining"
+      "Annual return statement showing the balance used and remaining"
     ],
     "feeGuidanceBand": null
   },

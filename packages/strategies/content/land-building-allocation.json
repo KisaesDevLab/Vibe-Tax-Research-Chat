@@ -1,6 +1,6 @@
 {
   "id": "land-building-allocation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Land vs. Building Basis Allocation",
@@ -23,57 +28,57 @@
   "entityTypes": ["rental"],
   "typicalSavingsBand": "under-5k",
   "advisor": {
-    "summary": "Land does not depreciate; the building does — so the allocation made in the placed-in-service year sets the size of every depreciation deduction the property will ever produce. Reg. §1.167(a)-5 requires a lump-sum purchase price to be apportioned by relative fair market value, but it names no data source, and the county assessor ratio most preparers default to frequently overstates land. An appraisal with a separate land value, comparable vacant-land sales, or replacement-cost data will often support a meaningfully larger building share, and a three-way split that separately states 15-year site improvements does even better. The trade is familiar: more basis depreciating now, more unrecaptured §1250 gain at 25% on a taxable exit. Nielsen shows the courts’ default posture — the assessor ratio wins unless the taxpayer brings better evidence — which makes this a documentation play, priced in the model as additional annual depreciation.",
+    "summary": "Land never depreciates; the building does — so the allocation struck in the placed-in-service year fixes the size of every depreciation deduction the property will ever generate. Reg. §1.167(a)-5 requires a lump-sum purchase price to be apportioned by relative fair market value, but it names no data source, and the county assessor ratio most preparers default to routinely overstates land. An appraisal with a separate land value, comparable vacant-land sales, or replacement-cost data will often support a meaningfully larger building share, and a three-way split that separately states 15-year site improvements does better still. The trade is familiar: more basis depreciating now, more unrecaptured §1250 gain at 25% on a taxable exit. Nielsen captures the courts’ default posture — the assessor ratio wins unless the taxpayer brings better evidence — which makes this a documentation play, priced in the model as additional annual depreciation.",
     "mechanics": [
-      "Reg. §1.167(a)-5 apportions a lump-sum price between depreciable improvements and non-depreciable land in proportion to relative fair market values at acquisition; a purchase-contract allocation negotiated between adverse parties carries real weight.",
-      "The support hierarchy runs: qualified appraisal separately valuing the land, then comparable vacant-land sales, then insurance replacement-cost data for the structure — the assessor ratio is the fallback, not a ceiling, but departing from it puts the burden of proof on the file.",
-      "Site improvements — paving, site utilities, landscaping — are neither land nor building; separately stating them as 15-year property rescues basis a two-way split silently buries in land.",
-      "In an applicable asset acquisition, §1060 and any written allocation agreement bind the parties, so the land/building split should be negotiated in the contract rather than inherited at return time.",
-      "The model applies the supported reallocation as additional annual depreciation against the rental; the offsetting cost — larger unrecaptured gain on sale — is a narrative item, not modeled."
+      "Reg. §1.167(a)-5 apportions a lump-sum price between depreciable improvements and non-depreciable land in proportion to relative fair market values at acquisition; an allocation negotiated between adverse parties in the purchase contract carries real weight.",
+      "The support hierarchy runs: a qualified appraisal separately valuing the land, then comparable vacant-land sales, then insurance replacement-cost data for the structure. The assessor ratio is the fallback, not a ceiling — but departing from it puts the burden of proof on the file.",
+      "Site improvements — paving, site utilities, landscaping — are neither land nor building; stating them separately as 15-year property recovers basis that a two-way split silently buries in land.",
+      "In an applicable asset acquisition, §1060 and any written allocation agreement bind both parties, so negotiate the land/building split in the contract rather than inheriting it at return time.",
+      "The model prices the supported reallocation as additional annual depreciation against the rental; the offsetting cost — a larger unrecaptured gain on sale — is a narrative item, not modeled."
     ],
     "authority": [
       {
         "type": "Reg",
         "cite": "Reg. §1.167(a)-5",
-        "note": "The apportionment rule: lump-sum basis divides between land and improvements by relative fair market value."
+        "note": "The apportionment rule: lump-sum basis splits between land and improvements by relative fair market value."
       },
       {
         "type": "IRC",
         "cite": "IRC §§167, 168",
-        "note": "The depreciation allowance and the 27.5/39-year recovery periods the reallocated basis runs through."
+        "note": "The depreciation allowance and the 27.5/39-year recovery periods through which the reallocated basis runs."
       },
       {
         "type": "IRC",
         "cite": "IRC §1060",
-        "note": "In an applicable asset acquisition the residual method and a written allocation agreement bind buyer and seller — negotiate the split in the contract."
+        "note": "In an applicable asset acquisition, the residual method and any written allocation agreement bind buyer and seller — strike the split in the contract."
       },
       {
         "type": "Case",
         "cite": "Nielsen v. Commissioner, T.C. Summ. Op. 2017-31",
-        "note": "The court used the county assessor’s ratio over the taxpayers’ unsupported alternative — the default that better evidence must displace."
+        "note": "The court adopted the county assessor’s ratio over the taxpayers’ unsupported alternative — the default that better evidence must displace."
       },
       {
         "type": "Admin",
         "cite": "IRS Publication 527",
-        "note": "Treats assessed values as an acceptable proxy for the FMV split — a proxy, not a mandate, which is the opening this strategy documents through."
+        "note": "Treats assessed values as an acceptable proxy for the FMV split — a proxy, not a mandate, and the opening this strategy documents through."
       }
     ],
     "requirements": [
-      "A lump-sum acquisition of land plus improvements, or an in-service property whose allocation is worth revisiting through the proper procedural channel.",
-      "Valuation evidence in the file: appraisal with a separate land value, comparable land sales, or replacement-cost data.",
+      "A lump-sum acquisition of land plus improvements, or an in-service property whose allocation merits revisiting through the proper procedural channel.",
+      "Valuation evidence in the file: an appraisal with a separate land value, comparable land sales, or replacement-cost data.",
       "Consistency with the closing documents and any §1060 allocation agreement.",
-      "A resulting land percentage that is explainable for the neighborhood — single-digit land in a dense urban core will not survive review."
+      "A resulting land percentage that makes sense for the neighborhood — single-digit land in a dense urban core will not survive review."
     ],
     "risks": [
-      "The leading audit theory is an unsupported departure from the assessor ratio: Nielsen v. Commissioner, T.C. Summ. Op. 2017-31, is the cautionary template — the taxpayer’s allocation lost to the county ratio for want of evidence, and the burden of displacing the default is always the taxpayer’s.",
-      "Every reallocated dollar depreciated now returns as unrecaptured §1250 gain taxed at up to 25% on a taxable sale — model the exit before promising the annual benefit.",
-      "Changing the allocation on property already in service is a method question — coordinate through Form 3115 rather than silently re-striking prior schedules.",
-      "An aggressive land number in a §1060 deal binds the client — a bad contract allocation cannot be fixed unilaterally at return time."
+      "The leading audit theory is an unsupported departure from the assessor ratio: Nielsen v. Commissioner, T.C. Summ. Op. 2017-31, is the cautionary template — the taxpayer’s allocation lost to the county ratio for lack of evidence, and the burden of displacing the default always rests with the taxpayer.",
+      "Every reallocated dollar depreciated now comes back as unrecaptured §1250 gain taxed at up to 25% on a taxable sale — model the exit before promising the annual benefit.",
+      "Changing the allocation on property already in service is an accounting-method question — route it through Form 3115 rather than silently re-striking prior schedules.",
+      "An aggressive land number in a §1060 deal binds the client — a bad contract allocation cannot be undone unilaterally at return time."
     ],
     "stateNotes": [
-      "Conformity: states conform to federal depreciation computations through their federal starting points, so the reallocation flows through automatically; only bonus-decoupled states diverge, and then only on the accelerated portion of any paired strategy.",
-      "Missouri conforms via federal AGI (RSMo §143.121) — the additional depreciation carries straight into the Missouri return.",
-      "PTET interaction: minimal — for property held in an electing pass-through the added depreciation trims the PTET base; for a directly held rental there is no PTET interaction."
+      "Conformity: states conform to federal depreciation computations through their federal starting points, so the reallocation carries through automatically; only bonus-decoupled states diverge, and then only on the accelerated portion of any paired strategy.",
+      "Missouri conforms via federal AGI (RSMo §143.121) — the additional depreciation flows straight into the Missouri return.",
+      "PTET interaction: minimal — for property held in an electing pass-through, the added depreciation trims the PTET base; a directly held rental has no PTET interaction."
     ],
     "interactions": {
       "requires": [],
@@ -81,26 +86,26 @@
       "synergiesWith": ["cost-segregation"]
     },
     "reviewChecklist": [
-      "Assessor ratio pulled and compared against the proposed allocation; the delta and its evidence documented in a memo.",
-      "Valuation support (appraisal, comps, or replacement-cost data) retained in the permanent file.",
-      "15-year site improvements separately stated rather than buried in land or building.",
-      "Allocation consistent with closing documents and any §1060 agreement.",
-      "Exit-tax effect (larger unrecaptured gain) disclosed to the client in writing."
+      "Assessor ratio pulled and tested against the proposed allocation, with the delta and its evidence documented in a memo.",
+      "Valuation support — appraisal, comps, or replacement-cost data — retained in the permanent file.",
+      "15-year site improvements separately stated, not buried in land or building.",
+      "Allocation consistent with the closing documents and any §1060 agreement.",
+      "Exit-tax effect — the larger unrecaptured gain — disclosed to the client in writing."
     ]
   },
   "client": {
-    "teaser": "The land-versus-building split on your property decides your deduction every year — make it a documented number, not a default.",
+    "teaser": "The land-versus-building split on your property sets your deduction every year — make it a documented number, not a default.",
     "headline": "Claim the full deductible share of your property",
     "plainEnglish": [
-      "The price of a rental property covers two things: land and building. The building can be deducted over time. The land cannot. So the split between them sets the size of your deduction every year you own it.",
-      "Most preparers copy the split from the county assessor. But assessors value property for their own purposes, and their land numbers often run high. A high land number quietly shrinks your deductions for decades.",
-      "With better evidence — an appraisal, nearby land sales, or insurance data — we can often support a larger building share. Driveways, fences, and landscaping can also be split out and deducted faster. Nothing aggressive: just real documentation replacing a rough default."
+      "The price of a rental property buys two things: land and a building. The building can be deducted over time. The land cannot. So the split between them sets the size of your deduction every year you own it.",
+      "Most preparers copy the split from the county assessor. But assessors value property for their own reasons, and their land numbers often run high. A high land number quietly shrinks your deductions for decades.",
+      "With better evidence — an appraisal, nearby land sales, or insurance data — we can often support a larger building share. Driveways, fences, and landscaping can also be split out and deducted faster. Nothing aggressive: just real proof in place of a rough default."
     ],
-    "analogy": "It is like splitting a restaurant bill from memory instead of reading the receipt — the receipt usually treats you better, and it is proof.",
+    "analogy": "It is like splitting a restaurant bill from memory instead of reading the receipt — the receipt usually treats you better, and you can prove it.",
     "benefits": [
       "A larger depreciation deduction every year you own the property",
-      "Built on documentation, not aggressive positions",
-      "Makes any later depreciation study more powerful"
+      "Built on solid documentation, not aggressive positions",
+      "Makes any later depreciation study even more powerful"
     ],
     "steps": [
       "WE pull the county's split and test it against market evidence.",
@@ -109,19 +114,19 @@
       "YOU keep the appraisal and evidence file with your records."
     ],
     "clientCommitments": [
-      "Order (or share) an appraisal that values the land separately when you buy",
+      "When you buy, order (or share) an appraisal that values the land separately",
       "Keep the evidence file for as long as you own the property"
     ]
   },
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
-      "Confirm new acquisitions get a supported allocation in the placed-in-service year",
-      "Revisit the file when refinancing appraisals or new comparables strengthen the evidence"
+      "Confirm each new acquisition gets a supported allocation in its placed-in-service year",
+      "Revisit the file when refinancing appraisals or fresh comparables strengthen the evidence"
     ],
     "deliverables": [
       "Allocation memo tying the land/building split to the evidence",
-      "Depreciation schedule with separately stated site improvements",
+      "Depreciation schedule with site improvements separately stated",
       "Permanent-file evidence package (appraisal, comps, replacement-cost data)"
     ],
     "feeGuidanceBand": null

@@ -1,6 +1,6 @@
 {
   "id": "hsa-contributions",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial authoring"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "HSA Contributions",
@@ -23,75 +28,75 @@
   "entityTypes": ["sole-prop", "partnership", "s-corp", "c-corp"],
   "typicalSavingsBand": "under-5k",
   "advisor": {
-    "summary": "The Health Savings Account under §223 is the Code's only account that is tax-favored at all three points: contributions are deductible above the line (or escape FICA entirely when run through a cafeteria plan), earnings compound untaxed, and qualified medical distributions are never taxed. For 2026 the limits are $4,400 for self-only coverage and $8,750 for family coverage, plus a $1,000 catch-up for each spouse age 55 or older — and the catch-up must go into that spouse's own account. Eligibility turns on high-deductible health plan coverage with no disqualifying coverage alongside it; beginning in 2026, bronze and catastrophic exchange plans count as HDHPs and a direct primary care arrangement within the monthly fee limits no longer destroys eligibility. Where the employer funds accounts outside a cafeteria plan, the §4980G comparability rules govern; inside a §125 plan, cafeteria-plan nondiscrimination applies instead. After age 65 the account converts functionally into a supplemental IRA — non-medical withdrawals lose the penalty and are simply taxed as income.",
+    "summary": "The §223 Health Savings Account is the Code's only account favored at all three points: contributions deduct above the line (or escape FICA entirely when routed through a cafeteria plan), earnings compound untaxed, and qualified medical distributions are never taxed. The 2026 limits are $4,400 for self-only coverage and $8,750 for family coverage, plus a $1,000 catch-up for each spouse age 55 or older — payable only into that spouse's own account. Eligibility requires high-deductible health plan coverage with no disqualifying coverage alongside it; beginning in 2026, bronze and catastrophic exchange plans count as HDHPs, and a direct primary care arrangement within the monthly fee limits no longer destroys eligibility. Employer funding outside a cafeteria plan answers to the §4980G comparability rules; inside a §125 plan, cafeteria-plan nondiscrimination governs instead. After age 65 the account functions as a supplemental IRA — non-medical withdrawals shed the penalty and are simply taxed as income.",
     "mechanics": [
-      "Contributions are deductible above the line under §223(a) and reported on Form 8889 regardless of itemizing; salary-reduction contributions made through a §125 cafeteria plan additionally avoid FICA on both the employee and employer side, and direct employer contributions are excluded from income under §106(d).",
-      "Eligibility is determined on the first day of each month under §223(c)(1): HDHP coverage meeting the §223(c)(2) deductible and out-of-pocket parameters, no other non-HDHP coverage — a general-purpose health FSA, including a spouse's, disqualifies — no Medicare enrollment, and not being claimable as a dependent; effective 2026, bronze and catastrophic exchange plans qualify as HDHPs and compliant direct primary care arrangements are not disqualifying.",
+      "Contributions deduct above the line under §223(a) and go on Form 8889 whether or not the client itemizes; salary-reduction contributions through a §125 cafeteria plan also avoid FICA on both the employee and employer side, and direct employer contributions are excluded from income under §106(d).",
+      "Eligibility is tested on the first day of each month under §223(c)(1): HDHP coverage meeting the §223(c)(2) deductible and out-of-pocket parameters, no other non-HDHP coverage — a general-purpose health FSA, even a spouse's, disqualifies — no Medicare enrollment, and no status as another taxpayer's dependent; effective 2026, bronze and catastrophic exchange plans qualify as HDHPs and compliant direct primary care arrangements do not disqualify.",
       "The 2026 contribution ceilings set by Rev. Proc. 2025-19 are $4,400 self-only and $8,750 family, and §223(b)(3) adds a $1,000 catch-up at age 55 that attaches to the individual — a 55+ spouse can make a catch-up only into an HSA in their own name, never into the other spouse's account.",
-      "Under the last-month rule of §223(b)(8), a taxpayer eligible on December 1 may contribute the full annual limit, but a testing period runs through the end of the following calendar year; losing eligibility during that window pulls the extra amount back into income and adds a 10% recapture tax.",
-      "Employer contributions made outside a cafeteria plan must satisfy the §4980G comparability rules — comparable amounts for all comparable participating employees — on pain of a 35% excise; routing contributions through the §125 plan swaps that regime for cafeteria-plan nondiscrimination testing and is usually the better design.",
-      "Balances never expire and are investable; distributions for qualified medical expenses are tax-free with no reimbursement deadline (which rewards paying current costs out of pocket, archiving receipts, and letting the account compound), while non-qualified withdrawals before 65 draw income tax plus the 20% additional tax of §223(f)(4), waived at 65, death, or disability."
+      "Under the §223(b)(8) last-month rule, a taxpayer eligible on December 1 may contribute the full annual limit, but a testing period runs through the end of the following calendar year; losing eligibility inside that window pulls the extra amount back into income and adds a 10% recapture tax.",
+      "Employer contributions made outside a cafeteria plan must satisfy the §4980G comparability rules — comparable amounts for all comparable participating employees — on pain of a 35% excise; routing them through the §125 plan trades that regime for cafeteria-plan nondiscrimination testing and is usually the better design.",
+      "Balances never expire and can be invested; distributions for qualified medical expenses are tax-free with no reimbursement deadline — which rewards paying current costs out of pocket, archiving receipts, and letting the account compound — while non-qualified withdrawals before 65 draw income tax plus the 20% additional tax of §223(f)(4), waived at 65, death, or disability."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §223",
-        "note": "The full framework: the deduction, HDHP-based eligibility in (c), contribution limits in (b), the age-55 catch-up in (b)(3), the last-month rule and its testing period in (b)(8), and the distribution rules including the 20% additional tax in (f)(4)."
+        "note": "The complete framework: the deduction, HDHP-based eligibility in (c), contribution limits in (b), the age-55 catch-up in (b)(3), the last-month rule and its testing period in (b)(8), and the distribution rules with the 20% additional tax in (f)(4)."
       },
       {
         "type": "Admin",
         "cite": "Rev. Proc. 2025-19",
-        "note": "Sets the 2026 inflation-adjusted figures: $4,400 self-only / $8,750 family contribution limits and the HDHP minimum-deductible and out-of-pocket parameters eligibility is tested against."
+        "note": "Sets the 2026 inflation-adjusted figures: the $4,400 self-only / $8,750 family contribution limits and the HDHP minimum-deductible and out-of-pocket parameters eligibility is measured against."
       },
       {
         "type": "IRC",
         "cite": "IRC §106(d)",
-        "note": "Excludes employer HSA contributions from the employee's income and FICA wages — the employer-funding half of the mechanics."
+        "note": "Excludes employer HSA contributions from the employee's income and FICA wages — the employer-funded half of the mechanics."
       },
       {
         "type": "IRC",
         "cite": "IRC §125",
-        "note": "Cafeteria-plan gateway: salary-reduction HSA funding through a §125 plan escapes FICA and is tested under cafeteria-plan nondiscrimination rather than comparability."
+        "note": "The cafeteria-plan gateway: salary-reduction HSA funding through a §125 plan escapes FICA and is tested under cafeteria-plan nondiscrimination rather than comparability."
       },
       {
         "type": "IRC",
         "cite": "IRC §4980G",
-        "note": "Comparability excise on employer contributions made outside a cafeteria plan — the design constraint when the business funds employee accounts directly."
+        "note": "The comparability excise on employer contributions made outside a cafeteria plan — the design constraint when the business funds employee accounts directly."
       },
       {
         "type": "IRC",
         "cite": "IRC §4973",
-        "note": "The 6% annual excise on excess contributions — the enforcement backstop when eligibility or limits are miscounted."
+        "note": "The 6% annual excise on excess contributions — the backstop that bites when eligibility or limits are miscounted."
       },
       {
         "type": "IRC",
         "cite": "P.L. 119-21 (OBBBA) HSA provisions",
-        "note": "Effective 2026: bronze and catastrophic exchange plans are treated as HDHPs, and direct primary care arrangements within the monthly fee limits do not terminate eligibility."
+        "note": "Effective 2026: bronze and catastrophic exchange plans are treated as HDHPs, and direct primary care arrangements within the monthly fee limits do not end eligibility."
       },
       {
         "type": "Admin",
         "cite": "Notice 2004-2; Notice 2004-50",
-        "note": "The foundational Q&A guidance on eligibility, disqualifying coverage, and account administration that examiners still apply."
+        "note": "The foundational Q&A guidance on eligibility, disqualifying coverage, and account administration — still the framework examiners apply."
       }
     ],
     "requirements": [
-      "HDHP coverage satisfying the 2026 §223(c)(2) parameters for each month claimed, or December 1 eligibility under the last-month rule with the testing period accepted.",
+      "HDHP coverage meeting the 2026 §223(c)(2) parameters for every month claimed, or December 1 eligibility under the last-month rule with the testing period accepted.",
       "No disqualifying coverage for either spouse — including a general-purpose health FSA and Medicare enrollment (watch the retroactive Part A enrollment of up to six months for clients filing for Social Security after 65).",
-      "An HSA established with a qualified custodian before expenses are incurred — expenses that predate account establishment are never qualified.",
-      "Contributions completed by the unextended filing deadline; Form 8889 filed with the return.",
-      "A separate account in each spouse's name where both intend to make age-55 catch-up contributions."
+      "An HSA established with a qualified custodian before expenses are incurred — expenses that predate establishment are never qualified.",
+      "Contributions in by the unextended filing deadline; Form 8889 filed with the return.",
+      "A separate account in each spouse's name whenever both plan to make age-55 catch-up contributions."
     ],
     "risks": [
-      "The leading exam theory is eligibility failure producing excess contributions: a spouse's general-purpose FSA, mid-year Medicare enrollment, or retroactive Part A coverage quietly voids months of eligibility, and every excess dollar draws the 6% §4973 excise each year until withdrawn or absorbed — there is no marquee case because enforcement is mechanical, not doctrinal.",
-      "Failing the last-month-rule testing period converts the accelerated contribution into income plus a 10% recapture tax.",
-      "Clients working past 65 face the proration trap: Medicare enrollment, including the automatic retroactive Part A window, cuts the annual limit mid-year.",
+      "The leading exam theory is eligibility failure producing excess contributions: a spouse's general-purpose FSA, mid-year Medicare enrollment, or retroactive Part A coverage quietly voids months of eligibility, and each excess dollar draws the 6% §4973 excise every year until withdrawn or absorbed — there is no marquee case because enforcement is mechanical, not doctrinal.",
+      "Failing the last-month-rule testing period turns the accelerated contribution into income plus a 10% recapture tax.",
+      "Clients working past 65 face the proration trap: Medicare enrollment — including the automatic retroactive Part A window — cuts the annual limit mid-year.",
       "Non-qualified distributions before 65 cost ordinary income plus the 20% additional tax.",
-      "The delayed-reimbursement play is only as good as the records: tax-free reimbursement years later requires retained receipts proving unreimbursed qualified expenses incurred after the account existed."
+      "The delayed-reimbursement play is only as strong as the records: tax-free reimbursement years later requires retained receipts proving unreimbursed qualified expenses incurred after the account existed."
     ],
     "stateNotes": [
-      "Conformity: most states follow §223 through their federal starting point, but California and New Jersey do not conform — HSA contributions and account earnings are taxable at the state level there, which materially trims the modeled benefit for clients in those states.",
-      "PTET interaction: the individual deduction has none — it is personal and does not touch the entity's income. Employer contributions funded by the business are an entity deduction that already reduces the base a pass-through entity tax is computed on, so make no separate PTET adjustment.",
-      "Missouri: conforms through the federal AGI starting point (RSMo §143.121); no addback applies to HSA contributions or earnings, so the federal treatment carries through to the MO-1040 unchanged."
+      "Conformity: most states follow §223 through their federal starting point, but California and New Jersey do not conform — HSA contributions and account earnings are both taxable at the state level there, which materially trims the modeled benefit for clients in those states.",
+      "PTET interaction: none for the individual deduction — it is personal and never touches the entity's income. Employer contributions funded by the business are an entity deduction that already reduces the base a pass-through entity tax is computed on, so make no separate PTET adjustment.",
+      "Missouri: conforms through the federal AGI starting point (RSMo §143.121); with no addback for HSA contributions or earnings, the federal treatment flows to the MO-1040 unchanged."
     ],
     "interactions": {
       "requires": [],
@@ -99,53 +104,53 @@
       "synergiesWith": ["se-health-insurance", "ichra"]
     },
     "reviewChecklist": [
-      "Current policy verified as an HDHP against the 2026 Rev. Proc. 2025-19 parameters (bronze/catastrophic exchange plans now qualify).",
-      "Disqualifying-coverage sweep completed for both spouses: general-purpose FSA, other health coverage, Medicare including retroactive Part A exposure.",
-      "Coverage tier (self-only vs. family) and catch-up eligibility confirmed; second spousal HSA opened where two catch-ups are planned.",
-      "Cafeteria-plan routing used where available for the FICA savings; comparability reviewed if the employer funds accounts directly.",
-      "Last-month-rule testing period calendared if the full-year limit rests on December 1 eligibility.",
-      "Client briefed on receipt retention if using the pay-out-of-pocket-and-compound approach."
+      "Current policy verified as an HDHP against the 2026 Rev. Proc. 2025-19 parameters (bronze and catastrophic exchange plans now qualify).",
+      "Disqualifying-coverage sweep run for both spouses: general-purpose FSA, other health coverage, and Medicare — including retroactive Part A exposure.",
+      "Coverage tier (self-only vs. family) and catch-up eligibility confirmed; a second spousal HSA opened where two catch-ups are planned.",
+      "Cafeteria-plan routing used where available for the FICA savings; comparability reviewed when the employer funds accounts directly.",
+      "Last-month-rule testing period calendared whenever the full-year limit rests on December 1 eligibility.",
+      "Client briefed on receipt retention when using the pay-out-of-pocket-and-compound approach."
     ]
   },
   "client": {
-    "teaser": "One account gives you a deduction now, tax-free growth, and tax-free medical spending later.",
-    "headline": "The one account that is never taxed — used correctly.",
+    "teaser": "One account: a deduction now, tax-free growth, and tax-free medical spending later.",
+    "headline": "The one account that is never taxed — when used right.",
     "plainEnglish": [
-      "A Health Savings Account is the most tax-favored account in the law. You get a deduction when money goes in. The money grows with no tax. And when you spend it on medical care, no tax comes out either. No other account — not a 401(k), not an IRA — does all three.",
-      "To qualify, your health insurance must be a high-deductible plan. For 2026, a family can put in $8,750 and a person with self-only coverage can put in $4,400. If you are 55 or older, you can add $1,000 more — and a spouse who is also 55 or older can add another $1,000 in an account of their own.",
-      "The money never expires. Whatever you do not spend rolls forward and can be invested. And here is the move most people miss: if you can pay medical bills from your regular checking account today, do that and save the receipts. The account keeps growing untouched, and you can pay yourself back from it years later, tax-free. After 65, anything left works like an extra retirement account."
+      "A Health Savings Account is the most tax-favored account in the law. Money going in earns a deduction. The balance grows with no tax. And when you spend it on medical care, no tax comes out either. No other account — not a 401(k), not an IRA — does all three.",
+      "To qualify, your health insurance must be a high-deductible plan. For 2026, a family can put in $8,750 and a person with self-only coverage can put in $4,400. At 55 or older you can add $1,000 more — and a spouse who is also 55 or older can add another $1,000 in an account of their own.",
+      "The money never expires. Whatever you do not spend rolls forward and can be invested. Here is the move most people miss: if you can pay medical bills from your regular checking account today, do that and save the receipts. The account keeps growing untouched, and years later you can pay yourself back from it, tax-free. After 65, anything left works like an extra retirement account."
     ],
-    "analogy": "Picture a toll road where you are waved through at the on-ramp, along the way, and at the exit. Every other savings account charges a toll at least once. This one never does — as long as the trip ends at a medical bill.",
+    "analogy": "Picture a toll road that waves you through at the on-ramp, along the way, and at the exit. Every other savings account charges a toll at least once. This one never does — as long as the trip ends at a medical bill.",
     "benefits": [
-      "Up to $8,750 deducted for a family in 2026, plus $1,000 more for each spouse 55 or older.",
+      "Deduct up to $8,750 for a family in 2026, plus $1,000 more for each spouse 55 or older.",
       "Growth and medical withdrawals are never taxed.",
       "Unspent money rolls over forever and can be invested.",
       "After 65, it doubles as an extra retirement account."
     ],
     "steps": [
-      "WE confirm your health plan qualifies, or help you compare one that does.",
-      "WE set your contribution amount and open the account (and a second one for a 55+ spouse).",
+      "WE confirm your health plan qualifies, or help you find one that does.",
+      "WE set your contribution amount and open the account (plus a second one for a 55+ spouse).",
       "WE handle the tax form each year and calendar the funding deadline.",
       "YOU fund the account — through payroll where possible, which also skips payroll tax.",
-      "YOU pay routine medical bills out of pocket when you can, and save the receipts we show you how to file."
+      "YOU pay routine medical bills out of pocket when you can, and save the receipts the way we show you."
     ],
     "clientCommitments": [
       "Keep the qualifying high-deductible plan in place, and call us before changing coverage.",
       "Tell us before enrolling in Medicare or before either spouse joins a health FSA at work — both can end eligibility.",
-      "Save receipts for medical costs you pay out of pocket.",
-      "Do not put in more than the limit we set for the year."
+      "Save receipts for every medical cost you pay out of pocket.",
+      "Never put in more than the limit we set for the year."
     ]
   },
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
-      "Update the contribution target to each year's new IRS limits.",
-      "Re-verify HDHP status and screen for new disqualifying coverage, including Medicare timing for clients approaching 65.",
+      "Reset the contribution target to each year's new IRS limits.",
+      "Re-verify HDHP status and screen for new disqualifying coverage, including Medicare timing for clients nearing 65.",
       "Prepare Form 8889 and confirm contributions landed by the deadline.",
-      "Check any last-month-rule testing period still in force."
+      "Track any last-month-rule testing period still in force."
     ],
     "deliverables": [
-      "HSA eligibility checklist for both spouses",
+      "HSA eligibility checklist covering both spouses",
       "Contribution schedule with payroll routing instructions",
       "Receipt-archiving guide for the delayed-reimbursement approach",
       "Form 8889 with the annual return"

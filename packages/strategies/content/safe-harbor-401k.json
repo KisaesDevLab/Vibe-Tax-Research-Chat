@@ -1,6 +1,6 @@
 {
   "id": "safe-harbor-401k",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Safe Harbor 401(k) Design",
@@ -23,57 +28,57 @@
   "entityTypes": ["s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "structural",
   "advisor": {
-    "summary": "In a 401(k) with employees, the ADP/ACP tests tie the owner's deferrals to what the staff actually defers — low participation sends the owner's contributions back as taxable corrective refunds. A safe harbor design buys out the tests: commit to a 3% nonelective contribution for all eligibles or a matching formula costing up to 4% of participating pay under §401(k)(12) (QACA auto-enrollment variants under §401(k)(13)), and the owner defers the full $24,500 for 2026 plus catch-up regardless of staff behavior. The nonelective route also supplies most of the cross-testing gateway, which makes it the default foundation for every owner-max stacked design. This is an enabling strategy — the deduction it unlocks is modeled under the deferral and profit-sharing records, not here.",
+    "summary": "In a 401(k) that covers employees, the ADP/ACP tests chain the owner's deferrals to staff participation — when the staff defers little, the owner's contributions come back as taxable corrective refunds. A safe harbor design buys the tests out: commit to a 3% nonelective contribution for every eligible employee, or to a matching formula costing at most 4% of participating pay, under §401(k)(12) (QACA auto-enrollment variants under §401(k)(13)), and the owner defers the full $24,500 for 2026 plus catch-up no matter what the staff does. The 3% nonelective also supplies most of the cross-testing gateway, which is why it anchors nearly every owner-max stacked design. This is an enabling strategy — the deduction it unlocks is modeled under the deferral and profit-sharing records, not here.",
     "mechanics": [
-      "The ADP and ACP tests of §§401(k)(3), 401(m) cap HCE deferral rates at a spread over the NHCE average — with minimal staff participation, an owner targeting a full deferral fails badly and receives corrective refunds as taxable income.",
-      "The §401(k)(12) buy-out options: a 3% nonelective contribution to every eligible employee regardless of participation, or the basic match — 100% of the first 3% deferred plus 50% of the next 2%, a maximum cost of 4% of pay and only for those who defer; §401(k)(13) QACA variants trade automatic enrollment for a slightly cheaper formula and two-year vesting.",
-      "Safe harbor dollars are immediately 100% vested (QACA's two-year cliff excepted) — they leave with departing employees, with no forfeiture recapture.",
-      "The 3% nonelective typically supplies most of the 5% cross-testing gateway, so it is the default chassis when a new comparability or cash balance layer is planned; the match design does not count toward the gateway.",
-      "Timing under SECURE Act §103: match designs need provisions and the participant notice in place before the plan year, but a 3% nonelective can be adopted retroactively until 30 days before plan year-end — or through the close of the following year at 4% — so a failed ADP year can literally be repaired after the fact."
+      "The ADP and ACP tests of §§401(k)(3), 401(m) cap HCE deferral rates at a fixed spread over the NHCE average — with thin staff participation, an owner targeting a full deferral fails decisively and takes the excess back as taxable corrective refunds.",
+      "The §401(k)(12) buy-outs: a 3% nonelective contribution to every eligible employee whether or not they defer, or the basic match — 100% of the first 3% deferred plus 50% of the next 2%, costing at most 4% of pay and paid only to those who defer; the §401(k)(13) QACA variants pair automatic enrollment with a slightly cheaper formula and two-year vesting.",
+      "Safe harbor dollars vest immediately at 100% (QACA's two-year cliff excepted) — they leave with departing employees and never return as forfeitures.",
+      "The 3% nonelective typically covers most of the 5% cross-testing gateway, making it the default chassis whenever a new comparability or cash balance layer is contemplated; the match design contributes nothing toward the gateway.",
+      "Timing under SECURE Act §103: a match design needs its provisions and the participant notice in place before the plan year, but a 3% nonelective can be adopted retroactively until 30 days before plan year-end — or, at 4%, through the close of the following year — so a failed ADP year can literally be cured after the fact."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §§401(k)(3), 401(m)",
-        "note": "The ADP and ACP nondiscrimination tests the safe harbor design buys out."
+        "note": "The ADP and ACP nondiscrimination tests a safe harbor design buys out."
       },
       {
         "type": "IRC",
         "cite": "IRC §401(k)(12)",
-        "note": "The traditional safe harbor formulas: 3% nonelective or the basic match, both immediately vested."
+        "note": "The traditional safe harbor formulas — 3% nonelective or the basic match — both immediately vested."
       },
       {
         "type": "IRC",
         "cite": "IRC §401(k)(13)",
-        "note": "The QACA automatic-enrollment safe harbor with a reduced match formula and two-year vesting."
+        "note": "The QACA automatic-enrollment safe harbor: a reduced match formula with two-year vesting."
       },
       {
         "type": "Admin",
         "cite": "SECURE Act §103 (P.L. 116-94)",
-        "note": "Removed the notice requirement for nonelective safe harbors and created the retroactive adoption windows — 3% until 30 days before year-end, 4% through the following year."
+        "note": "Eliminated the notice requirement for nonelective safe harbors and created the retroactive adoption windows — 3% until 30 days before year-end, 4% through the following year."
       },
       {
         "type": "Admin",
         "cite": "Notice 2025-67",
-        "note": "The 2026 deferral limit ($24,500) and catch-up amounts the design unlocks for the owner."
+        "note": "Sets the 2026 deferral limit ($24,500) and the catch-up amounts the design unlocks for the owner."
       }
     ],
     "requirements": [
-      "At least one non-owner employee in the plan — owner-only plans have no ADP test, so safe harbor adds nothing there.",
-      "A budget commitment of 3% of all eligible compensation (nonelective) or up to 4% of participating payroll (match) for every year the design runs.",
-      "A plan amendment, plus the annual participant notice before the plan year for match designs.",
-      "Payroll integration that computes and deposits the safe harbor amounts correctly."
+      "At least one non-owner employee in the plan — an owner-only plan has no ADP test, so safe harbor adds nothing there.",
+      "A funding commitment of 3% of all eligible compensation (nonelective) or up to 4% of participating payroll (match) for every year the design operates.",
+      "A plan amendment, plus — for match designs — the annual participant notice delivered before the plan year.",
+      "Payroll integration that calculates and deposits the safe harbor amounts accurately."
     ],
     "risks": [
-      "The recurring compliance failure is timing and notice: a match design with a late or missing participant notice loses safe harbor status for the year, resurrecting the very tests the client paid to escape.",
-      "Mid-year suspension of safe harbor contributions is available only in narrow circumstances and re-triggers full-year ADP testing — treat the funding as an annual commitment.",
-      "Choosing the match to save money can foreclose the stack: the match does not satisfy the cross-testing gateway, and owners who later want profit-sharing or cash balance layers usually wish they had bought the 3% nonelective — design for the end state.",
-      "Immediate vesting means safe harbor dollars walk out the door with short-tenure employees."
+      "The recurring compliance failure is timing and notice: a match design whose participant notice is late or missing loses safe harbor status for the year, reviving the very tests the client paid to escape.",
+      "Mid-year suspension of safe harbor contributions is permitted only in narrow circumstances and re-triggers full-year ADP testing — treat the funding as a firm annual commitment.",
+      "Picking the match to save money can foreclose the stack: the match never satisfies the cross-testing gateway, and owners who later add profit-sharing or cash balance layers usually regret not buying the 3% nonelective — design for the end state.",
+      "Immediate vesting means safe harbor dollars leave with short-tenure employees."
     ],
     "stateNotes": [
-      "Employer safe harbor contributions are ordinary deductible compensation costs in every state that conforms to federal taxable income or federal AGI — the standard case; verify only in non-conformity outliers.",
-      "PTET interaction: the contribution reduces pass-through income before any PTET election is computed, so it belongs in the PTET estimate like any other deductible cost.",
-      "Missouri conforms through RSMo §143.121; for Missouri SALT Parity Act electors (RSMo §143.436), the safe harbor cost lowers the PTET base dollar for dollar."
+      "Employer safe harbor contributions are ordinary deductible compensation in every state that conforms to federal taxable income or federal AGI — the standard case; verify only in non-conformity outliers.",
+      "PTET interaction: the contribution reduces pass-through income before any PTET election is computed, so include it in the PTET estimate like any other deductible cost.",
+      "Missouri conforms through RSMo §143.121; for Missouri SALT Parity Act electors (RSMo §143.436), the safe harbor cost reduces the PTET base dollar for dollar."
     ],
     "interactions": {
       "requires": [],
@@ -81,50 +86,50 @@
       "synergiesWith": ["profit-sharing-new-comparability", "cash-balance-stack"]
     },
     "reviewChecklist": [
-      "Last ADP/ACP test results pulled and the owner's current refund exposure quantified before recommending.",
-      "Formula chosen against the end-state design — nonelective if any profit-sharing or cash balance stacking is plausible — not just current-year cost.",
-      "Amendment executed and, for match designs, the participant notice calendared and delivered before the plan year.",
-      "SECURE Act §103 retroactive adoption windows checked when the year is already underway.",
-      "Owner deferral election raised to the maximum once testing relief is in place."
+      "Latest ADP/ACP test results pulled and the owner's current refund exposure quantified before recommending.",
+      "Formula selected against the end-state design — nonelective whenever profit-sharing or cash balance stacking is plausible — not merely current-year cost.",
+      "Amendment executed and, for match designs, the participant notice calendared and delivered ahead of the plan year.",
+      "SECURE Act §103 retroactive adoption windows reviewed when the year is already underway.",
+      "Owner deferral election raised to the maximum once testing relief is secured."
     ]
   },
   "client": {
-    "teaser": "Stop the IRS test that keeps sending your 401(k) money back.",
-    "headline": "Unlock your full 401(k) — no matter what your employees save",
+    "teaser": "Shut off the IRS test that keeps sending your 401(k) money back.",
+    "headline": "Save the full 401(k) limit — no matter what your team saves",
     "plainEnglish": [
-      "Here is a rule many owners learn the hard way. In a company 401(k), the IRS ties what YOU can save to what your employees choose to save. If your team saves little, your own money gets sent back to you — and taxed.",
-      "The fix is a safe harbor design. Your business commits to a modest, set contribution for employees — about 3 to 4 percent of pay. In exchange, the IRS turns the test off. You can save the full legal limit every year, no matter what anyone else does.",
-      "The employee money is not wasted. It is a real benefit your team can see, it is fully deductible, and it often doubles as the base for larger owner-focused designs we may add later."
+      "Many owners learn this rule the hard way. In a company 401(k), the IRS links what YOU can save to what your employees choose to save. If your team saves little, part of your own money comes back to you — with a tax bill.",
+      "The fix is a safe harbor design. Your business promises a modest, set contribution for employees — about 3 to 4 percent of pay. In return, the IRS turns the test off. You can save the full legal limit every year, no matter what anyone else does.",
+      "The employee money is not wasted. It is a real benefit your team can see. It is fully deductible. And it often becomes the base for larger owner-focused designs we may add later."
     ],
-    "analogy": "It is like paying a flat toll for the express lane all year. A small known cost — and you never sit in traffic you cannot control.",
+    "analogy": "It is like paying a flat toll for the express lane all year. One small, known cost — and you never sit in traffic you cannot control.",
     "benefits": [
-      "Save your full 401(k) limit every year, with no test to fail",
-      "A small, known cost instead of surprise refunds at tax time",
+      "Save the full 401(k) limit every year, with no test to fail",
+      "One small, known cost instead of surprise refunds at tax time",
       "A visible benefit that helps you hire and keep good people",
-      "Sets the base for the bigger owner-focused plan designs"
+      "Lays the base for the bigger owner-focused plan designs"
     ],
     "steps": [
-      "WE pull your plan's test results and show what the cap costs you now.",
-      "WE pick the right version — flat contribution or match — for where your plan is headed.",
+      "WE pull your plan's test results and show what the cap costs you today.",
+      "WE pick the right version — flat contribution or match — based on where your plan is headed.",
       "WE update the plan documents and handle the employee notice.",
       "YOU raise your own savings to the full limit from then on."
     ],
     "clientCommitments": [
-      "Fund the employee contribution every year the design is in place",
-      "Get payroll data to the plan team on time",
-      "Flag big staffing changes so we can re-check the design"
+      "Fund the employee contribution every year the design runs",
+      "Send payroll data to the plan team on time",
+      "Tell us about big staffing changes so we can re-check the design"
     ]
   },
   "engagement": {
     "implementationEffort": "multi-step",
     "annualMaintenance": [
-      "Annual participant notice (match designs) and funding verification",
-      "Year-end check that safe harbor deposits reconcile with payroll",
-      "Design review when staffing or stacking plans change"
+      "Deliver the annual participant notice (match designs) and verify funding",
+      "Reconcile year-end safe harbor deposits against payroll",
+      "Revisit the design when staffing or stacking plans change"
     ],
     "deliverables": [
       "Plan amendment adopting the safe harbor provisions",
-      "Cost comparison memo: nonelective versus match against the end-state design",
+      "Cost comparison memo: nonelective versus match, framed against the end-state design",
       "Participant notice template and compliance calendar"
     ],
     "feeGuidanceBand": null

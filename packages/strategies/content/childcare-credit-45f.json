@@ -1,6 +1,6 @@
 {
   "id": "childcare-credit-45f",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,16 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-07-28",
+      "note": "Clarified that inflation indexing of the $500,000/$600,000 caps begins for taxable years after 2026 per P.L. 119-21; 2026 caps are unindexed."
     }
   ],
   "name": "Employer-Provided Childcare Credit (§45F)",
@@ -23,64 +33,64 @@
   "entityTypes": ["s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "25k-100k",
   "advisor": {
-    "summary": "OBBBA turned §45F from a rounding error into one of the strongest employer credits on the books: for amounts paid after December 31, 2025, the credit is 40% of qualified childcare expenditures — 50% for an eligible small business — capped at $500,000 per year ($600,000 for small businesses), with both figures indexed. The practical unlock is that an employer no longer needs to own a daycare: contracting for slots with a licensed provider, working through an intermediary, or joining a pooled arrangement with other employers all now generate creditable spend. The exposure points are unglamorous — provider licensing, a nondiscrimination requirement that dooms owner-only arrangements, the mandatory deduction/basis reduction, and a ten-year recapture tail on owned facilities. The engine applies the statutory rate and cap to the entered expenditures; the deduction give-back and any credit carryovers are handled at return time, so the modeled delta is the gross credit.",
+    "summary": "OBBBA turned §45F from a rounding error into one of the strongest employer credits available: for amounts paid after December 31, 2025, the credit equals 40% of qualified childcare expenditures — 50% for an eligible small business — capped at $500,000 per year ($600,000 for small businesses), with inflation indexing of both caps beginning only for taxable years after 2026. The practical unlock is that an employer no longer needs to own a daycare: contracting for slots with a licensed provider, working through an intermediary, or pooling with other employers all now generate creditable spend. The exposure points are unglamorous — provider licensing, a nondiscrimination requirement that dooms owner-only arrangements, the mandatory deduction or basis reduction, and a ten-year recapture tail on owned facilities. The engine applies the statutory rate and cap to the entered expenditures; the deduction give-back and any credit carryovers are handled at return time, so the modeled delta is the gross credit.",
     "mechanics": [
-      "For amounts paid or incurred after December 31, 2025, §45F allows 40% of qualified childcare expenditures (50% for an eligible small business), capped at $500,000 per year — $600,000 for the small-business tier — plus 10% of qualified childcare resource-and-referral expenditures, with the caps indexed going forward under P.L. 119-21.",
-      "Qualified expenditures reach three delivery models: acquiring, constructing, or expanding a qualified childcare facility; operating one (including training and scholarship costs); or paying a licensed third-party provider under contract — and OBBBA expressly opened intermediary and jointly pooled arrangements, so several small employers can share reserved capacity.",
-      "Small-business status rides on the §448(c) gross receipts test, applied under OBBBA with a five-year averaging window rather than the usual three — confirm the measurement period before promising the 50% rate.",
-      "The facility used must be licensed under applicable state and local law, its use cannot discriminate in favor of highly compensated employees, and §45F(d) claws back a declining share of a facility credit if the facility stops operating as qualified childcare or is transferred within ten years.",
-      "The credit is claimed on Form 8882 as part of the §38 general business credit, is nonrefundable with the §39 one-back/twenty-forward carryover, and requires reducing the related deduction or basis by the credit claimed — the model applies rate and cap only, so the return must carry the no-double-benefit adjustment."
+      "For amounts paid or incurred after December 31, 2025, §45F delivers 40% of qualified childcare expenditures (50% for an eligible small business), capped at $500,000 per year — $600,000 on the small-business tier — plus 10% of qualified childcare resource-and-referral expenditures, with cost-of-living indexing of the caps beginning for taxable years after 2026 under P.L. 119-21.",
+      "Qualified expenditures span three delivery models: acquiring, constructing, or expanding a qualified childcare facility; operating one (training and scholarship costs included); or paying a licensed third-party provider under contract — and OBBBA expressly opened intermediary and jointly pooled arrangements, letting several small employers share reserved capacity.",
+      "Small-business status turns on the §448(c) gross receipts test, applied under OBBBA with a five-year averaging window rather than the usual three — confirm the measurement period before quoting the 50% rate.",
+      "The facility used must be licensed under applicable state and local law, its use cannot discriminate in favor of highly compensated employees, and §45F(d) claws back a declining share of a facility credit if the facility ceases qualified childcare operation or is transferred within ten years.",
+      "The credit is claimed on Form 8882 as part of the §38 general business credit, is nonrefundable with the §39 one-back/twenty-forward carryover, and requires cutting the related deduction or basis by the credit claimed — the model applies rate and cap only, so the return must carry the no-double-benefit adjustment."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §45F",
-        "note": "The employer-provided childcare credit: qualified expenditure definitions, facility requirements, nondiscrimination, and the rate and cap structure."
+        "note": "The employer-provided childcare credit: qualified-expenditure definitions, facility requirements, nondiscrimination, and the rate-and-cap structure."
       },
       {
         "type": "IRC",
         "cite": "P.L. 119-21 (OBBBA) §45F amendments",
-        "note": "Raised the rate to 40% (50% eligible small business) and the cap to $500,000/$600,000 indexed, and opened third-party contract, intermediary, and pooled arrangements — effective for amounts paid after December 31, 2025."
+        "note": "Lifted the rate to 40% (50% for an eligible small business) and the cap to $500,000/$600,000 (indexed for taxable years beginning after 2026), and opened third-party contract, intermediary, and pooled arrangements — effective for amounts paid after December 31, 2025."
       },
       {
         "type": "IRC",
         "cite": "IRC §45F(d)",
-        "note": "Ten-year recapture on a qualified childcare facility that ceases operation or is transferred — the calendar item for employers that build rather than contract."
+        "note": "Ten-year recapture when a qualified childcare facility ceases operation or is transferred — the calendar item for employers who build rather than contract."
       },
       {
         "type": "IRC",
         "cite": "IRC §448(c)",
-        "note": "The gross receipts test that gates the 50%/$600,000 small-business tier; OBBBA applies a five-year averaging window."
+        "note": "The gross receipts test gating the 50%/$600,000 small-business tier; OBBBA applies a five-year averaging window."
       },
       {
         "type": "IRC",
         "cite": "IRC §§38, 39",
-        "note": "General business credit stacking, nonrefundability, and the 1-year carryback / 20-year carryforward for unused amounts."
+        "note": "General business credit stacking, nonrefundability, and the one-year carryback / twenty-year carryforward for unused amounts."
       },
       {
         "type": "Admin",
         "cite": "Form 8882 and instructions",
-        "note": "Computation and reporting vehicle; the credit flows to Form 3800."
+        "note": "The computation and reporting vehicle; the credit flows through to Form 3800."
       }
     ],
     "requirements": [
-      "Childcare delivered through a facility licensed under state and local law — whether employer-operated, contracted, intermediary, or pooled — with the license verified and warranted in any provider contract.",
-      "Broad-based employee eligibility: the program cannot tilt toward highly compensated employees or exist mainly to cover the owner's own children.",
-      "A written contract (or facility cost records) plus enrollment and payment documentation isolating qualified expenditures in the books.",
-      "Coordination of the no-double-benefit rule — the deduction or basis reduction for the credited amount must actually appear on the return.",
-      "For the 50% rate: eligible small-business status computed under the §448(c) five-year gross receipts window."
+      "Childcare delivered through a facility licensed under state and local law — employer-operated, contracted, intermediary, or pooled — with the license verified and warranted in any provider contract.",
+      "Broad-based employee eligibility: the program cannot tilt toward highly compensated employees or exist chiefly to cover the owner's own children.",
+      "A written contract (or facility cost records) plus enrollment and payment documentation that isolates qualified expenditures in the books.",
+      "The no-double-benefit rule coordinated — the deduction or basis reduction for the credited amount must actually appear on the return.",
+      "For the 50% rate: eligible small-business status supported by the §448(c) five-year gross receipts computation."
     ],
     "risks": [
-      "There is no marquee litigation under §45F; the leading exam theory is qualification — an unlicensed or informally arranged provider, or spend that cannot be traced to employee childcare, fails at the definitional gate before rates ever matter.",
-      "A program that in substance benefits only owners or executives fails the nondiscrimination requirement, and childcare for the owner's own children invites compensation recharacterization on top of credit denial.",
-      "Employers that build or buy a facility carry §45F(d) recapture for ten years — a sale, repurposing, or closure inside the window claws back credit in a year with no matching cash.",
+      "No marquee litigation exists under §45F; the leading exam theory is qualification — an unlicensed or informally arranged provider, or spend that cannot be traced to employee childcare, fails at the definitional gate before rates ever matter.",
+      "A program that in substance serves only owners or executives fails the nondiscrimination requirement, and childcare for the owner's own children invites compensation recharacterization on top of credit denial.",
+      "Employers who build or buy a facility carry §45F(d) recapture for ten years — a sale, repurposing, or closure inside the window claws back credit in a year with no matching cash.",
       "The credit is nonrefundable: a low-tax year strands it in carryforward, and the model does not track carryovers — pair the spend with a liability projection.",
-      "Forgetting the deduction/basis reduction is the most common mechanical error; the same dollars cannot be credited and deducted."
+      "Skipping the deduction or basis reduction is the most common mechanical error; the same dollars cannot be both credited and deducted."
     ],
     "stateNotes": [
-      "Conformity: the federal credit itself does not depend on state law, but the required deduction reduction raises federal taxable income, and states that conform to the federal base — Missouri included, via its rolling conformity and federal-AGI starting point — inherit that add-back effect.",
-      "PTET interaction: none directly — the credit lands on the owners' federal returns through the K-1, and a pass-through entity tax election is computed on entity income, which rises slightly because of the disallowed deduction.",
-      "Missouri: the General Assembly's child-care package (HB 269, 103rd G.A.) would add a state employer child-care assistance credit of up to 30% of qualified spend, capped at $200,000 per taxpayer — confirm enactment and program funding with DED before stacking a Missouri credit on top of §45F."
+      "Conformity: the federal credit itself does not depend on state law, but the required deduction reduction raises federal taxable income, and states that conform to the federal base — Missouri included, through its rolling conformity and federal-AGI starting point — inherit that add-back effect.",
+      "PTET interaction: none directly — the credit reaches the owners' federal returns through the K-1, while a pass-through entity tax election is computed on entity income, which rises slightly because of the disallowed deduction.",
+      "Missouri: the General Assembly's child-care package (HB 269, 103rd G.A.) would add a state employer child-care assistance credit worth up to 30% of qualified spend, capped at $200,000 per taxpayer — confirm enactment and program funding with DED before stacking a Missouri credit on top of §45F."
     ],
     "interactions": {
       "requires": [],
@@ -88,51 +98,51 @@
       "synergiesWith": ["dependent-care-fsa"]
     },
     "reviewChecklist": [
-      "Provider license (or facility license) verified and current, and the services contract is in writing before payments begin.",
-      "Eligibility policy is broad-based and documented — no effective limitation to owners or highly compensated employees.",
-      "Small-business tier, if used, is supported by the §448(c) five-year gross receipts computation in the file.",
-      "Qualified expenditures are separately tracked in the books, and the deduction/basis reduction is reflected on the return that claims Form 8882.",
-      "If a facility is owned: the ten-year recapture window is calendared and disclosed to the client in writing.",
-      "Modeled credit uses the correct rate tier and respects the annual cap; client tax liability can absorb a nonrefundable credit this size."
+      "Provider license (or facility license) verified and current, with the services contract in writing before payments begin.",
+      "Eligibility policy broad-based and documented — no effective limitation to owners or highly compensated employees.",
+      "Small-business tier, if claimed, supported by the §448(c) five-year gross receipts computation in the file.",
+      "Qualified expenditures tracked separately in the books, with the deduction/basis reduction reflected on the return that claims Form 8882.",
+      "If a facility is owned: the ten-year recapture window calendared and disclosed to the client in writing.",
+      "Modeled credit uses the correct rate tier and respects the annual cap, and the client's tax liability can absorb a nonrefundable credit of this size."
     ]
   },
   "client": {
-    "teaser": "Help your team pay for childcare — and let the tax credit cover close to half the cost.",
-    "headline": "A childcare benefit your employees love, at roughly half price",
+    "teaser": "Help your team pay for childcare — and let a tax credit hand back close to half the cost.",
+    "headline": "A childcare benefit your team will love, at roughly half price",
     "plainEnglish": [
-      "Childcare is one of the biggest reasons good workers quit or turn down a job. The tax law now rewards employers who help. If your business pays for childcare for your team, you get a credit for 40% of the cost. Many small businesses get 50%.",
-      "You do not need to build a daycare. You can reserve spots with a licensed local provider and pay under a simple contract. You can even team up with other businesses to share spots. Those payments count for the credit.",
-      "The rules do have teeth. The provider must be licensed, the benefit must be open to your team broadly, and the records must be clean. We set all of that up and claim the credit each year."
+      "Childcare is one of the biggest reasons good workers quit or turn down a job. The tax law now rewards employers who step in. If your business pays for childcare for your team, you get a credit for 40% of the cost. Many small businesses get 50%.",
+      "You do not need to build a daycare. You can reserve spots with a licensed local provider and pay under a simple contract. You can even team up with other businesses to share spots. Those payments count toward the credit.",
+      "The rules do have teeth. The provider must be licensed, the benefit must be offered to your team broadly, and the records must be clean. We set all of that up and claim the credit each year."
     ],
-    "analogy": "It works like a matching program: for every dollar you put toward your employees' childcare, the tax credit hands close to half of it back.",
+    "analogy": "It works like a matching program: for every dollar you put toward your employees' childcare, the tax credit hands nearly half of it back.",
     "benefits": [
       "A credit worth 40% to 50% of what you spend on employee childcare",
-      "No building required — a contract with a licensed provider counts",
-      "A hiring and retention edge that most competitors do not offer",
-      "Repeats every year you keep the benefit in place"
+      "No building needed — a contract with a licensed provider counts",
+      "A hiring and retention edge most competitors do not offer",
+      "Repeats every year you keep the benefit going"
     ],
     "steps": [
       "WE design the benefit — usually a contract for reserved spots with a licensed provider.",
       "WE draft the eligibility policy so the plan meets the fairness rules.",
-      "YOU sign the provider contract and tell your team about the benefit.",
+      "YOU sign the provider contract and announce the benefit to your team.",
       "WE track the spending and claim the credit on your return each year."
     ],
     "clientCommitments": [
-      "Offer the benefit to your team broadly — not just to owners or managers",
+      "Offer the benefit broadly across your team — not just to owners or managers",
       "Use only licensed providers and keep the contract current",
-      "Route every childcare payment through the business account so we can trace it"
+      "Run every childcare payment through the business account so we can trace it"
     ]
   },
   "engagement": {
     "implementationEffort": "multi-step",
     "annualMaintenance": [
-      "Verify the provider's license and renew the services contract before each plan year",
+      "Verify the provider's license and renew the services contract ahead of each plan year",
       "Recompute eligible small-business status under the five-year gross receipts window",
       "Reconcile qualified expenditures and confirm the deduction reduction on the filed return",
-      "Review the recapture calendar if the client owns the childcare facility"
+      "Review the recapture calendar whenever the client owns the childcare facility"
     ],
     "deliverables": [
-      "Childcare benefit design memo with delivery-model comparison (contract vs. pooled vs. facility)",
+      "Childcare benefit design memo comparing delivery models (contract vs. pooled vs. facility)",
       "Provider contract and licensing checklist",
       "Employee eligibility policy template",
       "Form 8882 computation workpapers and recapture calendar (facility cases)"

@@ -1,6 +1,6 @@
 {
   "id": "163j-planning",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Business Interest Limitation (§163(j)) Planning",
@@ -23,69 +28,69 @@
   "entityTypes": ["s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "structural",
   "advisor": {
-    "summary": "Section 163(j) caps the deduction for business interest expense at business interest income plus 30% of adjusted taxable income, with anything disallowed carried forward indefinitely. OBBBA settled the biggest variable: the ATI computation is again EBITDA-based — depreciation, amortization, and depletion add back — and permanently, which restores real headroom for capital-intensive borrowers. Two structural exits remain: the §448(c) small-business exemption ($32 million average gross receipts for 2026, tested with aggregation) and the irrevocable electing-real-property-trade-or-business election, which buys unlimited interest at the price of ADS lives and forfeited bonus on the trade's real property. The engine does not compute the limitation — this record exists so that no leveraged client's plan promises interest deductions Form 8990 would take back.",
+    "summary": "Section 163(j) limits the business interest deduction to business interest income plus 30% of adjusted taxable income; whatever is disallowed carries forward indefinitely. OBBBA resolved the largest open variable: ATI is once again EBITDA-based — depreciation, amortization, and depletion add back — and permanently so, restoring genuine headroom for capital-intensive borrowers. Two structural exits remain: the §448(c) small-business exemption ($32 million average gross receipts for 2026, tested with aggregation) and the irrevocable electing-real-property-trade-or-business election, which buys unlimited interest at the cost of ADS lives and forfeited bonus on the trade's real property. The engine does not compute the limitation — this record exists so that no leveraged client's plan promises interest deductions Form 8990 would take back.",
     "mechanics": [
-      "The limitation of §163(j)(1) allows business interest expense up to business interest income plus 30% of adjusted taxable income (plus floor-plan financing interest); disallowed interest carries forward indefinitely under §163(j)(2), and a partnership's excess interest passes out to its partners, usable only against future excess taxable income from that same partnership.",
-      "Post-OBBBA, adjusted taxable income under §163(j)(8) is computed without depreciation, amortization, or depletion — P.L. 119-21 made the EBITDA-style add-back permanent for tax years beginning after 2024, so heavy first-year cost recovery no longer shrinks the interest ceiling.",
-      "The small-business exemption of §163(j)(3) removes the limitation for taxpayers meeting the §448(c) gross-receipts test — a three-year average of $32 million or less for 2026 — but the test aggregates commonly controlled entities under §448(c)(2), so receipts cannot be split across a group.",
-      "A syndicate is a tax shelter regardless of size: an entity allocating more than 35 percent of a loss year's losses to limited owners loses the small-business exemption under §448(d)(3) — a trap that surfaces exactly when leveraged businesses post losses.",
-      "A real property trade or business may irrevocably elect out under §163(j)(7)(B); the price is ADS depreciation under §168(g) — longer lives, straight line, no bonus — on its nonresidential real, residential rental, and qualified improvement property, which permanently devalues future cost-segregation work.",
-      "The computation lives on Form 8990 at the entity level; the practical levers are debt placement across aggregated entities, timing income to release partner-level carryforwards, and re-testing the receipts ceiling before every financing decision."
+      "Under §163(j)(1), business interest expense is deductible up to business interest income plus 30% of adjusted taxable income (plus floor-plan financing interest); the disallowed balance carries forward indefinitely under §163(j)(2), and a partnership's excess interest passes out to its partners, deductible only against future excess taxable income from that same partnership.",
+      "Post-OBBBA, adjusted taxable income under §163(j)(8) excludes depreciation, amortization, and depletion — P.L. 119-21 made the EBITDA-style add-back permanent for tax years beginning after 2024 — so heavy first-year cost recovery no longer shrinks the interest ceiling.",
+      "The §163(j)(3) small-business exemption lifts the limitation for taxpayers passing the §448(c) gross-receipts test — a three-year average of $32 million or less for 2026 — but §448(c)(2) aggregates commonly controlled entities, so a group cannot escape the ceiling by splitting receipts.",
+      "A syndicate is a tax shelter no matter how small: an entity that allocates more than 35 percent of a loss year's losses to limited owners forfeits the small-business exemption under §448(d)(3) — a trap that springs precisely when leveraged businesses post losses.",
+      "A real property trade or business may elect out irrevocably under §163(j)(7)(B); the toll is ADS depreciation under §168(g) — longer lives, straight line, no bonus — on its nonresidential real, residential rental, and qualified improvement property, permanently devaluing future cost-segregation work.",
+      "Form 8990 houses the computation at the entity level; the working levers are debt placement across aggregated entities, income timing to release partner-level carryforwards, and re-testing the receipts ceiling before every financing decision."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §163(j)(1), (2)",
-        "note": "The 30%-of-ATI ceiling and the indefinite carryforward of disallowed business interest — the statutory core."
+        "note": "The statutory core: the 30%-of-ATI ceiling and the indefinite carryforward of disallowed business interest."
       },
       {
         "type": "IRC",
         "cite": "IRC §163(j)(8), as amended by P.L. 119-21 (OBBBA)",
-        "note": "ATI is again computed without depreciation, amortization, or depletion — the permanent EBITDA base that raises the ceiling for capital-intensive borrowers."
+        "note": "ATI is once again computed without depreciation, amortization, or depletion — the permanent EBITDA base that lifts the ceiling for capital-intensive borrowers."
       },
       {
         "type": "IRC",
         "cite": "IRC §§163(j)(3), 448(c)",
-        "note": "The small-business exemption and the aggregated gross-receipts test that polices it — $32 million three-year average for 2026, indexed."
+        "note": "The small-business exemption and the aggregated gross-receipts test that guards it — a $32 million three-year average for 2026, indexed annually."
       },
       {
         "type": "IRC",
         "cite": "IRC §§448(d)(3), 461(i)(3)",
-        "note": "The syndicate definition: more than 35% of losses allocated to limited owners makes a tax shelter that cannot use the exemption."
+        "note": "The syndicate definition: allocating more than 35% of losses to limited owners creates a tax shelter barred from the exemption."
       },
       {
         "type": "IRC",
         "cite": "IRC §§163(j)(7)(B), 168(g)",
-        "note": "The electing real property trade or business exit and the ADS depreciation it forces on the trade's real property."
+        "note": "The electing real property trade or business exit and the ADS depreciation it imposes on the trade's real property."
       },
       {
         "type": "Reg",
         "cite": "Reg. §§1.163(j)-1 through 1.163(j)-11",
-        "note": "Definitions and the C corporation and partnership mechanics the Form 8990 workpapers implement."
+        "note": "The definitions and the C corporation and partnership mechanics that the Form 8990 workpapers implement."
       },
       {
         "type": "Admin",
         "cite": "Form 8990 and instructions",
-        "note": "Where the limitation is actually computed and the carryforwards are tracked."
+        "note": "Where the limitation is actually computed and every carryforward is tracked."
       }
     ],
     "requirements": [
-      "Material business interest expense — leveraged real estate, equipment-heavy operations, or acquisition debt large enough for the 30% ceiling to matter.",
-      "Gross receipts computed under the §448(c) aggregation rules and re-tested annually against the indexed ceiling.",
-      "For the real-property election: a qualifying trade and a modeled comparison of freed interest against ADS lives and forfeited bonus over the hold period.",
-      "Form 8990 workpapers maintained at every entity carrying interest expense."
+      "Material business interest expense — leveraged real estate, equipment-heavy operations, or acquisition debt large enough that the 30% ceiling matters.",
+      "Gross receipts computed under the §448(c) aggregation rules and re-tested each year against the indexed ceiling.",
+      "For the real-property election: a qualifying trade plus a modeled comparison of freed interest against ADS lives and forfeited bonus over the hold period.",
+      "Form 8990 workpapers maintained for every entity carrying interest expense."
     ],
     "risks": [
-      "The real-property election is irrevocable: solving one bad year by electing out permanently surrenders bonus depreciation and cost-segregation value on the trade's real property — the most expensive way to fix a temporary problem.",
-      "Syndicate status in a loss year strips the small-business exemption with no receipts test at all; loss allocations to passive members must be screened before anyone relies on being under $32 million.",
-      "Partner-level carryforwards release only against excess taxable income from the same partnership and can be stranded indefinitely.",
-      "Growth or an acquisition can push aggregated receipts over the ceiling mid-plan, converting expected deductions into carryforwards — a cash-flow surprise in the year leverage is highest.",
-      "There is no leading litigation battleground here because the limitation is mechanical — the exposure is preparation failure (no Form 8990, missed aggregation, unscreened syndicate status), which is entirely self-inflicted."
+      "The real-property election is irrevocable: electing out to fix one bad year permanently surrenders bonus depreciation and cost-segregation value on the trade's real property — the most expensive cure for a temporary problem.",
+      "Syndicate status in a loss year strips the small-business exemption regardless of receipts; screen loss allocations to passive members before anyone relies on being under $32 million.",
+      "Partner-level carryforwards release only against excess taxable income from the same partnership and can sit stranded indefinitely.",
+      "Growth or an acquisition can push aggregated receipts over the ceiling mid-plan, converting expected deductions into carryforwards — a cash-flow surprise arriving in the year leverage peaks.",
+      "There is no leading litigation battleground here because the limitation is mechanical — the exposure is preparation failure (no Form 8990, missed aggregation, an unscreened syndicate), all of it self-inflicted."
     ],
     "stateNotes": [
-      "Conformity: state treatment of §163(j) is genuinely mixed — several states decouple from the federal limitation or compute it on a separate-entity basis, so a binding federal limitation does not automatically conform at the state line; confirm every state in the client's footprint.",
-      "PTET interaction: an entity-level PTET deduction reduces entity income and with it adjusted taxable income, shrinking the §163(j) ceiling — sequence the PTET election after confirming interest headroom.",
-      "Missouri: conforms to the federal limitation through rolling IRC conformity (RSMo §143.091), so Form 8990 results carry into the Missouri starting point; the Missouri SALT Parity Act election (RSMo §143.436) is the PTET whose ATI effect is flagged above."
+      "Conformity: state treatment of §163(j) is genuinely mixed — several states decouple from the federal limitation or compute it on a separate-entity basis, so a binding federal limitation does not automatically carry to the state line; confirm every state in the client's footprint.",
+      "PTET interaction: an entity-level PTET deduction lowers entity income and with it adjusted taxable income, shrinking the §163(j) ceiling — sequence the PTET election only after confirming interest headroom.",
+      "Missouri: conforms to the federal limitation through rolling IRC conformity (RSMo §143.091), so Form 8990 results flow into the Missouri starting point; the Missouri SALT Parity Act election (RSMo §143.436) is the PTET whose ATI effect is flagged above."
     ],
     "interactions": {
       "requires": [],
@@ -93,49 +98,49 @@
       "synergiesWith": ["equipment-timing"]
     },
     "reviewChecklist": [
-      "Aggregated three-year average gross receipts computed and documented against the 2026 $32 million ceiling.",
-      "Syndicate screen completed for any loss-year entity with passive or limited owners.",
-      "Where the limitation binds: Form 8990 prepared and the carryforward's release path identified before savings are presented.",
-      "Any real-property election modeled over the full hold period (freed interest vs. ADS and lost bonus) and acknowledged as irrevocable by the client in writing.",
+      "Aggregated three-year average gross receipts computed and documented against the 2026 ceiling of $32 million.",
+      "Syndicate screen completed for every loss-year entity with passive or limited owners.",
+      "Where the limitation binds: Form 8990 prepared and the carryforward's release path identified before any savings are presented.",
+      "Any real-property election modeled over the full hold period (freed interest vs. ADS and lost bonus) and its irrevocability acknowledged by the client in writing.",
       "No modeled strategy in this plan assumes an interest deduction the limitation would disallow."
     ]
   },
   "client": {
-    "teaser": "Past a certain size, loan interest stops being an automatic write-off — we make sure yours stays deductible.",
+    "teaser": "Past a certain size, loan interest stops being an automatic write-off — we keep yours deductible.",
     "headline": "Keep the interest on your business debt fully deductible",
     "plainEnglish": [
-      "Most owners assume loan interest is always a write-off. Above a certain size, the tax law caps it. The cap is tied to a share of your yearly earnings. Interest over the cap gets pushed into future years instead of helping you now.",
-      "There are exits. Businesses under about $32 million in sales are exempt, counting related companies together. Real estate businesses can make a one-time election that removes the cap for good. That election has a real cost, so it needs careful math first.",
-      "Our job is to check whether the cap touches you before you borrow. If it could, we measure how much interest is at risk and plan around it. Nothing here changes how you run the business — it protects deductions you were counting on."
+      "Most owners assume loan interest is always a write-off. Above a certain size, the tax law caps it. The cap is tied to a share of what you earn each year. Interest over the cap gets pushed into future years instead of helping you now.",
+      "There are ways out. Businesses under about $32 million in sales are exempt, counting related companies together. Real estate businesses can make a one-time choice that removes the cap for good. That choice has a real cost, so it needs careful math first.",
+      "Our job is to check whether the cap touches you before you borrow. If it could, we measure how much interest is at risk and plan around it. Nothing here changes how you run the business — it protects deductions you were already counting on."
     ],
-    "analogy": "It works like a height limit on a parking garage. Most cars never notice it. If you drive something tall, you want to know the clearance before you pull in.",
+    "analogy": "Think of a height limit on a parking garage. Most cars never notice it. If you drive something tall, you want to know the clearance before you pull in.",
     "benefits": [
       "Confirms your interest write-offs are safe before you sign new debt",
       "Keeps smaller companies inside the full exemption",
-      "For real estate: a permanent exit, tested with real numbers first",
+      "For real estate: a permanent way out, tested with real numbers first",
       "No surprises in a down year, when the cap bites hardest"
     ],
     "steps": [
       "WE measure your sales against the exemption line, counting related companies the way the IRS does.",
       "WE compute how much interest is at risk if the cap applies.",
-      "WE model the real estate election both ways before anything is signed.",
+      "WE model the real estate choice both ways before anything is signed.",
       "YOU loop us in before major new borrowing so the plan stays current."
     ],
     "clientCommitments": [
       "Tell us before taking on major new debt or buying another company",
-      "Share year-end financials for each related company so the sales test is right"
+      "Share year-end financials for each related company so the sales test is accurate"
     ]
   },
   "engagement": {
     "implementationEffort": "multi-step",
     "annualMaintenance": [
-      "Re-test aggregated gross receipts against the indexed ceiling each year",
+      "Re-test aggregated gross receipts against the indexed ceiling every year",
       "Screen loss-year allocations for syndicate status before relying on the exemption",
-      "Refresh the Form 8990 computation and carryforward schedule with the return"
+      "Refresh the Form 8990 computation and carryforward schedule alongside the return"
     ],
     "deliverables": [
-      "Gross-receipts aggregation workpaper with the annual exemption test",
-      "Form 8990 computation and carryforward schedule where the limitation binds",
+      "Gross-receipts aggregation workpaper documenting the annual exemption test",
+      "Form 8990 computation and carryforward schedule wherever the limitation binds",
       "Election memo modeling any real-property trade election over the hold period"
     ],
     "feeGuidanceBand": null

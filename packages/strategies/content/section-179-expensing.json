@@ -1,6 +1,6 @@
 {
   "id": "section-179-expensing",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Section 179 Expensing",
@@ -23,58 +28,58 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "5k-25k",
   "advisor": {
-    "summary": "§179 is the precision tool of first-year expensing: an election, made asset by asset and dollar by dollar on Form 4562, to deduct qualifying tangible personal property — and, under §179(f), roofs, HVAC, fire protection, and security systems on nonresidential buildings — in the placed-in-service year. For 2026 the ceiling is $2,560,000, phasing out dollar-for-dollar once total §179 property placed in service passes $4,090,000 (OBBBA-raised and indexed). Two limits shape every election: the deduction cannot exceed aggregate active-business taxable income under §179(b)(3) (the excess carries forward), and for pass-throughs both the dollar and income limits apply at the entity and again at the owner. With 100% bonus back as the volume tool, §179's remaining edge is selectivity — hitting a taxable-income target exactly, and reaching building components bonus cannot touch. The engine models the elected amount as a current business deduction.",
+    "summary": "§179 is first-year expensing with precision: an election, made asset by asset and dollar by dollar on Form 4562, to deduct qualifying tangible personal property — and, under §179(f), roofs, HVAC, fire protection, and security systems on nonresidential buildings — in the placed-in-service year. For 2026 the ceiling is $2,560,000, phasing out dollar-for-dollar once total §179 property placed in service passes $4,090,000 (OBBBA-raised and indexed). Two limits govern every election: the deduction cannot exceed aggregate active-business taxable income under §179(b)(3) (the excess carries forward), and for pass-throughs both the dollar and income limits apply at the entity and again at the owner. With 100% bonus back as the volume tool, §179's remaining edge is selectivity — landing a taxable-income target exactly, and reaching building components bonus cannot touch. The engine models the elected amount as a current business deduction.",
     "mechanics": [
-      "The election is granular: on Form 4562 the taxpayer can expense one asset, half of another, and depreciate the rest — unlike bonus under §168(k), which is all-or-nothing by class.",
-      "Eligible property under §179(d) is tangible personal property used in an active trade or business, off-the-shelf software, and qualified real property under §179(f) — roofs, HVAC, fire protection and alarm, and security systems on nonresidential buildings, which are 39-year property bonus cannot expense.",
-      "The 2026 dollar limit is $2,560,000, reduced dollar-for-dollar as total §179 property placed in service exceeds $4,090,000 — the phase-out targets genuinely large acquisition years.",
-      "§179(b)(3) caps the deduction at aggregate active-business taxable income (W-2 wages count toward the base); the disallowed excess carries forward indefinitely rather than disappearing.",
+      "The election works asset by asset: on Form 4562 the taxpayer can expense one asset in full, half of another, and depreciate the remainder — unlike bonus under §168(k), which is all-or-nothing by class.",
+      "Eligible property under §179(d) covers tangible personal property used in an active trade or business, off-the-shelf software, and qualified real property under §179(f) — roofs, HVAC, fire protection and alarm, and security systems on nonresidential buildings, 39-year property that bonus cannot expense.",
+      "The 2026 dollar limit is $2,560,000, reduced dollar-for-dollar once total §179 property placed in service tops $4,090,000 — a phase-out aimed at genuinely large acquisition years.",
+      "§179(b)(3) caps the deduction at aggregate active-business taxable income (W-2 wages count toward the base); the disallowed excess carries forward indefinitely rather than vanishing.",
       "For S corporations and partnerships, the limits apply twice — at the entity and again at each owner — and the deduction passes through separately stated.",
-      "Recapture under §179(d)(10) applies if business use drops to 50% or below during the recovery period."
+      "Recapture under §179(d)(10) applies if business use falls to 50% or below during the recovery period."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §179(a), (b)",
-        "note": "The expensing election and the 2026 dollar limit / phase-out structure as raised by OBBBA and indexed."
+        "note": "The expensing election plus the 2026 dollar limit and phase-out structure, as raised by OBBBA and indexed."
       },
       {
         "type": "IRC",
         "cite": "IRC §179(b)(3)",
-        "note": "The taxable-income limitation: capped at aggregate active-business income, with an indefinite carryforward of the excess."
+        "note": "The taxable-income limitation: capped at aggregate active-business income, with indefinite carryforward of the excess."
       },
       {
         "type": "IRC",
         "cite": "IRC §179(d), (f)",
-        "note": "Eligible-property definition, the purchase requirement, qualified real property (roofs, HVAC, fire/alarm, security on nonresidential buildings), and the (d)(10) recapture rule."
+        "note": "The eligible-property definition, the purchase requirement, qualified real property (roofs, HVAC, fire/alarm, security on nonresidential buildings), and the (d)(10) recapture rule."
       },
       {
         "type": "IRC",
         "cite": "IRC §168(k)",
-        "note": "The bonus alternative — the comparison every §179 election is made against."
+        "note": "The bonus alternative — the benchmark every §179 election is weighed against."
       },
       {
         "type": "Admin",
         "cite": "Form 4562 and instructions",
-        "note": "Part I is where the election and the asset-by-asset amounts are reported with a timely filed return."
+        "note": "Part I is where the election and the asset-by-asset amounts are reported on a timely filed return."
       }
     ],
     "requirements": [
       "Qualifying property placed in service during the year in an active trade or business — not a mere investment activity.",
-      "Aggregate active-business taxable income at least equal to the desired deduction, or a deliberate acceptance of the carryforward.",
-      "Total §179 property below the phase-out ceiling to preserve the full limit.",
-      "Business use above 50%, maintained through the recovery period."
+      "Aggregate active-business taxable income at least equal to the intended deduction, or a deliberate acceptance of the carryforward.",
+      "Total §179 property below the phase-out ceiling to keep the full limit.",
+      "Business use above 50%, maintained throughout the recovery period."
     ],
     "risks": [
-      "The signature misfire is electing §179 on rental-property assets: most rental real estate is not an active trade or business for §179 purposes, and the disallowance is mechanical — the analysis belongs in the file before the election, not in the response to a notice; no marquee case governs because the statute does the work.",
+      "The signature misfire is electing §179 on rental-property assets: most rental real estate is not an active trade or business for §179 purposes, and the disallowance is mechanical — put the analysis in the file before the election, not in the response to a notice; no marquee case governs because the statute does the work.",
       "An election above the income limit produces a carryforward, not savings — pointless where bonus would deduct currently.",
-      "Owners aggregating §179 from multiple entities can hit the owner-level cap unexpectedly.",
-      "A business-use drop to 50% or below triggers recapture at ordinary rates.",
-      "Several states impose lower §179 ceilings and require addbacks, so the state deduction can differ sharply from the federal one."
+      "Owners aggregating §179 from multiple entities can hit the owner-level cap without warning.",
+      "A drop in business use to 50% or below triggers recapture at ordinary rates.",
+      "Several states impose lower §179 ceilings and require addbacks, so the state deduction can diverge sharply from the federal one."
     ],
     "stateNotes": [
-      "Conformity: state §179 conformity is messier than bonus — a number of states cap the deduction at their own lower limits with addback and recovery schedules; screen the footprint before promising a combined rate.",
-      "Missouri conforms to the federal §179 limits through its federal-AGI starting point (RSMo §143.121) with no separate Missouri cap.",
+      "Conformity: state §179 conformity is messier than bonus — several states cap the deduction at their own lower limits with addback and recovery schedules; screen the footprint before promising a combined rate.",
+      "Missouri conforms to the federal §179 limits through its federal-AGI starting point (RSMo §143.121), with no separate Missouri cap.",
       "PTET interaction: §179 passes through separately stated while the PTET is computed on entity income — confirm the state’s PTET base treats separately stated §179 consistently before projecting the credit."
     ],
     "interactions": {
@@ -84,46 +89,46 @@
     },
     "reviewChecklist": [
       "Every elected asset confirmed as active-trade-or-business property — rental-side assets specifically screened.",
-      "The §179(b)(3) income limit computed at entity and owner level before amounts are chosen.",
+      "The §179(b)(3) income limit computed at entity and owner level before amounts are set.",
       "Election coordinated with bonus: §179 for the targeted dollars and reachable building components, bonus for the volume.",
-      "Listed-property business-use percentages documented and the recapture exposure calendared.",
-      "Form 4562 amounts tie to the fixed-asset additions schedule."
+      "Listed-property business-use percentages documented and recapture exposure calendared.",
+      "Form 4562 amounts tie out to the fixed-asset additions schedule."
     ]
   },
   "client": {
-    "teaser": "Pick exactly which purchases to write off now — down to the dollar.",
-    "headline": "Write off equipment the year you buy it — with full control",
+    "teaser": "Choose exactly which purchases to write off now — down to the dollar.",
+    "headline": "Write off equipment the year you buy it — on your terms",
     "plainEnglish": [
-      "When your business buys equipment, computers, or even a new roof or HVAC for a commercial building, the normal rule spreads the deduction over many years. A special election lets you deduct the cost right away, up to a very generous yearly limit.",
-      "What makes this election different is control. You choose which purchases to write off now and which to spread out — dollar by dollar. That lets us land your taxable income right where it saves you the most.",
-      "It also reaches things other fast write-off rules miss, like certain building components on commercial property. We use it alongside the other rules, each where it works best."
+      "When your business buys equipment, computers, or even a new roof or HVAC for a commercial building, the normal rule spreads the deduction over many years. A special election lets you deduct the cost right away, up to a very large yearly limit.",
+      "What sets this election apart is control. You pick which purchases to write off now and which to spread out — dollar by dollar. That lets us land your taxable income right where it saves you the most.",
+      "It also reaches things other fast write-off rules miss, like certain building parts on commercial property. We use it alongside the other rules, each where it works best."
     ],
-    "analogy": "Think of it as a dimmer switch for deductions instead of an on-off switch — we dial in the exact amount that fits your year.",
+    "analogy": "It is a dimmer switch for deductions, not an on-off switch — we dial in the exact amount that fits your year.",
     "benefits": [
-      "Immediate deduction for qualifying purchases, up to the annual limit",
-      "You choose the assets and amounts — precise control of timing",
+      "Deduct qualifying purchases right away, up to the annual limit",
+      "You pick the assets and amounts — precise control of timing",
       "Reaches used equipment and certain commercial building upgrades"
     ],
     "steps": [
       "WE review everything the business placed in service this year.",
       "WE compute the amount that saves the most — not just the maximum.",
-      "WE make the election on your return; nothing separate to file.",
+      "WE make the election on your return; there is nothing separate to file.",
       "YOU keep the assets in business use — heavy personal use can claw the deduction back."
     ],
     "clientCommitments": [
-      "Report large purchases before year-end",
+      "Tell us about large purchases before year-end",
       "Keep business-use records for vehicles and shared-use equipment"
     ]
   },
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
-      "Annual coordination of §179 elections with bonus depreciation before filing",
+      "Coordinate §179 elections with bonus depreciation before each filing",
       "Track business-use percentages on listed property",
       "Monitor carryforwards created by the income limit"
     ],
     "deliverables": [
-      "Asset-by-asset election schedule with the savings analysis",
+      "Asset-by-asset election schedule with savings analysis",
       "Form 4562 filing reflecting the chosen amounts",
       "Recapture-exposure log for the client file"
     ],

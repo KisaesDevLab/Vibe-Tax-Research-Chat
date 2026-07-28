@@ -1,6 +1,6 @@
 {
   "id": "qip-bonus",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,16 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-07-28",
+      "note": "Corrected permanent 100% bonus test: property must be both acquired after January 19, 2025 and placed in service after that date."
     }
   ],
   "name": "Qualified Improvement Property (QIP) Bonus",
@@ -23,58 +33,58 @@
   "entityTypes": ["s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "25k-100k",
   "advisor": {
-    "summary": "Qualified improvement property — an improvement made by the taxpayer to the interior of nonresidential real property after the building is first placed in service — is 15-year MACRS property under §168(e)(6), which puts it inside the 20-year window for 100% bonus depreciation under §168(k). The practical effect is dramatic: a tenant buildout or interior renovation that naively lands on a 39-year schedule instead deducts in full in the placed-in-service year, and the classification is categorical — no engineering study required. The statutory exclusions are equally categorical: building enlargements, elevators and escalators, and internal structural framework never qualify, and residential interiors are out entirely. Prior-year misclassifications repair prospectively through an automatic method change with a §481(a) catch-up in the tradition of Rev. Proc. 2020-25. The engine models the QIP amount as a current entity-level deduction.",
+    "summary": "Qualified improvement property — an improvement the taxpayer makes to the interior of nonresidential real property after the building first goes into service — is 15-year MACRS property under §168(e)(6), which places it inside the 20-year window for 100% bonus depreciation under §168(k). The practical effect is dramatic: a tenant buildout or interior renovation that would naively land on a 39-year schedule instead deducts in full in the placed-in-service year, and the classification is categorical — no engineering study required. The statutory exclusions are just as categorical: building enlargements, elevators and escalators, and internal structural framework never qualify, and residential interiors are out entirely. Prior-year misclassifications are repaired prospectively through an automatic method change with a §481(a) catch-up in the tradition of Rev. Proc. 2020-25. The engine models the QIP amount as a current entity-level deduction.",
     "mechanics": [
-      "The §168(e)(6) definition has three gates: interior portion of nonresidential real property, improvement placed in service after the building itself first was, and made by the taxpayer — with statutory carve-outs for enlargement, elevators and escalators, and internal structural framework.",
-      "Because QIP's recovery period is 15 years, it is qualified property under §168(k): 100% bonus in the placed-in-service year, permanent for post-January 19, 2025 acquisitions under P.L. 119-21.",
-      "Typical qualifying scope — drywall, interior doors and ceilings, interior lighting, flooring, interior plumbing and electrical distribution, fire suppression — is identified from invoices, not engineering studies; the discipline is scoping contracts so qualifying and non-qualifying work are separately stated.",
-      "A prior-year misclassification (QIP depreciated at 39 years) is corrected through a Form 3115 automatic method change with a §481(a) catch-up, following the template of Rev. Proc. 2020-25.",
+      "The §168(e)(6) definition runs on three gates: an interior portion of nonresidential real property, an improvement placed in service after the building itself first was, and work done by the taxpayer — with statutory carve-outs for enlargement, elevators and escalators, and internal structural framework.",
+      "With a 15-year recovery period, QIP is qualified property under §168(k): 100% bonus in the placed-in-service year, made permanent by P.L. 119-21 for property that is both acquired after January 19, 2025 and placed in service after that date — both legs of the test must be met.",
+      "Typical qualifying scope — drywall, interior doors and ceilings, interior lighting, flooring, interior plumbing and electrical distribution, fire suppression — comes off invoices, not engineering studies; the discipline lies in scoping contracts so qualifying and non-qualifying work are separately stated.",
+      "A prior-year misclassification (QIP depreciated over 39 years) is corrected through a Form 3115 automatic method change with a §481(a) catch-up, on the template of Rev. Proc. 2020-25.",
       "Where the year-one loss would be trapped, electing out of bonus for the 15-year class under §168(k)(7) leaves QIP on 15-year straight line — still far faster than the 39-year default."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §168(e)(6)",
-        "note": "The QIP definition and its exclusions — the categorical gate every invoice is scoped against."
+        "note": "The QIP definition and its exclusions — the categorical gate against which every invoice is scoped."
       },
       {
         "type": "IRC",
         "cite": "IRC §168(k)",
-        "note": "100% bonus for property with a recovery period of 20 years or less; QIP’s 15-year life is the ticket in, permanent under OBBBA, with the (k)(7) class-level election out as the deliberate-slowdown option."
+        "note": "100% bonus for property with a recovery period of 20 years or less; QIP’s 15-year life supplies the ticket in, permanent under OBBBA, with the (k)(7) class-level election out as the deliberate-slowdown option."
       },
       {
         "type": "IRC",
         "cite": "P.L. 116-136 (CARES Act) §2307",
-        "note": "The retroactive fix that assigned QIP its intended 15-year life after the TCJA drafting error, restoring bonus eligibility."
+        "note": "The retroactive fix assigning QIP its intended 15-year life after the TCJA drafting error, restoring bonus eligibility."
       },
       {
         "type": "IRC",
         "cite": "IRC §481(a)",
-        "note": "The catch-up adjustment mechanism for correcting prior-year misclassifications."
+        "note": "The catch-up adjustment that trues up prior-year misclassifications when the method changes."
       },
       {
         "type": "Admin",
         "cite": "Rev. Proc. 2020-25",
-        "note": "The automatic method-change template for fixing QIP recovery periods via Form 3115."
+        "note": "The automatic method-change template for fixing QIP recovery periods on Form 3115."
       }
     ],
     "requirements": [
-      "A nonresidential building already in service before the improvements — day-one buildout of a brand-new building is not QIP.",
-      "Interior improvements only, made by the taxpayer; enlargements, elevators/escalators, and structural framework excluded by statute.",
-      "Invoices and contracts scoped so qualifying interior work is separately stated from excluded work.",
+      "A nonresidential building already in service before the improvements — the day-one buildout of a brand-new building is not QIP.",
+      "Interior improvements only, made by the taxpayer; enlargements, elevators/escalators, and structural framework are excluded by statute.",
+      "Invoices and contracts scoped so qualifying interior work is stated separately from excluded work.",
       "A use path for the deduction — passive-loss gating on the rental side, the excess-business-loss limit on the business side."
     ],
     "risks": [
-      "The leading audit theory is misclassification — sweeping structural, exterior, or enlargement work into QIP — and the exam is fought on invoices, not doctrine; there is no signature case because the definition is mechanical.",
+      "The leading audit theory is misclassification — sweeping structural, exterior, or enlargement work into QIP — and the exam is won or lost on invoices, not doctrine; no signature case exists because the definition is mechanical.",
       "A large year-one deduction can be trapped by §469 for landlords without REPS or short-term-rental treatment, or limited by §461(l) on the business side — run the elect-out analysis before defaulting to bonus.",
       "Fully bonused improvements carry recapture exposure on disposition.",
-      "Who deducts depends on who owns the improvements — lease terms and construction-allowance treatment decide landlord versus tenant, and getting the lease wrong forfeits the deduction.",
-      "State bonus decoupling puts the state deduction on a much slower schedule."
+      "Who deducts turns on who owns the improvements — lease terms and construction-allowance treatment decide landlord versus tenant, and getting the lease wrong forfeits the deduction.",
+      "State bonus decoupling puts the state deduction on a far slower schedule."
     ],
     "stateNotes": [
-      "Conformity: states that decouple from §168(k) still generally respect the 15-year life, so QIP recovers at 15-year straight line for state purposes in addback states — a split-schedule computation to build once and reuse.",
-      "Missouri conforms to federal bonus through its federal-AGI starting point (RSMo §143.121), so the full year-one deduction flows to the Missouri return.",
-      "PTET interaction: the deduction reduces the electing entity’s income before any PTET computation; re-project the PTET accrual after the QIP decision."
+      "Conformity: even states that decouple from §168(k) generally respect the 15-year life, so QIP recovers at 15-year straight line for state purposes in addback states — a split-schedule computation built once and reused.",
+      "Missouri conforms to federal bonus through its federal-AGI starting point (RSMo §143.121), so the full year-one deduction flows straight to the Missouri return.",
+      "PTET interaction: the deduction reduces the electing entity’s income before any PTET computation; re-project the PTET accrual once the QIP decision is made."
     ],
     "interactions": {
       "requires": [],
@@ -83,35 +93,35 @@
     },
     "reviewChecklist": [
       "Building confirmed nonresidential and in service before the improvement.",
-      "Invoices scoped: qualifying interior work separately stated; enlargements, elevators, structural framing excluded.",
-      "Bonus vs. §168(k)(7) elect-out analysis completed against the client’s loss-usability picture.",
-      "Ownership of the improvements (landlord vs. tenant) confirmed against the lease.",
+      "Invoices scoped: qualifying interior work separately stated; enlargements, elevators, and structural framing excluded.",
+      "Bonus versus §168(k)(7) elect-out analysis completed against the client’s loss-usability picture.",
+      "Ownership of the improvements (landlord versus tenant) confirmed against the lease.",
       "Prior-year 39-year misclassifications screened; Form 3115 catch-up prepared where found."
     ]
   },
   "client": {
-    "teaser": "Interior upgrades to commercial space can be written off in one year, not 39.",
+    "teaser": "Interior upgrades to commercial space can be written off in one year, not spread over 39.",
     "headline": "Deduct interior building work now, not over 39 years",
     "plainEnglish": [
       "Improve the inside of a commercial building — remodel offices, build out tenant space, upgrade lighting or flooring — and the default tax schedule spreads your deduction over 39 years. At that pace, today's project is still dripping onto your return decades from now.",
-      "The tax law puts most interior work on commercial buildings in a fast lane instead. It qualifies for a full write-off in the year the work is done. No engineering study is needed — the category itself qualifies.",
-      "The main rules: interior work only, on a commercial building that was already in use. Additions, elevators, and structural framing do not count. We scope the project with your contractor up front so the invoices tell the right story, and we check that a big deduction actually helps you this year."
+      "The tax law puts most interior work on commercial buildings in a fast lane instead. It can be written off in full in the year the work is done. No engineering study is needed — the category itself qualifies.",
+      "The main rules: interior work only, on a commercial building already in use. Additions, elevators, and structural framing do not count. We scope the project with your contractor up front so the invoices tell the right story, and we check that a big deduction actually helps you this year."
     ],
-    "analogy": "It is like finding an express lane for a payment the law was going to mail you in pieces over 39 years.",
+    "analogy": "It is like finding an express lane for a payment the law planned to mail you in pieces over 39 years.",
     "benefits": [
       "Deduct 100% of qualifying interior improvements in year one",
       "No engineering study required",
       "Covers tenant buildouts, remodels, lighting, and flooring",
-      "A slower schedule can be elected when the big deduction would be wasted"
+      "A slower schedule can be chosen when the big deduction would go to waste"
     ],
     "steps": [
       "WE review the renovation plans against the qualification rules before work begins.",
-      "WE coordinate with your contractor so bids separate qualifying work.",
-      "WE model full write-off versus a slower schedule and file the right election.",
-      "YOU send us the construction contracts and invoices as the project closes out."
+      "WE coordinate with your contractor so bids keep qualifying work separate.",
+      "WE model the full write-off against a slower schedule and file the right election.",
+      "YOU send us the construction contracts and invoices as the project wraps up."
     ],
     "clientCommitments": [
-      "Involve us at the planning stage, before contracts are signed",
+      "Bring us in at the planning stage, before contracts are signed",
       "Have contractors itemize invoices between interior work and excluded work"
     ]
   },
@@ -119,11 +129,11 @@
     "implementationEffort": "multi-step",
     "annualMaintenance": [
       "Screen each year's building projects for QIP treatment before filing",
-      "Review prior returns for misclassified improvements worth a catch-up filing"
+      "Review prior returns for misclassified improvements that merit a catch-up filing"
     ],
     "deliverables": [
       "QIP scoping memo mapping the project against the statutory exclusions",
-      "Depreciation schedule with the bonus or elect-out treatment applied",
+      "Depreciation schedule reflecting the bonus or elect-out treatment",
       "Form 3115 catch-up filing where prior years were misclassified"
     ],
     "feeGuidanceBand": null

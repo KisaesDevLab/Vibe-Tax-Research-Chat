@@ -1,6 +1,6 @@
 {
   "id": "kids-401k",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "401(k) Contributions for Working Children",
@@ -23,63 +28,63 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership"],
   "typicalSavingsBand": "under-5k",
   "advisor": {
-    "summary": "A child legitimately on the family payroll is an employee, and if the plan's eligibility terms admit them, they can defer up to the full §402(g) limit — $24,500 for 2026 — capped at actual compensation. The design insight is the bracket: with wages inside the $16,100 standard deduction, a pre-tax deferral deducts against income that was never going to be taxed, so a §402A Roth deferral costs the same zero today and exits tax-free after five decades of compounding. The gating question is the plan document — §410(a)(1) only caps how restrictive eligibility may be (age 21, one year of service); admitting a 15-year-old requires terms written that liberally, and whatever terms admit the owner's children admit every similarly situated employee. Advisory because the deferral lives on the child's return: the parents' deduction for the wages themselves is carried by the hire-children strategy.",
+    "summary": "A child legitimately on the family payroll is an employee, and if the plan's eligibility terms admit them, they can defer up to the full §402(g) limit — $24,500 for 2026 — never more than actual compensation. The design insight is the bracket: with wages inside the $16,100 standard deduction, a pre-tax deferral deducts against income that was never going to be taxed, so a §402A Roth deferral costs the same zero today and exits tax-free after five decades of compounding. The gating question is the plan document — §410(a)(1) caps only how restrictive eligibility may be (age 21, one year of service); admitting a 15-year-old requires terms drafted that liberally, and whatever terms admit the owner's children admit every similarly situated employee. Advisory because the deferral lives on the child's return: the parents' deduction for the wages themselves belongs to the hire-children strategy.",
     "mechanics": [
-      "§410(a)(1) sets the maximum eligibility conditions a plan may impose — age 21 and a year of service — but a plan may be more liberal; a solo or family plan drafted with immediate eligibility is what lets a young teen participate.",
-      "The deferral ceiling is §402(g) — $24,500 for 2026 per Notice 2025-67 — but never more than actual compensation; a child earning $16,100 can defer all of it.",
-      "At a 0% effective bracket, elect Roth: §402A deferrals give up no deduction worth having and convert five decades of growth into tax-free distributions.",
-      "Employer profit-sharing on the child's compensation is possible within the §415(c) annual-additions limit ($72,000 for 2026), but §401(a)(4) nondiscrimination testing applies across every eligible employee.",
-      "Coverage spillover is the real design cost: eligibility generous enough for the owner's children extends to all employees who meet it — free in a family-only shop, priced carefully anywhere else."
+      "§410(a)(1) fixes the strictest eligibility conditions a plan may impose — age 21 and a year of service — but a plan may be more liberal; a solo or family plan drafted with immediate eligibility is what lets a young teen participate.",
+      "§402(g) sets the deferral ceiling — $24,500 for 2026 per Notice 2025-67 — but never more than actual compensation; a child earning $16,100 can defer every dollar of it.",
+      "At a 0% effective bracket, elect Roth: §402A deferrals surrender no deduction worth having and turn five decades of growth into tax-free distributions.",
+      "Employer profit-sharing on the child's compensation can ride within the §415(c) annual-additions limit ($72,000 for 2026), but §401(a)(4) nondiscrimination testing applies across every eligible employee.",
+      "Coverage spillover is the real design cost: eligibility generous enough to admit the owner's children extends to every employee who meets it — free in a family-only shop, priced carefully anywhere else."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §402(g)",
-        "note": "The elective deferral limit — $24,500 for 2026 — applied per individual and capped at compensation."
+        "note": "The elective deferral limit — $24,500 for 2026 — set per individual and capped at compensation."
       },
       {
         "type": "IRC",
         "cite": "IRC §402A",
-        "note": "Designated Roth deferrals — the right election at a child's 0% bracket."
+        "note": "Designated Roth deferrals — the correct election at a child's 0% bracket."
       },
       {
         "type": "IRC",
         "cite": "IRC §410(a)(1)",
-        "note": "The statutory ceiling on eligibility restrictions; the plan document decides whether a minor can participate."
+        "note": "The statutory ceiling on eligibility restrictions — the plan document decides whether a minor can participate."
       },
       {
         "type": "IRC",
         "cite": "IRC §415(c)",
-        "note": "The annual-additions limit ($72,000 for 2026) governing deferrals plus employer contributions."
+        "note": "The annual-additions limit ($72,000 for 2026) covering deferrals plus employer contributions."
       },
       {
         "type": "IRC",
         "cite": "IRC §401(a)(4)",
-        "note": "Nondiscrimination testing — employer contributions favoring the owner's children must pass when other employees are eligible."
+        "note": "Nondiscrimination testing — employer contributions favoring the owner's children must pass it when other employees are eligible."
       },
       {
         "type": "Admin",
         "cite": "Notice 2025-67",
-        "note": "The 2026 COLA figures: $24,500 elective deferral, $72,000 annual additions."
+        "note": "The 2026 COLA figures — $24,500 elective deferral, $72,000 annual additions."
       }
     ],
     "requirements": [
       "The child is a bona fide W-2 employee with defensible wages — the deferral inherits the payroll's substance.",
-      "Plan eligibility terms that actually admit the child, amended if needed with the TPA or provider.",
-      "A signed deferral election executed before the compensation is earned, with guardian signatures where the provider requires them.",
+      "Plan eligibility terms that actually admit the child — amended with the TPA or provider if needed.",
+      "A deferral election signed before the compensation is earned, with guardian signatures where the provider requires them.",
       "Coverage and nondiscrimination analysis wherever non-family employees exist."
     ],
     "risks": [
-      "The deferral stands on the wages: if the child's employment fails exam as not bona fide, the plan contribution fails with it — the leading audit theory is the same unsubstantiated-family-wage challenge that runs through the hire-children file.",
-      "Liberalized eligibility admits outside part-timers too — matching and testing costs must be priced before the amendment is signed.",
-      "Custodian and provider mechanics for minors vary; some demand guardian signatures or refuse minor participants — confirm before promising the client.",
+      "The deferral stands on the wages: if the child's employment fails exam as not bona fide, the plan contribution falls with it — the leading audit theory is the same unsubstantiated-family-wage challenge that runs through the hire-children file.",
+      "Liberalized eligibility admits outside part-timers too — price the matching and testing costs before the amendment is signed.",
+      "Custodian and provider mechanics for minors vary — some demand guardian signatures or refuse minor participants; confirm before promising the client.",
       "A pre-tax election at a 0% bracket wastes the deduction and manufactures future taxable income — an unforced error the review should catch.",
-      "Plan money is the child's, locked behind distribution rules — it is retirement savings, not a college fund, and families should hear that up front."
+      "Plan money belongs to the child and sits behind distribution rules — it is retirement savings, not a college fund, and families should hear that up front."
     ],
     "stateNotes": [
       "Missouri conforms through the federal-AGI starting point (RSMo §143.121): pre-tax deferrals excluded federally stay excluded for Missouri, and Roth deferrals are after-tax in both systems.",
-      "No PTET interaction from the deferral itself — it lives on the child's return; the entity-side wage deduction (which does move a Missouri PTET base) is carried by the hire-children strategy.",
-      "Missouri-specific: a child with wages inside the federal standard deduction generally owes no Missouri tax either, since Missouri piggybacks the federal standard deduction."
+      "No PTET interaction from the deferral itself — it lives on the child's return; the entity-side wage deduction (which does move a Missouri PTET base) belongs to the hire-children strategy.",
+      "Missouri-specific: a child whose wages sit inside the federal standard deduction generally owes no Missouri tax either, because Missouri piggybacks the federal standard deduction."
     ],
     "interactions": {
       "requires": ["hire-children"],
@@ -88,20 +93,20 @@
     },
     "reviewChecklist": [
       "Child's W-2 wages and hire-children documentation verified before any deferral is set.",
-      "Plan document eligibility reviewed — and the spillover cost of any amendment quantified where outside employees exist.",
+      "Plan document eligibility reviewed, with the spillover cost of any amendment quantified where outside employees exist.",
       "Roth election confirmed as the default at the child's bracket, with the reasoning documented.",
-      "Deferral election signed and dated before the compensation it covers; W-2 Box 12 coding checked at year-end."
+      "Deferral election signed and dated ahead of the compensation it covers; W-2 Box 12 coding checked at year-end."
     ]
   },
   "client": {
-    "teaser": "Start your child's retirement account four decades early — from wages that were barely taxed.",
+    "teaser": "Start your child's retirement account four decades early — with wages that were barely taxed.",
     "headline": "A 401(k) for your working kids — started at 15, not 35",
     "plainEnglish": [
       "Once your child truly works for the family business, they are an employee. If the company retirement plan allows it, they can put part of each paycheck into the 401(k) like any other worker. The 2026 limit is $24,500, though they can never put in more than they earned.",
       "Here is the powerful part. A child earning under $16,100 pays no income tax anyway. So the smart choice is usually the Roth version — they give up nothing today, and the money grows tax-free for life.",
-      "The head start is the whole story. Money invested at 15 has about 50 years to grow. One good year of saving at that age can become hundreds of thousands of tax-free dollars."
+      "The head start is the whole story. Money invested at 15 has about 50 years to grow. One good year of saving at that age can turn into hundreds of thousands of tax-free dollars."
     ],
-    "analogy": "Compound growth is a snowball rolling downhill. Most people start pushing at 35. This starts your child's snowball at 15 — same hill, forty extra years of rolling.",
+    "analogy": "Compound growth is a snowball rolling downhill. Most people give theirs a push at 35. This starts your child's snowball at 15 — same hill, forty extra years of rolling.",
     "benefits": [
       "Up to $24,500 a year (2026), limited only by what they earn",
       "The Roth option means the growth is never taxed again",
@@ -111,11 +116,11 @@
     "steps": [
       "WE check the plan's rules and update them if your child cannot yet join.",
       "YOU have your child sign a simple contribution election before the pay is earned.",
-      "WE set payroll to route part of each paycheck into the account.",
+      "WE set up payroll to route part of each paycheck into the account.",
       "WE review the amount each year as wages and limits change."
     ],
     "clientCommitments": [
-      "The wages behind the contributions stay real and documented",
+      "Keep the wages behind the contributions real and documented",
       "Treat the account as your child's retirement money — it is locked up by design"
     ]
   },
@@ -124,7 +129,7 @@
     "annualMaintenance": [
       "Reconcile deferrals to the child's W-2 and the current COLA limits each year",
       "Re-check plan eligibility and testing whenever staffing changes",
-      "Confirm the Roth election still fits the child's bracket"
+      "Confirm each year that the Roth election still fits the child's bracket"
     ],
     "deliverables": [
       "Plan eligibility review, with amendment coordination where needed",

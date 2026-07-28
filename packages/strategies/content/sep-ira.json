@@ -1,6 +1,6 @@
 {
   "id": "sep-ira",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial authoring to schema v1.0 with 2026 limits (Notice 2025-67)."
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "SEP-IRA",
@@ -23,73 +28,73 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership"],
   "typicalSavingsBand": "5k-25k",
   "advisor": {
-    "summary": "A Simplified Employee Pension under §408(k) is the lightest-weight employer retirement vehicle available: the business contributes a uniform percentage of pay into each eligible participant's own IRA, with no plan testing and no annual Form 5500. The 2026 per-participant ceiling is the lesser of 25% of compensation and $72,000, with compensation counted only up to $360,000; a self-employed owner's effective rate lands near 20% of net self-employment earnings because the contribution base is computed net of the contribution itself and half of SE tax. The decisive feature is calendar flexibility — the plan can be both adopted and funded as late as the extended return due date, making it the one significant retirement deduction still open after year-end. The decisive constraint is uniformity: whatever percentage the owner takes, every eligible employee must receive on their own pay.",
+    "summary": "A Simplified Employee Pension under §408(k) is the lightest-weight employer retirement vehicle available: the business contributes a uniform percentage of pay to each eligible participant's own IRA, with no plan testing and no annual Form 5500. The 2026 per-participant ceiling is the lesser of 25% of compensation and $72,000, counting compensation only up to $360,000; a self-employed owner's effective rate lands near 20% of net self-employment earnings because the contribution base is computed net of the contribution itself and half of SE tax. The decisive feature is calendar flexibility — the plan can be adopted and funded as late as the extended return due date, which makes it the one significant retirement deduction still open after year-end. The decisive constraint is uniformity: whatever percentage the owner takes, every eligible employee must receive on their own pay.",
     "mechanics": [
-      "The SEP is employer-funded only under §408(k) — there is no employee deferral layer and no catch-up. Contributions land in each participant's own traditional IRA, which is why administration is essentially zero: no trust, no testing, no annual government filing for the plan.",
-      "The employer's deduction is capped at 25% of aggregate participant compensation under §404(h), and each participant's allocation is separately capped at $72,000 for 2026 by §415(c). Compensation above $360,000 is ignored (§401(a)(17), 2026).",
-      "For a self-employed owner the 25% limit is circular: the base is net SE earnings reduced by half of SE tax and by the contribution being computed. Solving the circle yields roughly 20% of net self-employment earnings — the Pub. 560 worksheet is the operative computation, not a flat 25%.",
-      "Uniformity is the statute's core condition: §408(k)(3) requires the same contribution percentage for every eligible employee. An owner cannot take 20% while staff receive a token rate — the owner's percentage sets everyone's percentage.",
-      "Eligibility may lawfully be drawn as narrowly as age 21, service in three of the preceding five years, and a small indexed compensation floor — which keeps recent hires out of the plan for up to three years if the written terms say so and are applied consistently.",
-      "Timing is the strategic feature: under §404(h) a SEP adopted and funded by the return due date, including extensions, counts for the prior year. Adoption is a signature on Form 5305-SEP or a custodian prototype — no filing with the IRS."
+      "The SEP is employer-funded only under §408(k) — no employee deferral layer, no catch-up. Contributions land in each participant's own traditional IRA, which is why administration is essentially zero: no trust, no testing, no annual government filing for the plan.",
+      "The employer's deduction caps at 25% of aggregate participant compensation under §404(h), and each participant's allocation is separately capped at $72,000 for 2026 by §415(c). Compensation above $360,000 is ignored (§401(a)(17), 2026).",
+      "For a self-employed owner the 25% limit is circular: the base is net SE earnings minus half of SE tax and minus the contribution being computed. Solving the circle yields roughly 20% of net self-employment earnings — the Pub. 560 worksheet is the operative computation, not a flat 25%.",
+      "Uniformity is the statute's core condition: §408(k)(3) requires the same contribution percentage for every eligible employee. The owner cannot take 20% while staff receive a token rate — the owner's percentage sets everyone's.",
+      "Eligibility may lawfully be drawn as narrowly as age 21, service in three of the preceding five years, and a small indexed compensation floor — keeping recent hires out of the plan for up to three years if the written terms say so and are applied consistently.",
+      "Timing is the strategic feature: under §404(h), a SEP adopted and funded by the return due date, including extensions, counts for the prior year. Adoption is a signature on Form 5305-SEP or a custodian prototype — nothing is filed with the IRS."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §408(k)",
-        "note": "The SEP statute: employer-only funding into participant IRAs, the uniform-percentage condition in §408(k)(3), and the permissible eligibility restrictions."
+        "note": "The SEP statute: employer-only funding into participant IRAs, the uniform-percentage condition of §408(k)(3), and the permissible eligibility restrictions."
       },
       {
         "type": "IRC",
         "cite": "IRC §404(h)",
-        "note": "25%-of-compensation deduction limit, and the rule treating contributions made by the extended due date as made for the prior year — the after-year-end lever."
+        "note": "Sets the 25%-of-compensation deduction limit and treats contributions made by the extended due date as made for the prior year — the after-year-end lever."
       },
       {
         "type": "IRC",
         "cite": "IRC §415(c)",
-        "note": "Per-participant allocation cap — $72,000 for 2026; the SEP limit is the lesser of this and 25% of compensation."
+        "note": "Per-participant allocation cap — $72,000 for 2026; the SEP limit is the lesser of this figure and 25% of compensation."
       },
       {
         "type": "IRC",
         "cite": "IRC §401(a)(17)",
-        "note": "Compensation counted per participant capped at $360,000 for 2026."
+        "note": "Caps the compensation counted per participant at $360,000 for 2026."
       },
       {
         "type": "IRC",
         "cite": "IRC §408(d)(2)",
-        "note": "IRA aggregation: a SEP balance enters the pro-rata fraction on Roth conversions, which is why the SEP collides with backdoor Roth planning."
+        "note": "IRA aggregation: a SEP balance enters the pro-rata fraction on Roth conversions — the reason the SEP collides with backdoor Roth planning."
       },
       {
         "type": "Admin",
         "cite": "Form 5305-SEP",
-        "note": "The model plan document; signing it (or a prototype) is the entire establishment step, and it is never filed with the IRS."
+        "note": "The model plan document; signing it (or a prototype) completes establishment, and it is never filed with the IRS."
       },
       {
         "type": "Admin",
         "cite": "IRS Publication 560",
-        "note": "The self-employed rate worksheet resolving the circular ~20% computation, plus the eligibility mechanics."
+        "note": "The self-employed rate worksheet that resolves the circular ~20% computation, plus the eligibility mechanics."
       },
       {
         "type": "Admin",
         "cite": "Notice 2025-67",
-        "note": "2026 cost-of-living adjustments fixing the $72,000 and $360,000 figures."
+        "note": "The 2026 cost-of-living adjustments that set the $72,000 and $360,000 figures."
       }
     ],
     "requirements": [
-      "Compensation to base the percentage on — net self-employment earnings or W-2 wages from the client's own entity.",
+      "Compensation to base the percentage on — net self-employment earnings, or W-2 wages from the client's own entity.",
       "Acceptance of the uniformity condition: funding every eligible employee at the owner's percentage is the go/no-go question for any business with staff.",
-      "Written plan adopted (Form 5305-SEP or prototype) and all contributions deposited by the return due date including extensions.",
+      "A written plan adopted (Form 5305-SEP or prototype) and every contribution deposited by the return due date, including extensions.",
       "Eligibility terms in writing and applied to every employee who meets them — no ad hoc exclusions."
     ],
     "risks": [
-      "The classic trap is the census: with staff on payroll, the owner's 20% becomes 20% of everyone's pay, and the employee cost frequently swallows the owner's tax benefit. Run the census math before adoption, not after.",
-      "A uniformity failure — owner funded, eligible employee skipped — disqualifies the arrangement, converting contributions into currently taxable compensation. This is the leading exam adjustment on SEPs.",
-      "A growing SEP balance contaminates the §408(d)(2) pro-rata calculation and effectively blocks backdoor Roth conversions for high earners; resolve the conflict (typically by rolling the SEP into a 401(k)) before recommending both.",
-      "At the same income, a solo 401(k) shelters strictly more because the SEP has no deferral layer and no catch-up — recommending a SEP where a solo plan was still available before year-end is a planning miss.",
-      "Contributions above the lesser-of-25%-or-$72,000 limit draw excise tax if not withdrawn timely; the circular self-employed math is where overfunding usually creeps in."
+      "The classic trap is the census: with staff on payroll, the owner's 20% becomes 20% of everyone's pay, and the employee cost often swallows the owner's tax benefit. Run the census math before adoption, not after.",
+      "A uniformity failure — owner funded, eligible employee skipped — disqualifies the arrangement and converts contributions into currently taxable compensation. It is the leading exam adjustment on SEPs.",
+      "A growing SEP balance contaminates the §408(d)(2) pro-rata calculation and effectively blocks backdoor Roth conversions for high earners; resolve the conflict — typically by rolling the SEP into a 401(k) — before recommending both.",
+      "At the same income, a solo 401(k) shelters strictly more, because the SEP has no deferral layer and no catch-up — recommending a SEP while a solo plan was still available before year-end is a planning miss.",
+      "Contributions above the lesser-of-25%-or-$72,000 limit draw excise tax unless withdrawn timely; the circular self-employed math is where overfunding usually creeps in."
     ],
     "stateNotes": [
-      "Conformity: the deduction rides through federal AGI or federal taxable income in conforming states — the self-employed owner's above-the-line deduction and the entity's deduction for employee contributions both carry over automatically. Verify any non-conformity state in the client's footprint.",
-      "PTET interaction: SEP contributions deducted at the entity level reduce the pass-through income base a PTET election is computed on. The engine's ordering handles this — retirement at applyOrder 50, PTET at 80 — so never reduce the PTET base manually for the same dollars.",
+      "Conformity: the deduction rides through federal AGI or federal taxable income in conforming states — the self-employed owner's above-the-line deduction and the entity's deduction for employee contributions both carry over automatically. Verify any non-conforming state in the client's footprint.",
+      "PTET interaction: SEP contributions deducted at the entity level shrink the pass-through income base a PTET election is computed on. The engine's ordering handles this — retirement at applyOrder 50, PTET at 80 — so never reduce the PTET base manually for the same dollars.",
       "Missouri: conforms through the federal AGI starting point (RSMo §143.121) with no addback, so the Missouri benefit is simply the deduction at Missouri rates."
     ],
     "interactions": {
@@ -99,50 +104,50 @@
     },
     "reviewChecklist": [
       "Employee census pulled and every age-21+, 3-of-5-years employee identified; staff funding cost quantified and accepted by the client in writing",
-      "Owner maximum computed on the Pub. 560 worksheet (Schedule C) or 25% of actual W-2 wages (S corp), capped at $72,000",
+      "Owner maximum computed on the Pub. 560 worksheet (Schedule C) or at 25% of actual W-2 wages (S corp), capped at $72,000",
       "Adoption document signed and funding scheduled inside the extended due date",
-      "Backdoor Roth conflict checked — no Roth conversion plan on file, or a rollover path documented",
-      "Confirmed a solo 401(k) was not the better vehicle (year-end already passed or client declined)"
+      "Backdoor Roth conflict cleared — no Roth conversion plan on file, or a rollover path documented",
+      "Confirmed a solo 401(k) was not the better vehicle (year-end already passed, or the client declined)"
     ]
   },
   "client": {
-    "teaser": "The retirement deduction you can still create after December 31 — sized after you see the numbers.",
+    "teaser": "The retirement deduction you can still create after December 31 — sized once you see the numbers.",
     "headline": "A retirement contribution you can decide on at tax time.",
     "plainEnglish": [
-      "Almost every tax-saving move has to happen before the year ends. This one is the exception. Your business can open and fund this retirement account all the way up to the day your tax return is due — even on extension.",
-      "That order matters. You get to see your final income for the year first, then choose the contribution that fits. The business puts a percentage of your pay into a retirement account in your name and deducts every dollar. For 2026, the contribution can be as high as $72,000, depending on your income.",
+      "Almost every tax-saving move must happen before the year ends. This one is the exception. Your business can open and fund this retirement account right up to the day your tax return is due — even on extension.",
+      "That order matters. You see your final income for the year first, then choose the contribution that fits. The business puts a percentage of your pay into a retirement account in your name and deducts every dollar. For 2026, the contribution can reach $72,000, depending on your income.",
       "There is one big rule. If you have employees, whatever percentage of pay goes in for you must also go in for every eligible employee. That is fair to your team, but it changes the cost — so we run those numbers with you before you sign anything."
     ],
-    "analogy": "It's like ordering a jacket after you've been measured instead of guessing your size in advance. The year is over, your numbers are final, and the contribution is cut to fit them exactly.",
+    "analogy": "It's like ordering a jacket after you've been measured instead of guessing your size ahead of time. The year is over, your numbers are final, and the contribution is cut to fit them exactly.",
     "benefits": [
       "Open and fund it after year-end — decide once you see your tax bill",
-      "Contributions up to $72,000 for 2026, every dollar deductible",
-      "Almost no paperwork — a one-page document, no annual government filing",
+      "Contribute up to $72,000 for 2026, every dollar deductible",
+      "Almost no paperwork — one page to sign, no annual government filing",
       "Contribute a lot in strong years, little or nothing in lean ones"
     ],
     "steps": [
       "WE compute your exact maximum from your final income numbers.",
-      "WE prepare the one-page plan document for your signature and, if you have staff, walk you through the full cost first.",
+      "WE prepare the one-page plan document for your signature — and if you have staff, we walk you through the full cost first.",
       "YOU fund the account before your filing deadline.",
       "WE claim the deduction on the right return and keep the funding proof in your file."
     ],
     "clientCommitments": [
       "Fund the account before the filing deadline — money that arrives late cannot count for the year.",
-      "If you have employees, fund every eligible one at the same percentage as yours, without exception.",
-      "Tell us before doing any Roth IRA conversion — this account changes that math."
+      "If you have employees, fund every eligible one at the same percentage as yours, no exceptions.",
+      "Tell us before any Roth IRA conversion — this account changes that math."
     ]
   },
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
-      "Annual employee census review against the written eligibility terms",
-      "Owner maximum recomputed from final-year income on the Pub. 560 worksheet",
-      "Funding-deadline calendar tied to the return due date and any extension",
-      "Standing check for backdoor Roth conflicts before any conversion is executed"
+      "Review the employee census each year against the written eligibility terms",
+      "Recompute the owner maximum from final-year income on the Pub. 560 worksheet",
+      "Tie the funding calendar to the return due date and any extension",
+      "Check for backdoor Roth conflicts before any conversion is executed"
     ],
     "deliverables": [
       "Executed Form 5305-SEP (or prototype) for the client file",
-      "Owner contribution worksheet with the census cost analysis where staff exist",
+      "Owner contribution worksheet, with the census cost analysis where staff exist",
       "Funding confirmation memo tying deposits to the deduction claimed"
     ],
     "feeGuidanceBand": null

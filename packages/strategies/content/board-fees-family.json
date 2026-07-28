@@ -1,6 +1,6 @@
 {
   "id": "board-fees-family",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Board of Directors Fees for Family (C-Corp)",
@@ -23,63 +28,63 @@
   "entityTypes": ["c-corp", "s-corp"],
   "typicalSavingsBand": "under-5k",
   "advisor": {
-    "summary": "A C corporation — or an S corporation, with thinner economics — that pays reasonable directors' fees to adult family members who genuinely govern deducts the fees under §162(a) and moves that income from the entity and its high-bracket owner to lower-bracket relatives. The catch that disciplines the whole play is Rev. Rul. 72-86: directors' fees are self-employment income, so the recipient owes SE tax on top of income tax, and the arbitrage only clears that roughly 14.1% drag when the spread between the owner's rate and the recipient's is wide. In the C-corp setting the deduction also strips earnings out ahead of the 21% corporate layer and the eventual dividend tax, which is where the strategy earns its keep. The exposure is equally plain: fees to relatives who never see a board packet get recharacterized as constructive dividends or disallowed outright. This is a governance structure first and a tax strategy second, and it is advisory because the recipients' returns sit outside the modeled household.",
+    "summary": "A C corporation — or an S corporation, with thinner economics — that pays reasonable directors' fees to adult family members who genuinely govern deducts the fees under §162(a) and shifts that income from the entity and its high-bracket owner to lower-bracket relatives. Rev. Rul. 72-86 disciplines the whole play: directors' fees are self-employment income, so the recipient owes SE tax on top of income tax, and the arbitrage clears that roughly 14.1% drag only when the spread between the owner's rate and the recipient's is wide. In the C-corp setting the deduction also pulls earnings out ahead of the 21% corporate layer and the eventual dividend tax — which is where the strategy earns its keep. The exposure is equally plain: fees to relatives who never see a board packet get recharacterized as constructive dividends or disallowed outright. This is a governance structure first and a tax strategy second, and it is advisory because the recipients' returns sit outside the modeled household.",
     "mechanics": [
       "The entity deducts directors' fees under §162(a) only to the extent they are ordinary, necessary, and reasonable for governance services actually rendered — benchmark per-meeting or annual-retainer amounts against what comparable closely held companies pay outside directors, and keep the comparables in the file.",
-      "Fees are non-employee compensation reported on Form 1099-NEC, and under Rev. Rul. 72-86 they are self-employment income to the director under §1402(a) — the recipient files Schedule SE, so the net family benefit must be computed after a roughly 14.1% effective drag.",
-      "Because the fees are compensation for services, they are earned income outside the reach of the §1(g) kiddie tax and they support IRA contributions for the recipient — but governance is an adult's job, and fees to minors are close to indefensible.",
-      "For a C-corp payor the deduction removes the §11 21% corporate layer before those dollars are ever exposed to dividend double-tax; for an S-corp payor the fee simply shifts income off the owner's K-1, so the arbitrage is thinner and the reasonableness bar unchanged.",
-      "Substance is the whole defense: directors are elected under the bylaws, receive board materials in advance, attend, deliberate, and vote — and the minutes prove it meeting by meeting."
+      "Fees are non-employee compensation reported on Form 1099-NEC, and under Rev. Rul. 72-86 they are self-employment income to the director under §1402(a) — the recipient files Schedule SE, so compute the net family benefit after a roughly 14.1% effective drag.",
+      "Because the fees are compensation for services, they are earned income beyond the reach of the §1(g) kiddie tax and they support IRA contributions for the recipient — but governance is an adult's job, and fees to minors are close to indefensible.",
+      "For a C-corp payor the deduction strips out the §11 21% corporate layer before those dollars ever face dividend double-tax; for an S-corp payor the fee merely shifts income off the owner's K-1, so the arbitrage is thinner and the reasonableness bar unchanged.",
+      "Substance is the entire defense: directors are elected under the bylaws, receive board materials in advance, attend, deliberate, and vote — and the minutes prove it meeting by meeting."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §162(a)",
-        "note": "The deduction standard for the fees — ordinary, necessary, and reasonable in amount for governance actually performed; excessive amounts to shareholders' relatives are disallowed or recharacterized."
+        "note": "The deduction standard for the fees — ordinary, necessary, and reasonable in amount for governance actually performed; excessive amounts paid to shareholders' relatives are disallowed or recharacterized."
       },
       {
         "type": "Admin",
         "cite": "Rev. Rul. 72-86",
-        "note": "Directors' fees are self-employment income — the ruling that forces net-of-SE-tax math on every recipient."
+        "note": "Directors' fees are self-employment income — the ruling that forces net-of-SE-tax math for every recipient."
       },
       {
         "type": "IRC",
         "cite": "IRC §1402(a)",
-        "note": "Defines the SE income base that sweeps in the trade or business of serving as a director."
+        "note": "Defines the SE income base, which sweeps in the trade or business of serving as a director."
       },
       {
         "type": "IRC",
         "cite": "IRC §11",
-        "note": "The 21% corporate rate — the entity-level layer a deductible fee removes before dividend double-tax in the C-corp setting."
+        "note": "The 21% corporate rate — the entity-level layer a deductible fee strips out ahead of dividend double-tax in the C-corp setting."
       },
       {
         "type": "IRC",
         "cite": "IRC §1(g)",
-        "note": "The kiddie tax reaches only unearned income — fees for real board service are earned income taxed at the recipient's own rates."
+        "note": "The kiddie tax reaches only unearned income — fees for genuine board service are earned income taxed at the recipient's own rates."
       },
       {
         "type": "Admin",
         "cite": "Form 1099-NEC and instructions",
-        "note": "Director fees of $600 or more are reported as non-employee compensation, not W-2 wages."
+        "note": "Director fees of $600 or more are reported as non-employee compensation, never as W-2 wages."
       }
     ],
     "requirements": [
-      "A functioning board: bylaws providing for directors, elections documented in the corporate record book, and meetings that actually occur.",
+      "A functioning board: bylaws providing for directors, elections documented in the corporate record book, and meetings that actually happen.",
       "Adult family directors with genuine capacity to contribute — people who read the financials and vote, not names on a signature line.",
-      "Fees set by board resolution before payment, benchmarked to comparable small-company director pay, with the comparables retained.",
-      "Minutes, agendas, distributed board packages, and timely Form 1099-NEC reporting for every director paid."
+      "Fees set by board resolution before payment, benchmarked against comparable small-company director pay, with the comparables retained.",
+      "Minutes, agendas, distributed board packages, and timely Form 1099-NEC reporting for every paid director."
     ],
     "risks": [
-      "The leading audit theory is recharacterization: fees to shareholders' relatives that outrun the services are treated as constructive dividends in a C corp — no deduction, income still taxed to the family — or disallowed under §162(a) reasonableness, with the Rev. Rul. 72-86 SE tax already sunk on the recipient side.",
-      "The SE tax drag erodes the arbitrage — a fee moved from a 37% owner to a 22%-bracket adult child nets far less than the bracket spread suggests once roughly 14.1% self-employment tax is layered on; run the math per recipient before recommending.",
-      "A paper board is fatal: no minutes, no materials, no votes means no services, and the examiner's path to full disallowance plus accuracy-related penalties is short.",
-      "Fees far above small-company norms invite a reasonableness challenge even where the board is real — the benchmark file is the defense.",
-      "Recipients pick up Schedule SE and quarterly-estimate obligations; their compliance cost belongs in the net-benefit calculation."
+      "Recharacterization is the leading audit theory: fees to shareholders' relatives that outrun the services are treated as constructive dividends in a C corp — no deduction, income still taxed to the family — or disallowed under §162(a) reasonableness, with the Rev. Rul. 72-86 SE tax already sunk on the recipient side.",
+      "The SE tax drag erodes the arbitrage — a fee moved from a 37% owner to a 22%-bracket adult child nets far less than the bracket spread suggests once roughly 14.1% self-employment tax is layered on; run the math for each recipient before recommending.",
+      "A paper board is fatal: no minutes, no materials, and no votes means no services, and the examiner's path to full disallowance plus accuracy-related penalties is short.",
+      "Fees well above small-company norms invite a reasonableness challenge even where the board is real — the benchmark file is the defense.",
+      "Recipients take on Schedule SE and quarterly-estimate obligations; their compliance cost belongs in the net-benefit calculation."
     ],
     "stateNotes": [
-      "Missouri conforms through its federal-AGI starting point (RSMo §143.121): the payor's deduction and the recipient's fee income both carry into the Missouri returns without adjustment.",
-      "PTET interaction: for an S-corp payor, director fees are an entity deduction that shrinks the base a Missouri pass-through entity tax election is computed on (SALT Parity Act, RSMo §143.436); a C-corp payor has no PTET interaction.",
-      "Fees paid to family directors living outside Missouri for board service performed here are Missouri-source income — nonresident recipients may pick up a Missouri filing obligation."
+      "Missouri conforms through its federal-AGI starting point (RSMo §143.121): the payor's deduction and the recipient's fee income both flow into the Missouri returns without adjustment.",
+      "PTET interaction: for an S-corp payor, director fees are an entity deduction that shrinks the base on which a Missouri pass-through entity tax election is computed (SALT Parity Act, RSMo §143.436); a C-corp payor has no PTET interaction.",
+      "Fees paid to family directors living outside Missouri for board service performed here are Missouri-source income — nonresident recipients may acquire a Missouri filing obligation."
     ],
     "interactions": {
       "requires": [],
@@ -89,24 +94,24 @@
     "reviewChecklist": [
       "Bylaws, director elections, and the corporate record book confirm each paid family member actually holds a board seat.",
       "Fee levels are supported by retained comparables and set by a resolution dated before payment.",
-      "Per-recipient net-benefit math is in the file — owner's marginal rate versus recipient's bracket plus SE tax — and still favors the fee.",
+      "Per-recipient net-benefit math sits in the file — owner's marginal rate against the recipient's bracket plus SE tax — and still favors the fee.",
       "Minutes and distributed board materials exist for every meeting tied to a paid fee.",
-      "Forms 1099-NEC issued, and each recipient advised on Schedule SE and quarterly estimates."
+      "Forms 1099-NEC are issued, and each recipient is advised on Schedule SE and quarterly estimates."
     ]
   },
   "client": {
-    "teaser": "Pay family members fairly for real board work — and move that income to their lower tax rates.",
+    "teaser": "Pay family members fairly for real board work — and shift that income to their lower tax rates.",
     "headline": "Put your family board to work — and let the company pay them for it",
     "plainEnglish": [
       "Every corporation has a board of directors. The board reviews the numbers, weighs big decisions, and votes. Companies normally pay directors for that work, and the payment is a business expense the company deducts.",
       "If adult members of your family truly serve on your board, the company can pay them a fair fee. The company gets the deduction. The income lands with family members whose tax rates are usually much lower than yours.",
-      "Two honest notes. The person receiving the fee owes self-employment tax on it, and we count that cost before we recommend anything. And the board work must be real — actual meetings, actual minutes, and fees in line with what small companies pay."
+      "Two honest notes. The person who receives the fee owes self-employment tax on it, and we count that cost before we recommend anything. And the board work must be real — actual meetings, actual minutes, and fees in line with what small companies pay."
     ],
     "analogy": "Companies pay outside advisors all the time. This pays the advisors who already care most about the business — your own family — and the tax bill shrinks with the move.",
     "benefits": [
       "A business deduction for the company at fair, documented fee levels",
-      "Income moves to family members in lower brackets",
-      "The fees are earned income, so they can fund IRAs for the recipients",
+      "Income shifts to family members in lower brackets",
+      "The fees count as earned income, so they can fund IRAs for the recipients",
       "The next generation learns the business from inside the boardroom"
     ],
     "steps": [
@@ -116,7 +121,7 @@
       "WE issue the year-end tax forms and brief each family director on their filing."
     ],
     "clientCommitments": [
-      "Hold the meetings for real — the minutes describe something that happened",
+      "Hold the meetings for real — the minutes must describe something that happened",
       "Keep fees at the levels we set together, not a dollar more",
       "Make sure each paid director reads the materials and votes"
     ]
@@ -125,7 +130,7 @@
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
       "Refresh the director-fee comparables and re-set fees by resolution each year",
-      "Verify minutes and board materials exist for every meeting tied to a fee",
+      "Verify that minutes and board materials exist for every meeting tied to a fee",
       "Issue Forms 1099-NEC each January and re-run the per-recipient net-benefit math"
     ],
     "deliverables": [
