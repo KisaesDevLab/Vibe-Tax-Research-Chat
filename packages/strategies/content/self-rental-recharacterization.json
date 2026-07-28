@@ -1,6 +1,6 @@
 {
   "id": "self-rental-recharacterization",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Self-Rental Recharacterization Planning",
@@ -23,58 +28,58 @@
   "entityTypes": ["rental", "s-corp", "partnership"],
   "typicalSavingsBand": "structural",
   "advisor": {
-    "summary": "Reg. §1.469-2(f)(6) is a one-way street: net income from renting property to a business in which the taxpayer materially participates is recharacterized as non-passive, while a net loss on the same arrangement stays passive. The design is deliberately asymmetric — it stops owners from manufacturing passive income by paying themselves rent — and Krukowski settled its validity. The planning consequences are structural: self-rental income can never absorb passive losses from other investments, and accelerated deductions on a self-rented building (a cost segregation study, a heavy repair year) create a passive loss stranded next to non-passive business income unless the rental and the business are grouped as one activity under Reg. §1.469-4(d). Rent-setting within arm's-length bounds and the grouping decision have to precede the depreciation strategies, which is why this record is advisory: the value is sequencing and structure, not a computable deduction.",
+    "summary": "Reg. §1.469-2(f)(6) runs one direction only: net income from renting property to a business in which the taxpayer materially participates is recharacterized as non-passive, while a net loss on the same lease stays passive. The asymmetry is deliberate — it stops owners from manufacturing passive income by paying themselves rent — and Krukowski settled the regulation's validity. The planning consequences are structural: self-rental income can never absorb passive losses from other investments, and accelerated deductions on a self-rented building (a cost segregation study, a heavy repair year) strand a passive loss beside non-passive business income unless the rental and the business are grouped as one activity under Reg. §1.469-4(d). Rent-setting within arm's-length bounds and the grouping decision must precede the depreciation strategies — which is why this record is advisory: the value lies in sequencing and structure, not a computable deduction.",
     "mechanics": [
-      "The rule: rent property to a trade or business in which the taxpayer (or spouse) materially participates, and net rental income for the year is recharacterized non-passive under Reg. §1.469-2(f)(6) — while a net loss remains passive; the asymmetry never nets.",
-      "The standard fix is grouping the rental with the operating business as one activity under Reg. §1.469-4(d), available where ownership is proportionate or one activity is insubstantial — with the Rev. Proc. 2010-13 disclosure filed for the new grouping.",
-      "Rent level is a real lever within arm’s-length bounds: lower rent leaves income in the operating business, higher rent shifts it to the rental side where it is non-passive but escapes self-employment tax — comparables in the file keep the choice defensible.",
-      "A self-rental to a commonly controlled business generally remains a trade or business for the §199A deduction under Reg. §1.199A-1(b)(14), preserving QBI on the rental income.",
-      "Sequencing rule for the whole real-estate stack: the grouping decision comes before cost segregation or major repairs on a self-rented building, because an ungrouped building’s accelerated loss lands in the passive bucket beside non-passive business income."
+      "The rule itself: rent property to a trade or business in which the taxpayer (or spouse) materially participates, and net rental income for the year becomes non-passive under Reg. §1.469-2(f)(6) — while a net loss stays passive; the asymmetry never nets.",
+      "The standard fix groups the rental with the operating business as one activity under Reg. §1.469-4(d) — available where ownership is proportionate or one activity is insubstantial — with the Rev. Proc. 2010-13 disclosure filed when the grouping is made.",
+      "Rent level is a genuine lever within arm’s-length bounds: lower rent leaves income in the operating business; higher rent shifts it to the rental side, where it is non-passive yet escapes self-employment tax — comparables in the file keep the choice defensible.",
+      "A self-rental to a commonly controlled business generally keeps trade-or-business status for the §199A deduction under Reg. §1.199A-1(b)(14), preserving QBI on the rental income.",
+      "Sequencing rule for the whole real-estate stack: decide the grouping before cost segregation or major repairs on a self-rented building — an ungrouped building’s accelerated loss lands in the passive bucket next to non-passive business income."
     ],
     "authority": [
       {
         "type": "Reg",
         "cite": "Reg. §1.469-2(f)(6)",
-        "note": "The self-rental recharacterization: income non-passive, losses still passive — the asymmetry the planning works around."
+        "note": "The self-rental recharacterization itself: income non-passive, losses still passive — the asymmetry this planning works around."
       },
       {
         "type": "Case",
         "cite": "Krukowski v. Commissioner, 279 F.3d 547 (7th Cir. 2002)",
-        "note": "Upheld the regulation against a validity challenge — an attorney renting an office building to his own firm; the rule is settled law."
+        "note": "Rejected a validity challenge to the regulation — an attorney renting an office building to his own firm; the rule is settled law."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.469-4(d)",
-        "note": "When a rental may be grouped with the operating business — proportionate ownership or insubstantiality — the principal structural fix."
+        "note": "Sets when a rental may be grouped with the operating business — proportionate ownership or insubstantiality — the principal structural fix."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.199A-1(b)(14)",
-        "note": "Self-rented property leased to a commonly controlled business is treated as a trade or business for QBI purposes."
+        "note": "Treats property leased to a commonly controlled business as a trade or business for QBI purposes."
       },
       {
         "type": "Admin",
         "cite": "Rev. Proc. 2010-13",
-        "note": "The written disclosure required when the grouping fix is elected."
+        "note": "Prescribes the written disclosure required when the grouping fix is elected."
       }
     ],
     "requirements": [
-      "A complete map of every arrangement where the client or spouse rents property to an entity they materially participate in.",
-      "A written, arm’s-length lease with rent supported by market comparables.",
-      "For the grouping fix: proportionate ownership (or insubstantiality) plus the Rev. Proc. 2010-13 disclosure.",
-      "A rent-level review before any year with major deductions planned on the building."
+      "A complete inventory of every arrangement in which the client or spouse rents property to an entity where they materially participate.",
+      "A written, arm’s-length lease with rent tied to market comparables.",
+      "For the grouping fix: proportionate ownership (or insubstantiality) plus a timely Rev. Proc. 2010-13 disclosure.",
+      "A rent-level review before any year in which major deductions are planned on the building."
     ],
     "risks": [
-      "The leading audit theory is treating self-rental income as passive to absorb other passive losses — the exact position Krukowski v. Commissioner, 279 F.3d 547 (7th Cir. 2002), forecloses; exam adjusts the character, the losses re-strand, and penalties follow.",
-      "Cost segregation on an ungrouped self-rented building is the classic sequencing error: an expensive study producing a stranded passive loss.",
-      "Rent far off market invites recharacterization of the arrangement itself and collateral payroll and state scrutiny.",
-      "The grouping is binding and reshapes loss release at disposition — model the exit before filing the disclosure.",
-      "Retirement or role changes end material participation and flip the analysis; the structure needs review at every ownership or participation change."
+      "The leading audit theory treats self-rental income as passive to absorb other passive losses — precisely the position Krukowski v. Commissioner, 279 F.3d 547 (7th Cir. 2002), forecloses; exam adjusts the character, the losses re-strand, and penalties follow.",
+      "Cost segregation on an ungrouped self-rented building is the classic sequencing error: an expensive study that yields a stranded passive loss.",
+      "Rent set far from market invites recharacterization of the arrangement itself, plus collateral payroll and state scrutiny.",
+      "The grouping binds future years and reshapes loss release at disposition — model the exit before filing the disclosure.",
+      "Retirement or a role change ends material participation and flips the analysis; revisit the structure at every ownership or participation change."
     ],
     "stateNotes": [
-      "Conformity: the recharacterization is a federal character rule that states inherit through their federal starting points — state passive-loss treatment follows the federal result in conforming states.",
-      "Missouri conforms via federal AGI (RSMo §143.121); no Missouri-specific filing attaches to the grouping or the lease.",
-      "PTET interaction: rent paid by an electing operating entity is a deduction against its PTET base while the rental income sits outside it — re-run the PTET projection whenever the rent level is reset."
+      "Conformity: the recharacterization is a federal character rule that states inherit through their federal starting points — conforming states follow the federal passive-loss result.",
+      "Missouri conforms through federal AGI (RSMo §143.121); no Missouri-specific filing attaches to the grouping or the lease.",
+      "PTET interaction: rent paid by an electing operating entity deducts against its PTET base while the rental income sits outside it — re-run the PTET projection whenever the rent level is reset."
     ],
     "interactions": {
       "requires": [],
@@ -82,48 +87,48 @@
       "synergiesWith": ["self-rental-structuring", "grouping-election"]
     },
     "reviewChecklist": [
-      "Self-rental arrangements inventoried, with material participation confirmed on the operating side.",
-      "Lease written, current, and rent tied to retained comparables.",
-      "Grouping analysis completed and the disclosure filed where elected — before depreciation strategies launch.",
-      "QBI treatment of the rental confirmed under the common-control rule.",
+      "Self-rental arrangements inventoried and material participation confirmed on the operating side.",
+      "Lease in writing and current, with rent tied to retained comparables.",
+      "Grouping analysis complete and the disclosure filed where elected — before any depreciation strategy launches.",
+      "Rental’s QBI treatment confirmed under the common-control rule.",
       "Exit and disposition consequences of any grouping modeled and documented."
     ]
   },
   "client": {
-    "teaser": "Own the building your business rents? A one-way tax rule needs planning before it costs you.",
-    "headline": "Renting to your own business: get ahead of the one-way rule",
+    "teaser": "Do you own the building your business rents? A one-way tax rule can cost you unless you plan ahead.",
+    "headline": "Renting to your own business: stay ahead of the one-way rule",
     "plainEnglish": [
-      "Many owners hold their building personally and rent it to their company. Smart for liability. But a special tax rule applies: if the building makes money, that profit counts as active income. If it loses money, the loss is passive — and often stuck.",
-      "This one-way rule surprises people twice. Rent income from your own company cannot soak up losses from other investments. And big spending on the building — renovations, fast depreciation — can create a loss that sits in a bucket where it does nothing.",
-      "The fixes are structural and simple. Often one election treats the building and the business as a single activity. Rent gets set at a documented market rate. Done before the big deductions, the rule stops working against you."
+      "Many owners hold their building in their own name and rent it to their company. That is smart for liability. But a special tax rule kicks in: if the building makes money, that profit counts as active income. If it loses money, the loss is passive — and often stuck.",
+      "This one-way rule surprises people twice. Rent income from your own company cannot soak up losses from other investments. And big spending on the building — renovations, fast depreciation — can create a loss that just sits in a bucket and does nothing.",
+      "The fixes are structural and simple. Often one election treats the building and the business as a single activity. We set the rent at a documented market rate. Done before the big deductions, the rule stops working against you."
     ],
-    "analogy": "It is like a one-way valve in your plumbing — we cannot remove it, but we can route the pipes so it never blocks your flow.",
+    "analogy": "It works like a one-way valve in your plumbing. We cannot remove it, but we can route the pipes so it never blocks your flow.",
     "benefits": [
-      "Keeps large building deductions usable instead of stranded",
+      "Keeps big building deductions usable instead of stuck",
       "Rent set where it saves the most across the business and the building",
       "Heads off a common and costly audit surprise"
     ],
     "steps": [
       "WE review the lease, the ownership, and the rent level.",
       "WE set the structure and elections so future deductions land where they count.",
-      "WE document the market rent so the setup stands scrutiny.",
-      "YOU sign the updated lease and keep payments flowing per its terms."
+      "WE document the market rent so the setup holds up under review.",
+      "YOU sign the updated lease and keep payments flowing on its terms."
     ],
     "clientCommitments": [
-      "Pay rent exactly as the lease states, through the business account",
+      "Pay rent exactly as the lease says, from the business account",
       "Tell us before major building spending or any ownership change"
     ]
   },
   "engagement": {
     "implementationEffort": "multi-step",
     "annualMaintenance": [
-      "Annual rent-level review against current comparables",
-      "Re-check material participation and ownership alignment each year",
-      "Sequence any planned building deductions through the structure first"
+      "Review the rent level each year against current comparables",
+      "Re-confirm material participation and ownership alignment each year",
+      "Route any planned building deductions through the structure first"
     ],
     "deliverables": [
-      "Self-rental structure memo with rent-setting analysis",
-      "Grouping election and disclosure filings where chosen",
+      "Self-rental structure memo with the rent-setting analysis",
+      "Grouping election and disclosure filings where elected",
       "Market-rent comparables file"
     ],
     "feeGuidanceBand": null

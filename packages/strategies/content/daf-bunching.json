@@ -1,6 +1,6 @@
 {
   "id": "daf-bunching",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Charitable Bunching via Donor-Advised Fund",
@@ -23,20 +28,20 @@
   "entityTypes": ["individual"],
   "typicalSavingsBand": "5k-25k",
   "advisor": {
-    "summary": "Concentrating several years of planned giving into one donor-advised-fund contribution converts gifts that were disappearing under the standard deduction into a deduction that actually itemizes, while grants to the client's charities continue on their normal schedule. Two OBBBA changes sharpen the 2026 math: the 60-percent-of-AGI ceiling for cash gifts to public charities is permanent, and the new 0.5-percent-of-AGI floor of §170(b)(1)(I) disallows the first slice of charitable deductions in every itemizing year — a haircut a bunching cycle pays once instead of annually. Funding with long-term appreciated securities adds the second engine: a fair-market-value deduction with the built-in gain never recognized, subject to the 30 percent ceiling. The model adds the contribution to itemized charitable deductions; AGI-limit headroom and the floor are reviewed outside it.",
+    "summary": "Concentrating several years of planned giving into a single donor-advised-fund contribution converts gifts that were vanishing under the standard deduction into a deduction that actually itemizes, while grants to the client's charities keep their normal schedule. Two OBBBA changes sharpen the 2026 math: the 60-percent-of-AGI ceiling for cash gifts to public charities is now permanent, and the new 0.5-percent-of-AGI floor of §170(b)(1)(I) disallows the first slice of charitable deductions in every itemizing year — a haircut a bunching cycle pays once rather than annually. Funding with long-term appreciated securities adds the second engine: a fair-market-value deduction with the built-in gain never recognized, subject to the 30 percent ceiling. The model adds the contribution to itemized charitable deductions; AGI-limit headroom and the floor are reviewed outside it.",
     "mechanics": [
-      "Against the 2026 MFJ standard deduction of $32,200, steady annual gifts often produce little marginal benefit; concentrating three years of giving into one DAF contribution itemizes decisively in the bunch year, with the standard deduction taken in the off years — more total deduction across the cycle for identical generosity.",
-      "A contribution to a donor-advised fund described in §4966(d)(2) completes the gift immediately: the deduction lands at contribution even though grants to operating charities are advised out over the following years.",
-      "Long-term appreciated publicly traded securities deduct at fair market value with the gain never recognized; the 30 percent ceiling for capital-gain property and the permanent 60 percent ceiling for cash both carry a five-year carryforward for the excess under §170(d)(1).",
-      "For tax years beginning after 2025, §170(b)(1)(I) disallows itemized charitable deductions up to 0.5 percent of the contribution base — at $400,000 of AGI that is the first $2,000 of gifts each itemizing year, which is exactly why fewer, larger itemizing years now win; amounts lost solely to the floor carry forward.",
+      "Against the 2026 MFJ standard deduction of $32,200, steady annual gifts often earn little marginal benefit; concentrating three years of giving into one DAF contribution itemizes decisively in the bunch year, with the standard deduction claimed in the off years — more total deduction across the cycle for identical generosity.",
+      "A contribution to a donor-advised fund described in §4966(d)(2) completes the gift at once: the deduction lands at contribution even though grants to operating charities are advised out over the years that follow.",
+      "Long-term appreciated publicly traded securities deduct at fair market value with the gain never recognized; the 30 percent ceiling for capital-gain property and the permanent 60 percent ceiling for cash each carry a five-year carryforward for the excess under §170(d)(1).",
+      "For tax years beginning after 2025, §170(b)(1)(I) disallows itemized charitable deductions up to 0.5 percent of the contribution base — at $400,000 of AGI, the first $2,000 of gifts each itemizing year — which is precisely why fewer, larger itemizing years now win; amounts lost solely to the floor carry forward.",
       "Substantiation is strict and unforgiving: a contemporaneous written acknowledgment under §170(f)(8) for gifts of $250 or more, Form 8283 for noncash gifts over $500, and a qualified appraisal above $5,000 (publicly traded securities exempted).",
-      "DAF grants cannot satisfy enforceable pledges or return benefits — event tickets, priority seating, memberships with value — and §4967 imposes excise taxes when they do."
+      "DAF grants may not satisfy enforceable pledges or return benefits — event tickets, priority seating, memberships carrying value — and §4967 imposes excise taxes when they do."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §170(b)(1)",
-        "note": "The AGI percentage ceilings — permanent 60 percent for cash to public charities, 30 percent for long-term capital-gain property."
+        "note": "The AGI percentage ceilings — a permanent 60 percent for cash to public charities, 30 percent for long-term capital-gain property."
       },
       {
         "type": "IRC",
@@ -46,12 +51,12 @@
       {
         "type": "IRC",
         "cite": "IRC §170(d)(1)",
-        "note": "Five-year carryforward for contributions over the percentage ceilings."
+        "note": "The five-year carryforward for contributions above the percentage ceilings."
       },
       {
         "type": "IRC",
         "cite": "IRC §4966(d)(2)",
-        "note": "The donor-advised fund definition — donor advisory privileges over a fund owned by a sponsoring public charity."
+        "note": "The donor-advised-fund definition — donor advisory privileges over a fund owned by a sponsoring public charity."
       },
       {
         "type": "IRC",
@@ -61,36 +66,36 @@
       {
         "type": "Case",
         "cite": "Durden v. Commissioner, T.C. Memo 2012-140",
-        "note": "Concededly genuine gifts denied because the acknowledgment letter lacked the required no-goods-or-services statement — the substantiation statute means what it says."
+        "note": "Concededly genuine gifts denied because the acknowledgment letter omitted the required no-goods-or-services statement — the substantiation statute means what it says."
       },
       {
         "type": "IRC",
         "cite": "IRC §4967",
-        "note": "Excise taxes on more-than-incidental benefits flowing back from DAF grants."
+        "note": "Excise taxes on more-than-incidental benefits that flow back from DAF grants."
       },
       {
         "type": "Admin",
         "cite": "Form 8283 and instructions",
-        "note": "Noncash reporting over $500 and the appraisal rules, with the publicly-traded-securities exception."
+        "note": "Noncash reporting above $500 and the appraisal rules, with the publicly-traded-securities exception."
       }
     ],
     "requirements": [
       "A genuine multi-year giving pattern — bunching rearranges gifts the client already intends; it does not manufacture generosity.",
-      "Cash flow or an appreciated-securities position sufficient to fund several years at once.",
-      "A DAF account at a sponsoring organization, opened ahead of custodian year-end transfer cutoffs.",
-      "Discipline to take the standard deduction in off years instead of leaking additional itemized gifts."
+      "Cash flow or an appreciated-securities position deep enough to fund several years at once.",
+      "A DAF account at a sponsoring organization, opened ahead of the custodian's year-end transfer cutoffs.",
+      "The discipline to take the standard deduction in off years rather than leak additional itemized gifts."
     ],
     "risks": [
-      "The leading challenge is substantiation, and it is mechanical: a missing or defective §170(f)(8) acknowledgment kills the deduction regardless of proof of payment — Durden v. Commissioner denied concededly real church gifts over the letter's wording.",
-      "DAF contributions are irrevocable — the funds are permanently committed to charity even though grant timing stays advisory.",
+      "The leading challenge is substantiation, and it is purely mechanical: a missing or defective §170(f)(8) acknowledgment kills the deduction regardless of proof of payment — Durden v. Commissioner denied concededly real church gifts over the letter's wording.",
+      "DAF contributions are irrevocable — the funds are committed to charity for good even though grant timing stays advisory.",
       "The 30 percent ceiling can push part of a large stock gift into carryforward years; model AGI headroom before funding, not after.",
-      "Stock held one year or less deducts at basis, not value — verify holding periods before the transfer order is placed.",
-      "Grants that touch pledges, tickets, or member benefits draw §4967 excise exposure and damage the sponsor relationship."
+      "Stock held one year or less deducts at basis, not value — verify holding periods before placing the transfer order.",
+      "Grants that touch pledges, tickets, or member benefits invite §4967 excise exposure and damage the sponsor relationship."
     ],
     "stateNotes": [
-      "Conformity: most states with itemized-deduction regimes conform to the federal charitable deduction, but several cap or disallow itemized deductions entirely — the state-side value of bunching varies more than the federal side.",
+      "Conformity: most states with itemized-deduction regimes conform to the federal charitable deduction, but several cap or disallow itemized deductions outright — the state-side value of bunching varies far more than the federal side.",
       "PTET interaction: none — this is an individual itemized deduction, and no pass-through entity tax election touches it.",
-      "Missouri: itemizing on the Missouri return is available only when the taxpayer itemizes federally, and the Missouri standard deduction equals the federal amount (RSMo §143.131), so the bunch-year/off-year rhythm swings the Missouri return in tandem with the federal one."
+      "Missouri: itemizing on the Missouri return is available only when the taxpayer itemizes federally, and the Missouri standard deduction equals the federal amount (RSMo §143.131), so the bunch-year/off-year rhythm swings the Missouri return in step with the federal one."
     ],
     "interactions": {
       "requires": [],
@@ -99,9 +104,9 @@
     },
     "reviewChecklist": [
       "Bunch size tested against the 60/30 percent ceilings and the 0.5 percent floor at projected AGI.",
-      "Holding period and basis verified for any securities to be transferred; custodian cutoff dates calendared.",
-      "Acknowledgment letter and Form 8283 obligations assigned and tracked to receipt.",
-      "No outstanding enforceable pledges intended to be satisfied by DAF grants.",
+      "Holding period and basis verified for any securities slated for transfer; custodian cutoff dates calendared.",
+      "Acknowledgment-letter and Form 8283 obligations assigned and tracked through to receipt.",
+      "No outstanding enforceable pledges earmarked for satisfaction by DAF grants.",
       "Off-year plan documented: standard deduction, no stray itemized gifts."
     ]
   },
@@ -109,21 +114,21 @@
     "teaser": "Same giving, bigger deduction — the only change is the calendar.",
     "headline": "Give the same amount to charity and deduct more of it",
     "plainEnglish": [
-      "Charitable gifts only help your taxes when all your deductions beat the standard deduction. In 2026 that bar is $32,200 for a married couple. If you give $10,000 a year, much of it may be doing nothing for your tax bill.",
-      "The fix is timing. Put three years of gifts — say $30,000 — into a donor-advised fund in a single year. That big number clears the bar and gets counted. In the off years, you take the standard deduction. Your charities notice nothing: the fund sends their usual gift each year, on your instructions.",
-      "There is a bonus move. Fund the account with stock that has grown instead of cash. You deduct the full current value, and the tax on the growth never comes due — for you or the charity.",
-      "One new wrinkle: starting in 2026, a small first slice of gifts does not count each year you itemize. Bunching means you pay that toll once every few years instead of every year."
+      "Charitable gifts only help your taxes when all your deductions together beat the standard deduction. In 2026 that bar is $32,200 for a married couple. If you give $10,000 a year, much of it may be doing nothing for your tax bill.",
+      "The fix is timing. Put three years of gifts — say $30,000 — into a donor-advised fund in one year. That big number clears the bar and gets counted. In the off years, you take the standard deduction. Your charities notice nothing: the fund sends their usual gift each year, on your instructions.",
+      "There is a bonus move. Fund the account with stock that has grown, instead of cash. You deduct the full current value, and the tax on the growth never comes due — not for you, not for the charity.",
+      "One new wrinkle: starting in 2026, a small first slice of gifts does not count in each year you itemize. Bunching means you pay that toll once every few years instead of every year."
     ],
     "analogy": "It is like a rewards card that only counts big visits. Three medium trips earn nothing. The same total spent in one visit earns the reward — so you shop once and stock the pantry.",
     "benefits": [
       "More total deductions for exactly the same giving",
       "Your charities still receive their gift every year",
       "Donating winning stock skips the tax on its growth",
-      "One account handles all receipts and paperwork"
+      "One account holds all the receipts and paperwork"
     ],
     "steps": [
       "WE size the bunch and pick the best year for it.",
-      "WE help open the fund account and plan any stock transfer before the custodian's cutoff.",
+      "WE help open the fund account and plan any stock transfer ahead of the custodian's cutoff.",
       "YOU fund it once — cash or the shares we select together.",
       "YOU advise the fund's annual grants to your charities; WE track the receipts and file the forms."
     ],
@@ -136,12 +141,12 @@
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
-      "Confirm bunch-year vs. off-year status and reset withholding or estimates accordingly",
+      "Confirm bunch-year vs. off-year status and reset withholding or estimates to match",
       "Track acknowledgment letters and Form 8283 filings in bunch years",
-      "Re-run the AGI-ceiling and floor math when income changes"
+      "Re-run the AGI-ceiling and floor math whenever income changes"
     ],
     "deliverables": [
-      "Bunching schedule showing the deduction across the full cycle",
+      "Bunching schedule laying out the deduction across the full cycle",
       "Funding memo (cash vs. appreciated securities) with custodian instructions",
       "Substantiation checklist with retained acknowledgment letters"
     ],

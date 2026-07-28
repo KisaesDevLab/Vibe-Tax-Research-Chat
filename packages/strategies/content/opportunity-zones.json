@@ -1,6 +1,6 @@
 {
   "id": "opportunity-zones",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Opportunity Zone Investment",
@@ -23,63 +28,63 @@
   "entityTypes": ["individual"],
   "typicalSavingsBand": "100k-plus",
   "advisor": {
-    "summary": "§1400Z-2 defers an eligible capital gain that is reinvested in a Qualified Opportunity Fund within 180 days, and — the durable prize — steps the QOF interest's basis to fair market value after a ten-year hold, taking all post-investment appreciation out of federal tax. The 2026 fact pattern is dominated by the regime boundary: original-regime deferrals end at December 31, 2026, while OBBBA's permanent 'OZ 2.0' applies to investments made from January 1, 2027, with a rolling five-year deferral, a basis step-up for five-year holds (enhanced for rural funds), and refreshed zone maps. For gains realized in 2026, steering the 180-day window across that boundary is the central move. Only the deferral is modeled — the engine removes the invested gain from the current year's long-term gain — and the ten-year exclusion is deliberately left unquantified because it depends on unknowable growth.",
+    "summary": "§1400Z-2 lets a taxpayer defer an eligible capital gain by reinvesting it in a Qualified Opportunity Fund within 180 days and — the durable prize — steps the QOF interest's basis to fair market value after a ten-year hold, removing all post-investment appreciation from federal tax. The regime boundary dominates 2026 planning: original-regime deferrals end December 31, 2026, while OBBBA's permanent 'OZ 2.0' governs investments made on or after January 1, 2027, with a rolling five-year deferral, a basis step-up for five-year holds (enhanced for rural funds), and refreshed zone maps. For gains realized in 2026, placing the 180-day window on the right side of that boundary is the central move. The engine models only the deferral — it removes the invested gain from the current year's long-term gain — and deliberately leaves the ten-year exclusion unquantified, since it turns on growth no one can forecast.",
     "mechanics": [
-      "Only the gain — not the full proceeds — must be invested: an eligible capital gain reinvested in a QOF within 180 days of recognition is deferred under §1400Z-2, and K-1 gains can start the window at the entity year-end under Reg. §1.1400Z2(a)-1.",
-      "Original-regime investments recognize the deferred gain at the earlier of an inclusion event or December 31, 2026 — so a 2026 gain invested under the old rules buys months of deferral, not years.",
-      "For investments made on or after January 1, 2027, P.L. 119-21 provides a rolling five-year deferral, a basis step-up for gains held the full five years (larger for qualified rural funds), recurring zone redesignations, and retains the ten-year fair-market-value step-up.",
-      "Funds self-certify on Form 8996 and must keep 90% of assets in qualified opportunity zone property; investors report holdings, deferrals, and inclusion events annually on Form 8997.",
-      "The model removes the invested gain from the current year’s long-term capital gain and stops there — the later inclusion of the deferred gain and the ten-year exclusion sit outside the single-year engine."
+      "Only the gain — never the full proceeds — needs to move: an eligible capital gain reinvested in a QOF within 180 days of recognition defers under §1400Z-2, and Reg. §1.1400Z2(a)-1 lets K-1 gains start the window at the entity's year-end.",
+      "Original-regime investments recognize the deferred gain at the earlier of an inclusion event or December 31, 2026 — a 2026 gain invested under the old rules buys months of deferral, not years.",
+      "For investments made on or after January 1, 2027, P.L. 119-21 delivers a rolling five-year deferral, a basis step-up for gains held the full five years (larger for qualified rural funds), recurring zone redesignations, and the same ten-year fair-market-value step-up.",
+      "Funds self-certify on Form 8996 and must hold 90% of assets in qualified opportunity zone property; investors report holdings, deferrals, and inclusion events each year on Form 8997.",
+      "The model removes the invested gain from the current year's long-term capital gain and stops there — the deferred gain's later inclusion and the ten-year exclusion sit outside the single-year engine."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §1400Z-2",
-        "note": "Deferral of reinvested gains, inclusion events, and the ten-year basis step-up to fair market value."
+        "note": "Governs deferral of reinvested gains, inclusion events, and the ten-year step-up of basis to fair market value."
       },
       {
         "type": "IRC",
         "cite": "P.L. 119-21 (OBBBA) — Opportunity Zone permanence",
-        "note": "OZ 2.0 from 2027: rolling five-year deferral, five-year basis step-up with rural enhancement, and recurring zone designations; original-regime deferrals still end December 31, 2026."
+        "note": "OZ 2.0 beginning 2027: rolling five-year deferral, five-year basis step-up with a rural enhancement, and recurring zone designations; original-regime deferrals still terminate December 31, 2026."
       },
       {
         "type": "IRC",
         "cite": "IRC §1400Z-1",
-        "note": "Zone designation framework the investment universe is drawn from."
+        "note": "The zone-designation framework that defines the investment universe."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.1400Z2(a)-1",
-        "note": "The 180-day window mechanics, including the flexible start dates for K-1 gains."
+        "note": "180-day window mechanics, including the flexible start dates available for K-1 gains."
       },
       {
         "type": "Admin",
         "cite": "Form 8997 and instructions",
-        "note": "Annual investor reporting of QOF holdings, deferrals, and inclusion events."
+        "note": "The investor's annual report of QOF holdings, deferrals, and inclusion events."
       },
       {
         "type": "Admin",
         "cite": "Form 8996",
-        "note": "QOF self-certification and the 90% qualified-property asset test the fund must keep passing."
+        "note": "QOF self-certification and the 90% qualified-property asset test the fund must pass year after year."
       }
     ],
     "requirements": [
-      "An eligible capital gain with the 180-day clock mapped precisely — including the K-1 start-date options — before any wire moves.",
-      "A diligenced fund: sponsor track record, 90%-test history, and rural-fund status where the enhanced step-up matters.",
-      "Liquidity to pay the tax when the deferred gain comes back, since no sale proceeds arrive with the inclusion.",
-      "A genuine ten-year horizon — as a pure deferral play the strategy is weak."
+      "An eligible capital gain with its 180-day clock mapped precisely — K-1 start-date options included — before any money moves.",
+      "A diligenced fund: sponsor track record, 90%-test history, and rural-fund status wherever the enhanced step-up is in play.",
+      "Liquidity to pay the tax when the deferred gain returns, because no sale proceeds arrive with the inclusion.",
+      "A genuine ten-year horizon — as a pure deferral play, the strategy is weak."
     ],
     "risks": [
-      "The leading hazard for 2026 is the regime boundary itself: a gain invested weeks too early sits in the old regime and is recognized at December 31, 2026, while the same gain invested after January 1, 2027 (where the 180-day window allows) captures the five-year deferral — a calendar error with a six-figure price and no after-the-fact fix.",
-      "Phantom income at the inclusion date: tax comes due with no distribution in many funds — the liquidity plan is part of the strategy, not an afterthought.",
-      "Investment risk dominates tax benefit: a weak fund loses more principal than the deferral saves, and the adviser’s role is the tax mechanics, not the underwriting.",
-      "Fund-level 90%-test failures generate penalties and can jeopardize investor benefits.",
-      "The deferred gain returns at future rates — rate risk cuts both ways."
+      "The leading 2026 hazard is the regime boundary itself: a gain invested a few weeks early lands in the old regime and is recognized at December 31, 2026, while the same gain invested after January 1, 2027 (where the 180-day window permits) captures the five-year deferral — a calendar error with a six-figure cost and no after-the-fact cure.",
+      "Phantom income at the inclusion date: many funds distribute nothing when the tax comes due — the liquidity plan is part of the strategy, not an afterthought.",
+      "Investment risk outweighs the tax benefit: a weak fund loses more principal than the deferral saves, and the adviser's job is the tax mechanics, not the underwriting.",
+      "Fund-level failures of the 90% test generate penalties and can put investor benefits at risk.",
+      "The deferred gain comes back at future rates — rate risk cuts both ways."
     ],
     "stateNotes": [
-      "Conformity is genuinely mixed here: a number of states never conformed to the §1400Z-2 deferral or exclusion, so state tax may be due currently even where the federal gain defers — screen every state in the footprint before wiring.",
-      "Missouri conforms through its federal-AGI starting point (RSMo §143.121), so the federal deferral and exclusion carry into the Missouri computation.",
-      "PTET interaction: none in the ordinary case — the gain is deferred at the owner level; no PTET interaction arises unless an electing entity itself realizes and reinvests the gain."
+      "Conformity is genuinely mixed: several states never conformed to the §1400Z-2 deferral or exclusion, so state tax may be due currently even while the federal gain defers — screen every state in the footprint before wiring.",
+      "Missouri conforms via its federal-AGI starting point (RSMo §143.121), so both the federal deferral and the exclusion flow into the Missouri computation.",
+      "PTET interaction: ordinarily none — the gain defers at the owner level; a PTET issue arises only if an electing entity itself realizes and reinvests the gain."
     ],
     "interactions": {
       "requires": [],
@@ -87,50 +92,50 @@
       "synergiesWith": []
     },
     "reviewChecklist": [
-      "180-day window computed and documented, including any K-1 start-date election, against the 2026/2027 regime boundary.",
-      "Fund diligence file complete: Form 8996 history, 90% test, sponsor record, rural status if claimed.",
-      "Client’s liquidity plan for the inclusion-date tax reviewed and noted.",
-      "State conformity screened for every state with a filing footprint.",
-      "Form 8997 calendared annually and the ten-year anniversary docketed."
+      "180-day window computed and documented — including any K-1 start-date election — against the 2026/2027 regime boundary.",
+      "Fund diligence file complete: Form 8996 history, 90% test, sponsor record, and rural status if claimed.",
+      "Client's liquidity plan for the inclusion-date tax reviewed and documented.",
+      "State conformity screened for every state in the filing footprint.",
+      "Form 8997 calendared each year and the ten-year anniversary docketed."
     ]
   },
   "client": {
-    "teaser": "Reinvest a big gain, postpone the tax, and let the new growth become tax-free.",
-    "headline": "Turn one gain into tax-free growth",
+    "teaser": "Reinvest a large gain, put off the tax, and let the new growth become tax-free.",
+    "headline": "Turn one big gain into tax-free growth",
     "plainEnglish": [
-      "When you sell something at a large profit — stock, a business, real estate — the tax normally comes due that year. Opportunity Zone rules offer another path. Reinvest the profit into a special fund within 180 days, and the tax is postponed for years.",
-      "The bigger prize comes later. Hold the fund for ten years, and all the growth on it can be sold free of federal tax. The original tax still comes due at a set point, but everything earned on top can escape tax completely.",
-      "Timing matters a lot right now. The old version of the program ends on December 31, 2026. A better, permanent version starts January 1, 2027 with a five-year postponement. For gains realized this year, a few weeks can decide which rules you get. We manage that calendar."
+      "Sell something at a big profit — stock, a business, real estate — and the tax normally comes due that year. Opportunity Zone rules open another path. Put the profit into a special fund within 180 days, and the tax waits for years.",
+      "The bigger prize comes later. Hold the fund ten years, and all its growth can be sold free of federal tax. The original tax still comes due at a set point. But everything earned on top can escape tax completely.",
+      "Timing matters a lot right now. The old program ends December 31, 2026. A better, permanent version starts January 1, 2027, with a five-year delay on the tax. For gains this year, a few weeks can decide which rules you get. We manage that calendar."
     ],
-    "analogy": "It is like replanting the profit from one harvest in new soil — wait ten seasons, and everything that grows from it is yours to keep.",
+    "analogy": "It is like replanting the profit from one harvest in fresh soil — wait ten seasons, and all that grows from it is yours to keep.",
     "benefits": [
-      "Postpone tax on a large gain instead of paying now",
+      "Put off tax on a big gain instead of paying it now",
       "After ten years, growth on the reinvested money can be tax-free",
-      "Only the profit must be reinvested — the rest of your proceeds stay free",
-      "The permanent rules add extra benefits for rural-area funds"
+      "Only the profit must go in — the rest of your proceeds stay free",
+      "The permanent rules add extra rewards for rural-area funds"
     ],
     "steps": [
       "WE confirm the gain qualifies and compute your exact 180-day deadline.",
-      "WE time the investment around the 2026-to-2027 rule change for the better deal.",
-      "WE handle the annual IRS reporting and docket every milestone.",
-      "YOU choose the fund — we review its tax mechanics, you and your investment adviser judge the investment."
+      "WE time the investment around the 2026-to-2027 rule change to get the better deal.",
+      "WE handle the yearly IRS reporting and docket every milestone.",
+      "YOU choose the fund — we vet its tax mechanics; you and your investment adviser judge the investment."
     ],
     "clientCommitments": [
-      "Move the money within the deadline we compute — no extensions",
-      "Plan cash for the year the postponed tax comes due",
+      "Move the money before the deadline we compute — there are no extensions",
+      "Set aside cash for the year the delayed tax comes due",
       "Hold for the full ten years to earn the tax-free growth"
     ]
   },
   "engagement": {
     "implementationEffort": "structural",
     "annualMaintenance": [
-      "Annual Form 8997 reporting while the investment is held",
-      "Monitor the fund's certification status and the inclusion-date calendar"
+      "File Form 8997 each year the investment is held",
+      "Track the fund's certification status and the inclusion-date calendar"
     ],
     "deliverables": [
-      "Gain-eligibility and deadline memo with regime-boundary analysis",
-      "Fund tax-diligence summary",
-      "Annual Form 8997 filings and a milestone docket"
+      "Gain-eligibility and deadline memo, including regime-boundary analysis",
+      "Tax-diligence summary for the chosen fund",
+      "Annual Form 8997 filings plus a milestone docket"
     ],
     "feeGuidanceBand": null
   },

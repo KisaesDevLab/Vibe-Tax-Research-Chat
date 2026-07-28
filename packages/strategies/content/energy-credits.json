@@ -1,6 +1,6 @@
 {
   "id": "energy-credits",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,16 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-07-28",
+      "note": "Reflect June 2026 court vacatur of Notice 2025-42 (5% safe harbor restored, appeal posture noted) in mechanics, risks, authority note, and monitoring."
     }
   ],
   "name": "Business Energy Credits (Solar, EV Charging)",
@@ -23,75 +33,75 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "5k-25k",
   "advisor": {
-    "summary": "OBBBA converted the IRA-era energy credit landscape into a countdown clock, and this strategy is now deadline triage rather than evergreen planning. The residential §25D credit died for expenditures after 2025 and the clean-vehicle credits ended for vehicles acquired after September 30, 2025; §30C charging property must be placed in service by June 30, 2026 in an eligible census tract; and §48E wind and solar projects must begin construction by July 4, 2026 or be placed in service by December 31, 2027. Where a business project still fits, the investment credit runs 6% base rising to 30% with prevailing-wage-and-apprenticeship compliance (projects under 1 MW get 30% outright), with domestic-content and energy-community adders, a 50% basis haircut under §50(c), five-year recapture, and §6418 transferability for clients without tax appetite. The engine simply applies the advisor-verified credit amount; every deadline, basis, and recapture judgment lives outside the model and must be documented before a number is entered.",
+    "summary": "OBBBA turned the IRA-era energy credit landscape into a countdown clock, so this strategy is now deadline triage rather than evergreen planning. The residential §25D credit died for expenditures after 2025 and the clean-vehicle credits ended for vehicles acquired after September 30, 2025; §30C charging property must be placed in service by June 30, 2026 in an eligible census tract; and §48E wind and solar projects must begin construction by July 4, 2026 or be placed in service by December 31, 2027. Where a business project still fits, the investment credit runs from a 6% base to 30% with prevailing-wage-and-apprenticeship compliance (projects under 1 MW earn 30% outright), plus domestic-content and energy-community adders — subject to a 50% basis haircut under §50(c), five-year recapture, and §6418 transferability for clients without tax appetite. The engine simply applies the advisor-verified credit amount; every deadline, basis, and recapture judgment lives outside the model and must be documented before a number is entered.",
     "mechanics": [
-      "Terminations first: §25D residential clean energy is gone for expenditures after December 31, 2025; the §30D, §25E, and §45W clean-vehicle credits ended for vehicles acquired after September 30, 2025; and §30C alternative-fuel refueling property earns nothing unless placed in service by June 30, 2026 in an eligible low-income or non-urban census tract.",
-      "The §48E clean electricity investment credit survives for wind and solar only inside a window: construction must begin by July 4, 2026 — under begun-construction standards materially tightened by IRS Notice 2025-42 — or the project must be placed in service by December 31, 2027.",
-      "Credit math where a project qualifies: 6% base multiplied to 30% with documented prevailing wage and apprenticeship compliance, with projects under 1 MW exempt from PWA and earning 30% outright; domestic-content and energy-community bonuses can add 10 percentage points each.",
-      "Depreciable basis is reduced by 50% of the energy credit under §50(c), the remainder is 5-year MACRS and bonus-eligible, and §50(a) recapture vests away over five years — an early sale or loss of qualification claws credit back.",
-      "OBBBA layered foreign-entity-of-concern restrictions over the surviving credits, so supply-chain screening is a prerequisite for 2026-and-later construction starts; §6418 transferability (and §6417 elective pay for exempt entities) remains the monetization route when the client cannot absorb a nonrefundable credit.",
-      "The model applies the advisor-entered credit dollar amount directly and handles nothing else — deadline verification, PWA status, basis reduction, and recapture all happen in the file, not the engine."
+      "Run the terminations first: §25D residential clean energy is gone for expenditures after December 31, 2025; the §30D, §25E, and §45W clean-vehicle credits ended for vehicles acquired after September 30, 2025; and §30C alternative-fuel refueling property earns nothing unless placed in service by June 30, 2026 in an eligible low-income or non-urban census tract.",
+      "The §48E clean electricity investment credit survives for wind and solar only inside a window: begin construction by July 4, 2026 or place the project in service by December 31, 2027; IRS Notice 2025-42 had tightened the begun-construction standards for wind and solar, but a federal district court vacated the Notice in June 2026, restoring the longstanding 5% safe harbor alongside the physical-work test — a posture that could shift again on appeal or reissued guidance.",
+      "Where a project qualifies, the math is a 6% base multiplied to 30% with documented prevailing wage and apprenticeship compliance; projects under 1 MW are exempt from PWA and earn 30% outright, and domestic-content and energy-community bonuses can add 10 percentage points each.",
+      "Depreciable basis drops by 50% of the energy credit under §50(c), the remainder is 5-year MACRS and bonus-eligible, and §50(a) recapture vests away over five years — an early sale or loss of qualification claws credit back.",
+      "OBBBA layered foreign-entity-of-concern restrictions over the surviving credits, making supply-chain screening a prerequisite for 2026-and-later construction starts; §6418 transferability (and §6417 elective pay for exempt entities) remains the monetization route when the client cannot absorb a nonrefundable credit.",
+      "The model applies the advisor-entered credit dollar amount and handles nothing else — deadline verification, PWA status, basis reduction, and recapture all live in the file, not the engine."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §48E",
-        "note": "The clean electricity investment credit and its post-OBBBA wind/solar window: begin construction by July 4, 2026 or place in service by December 31, 2027."
+        "note": "The clean electricity investment credit and its post-OBBBA wind/solar window: begin construction by July 4, 2026, or place in service by December 31, 2027."
       },
       {
         "type": "IRC",
         "cite": "P.L. 119-21 (OBBBA) energy credit terminations",
-        "note": "The statute that ended §25D after 2025, the clean-vehicle credits after September 30, 2025, and §30C after June 30, 2026, and added foreign-entity-of-concern restrictions."
+        "note": "The statute that ended §25D after 2025 and the clean-vehicle credits after September 30, 2025, cut off §30C after June 30, 2026, and added the foreign-entity-of-concern restrictions."
       },
       {
         "type": "IRC",
         "cite": "IRC §§25D, 30D, 25E, 45W",
-        "note": "The terminated residential and clean-vehicle credits — cited so the termination dates are checkable, not as live planning authority."
+        "note": "The terminated residential and clean-vehicle credits — cited so the termination dates stay checkable, not as live planning authority."
       },
       {
         "type": "IRC",
         "cite": "IRC §30C",
-        "note": "Alternative fuel refueling property: 6%/30% up to $100,000 per item, eligible-census-tract requirement, dead for property placed in service after June 30, 2026."
+        "note": "Alternative fuel refueling property: 6%/30% up to $100,000 per item, the eligible-census-tract requirement, and no credit for property placed in service after June 30, 2026."
       },
       {
         "type": "Admin",
         "cite": "IRS Notice 2025-42",
-        "note": "Post-OBBBA begun-construction guidance for §48E wind and solar — narrows the 5% safe harbor and tightens the physical-work test; the reason a token deposit no longer locks a date."
+        "note": "Post-OBBBA begun-construction guidance for §48E wind and solar that eliminated the 5% safe harbor — vacated nationwide on APA grounds by the U.S. District Court for D.C. in June 2026 (Oregon Environmental Council v. IRS), restoring the 5% safe harbor; an appeal or reissued guidance may follow, so verify the litigation posture before relying on either standard."
       },
       {
         "type": "IRC",
         "cite": "IRC §50(a), (c)",
-        "note": "Five-year recapture vesting and the 50%-of-credit basis reduction that trims the depreciation clients expect."
+        "note": "The five-year recapture vesting and the 50%-of-credit basis reduction that trims the depreciation clients expect."
       },
       {
         "type": "IRC",
         "cite": "IRC §§6417, 6418",
-        "note": "Elective pay and credit transferability — the monetization paths for clients without sufficient tax liability."
+        "note": "Elective pay and credit transferability — the monetization paths when a client lacks sufficient tax liability."
       },
       {
         "type": "Admin",
         "cite": "Form 3468 and instructions",
-        "note": "Investment credit computation, carried to Form 3800."
+        "note": "The investment credit computation, carried to Form 3800."
       }
     ],
     "requirements": [
-      "A project verified against the current statute and Treasury begun-construction guidance to fit inside a surviving window — vendor marketing does not count as verification.",
-      "For 1 MW-and-larger projects seeking 30%: prevailing wage and apprenticeship compliance documented from the first day of construction.",
+      "A project verified against the current statute and Treasury begun-construction guidance to fit a surviving window — vendor marketing is not verification.",
+      "For projects of 1 MW or more seeking 30%: prevailing wage and apprenticeship compliance documented from the first day of construction.",
       "For charging property: an eligible census tract confirmed and a placed-in-service date achievable before July 2026.",
-      "Tax appetite to absorb a nonrefundable credit, or a §6418 transfer plan negotiated before reliance on the number.",
+      "Tax appetite to absorb a nonrefundable credit, or a §6418 transfer plan negotiated before anyone relies on the number.",
       "Supply-chain screening against the foreign-entity-of-concern rules for 2026-and-later construction starts."
     ],
     "risks": [
-      "Deadline risk dominates every other theory: a project that slips past its begun-construction or placed-in-service date earns zero, and interconnection queues, permitting, and equipment lead times — not tax law — are what cause the slip.",
-      "IRS Notice 2025-42 tightened the begun-construction standards for wind and solar; a deposit-only or paper-start position is the fact pattern most likely to be challenged and lost.",
+      "Deadline risk swamps every other theory: a project that slips past its begun-construction or placed-in-service date earns zero, and interconnection queues, permitting, and equipment lead times — not tax law — are what cause the slip.",
+      "Begun-construction standards are in flux: IRS Notice 2025-42 tightened them for wind and solar, a federal district court vacated the Notice in June 2026 and restored the 5% safe harbor, and the government may appeal or reissue guidance — so a deposit-only or paper-start position remains the fact pattern most likely to be challenged, and the durable play is a position documented to hold under either standard.",
       "A prevailing-wage or apprenticeship foot-fault on a 1 MW+ project drops the credit from 30% to 6% — an 80% haircut that dwarfs most exam adjustments.",
-      "Disposition or loss of qualification within five years triggers §50(a) recapture, and the §50(c) basis reduction means clients are already getting less depreciation than the brochure implied.",
-      "Sourcing that trips the foreign-entity-of-concern restrictions disqualifies otherwise-eligible projects; expect aggressive vendor “act now” claims and verify every date against the statute before the client signs."
+      "Disposition or loss of qualification within five years triggers §50(a) recapture, and the §50(c) basis reduction already leaves clients with less depreciation than the brochure implied.",
+      "Sourcing that trips the foreign-entity-of-concern restrictions disqualifies otherwise-eligible projects; expect aggressive vendor “act now” claims, and verify every date against the statute before the client signs."
     ],
     "stateNotes": [
-      "Conformity: the credits are federal-only, but the §50(c) basis reduction flows into state depreciation for states that conform to federal basis — Missouri does through its federal starting point, so the state deduction shrinks alongside.",
-      "PTET interaction: none directly — the credit passes through to owners on the federal side, and a pass-through entity tax election is unaffected except for the modest income effect of reduced depreciation.",
-      "Missouri: no state-level investment credit piggybacks these projects, so the model's number is the whole benefit; Missouri clients weighing rooftop solar should treat the July 2026 begin-construction date, not year-end, as the real deadline."
+      "Conformity: the credits are federal-only, but the §50(c) basis reduction flows into state depreciation wherever a state conforms to federal basis — Missouri does through its federal starting point, so the state deduction shrinks alongside.",
+      "PTET interaction: none directly — the credit passes through to owners on the federal side, and a pass-through entity tax election is unaffected beyond the modest income effect of reduced depreciation.",
+      "Missouri: no state-level investment credit piggybacks on these projects, so the model's number is the whole benefit; Missouri clients weighing rooftop solar should treat the July 2026 begin-construction date, not year-end, as the real deadline."
     ],
     "interactions": {
       "requires": [],
@@ -99,23 +109,23 @@
       "synergiesWith": ["bonus-depreciation"]
     },
     "reviewChecklist": [
-      "Deadline verification memo in the file: which credit, which window, and the evidence the project genuinely fits it as of the review date.",
-      "Begun-construction position (physical work or safe harbor) documented contemporaneously against Notice 2025-42 — not reconstructed later.",
-      "PWA compliance obligations placed in the EPC contract with audit rights, or the under-1 MW exemption documented.",
-      "Basis reduction and five-year recapture calendar reflected in the depreciation projections shown to the client.",
+      "Deadline-verification memo in the file: which credit, which window, and the evidence the project genuinely fits as of the review date.",
+      "Begun-construction position (physical work or safe harbor) documented contemporaneously against Notice 2025-42 — never reconstructed later.",
+      "PWA compliance obligations written into the EPC contract with audit rights, or the under-1 MW exemption documented.",
+      "Basis reduction and the five-year recapture calendar reflected in the depreciation projections shown to the client.",
       "Foreign-sourcing screen completed for 2026+ construction starts.",
-      "The modeled credit amount ties to a computation workpaper, not a vendor quote."
+      "The modeled credit amount tied to a computation workpaper, not a vendor quote."
     ]
   },
   "client": {
-    "teaser": "Energy credits are ending on fixed dates — a real project can still catch one, but the clock decides.",
-    "headline": "The energy credit window is closing — move now or skip it",
+    "teaser": "Energy credits end on fixed dates — a real project can still catch one, but the clock decides.",
+    "headline": "The energy credit window is closing — move now or let it go",
     "plainEnglish": [
       "For years the government paid back up to 30% of the cost of solar panels and EV chargers. In 2025 Congress ended most of that. Some credits are already gone. The rest now have hard end dates.",
-      "If you were already planning solar for your building or chargers for your fleet, the choice is now or never. A project that starts on time can still earn the full credit. The same project started late earns nothing at all.",
-      "Our job is the honest check. We verify the real deadlines, whether your timeline can meet them, and what the credit is truly worth after the fine print. We do that before you sign anything a salesperson hands you."
+      "If you were already planning solar for your building or chargers for your fleet, the choice is now or never. A project that starts on time can still earn the full credit. The same project started late earns nothing.",
+      "Our job is the honest check. We confirm the real deadlines, whether your timeline can meet them, and what the credit is worth after the fine print. We do that before you sign anything a salesperson hands you."
     ],
-    "analogy": "It is like a store's final closing sale: the discounts are real, but only on what is still on the shelf, and the doors lock on a posted date whether you are ready or not.",
+    "analogy": "It is like a store's final closing sale. The discounts are real, but only on what is still on the shelf — and the doors lock on a posted date whether you are ready or not.",
     "benefits": [
       "Up to 30% of a qualifying project's cost back as a tax credit",
       "Faster depreciation write-offs on most of the remaining cost",
@@ -124,25 +134,25 @@
     ],
     "steps": [
       "WE check your project against the current deadlines and the fine print.",
-      "WE calculate the real after-tax cost, including the depreciation trade-off.",
-      "YOU lock the construction contract on a schedule that protects the date.",
+      "WE calculate the true after-tax cost, including the depreciation trade-off.",
+      "YOU lock in the construction contract on a schedule that protects the date.",
       "WE claim the credit, set up the depreciation, and calendar the holding period."
     ],
     "clientCommitments": [
       "Do not sign a vendor contract until the deadline check is done",
       "Keep the project on the agreed schedule — the credit dies if the date slips",
-      "Own the equipment for the full five-year period or tell us before selling"
+      "Own the equipment for the full five-year period, or tell us before selling"
     ]
   },
   "engagement": {
     "implementationEffort": "multi-step",
     "annualMaintenance": [
-      "Monitor the placed-in-service and begun-construction milestones against the statutory windows",
+      "Monitor placed-in-service and begun-construction milestones against the statutory windows",
       "Track the five-year recapture period and confirm continued qualification",
-      "Update the credit landscape review as guidance and termination dates evolve"
+      "Refresh the credit-landscape review as guidance and termination dates evolve"
     ],
     "deliverables": [
-      "Project deadline verification memo (credit, window, and evidence)",
+      "Project deadline-verification memo (credit, window, and evidence)",
       "After-tax cost model including basis reduction and depreciation",
       "Form 3468 computation workpapers and recapture calendar"
     ],
@@ -298,6 +308,7 @@
     ],
     "reviewTriggers": [
       "New Treasury or IRS guidance on begun-construction or FEOC rules",
+      "Appellate or further developments in the litigation that vacated Notice 2025-42 — 5% safe harbor availability may shift again",
       "Any congressional action extending or further cutting the surviving windows",
       "Client project schedule slippage against a locked deadline"
     ]

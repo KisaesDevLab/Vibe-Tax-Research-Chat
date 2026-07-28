@@ -1,6 +1,6 @@
 {
   "id": "grouping-election",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Passive Activity Grouping Elections",
@@ -23,53 +28,53 @@
   "entityTypes": ["rental", "s-corp", "partnership"],
   "typicalSavingsBand": "structural",
   "advisor": {
-    "summary": "Reg. §1.469-4 lets commonly controlled activities that form an 'appropriate economic unit' be treated as one activity for §469, which changes where material participation is tested: hours that fail activity by activity can pass once combined. A separate election under Reg. §1.469-9(g) lets a real estate professional treat every rental real estate interest as a single activity. Both choices are structural and sticky — groupings bind future years, the Commissioner can regroup abusive combinations, and Rev. Proc. 2010-13 requires written disclosure of new groupings and changes. The election moves no dollars by itself; it determines which losses are currently usable and when suspended losses release, which is why it is advisory in the engine and carried at zero.",
+    "summary": "Reg. §1.469-4 treats commonly controlled activities that form an 'appropriate economic unit' as a single activity for §469, relocating the material participation test: hours that fall short activity by activity can pass once pooled. A separate election under Reg. §1.469-9(g) lets a real estate professional treat all rental real estate interests as one activity. Both choices are structural and sticky — groupings bind future years, the Commissioner can regroup abusive combinations, and Rev. Proc. 2010-13 requires written disclosure of new groupings and changes. The election moves no dollars by itself; it governs which losses are currently usable and when suspended losses release, which is why the engine carries it as advisory at zero.",
     "mechanics": [
-      "The grouping standard is the five-factor 'appropriate economic unit' test of Reg. §1.469-4(c) — business similarity, common control, common ownership, geography, and interdependence — with no single factor controlling and reasonable, consistent groupings generally respected.",
-      "Material participation under §469 is measured per activity, so combining related operations converts three failing 200-hour efforts into one passing 600-hour activity — the core planning effect.",
-      "Rental activities generally cannot be grouped with trade-or-business activities unless one side is insubstantial or ownership is proportionate (Reg. §1.469-4(d)), and real property rentals cannot be grouped with personal property rentals.",
-      "The Reg. §1.469-9(g) aggregation is a different lever: it lets a qualifying real estate professional test material participation once across all rental real estate rather than property by property.",
-      "Groupings bind future years under Reg. §1.469-4(e), the Commissioner may regroup to prevent avoidance under Reg. §1.469-4(f), and suspended losses release only on disposition of substantially all of the grouped activity under §469(g) — the cost side of the ledger.",
-      "New groupings, additions, and regroupings must be disclosed in writing under Rev. Proc. 2010-13; an undisclosed grouping risks being treated as separate activities at exam."
+      "Reg. §1.469-4(c) supplies the five-factor 'appropriate economic unit' standard — business similarity, common control, common ownership, geography, and interdependence. No single factor controls, and reasonable, consistently applied groupings are generally respected.",
+      "§469 measures material participation activity by activity, so combining related operations turns three failing 200-hour efforts into one passing 600-hour activity — the core planning effect.",
+      "Rental activities generally cannot be grouped with trade-or-business activities unless one side is insubstantial or ownership is proportionate (Reg. §1.469-4(d)), and real property rentals may never be grouped with personal property rentals.",
+      "The Reg. §1.469-9(g) aggregation is a distinct lever: a qualifying real estate professional tests material participation once across all rental real estate instead of property by property.",
+      "The cost side of the ledger: groupings bind future years under Reg. §1.469-4(e), the Commissioner may regroup to prevent avoidance under Reg. §1.469-4(f), and suspended losses release only on disposition of substantially all of the grouped activity under §469(g).",
+      "Rev. Proc. 2010-13 requires written disclosure of new groupings, additions, and regroupings; an undisclosed grouping risks treatment as separate activities at exam."
     ],
     "authority": [
       {
         "type": "Reg",
         "cite": "Reg. §1.469-4",
-        "note": "The grouping rules: appropriate-economic-unit standard, the five factors, and the limits on combining rentals with businesses."
+        "note": "The grouping rules: the appropriate-economic-unit standard, its five factors, and the limits on combining rentals with businesses."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.469-9(g)",
-        "note": "The real estate professional’s election to treat all rental real estate as one activity for material participation."
+        "note": "The real estate professional's election to treat all rental real estate as a single activity when testing material participation."
       },
       {
         "type": "IRC",
         "cite": "IRC §469(c), (g), (h)",
-        "note": "Passive-activity definitions, the material participation standard the grouping re-scopes, and the entire-interest disposition rule that grouping enlarges."
+        "note": "Passive-activity definitions, the material participation standard the grouping re-scopes, and the entire-interest disposition rule the grouping enlarges."
       },
       {
         "type": "Admin",
         "cite": "Rev. Proc. 2010-13",
-        "note": "Mandatory written disclosure of new groupings, additions, and regroupings with the return."
+        "note": "Mandates written disclosure of new groupings, additions, and regroupings with the return."
       }
     ],
     "requirements": [
-      "A defensible economic unit: common control or ownership plus operational, geographic, or customer interdependence, documented in a grouping memo.",
-      "The Rev. Proc. 2010-13 disclosure statement filed with the return for any new grouping or change.",
-      "Consistency going forward — the grouping is a binding structural choice, revisited only for material changes in fact.",
-      "For the §1.469-9(g) aggregation, real estate professional qualification established first and the election statement attached to a timely return."
+      "A defensible economic unit — common control or ownership plus operational, geographic, or customer interdependence — documented in a grouping memo.",
+      "The Rev. Proc. 2010-13 disclosure statement filed with the return for every new grouping or change.",
+      "Forward consistency: the grouping is a binding structural choice, revisited only when the facts materially change.",
+      "For the §1.469-9(g) aggregation, real estate professional status established first and the election statement attached to a timely return."
     ],
     "risks": [
-      "The leading exam theory is an undisclosed or economically hollow grouping: the Commissioner's regrouping power under Reg. §1.469-4(f) targets combinations built to manufacture material participation, and a missing Rev. Proc. 2010-13 disclosure lets an agent unwind the intended treatment without reaching the merits.",
-      "The election cuts both ways at disposition — suspended losses stay locked until substantially all of the grouped activity is sold, so a grouping that helps this year can strand losses at exit.",
+      "The leading exam theory is an undisclosed or economically hollow grouping: Reg. §1.469-4(f) gives the Commissioner regrouping power aimed at combinations built to manufacture material participation, and a missing Rev. Proc. 2010-13 disclosure lets an agent unwind the intended treatment without reaching the merits.",
+      "The election cuts both ways at exit — suspended losses stay locked until substantially all of the grouped activity is sold, so a grouping that helps this year can strand losses at disposition.",
       "Grouping a rental with an operating business outside the insubstantiality or proportionate-ownership exceptions invites regrouping.",
-      "The §1.469-9(g) aggregation complicates per-property planning: one binding statement changes disposition timing and loss release for the whole portfolio."
+      "The §1.469-9(g) aggregation complicates property-level planning: one binding statement resets disposition timing and loss release for the entire portfolio."
     ],
     "stateNotes": [
-      "Conformity: most states conform to the federal §469 passive-loss architecture by adopting federal AGI or taxable income, so the grouping’s federal effect usually carries through — verify separately for states that compute their own passive limitations.",
-      "Missouri conforms via its federal-AGI starting point (RSMo §143.121); the grouping needs no separate Missouri filing.",
-      "PTET interaction: none directly — grouping changes loss character at the owner level, not entity income, so there is no PTET interaction to model; confirm only that entity-level elections do not assume a different activity structure."
+      "Conformity: most states adopt federal AGI or taxable income and so conform to the federal §469 passive-loss architecture, meaning the grouping's federal effect usually flows through — verify separately in states that run their own passive limitations.",
+      "Missouri conforms through its federal-AGI starting point (RSMo §143.121); the grouping requires no separate Missouri filing.",
+      "PTET interaction: none directly — grouping changes loss character at the owner level, not entity income, so there is nothing to model for PTET; confirm only that entity-level elections do not assume a different activity structure."
     ],
     "interactions": {
       "requires": [],
@@ -77,49 +82,49 @@
       "synergiesWith": ["reps-qualification", "self-rental-structuring"]
     },
     "reviewChecklist": [
-      "Grouping memo documents the five-factor economic-unit analysis and the hours evidence it is meant to unlock.",
-      "Disposition modeling completed — the partner has seen what the grouping does to suspended-loss release before it is filed.",
-      "Rev. Proc. 2010-13 disclosure (or §1.469-9(g) statement) drafted and attached to the timely return.",
-      "Prior-year filing positions checked for implied groupings that conflict with the new structure.",
-      "Client’s time logs actually support material participation for the combined activity — the election reorganizes hours, it does not create them."
+      "Grouping memo documents the five-factor economic-unit analysis and identifies the hours evidence it is meant to unlock.",
+      "Disposition modeling complete — the partner has seen the grouping's effect on suspended-loss release before filing.",
+      "Rev. Proc. 2010-13 disclosure (or §1.469-9(g) statement) drafted and attached to a timely return.",
+      "Prior-year filing positions reviewed for implied groupings that conflict with the new structure.",
+      "Client's time logs actually support material participation for the combined activity — the election reorganizes hours; it does not create them."
     ]
   },
   "client": {
-    "teaser": "One filing can make your work hours count together instead of being split apart.",
-    "headline": "Combine related activities so your hours finally count",
+    "teaser": "One election can add your work hours together instead of splitting them apart.",
+    "headline": "Group related activities so your hours finally count",
     "plainEnglish": [
-      "The tax law sorts your income into two buckets: active and passive. Losses in the passive bucket cannot offset your regular income. Which bucket you land in depends on the hours you work — counted activity by activity.",
-      "Here is the problem. If you split your time across three related operations, each one alone may fall short of the hour tests. All three get labeled passive, even though you work the combined operation full time.",
-      "The fix is an election that treats related activities as one, so your hours are added together. It moves no money by itself. But it can be the difference between losses you use this year and losses stuck on a shelf. Because the choice binds future years, we model the long-term effects first."
+      "Tax law sorts your income into two buckets: active and passive. Losses in the passive bucket cannot offset your regular income. Which bucket you land in depends on your work hours — counted one activity at a time.",
+      "Here is the catch. Spread your time across three related operations, and each one alone may miss the hour tests. All three get labeled passive, even though the combined work is your full-time job.",
+      "The fix is an election that treats related activities as one, so your hours add up. It moves no money by itself. But it can decide whether you use your losses this year or leave them stuck on a shelf. The choice binds future years, so we model the long-term effects first."
     ],
-    "analogy": "It is like three punch cards from the same shop — merge them into one card and your visits finally add up to the reward.",
+    "analogy": "It is like three punch cards from the same shop. Merge them into one card, and your visits finally add up to the reward.",
     "benefits": [
-      "Hours across related activities count together",
-      "Can turn stuck passive losses into losses that offset your income",
+      "Hours across related activities count as one total",
+      "Can free stuck passive losses to offset your income",
       "One filing with your return — no ongoing cost"
     ],
     "steps": [
-      "WE map every activity you own, its ownership, and where your hours go.",
-      "WE test which combination unlocks the most losses now and at a future sale.",
+      "WE map each activity you own, who owns it, and where your hours go.",
+      "WE test which grouping unlocks the most losses now and at a future sale.",
       "WE draft the election and required disclosure and file them with your return.",
       "YOU keep a simple log of your hours so the combined activity holds up."
     ],
     "clientCommitments": [
-      "Track your hours by activity as the year happens",
-      "Tell us before selling any property or business in the group — timing affects your locked-up losses"
+      "Track your hours by activity as the year goes on",
+      "Tell us before you sell any property or business in the group — timing affects your locked-up losses"
     ]
   },
   "engagement": {
     "implementationEffort": "multi-step",
     "annualMaintenance": [
-      "Annual re-check that the facts still match the documented economic unit",
-      "Confirm material participation hours for the grouped activity each year",
+      "Re-confirm each year that the facts still match the documented economic unit",
+      "Verify material participation hours for the grouped activity each year",
       "Review any acquisition or disposition against the binding grouping before it closes"
     ],
     "deliverables": [
-      "Grouping analysis memo with five-factor documentation",
+      "Grouping analysis memo documenting the five-factor test",
       "Rev. Proc. 2010-13 disclosure statement (or §1.469-9(g) election) filed with the return",
-      "Disposition-impact summary for the client’s permanent file"
+      "Disposition-impact summary for the client's permanent file"
     ],
     "feeGuidanceBand": null
   },

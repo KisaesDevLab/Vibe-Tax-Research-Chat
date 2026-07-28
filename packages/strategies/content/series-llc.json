@@ -1,6 +1,6 @@
 {
   "id": "series-llc",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Series LLC for Multi-Property Holders",
@@ -23,58 +28,58 @@
   "entityTypes": ["rental", "partnership"],
   "typicalSavingsBand": "structural",
   "advisor": {
-    "summary": "A series LLC promises the per-property liability stack at single-entity cost: one master LLC whose operating agreement spins up internal protected series, each holding one property with its own assets, records, and — where the statutes are honored — its own liability wall. Federal tax treatment follows Prop. Reg. §301.7701-1(a)(5): each series is treated as a separate local-law entity and classified under the check-the-box rules on its own ownership, so a single owner's series are disregarded and typically land on the same Schedule E the properties occupied before, while multi-owner series file as partnerships. The draw is therefore asset protection and administrative economy, not a tax rate play — and the honest advisory covers the caveats in proportion: the federal regulation has sat proposed since 2010, the internal shields have thin litigation history and unsettled bankruptcy treatment, non-series states may decline to respect them, and title companies and lenders still stumble on the form. Missouri has an enabling statute, which makes the structure locally available to disciplined record-keepers — and only to them, because commingling is how series collapse.",
+    "summary": "A series LLC promises the per-property liability stack at single-entity cost: one master LLC whose operating agreement spins up internal protected series, each holding one property with its own assets, records, and — where the statutes are honored — its own liability wall. Federal tax treatment follows Prop. Reg. §301.7701-1(a)(5): each series is treated as a separate local-law entity and classified under the check-the-box rules on its own ownership, so a single owner's series are disregarded and typically land on the same Schedule E the properties occupied before, while multi-owner series file as partnerships. The draw is asset protection and administrative economy, not a tax-rate play — and an honest advisory weighs the caveats in proportion: the federal regulation has sat in proposed form since 2010, the internal shields carry thin litigation history and unsettled bankruptcy treatment, non-series states may decline to respect them, and title companies and lenders still stumble on the form. Missouri has an enabling statute, which makes the structure locally available to disciplined record-keepers — and only to them, because commingling is how series collapse.",
     "mechanics": [
-      "One master LLC is formed under a series-enabling statute with the required notice in its formation documents; the operating agreement establishes each protected series, and each property is deeded into — and insured and banked under — its specific series, not the master.",
-      "Where statutory formalities hold (separate records per series, proper notice, series-titled assets), the debts of one series are enforceable only against that series's assets — replicating a per-property LLC stack with one formation and, in many states, one annual fee.",
-      "Federal classification runs through Prop. Reg. §301.7701-1(a)(5): each series is a separate entity for tax purposes, then the ordinary check-the-box rules of Reg. §§301.7701-1 through -3 classify it — a single-owner series is disregarded; a multi-owner series defaults to partnership status unless it elects otherwise on Form 8832.",
-      "For the common single-owner case the federal filing burden does not grow: every disregarded series reports on the owner's Schedule E exactly as directly held rentals would, while mixed-ownership series each generate their own partnership return.",
-      "The proposed regulation has never been finalized — fifteen years of settled practice rest on it, and positions should acknowledge its proposed status — and the §469 passive activity rules, cost segregation, and exchange planning all operate at the property level, unaffected by the wrapper."
+      "One master LLC is formed under a series-enabling statute with the required notice in its formation documents; the operating agreement establishes each protected series, and each property is deeded into — and insured and banked under — its own series, never the master.",
+      "Where the statutory formalities hold (separate records per series, proper notice, series-titled assets), the debts of one series are enforceable only against that series's assets — replicating a per-property LLC stack with one formation and, in many states, one annual fee.",
+      "Federal classification runs through Prop. Reg. §301.7701-1(a)(5): each series is a separate entity for tax purposes, and the ordinary check-the-box rules of Reg. §§301.7701-1 through -3 then classify it — a single-owner series is disregarded; a multi-owner series defaults to partnership status unless it elects otherwise on Form 8832.",
+      "In the common single-owner case the federal filing burden does not grow: every disregarded series reports on the owner's Schedule E exactly as directly held rentals would, while each mixed-ownership series generates its own partnership return.",
+      "The proposed regulation has never been finalized — fifteen years of settled practice rest on it, and positions should acknowledge its proposed status — while the §469 passive activity rules, cost segregation, and exchange planning all operate at the property level, untouched by the wrapper."
     ],
     "authority": [
       {
         "type": "Reg",
         "cite": "Prop. Reg. §301.7701-1(a)(5)",
-        "note": "Each series of a domestic series LLC treated as a separate entity for federal tax purposes, classified on its own ownership — proposed in 2010 and never finalized, which the position must acknowledge."
+        "note": "Treats each series of a domestic series LLC as a separate entity for federal tax purposes, classified on its own ownership — proposed in 2010 and never finalized, which the position must acknowledge."
       },
       {
         "type": "Reg",
         "cite": "Reg. §§301.7701-1 through -3",
-        "note": "The check-the-box classification rules each series runs through: disregarded when single-owner, partnership by default when multi-owner."
+        "note": "The check-the-box rules each series runs through: disregarded with one owner, partnership by default with several."
       },
       {
         "type": "Admin",
         "cite": "Form 8832 and instructions",
-        "note": "The classification election, available series by series where a non-default status is wanted."
+        "note": "The classification election, made series by series wherever a non-default status is wanted."
       },
       {
         "type": "Admin",
         "cite": "RSMo §347.186 (Missouri series LLC statute)",
-        "note": "Missouri’s enabling statute: designated series with separate rights and liability internal shields, conditioned on separate records and naming requirements."
+        "note": "Missouri’s enabling statute: designated series with separate rights and internal liability shields, conditioned on separate records and naming requirements."
       },
       {
         "type": "IRC",
         "cite": "IRC §469",
-        "note": "Passive activity rules apply per activity regardless of the wrapper — the series structure neither helps nor hurts loss usability."
+        "note": "Applies the passive activity rules per activity regardless of wrapper — the series structure neither helps nor hurts loss usability."
       }
     ],
     "requirements": [
-      "Formation in a state with a series-enabling statute, and local-counsel review for any property sitting in a non-series state before relying on the internal shields.",
-      "Strict per-series bookkeeping: separate bank accounts, separate books, and asset records maintained series by series — commingling is the primary way the shields fail.",
+      "Formation in a state with a series-enabling statute, plus local-counsel review for any property sitting in a non-series state before relying on the internal shields.",
+      "Strict per-series bookkeeping: separate bank accounts, separate books, and asset records kept series by series — commingling is the primary way the shields fail.",
       "Deeds titled in the name of the specific series, with insurance and lender documents naming the correct series as insured or borrower.",
-      "Classification confirmed series by series (disregarded versus partnership) with the resulting return obligations calendared."
+      "Classification confirmed series by series (disregarded versus partnership), with the resulting return obligations calendared."
     ],
     "risks": [
-      "The leading exposure is not an IRS theory but a creditor one: the internal shields have thin case law, bankruptcy treatment of a single series is unsettled, and a non-series state may simply decline to honor the walls for property or torts within its borders — there is no Sinopoli-style anchor case here, which is itself the risk disclosure.",
-      "Federal classification rests on a regulation that has been proposed since 2010; practice is settled but the position should be papered as reliance on proposed guidance.",
+      "The leading exposure is a creditor theory, not an IRS one: the internal shields have thin case law, bankruptcy treatment of a single series is unsettled, and a non-series state may simply decline to honor the walls for property or torts within its borders — there is no Sinopoli-style anchor case here, which is itself the risk disclosure.",
+      "Federal classification rests on a regulation proposed since 2010; practice is settled, but the position should be papered as reliance on proposed guidance.",
       "Operational fragility dominates: shared bank accounts, sloppy records, or a deed left in the master LLC's name collapses the segregation exactly when it is needed.",
       "Title companies and lenders remain inconsistent with the form — expect friction or refusal on some financings and closings, and price that into the choice against a conventional multi-LLC stack.",
-      "Per-series fees and registration regimes in some states erode the cost advantage that motivated the structure."
+      "In some states, per-series fees and registration regimes erode the cost advantage that motivated the structure."
     ],
     "stateNotes": [
-      "Conformity: states generally follow the federal per-series classification for income tax, but franchise, registration, and per-series fee treatment varies by state and should be confirmed for every state where a property sits.",
+      "Conformity: states generally follow the federal per-series classification for income tax, but franchise, registration, and per-series fee treatment varies state to state and should be confirmed for every state where a property sits.",
       "PTET interaction: none for a single owner's disregarded series; a multi-member series taxed as a partnership is its own election unit, so in Missouri each such series can make its own SALT Parity election (RSMo §143.436) where it pays.",
-      "Missouri: RSMo §347.186 authorizes designated series with internal liability shields, conditioned on separate records, proper naming, and notice in the articles — so Missouri rental portfolios can use the structure at home, with the usual cross-border caution for properties in non-series states."
+      "Missouri: RSMo §347.186 authorizes designated series with internal liability shields, conditioned on separate records, proper naming, and notice in the articles — so Missouri rental portfolios can run the structure at home, with the usual cross-border caution for properties in non-series states."
     ],
     "interactions": {
       "requires": [],
@@ -82,32 +87,32 @@
       "synergiesWith": ["grouping-election"]
     },
     "reviewChecklist": [
-      "Every property state confirmed as series-enabled or covered by a local-counsel opinion on shield recognition.",
+      "Every property state confirmed series-enabled, or covered by a local-counsel opinion on shield recognition.",
       "Each deed titled to its specific series, with insurance and any lender documents naming that series.",
       "Per-series bank accounts and books verified — no commingling anywhere in the structure.",
-      "Classification determined series by series and the return obligations calendared.",
-      "The client's record-keeping discipline honestly assessed — an undisciplined operator should get a conventional LLC stack instead.",
-      "New acquisitions deeded into a new or designated series at closing, not parked in the master."
+      "Classification determined series by series, with the return obligations calendared.",
+      "The client's record-keeping discipline candidly assessed — an undisciplined operator should get a conventional LLC stack instead.",
+      "New acquisitions deeded into a new or designated series at closing, never parked in the master."
     ]
   },
   "client": {
-    "teaser": "One company, many watertight compartments — each property protected from the others' problems.",
+    "teaser": "One company with many watertight compartments — each property walled off from the others' problems.",
     "headline": "Protect each property without a stack of LLCs",
     "plainEnglish": [
-      "If you own several rentals, a lawsuit at one property can put all of them at risk. The standard fix is a separate LLC for each property. That works, but you pay setup costs and yearly fees over and over.",
+      "If you own several rentals, a lawsuit at one property can put all of them at risk. The standard fix is a separate LLC for each property. That works, but you pay setup costs and yearly fees again and again.",
       "A series LLC does the same job with one company. Inside it, each property lives in its own protected compartment, with its own records and bank account. A problem at one property stays walled off from the rest.",
-      "For a single owner, your federal taxes usually do not get more complicated. The rentals report much like they do today. The trade-offs are practical: the walls depend on clean records, some states and lenders are still catching up to the idea, and we will tell you plainly if a traditional LLC stack fits you better."
+      "For a single owner, your federal taxes usually stay just as simple. The rentals report much like they do today. The trade-offs are practical: the walls depend on clean records, some states and lenders are still catching up to the idea, and we will tell you plainly if a traditional LLC stack fits you better."
     ],
-    "analogy": "It is like a ship built with watertight compartments — one flooded compartment does not sink the vessel, as long as the doors between them stay sealed.",
+    "analogy": "Think of a ship built with watertight compartments. One flooded compartment does not sink the ship, as long as the doors between them stay sealed.",
     "benefits": [
       "Each property is shielded from problems at the others",
       "One company to form and maintain instead of many",
       "Usually no extra federal tax filings for a single owner",
-      "A new compartment is easy to add with each purchase"
+      "Adding a new compartment with each purchase is easy"
     ],
     "steps": [
       "WE confirm your state and your properties' states support the structure.",
-      "WE set up the company, create a compartment per property, and coordinate re-titling the deeds.",
+      "WE set up the company, create a compartment for each property, and coordinate re-titling the deeds.",
       "YOU open a bank account for each compartment and keep its money and records separate.",
       "WE check the walls each year and add compartments as you buy."
     ],
@@ -120,13 +125,13 @@
   "engagement": {
     "implementationEffort": "structural",
     "annualMaintenance": [
-      "Annual commingling audit: accounts, records, and deeds verified per series",
+      "Run an annual commingling audit: accounts, records, and deeds verified series by series",
       "Confirm insurance and lender documents still name the correct series",
       "Deed and document new acquisitions into their own series",
       "Re-confirm classification and return obligations as ownership changes"
     ],
     "deliverables": [
-      "Series LLC formation package with series-aware operating agreement",
+      "Series LLC formation package with a series-aware operating agreement",
       "Per-property titling, banking, and insurance checklist",
       "Classification memo (disregarded vs. partnership, series by series)",
       "Annual separateness review memo"

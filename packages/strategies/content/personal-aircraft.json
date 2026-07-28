@@ -1,6 +1,6 @@
 {
   "id": "personal-aircraft",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Business Use of Personal Aircraft",
@@ -23,70 +28,70 @@
   "entityTypes": ["s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "25k-100k",
   "advisor": {
-    "summary": "An aircraft used predominantly in a real trade or business supports very large deductions — operating costs under §162 and cost recovery including permanent 100 percent bonus — and draws more concentrated IRS attention than anything else in this library. It is §280F listed property demanding more-than-50-percent qualified business use proven flight by flight; entertainment use disallows a proportionate share of every cost including depreciation under the occupied-seat rules; personal flights by owners impute income under the SIFL formula; and LB&I has run a dedicated business-aircraft audit campaign since February 2024. The engine deducts a single advisor-supplied figure from the separate depreciation and cost study — this strategy must never be presented without that study underneath it, and the file should be built as if the exam notice were already in the mail.",
+    "summary": "An aircraft used predominantly in a real trade or business supports very large deductions — operating costs under §162 and cost recovery including permanent 100 percent bonus — and attracts more concentrated IRS attention than anything else in this library. It is §280F listed property requiring more-than-50-percent qualified business use proven flight by flight; entertainment use disallows a proportionate share of every cost, depreciation included, under the occupied-seat rules; personal flights by owners impute income under the SIFL formula; and LB&I has run a dedicated business-aircraft audit campaign since February 2024. The engine deducts a single advisor-supplied figure taken from the separate depreciation and cost study — never present this strategy without that study underneath it, and build the file as if the exam notice were already in the mail.",
     "mechanics": [
-      "Deductibility begins with §162: recurring business transportation needs that commercial schedules serve poorly — multi-site operations, dispersed clients, time-critical work — documented per flight with route, passengers, and purpose.",
-      "Aircraft are listed property under §280F(d)(4): accelerated and bonus depreciation require qualified business use above 50 percent in every year of the recovery period, and a failing year triggers recapture plus straight-line ADS going forward.",
-      "Entertainment use is carved out by Reg. §1.274-10: all costs, depreciation included, are allocated across occupied seats flight by flight, and the entertainment share is disallowed even when income is imputed to the executive.",
-      "Personal non-entertainment flights by owner-employees impute compensation under the SIFL rules of Reg. §1.61-21(g) — payroll must actually run the numbers, and the deduction-versus-compensation mismatch is a standing exam adjustment.",
-      "Where profit motive is thin, §183 caps the activity's deductions; owner-to-business leasing structures layer §469 self-rental and state sales-and-use issues that need their own analysis.",
+      "Deductibility starts with §162: recurring business transportation needs that commercial schedules serve poorly — multi-site operations, dispersed clients, time-critical work — documented flight by flight with route, passengers, and purpose.",
+      "Aircraft are listed property under §280F(d)(4): accelerated and bonus depreciation demand qualified business use above 50 percent in every year of the recovery period, and one failing year triggers recapture plus straight-line ADS from then on.",
+      "Entertainment use is carved out by Reg. §1.274-10: every cost, depreciation included, is allocated across occupied seats flight by flight, and the entertainment share is disallowed even when income is imputed to the executive.",
+      "Personal non-entertainment flights by owner-employees impute compensation under the SIFL rules of Reg. §1.61-21(g) — payroll has to run the numbers in practice, and the mismatch between deduction and imputed compensation is a standing exam adjustment.",
+      "Where profit motive is thin, §183 caps the activity's deductions; owner-to-business leasing structures add §469 self-rental and state sales-and-use issues that demand their own analysis.",
       "The model applies one number — the annual business-use deduction from the separate study — as an entity deduction; depreciation schedules, entertainment disallowance, and SIFL all live in that study, not in the engine."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §162(a)",
-        "note": "Ordinary and necessary is the foundation — the business case for each flight."
+        "note": "The ordinary-and-necessary foundation — the business case behind every flight."
       },
       {
         "type": "IRC",
         "cite": "IRC §280F(d)(4)",
-        "note": "Listed-property status: the more-than-50-percent qualified-business-use test, recapture, and ADS on failure."
+        "note": "Listed-property status: the more-than-50-percent qualified-business-use test, with recapture and ADS on failure."
       },
       {
         "type": "IRC",
         "cite": "IRC §168(k), as amended by P.L. 119-21 (OBBBA)",
-        "note": "Permanent 100 percent bonus on qualifying aircraft acquired after January 19, 2025 — the number that makes year one enormous."
+        "note": "Permanent 100 percent bonus for qualifying aircraft acquired after January 19, 2025 — the figure that makes year one enormous."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.274-10",
-        "note": "Occupied-seat allocation and disallowance of the entertainment share of all aircraft costs, including depreciation."
+        "note": "Occupied-seat allocation disallowing the entertainment share of all aircraft costs, depreciation included."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.61-21(g)",
-        "note": "The SIFL valuation formula for imputing personal flights to owner-employees."
+        "note": "The SIFL valuation formula for imputing owner-employees' personal flights as income."
       },
       {
         "type": "IRC",
         "cite": "IRC §§183, 469",
-        "note": "Hobby-loss and passive/self-rental limits on structures without a solid profit motive."
+        "note": "Hobby-loss and passive/self-rental limits when the structure lacks a solid profit motive."
       },
       {
         "type": "Admin",
         "cite": "IR-2024-46 (Feb. 21, 2024)",
-        "note": "The LB&I business-aircraft audit campaign — the reason this file is built exam-first."
+        "note": "The LB&I business-aircraft audit campaign — why this file is built exam-first."
       }
     ],
     "requirements": [
-      "A genuine, recurring transportation need that commercial travel serves poorly — provable with routes and schedules, not adjectives.",
-      "Qualified business use above 50 percent, evidenced by contemporaneous flight-by-flight logs.",
-      "A separate depreciation and operating-cost study producing the annual deduction the model applies.",
-      "SIFL imputation running in payroll and the annual entertainment-use allocation computed.",
+      "A genuine, recurring transportation need that commercial travel serves poorly — proven with routes and schedules, not adjectives.",
+      "Qualified business use above 50 percent, backed by contemporaneous flight-by-flight logs.",
+      "A standalone depreciation and operating-cost study that produces the annual deduction the model applies.",
+      "SIFL imputation running through payroll and the annual entertainment-use allocation computed.",
       "FAA, insurance, and state sales-and-use coordination handled outside this model."
     ],
     "risks": [
-      "Elevated audit probability is not a maybe: the LB&I campaign announced in IR-2024-46 targets exactly this deduction, and the leading theory is personal and entertainment use dressed as business — build the position assuming examination.",
-      "One personal-heavy flying season can gut the year: the occupied-seat allocation disallows a proportionate share of all costs, bonus depreciation included.",
-      "Business use at or below 50 percent in any recovery-period year triggers listed-property recapture and ADS going forward.",
-      "Missed SIFL imputation stacks a payroll-tax exposure on top of the income-tax adjustment.",
-      "Weak profit motive invites §183 recharacterization, and the economics rarely pencil on tax savings alone — the aircraft must make business sense before tax."
+      "Elevated audit probability is not hypothetical: the LB&I campaign announced in IR-2024-46 targets exactly this deduction, and its leading theory is personal and entertainment use dressed up as business — build the position assuming examination.",
+      "One personal-heavy flying season can gut the year: the occupied-seat allocation disallows a proportionate share of every cost, bonus depreciation included.",
+      "Business use at or below 50 percent in any recovery-period year triggers listed-property recapture and ADS from that point forward.",
+      "Missed SIFL imputation stacks payroll-tax exposure on top of the income-tax adjustment.",
+      "A weak profit motive invites §183 recharacterization, and the economics rarely pencil on tax savings alone — the aircraft must make business sense before tax."
     ],
     "stateNotes": [
-      "Conformity: state depreciation decoupling hits hardest here — a bonus-decoupled state spreads the headline deduction over years, and state sales-and-use tax on the acquisition is frequently the largest non-federal number in the deal.",
-      "PTET interaction: the deduction reduces electing-entity income before any pass-through entity tax computation; a swing this large mandates a PTET estimate reset.",
-      "Missouri: conforms to federal bonus through rolling conformity (RSMo §143.091); Missouri sales/use tax on the acquisition and any owner-to-entity lease should be scoped with the state filings before closing."
+      "Conformity: state depreciation decoupling bites hardest here — a bonus-decoupled state spreads the headline deduction over years, and state sales-and-use tax on the acquisition is often the largest non-federal number in the deal.",
+      "PTET interaction: the deduction reduces electing-entity income before any pass-through entity tax computation — a swing this large requires a PTET estimate reset.",
+      "Missouri: conforms to federal bonus through rolling conformity (RSMo §143.091); scope Missouri sales/use tax on the acquisition, and on any owner-to-entity lease, with the state filings before closing."
     ],
     "interactions": {
       "requires": [],
@@ -94,50 +99,50 @@
       "synergiesWith": ["bonus-depreciation"]
     },
     "reviewChecklist": [
-      "The separate aircraft study exists, is current, and its number is what the model applies — no study, no strategy.",
+      "The separate aircraft study exists, is current, and supplies the exact number the model applies — no study, no strategy.",
       "Flight logs reviewed: route, passengers, and per-seat purpose classification for every flight.",
-      "Business-use percentage above 50 percent with margin, not at the line.",
+      "Business-use percentage above 50 percent with margin to spare, not at the line.",
       "SIFL entries confirmed in payroll and the entertainment allocation reconciled.",
-      "Client has signed off on the audit posture and the documentation burden in writing."
+      "Client sign-off in writing on the audit posture and the documentation burden."
     ]
   },
   "client": {
-    "teaser": "A serious deduction for a serious business tool — with rules to match.",
-    "headline": "When the plane is a business tool, the tax law treats it like one",
+    "teaser": "A major deduction for a genuine business tool — with rules to match.",
+    "headline": "When the plane is truly a business tool, the tax law treats it that way",
     "plainEnglish": [
-      "If your business truly depends on private air travel — several locations, clients spread across the map, schedules airlines cannot meet — the tax law allows real deductions. Operating costs of business flights count. So can a very large first-year write-off on the aircraft itself.",
-      "This is also one of the most closely watched deductions in the tax code. The IRS runs a dedicated audit program for business aircraft. Every flight needs a log showing who was aboard and why. Personal trips get added to your income at set rates, and vacation-style flights cancel part of the deduction.",
-      "None of that is a reason to walk away. It is a reason to do it properly. We make sure the numbers come from a real study, the records start with the first flight, and the deduction we claim is one we can defend without flinching."
+      "If your business truly depends on private air travel — several locations, clients spread across the map, schedules airlines cannot meet — the tax law allows real deductions. The operating costs of business flights count. So can a very large first-year write-off on the aircraft itself.",
+      "This is also one of the most closely watched deductions in the tax code. The IRS runs a special audit program for business aircraft. Every flight needs a log showing who was aboard and why. Personal trips get added to your income at set rates, and vacation-style flights cancel part of the deduction.",
+      "None of that is a reason to walk away. It is a reason to do it right. We make sure the numbers come from a real study, the records start with the first flight, and the deduction we claim is one we can defend without flinching."
     ],
-    "analogy": "Think of it as a company truck, times a thousand. The write-off is bigger — and so is the paperwork that has to ride along.",
+    "analogy": "Think of it as a company truck, times a thousand. The write-off is bigger — and so is the paperwork that rides along with it.",
     "benefits": [
       "Deducts the business share of a major operating cost",
       "Potentially a very large first-year write-off",
-      "Built to hold up under the IRS's aircraft audit program",
-      "We coordinate the specialists so nothing falls through the cracks"
+      "Built to stand up to the IRS's aircraft audit program",
+      "We coordinate the specialists so nothing slips through the cracks"
     ],
     "steps": [
-      "WE commission the study of business versus personal use and the dollars involved.",
-      "WE set up the flight log and payroll items before the first flight.",
-      "YOU log every flight — who was aboard and why — with no exceptions.",
-      "WE claim the supported deduction and re-check usage every year."
+      "WE commission the study of business versus personal use and the dollars at stake.",
+      "WE set up the flight log and the payroll items before the first flight.",
+      "YOU log every flight — who was aboard and why — no exceptions.",
+      "WE claim the supported deduction and re-check the usage every year."
     ],
     "clientCommitments": [
       "Log every flight, every passenger, every purpose",
       "Accept income added to your W-2 for personal flights",
-      "Keep business use above half — and tell us early if flying patterns change"
+      "Keep business use above half — and tell us early if flying patterns shift"
     ]
   },
   "engagement": {
     "implementationEffort": "structural",
     "annualMaintenance": [
-      "Annual flight-log review and business-use percentage test",
+      "Yearly flight-log review and business-use percentage test",
       "Entertainment-use allocation and SIFL payroll entries computed each year",
-      "Refresh of the deduction study for the return"
+      "Deduction-study refresh for each return"
     ],
     "deliverables": [
-      "Aircraft deduction study (depreciation, operating costs, use allocation)",
-      "Flight-log system and per-flight classification protocol",
+      "Aircraft deduction study covering depreciation, operating costs, and use allocation",
+      "Flight-log system with a per-flight classification protocol",
       "Annual SIFL and entertainment-allocation workpapers"
     ],
     "feeGuidanceBand": null

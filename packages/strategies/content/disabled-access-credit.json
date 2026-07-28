@@ -1,6 +1,6 @@
 {
   "id": "disabled-access-credit",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,16 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-07-28",
+      "note": "Corrected Missouri stateNote: RSMo 135.490 (Form MO-8826) is a live state disabled access credit covering 50% of expenditures above the federal $10,250 cap, up to $5,000/year."
     }
   ],
   "name": "Disabled Access Credit (§44)",
@@ -23,62 +33,62 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "under-5k",
   "advisor": {
-    "summary": "Section 44 gives an eligible small business a credit for half of its eligible access expenditures in a narrow band: costs above $250 and up to $10,250 count, so the annual ceiling is a flat $5,000. The eligibility gate is generous — prior-year gross receipts of $1 million or less, or no more than 30 full-time employees — and the qualifying spend is work a storefront or practice often needs anyway: removing barriers in an existing facility, interpreters and readers, adaptive equipment, accessible materials. New construction never qualifies, §44(d)(7) bars deducting or depreciating the credited dollars, and the band resets annually, which makes phasing a larger project across years legitimate planning. The dollars are small by design; the discipline is refusing the marketed schemes that dress passive investments up as ADA compliance. The engine mirrors the statute exactly — 50% of the spend between the floor and the cap — leaving the deduction reduction to the return.",
+    "summary": "Section 44 credits an eligible small business with half of its eligible access expenditures inside a narrow band: costs above $250 and up to $10,250 count, so the annual ceiling is a flat $5,000. The eligibility gate is generous — prior-year gross receipts of $1 million or less, or no more than 30 full-time employees — and the qualifying spend is work a storefront or practice often needs anyway: removing barriers in an existing facility, interpreters and readers, adaptive equipment, accessible materials. New construction never qualifies, §44(d)(7) bars deducting or depreciating the credited dollars, and the band resets each year, which makes phasing a larger project across years legitimate planning. The dollars are small by design; the discipline lies in turning away marketed schemes that dress passive investments up as ADA compliance. The engine mirrors the statute exactly — 50% of the spend between the floor and the cap — and leaves the deduction reduction to the return.",
     "mechanics": [
-      "The §44 credit equals 50% of eligible access expenditures exceeding $250 and not exceeding $10,250 — a maximum of $5,000 per year — and the band resets each year, so a multi-year accessibility program can capture the ceiling repeatedly.",
-      "Eligible small business status under §44 requires prior-year gross receipts of $1,000,000 or less, or 30 or fewer full-time employees (30+ hours per week for 20+ weeks); neither figure is indexed, so growing clients age out.",
-      "Eligible access expenditures are amounts paid to comply with the Americans with Disabilities Act for an existing facility or service: barrier removal, qualified interpreters and readers, acquiring or modifying equipment for individuals with disabilities, and accessible formats — new construction is categorically excluded.",
-      "Under §44(d)(7) the credited amount cannot also be deducted, capitalized into depreciable basis, or claimed under another credit; the companion §190 deduction (up to $15,000 per year of barrier-removal costs) picks up qualifying spend beyond the credit band.",
-      "The credit is computed on Form 8826 and joins the §38 general business credit — nonrefundable, with §39 carryovers — and the model computes 50% of the entered spend between the $250 floor and $10,250 cap, leaving the deduction adjustment to the return."
+      "The §44 credit equals 50% of eligible access expenditures above $250 and up to $10,250 — at most $5,000 per year — and the band resets annually, so a multi-year accessibility program can capture the ceiling year after year.",
+      "Eligible small business status under §44 requires prior-year gross receipts of $1,000,000 or less, or 30 or fewer full-time employees (30+ hours per week for 20+ weeks); neither figure is indexed, so growing clients eventually age out.",
+      "Eligible access expenditures are amounts paid to comply with the Americans with Disabilities Act for an existing facility or service — barrier removal, qualified interpreters and readers, acquiring or modifying equipment for individuals with disabilities, and accessible formats; new construction is categorically excluded.",
+      "§44(d)(7) forbids the double benefit: the credited amount cannot also be deducted, capitalized into depreciable basis, or claimed under another credit; the companion §190 deduction (up to $15,000 per year of barrier-removal costs) absorbs qualifying spend beyond the credit band.",
+      "The credit is computed on Form 8826 and folds into the §38 general business credit — nonrefundable, with §39 carryovers — and the model applies 50% to the entered spend between the $250 floor and the $10,250 cap, leaving the deduction adjustment to the return."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §44",
-        "note": "The credit: 50% of eligible access expenditures between $250 and $10,250, the eligible-small-business definition, and the ADA compliance standard."
+        "note": "The core provision: the 50% credit on eligible access expenditures between $250 and $10,250, the eligible-small-business definition, and the ADA compliance standard."
       },
       {
         "type": "IRC",
         "cite": "IRC §44(d)(7)",
-        "note": "No double benefit — the credited dollars cannot also be deducted or depreciated; the most commonly missed adjustment on exam."
+        "note": "No double benefit — the credited dollars cannot also be deducted or depreciated; the adjustment most often missed on exam."
       },
       {
         "type": "IRC",
         "cite": "IRC §190",
-        "note": "Companion deduction of up to $15,000 per year for architectural and transportation barrier removal — the stacking partner for spend above the credit band."
+        "note": "The companion deduction — up to $15,000 per year for removing architectural and transportation barriers — that stacks with the credit for spend above the band."
       },
       {
         "type": "Case",
         "cite": "Arevalo v. Commissioner, 469 F.3d 436 (5th Cir. 2006)",
-        "note": "Payphone “accessibility investment” scheme: credit denied because the investor had no ADA compliance obligation of his own. The template for why marketed §44 products fail."
+        "note": "Payphone “accessibility investment” scheme: credit denied because the investor bore no ADA compliance obligation of his own — the template for why marketed §44 products fail."
       },
       {
         "type": "IRC",
         "cite": "IRC §§38, 39",
-        "note": "General business credit treatment — nonrefundable, 1-year carryback, 20-year carryforward."
+        "note": "General business credit treatment — nonrefundable, with a 1-year carryback and a 20-year carryforward."
       },
       {
         "type": "Admin",
         "cite": "Form 8826 and instructions",
-        "note": "Computation form; flows to Form 3800."
+        "note": "The computation form; the result flows to Form 3800."
       }
     ],
     "requirements": [
       "Eligible small business status in the claim year: prior-year gross receipts of $1 million or less, or 30 or fewer full-time employees.",
-      "Spending that serves the taxpayer's own ADA compliance for an existing facility or service — not new construction and not someone else's obligation.",
-      "Reasonable costs that meet applicable accessibility standards, supported by invoices and before/after documentation of the barrier addressed.",
+      "Spending that serves the taxpayer's own ADA compliance for an existing facility or service — never new construction, never someone else's obligation.",
+      "Reasonable costs meeting applicable accessibility standards, supported by invoices and before/after documentation of the barrier addressed.",
       "The §44(d)(7) deduction/basis reduction reflected on the same return that claims the credit."
     ],
     "risks": [
-      "The leading audit theory is the packaged scheme: Arevalo v. Commissioner, 469 F.3d 436 (5th Cir. 2006), denied the credit where a marketed payphone investment carried no genuine ADA obligation — any product sold primarily as a §44 play should be presumed dead on arrival.",
-      "New construction and general remodeling are excluded; only modifications to existing facilities and services qualify, and examiners read that line strictly.",
+      "The leading audit theory is the packaged scheme: Arevalo v. Commissioner, 469 F.3d 436 (5th Cir. 2006), denied the credit where a marketed payphone investment carried no genuine ADA obligation — presume any product sold primarily as a §44 play is dead on arrival.",
+      "New construction and general remodeling are excluded; only modifications to existing facilities and services qualify, and examiners police that line strictly.",
       "Claiming the credit while also depreciating the same dollars is a routine exam adjustment — the §44(d)(7) reduction must be visible in the fixed-asset records.",
-      "The credit is nonrefundable and the amounts are small; a no-tax year pushes it into carryforward the model does not track."
+      "The credit is nonrefundable and the amounts are small; a no-tax year pushes it into a carryforward the model does not track."
     ],
     "stateNotes": [
-      "Conformity: this is a federal-credit-only play — state income tax computations are untouched except that states conforming to federal depreciation and expense figures, Missouri included through its federal starting point, inherit the reduced basis or deduction that §44(d)(7) forces.",
-      "PTET interaction: none of substance — the credit passes to owners federally, and the slightly higher entity income from the disallowed deduction flows into any pass-through entity tax base as ordinary income would.",
-      "Missouri: no state analog to the §44 credit exists, so model only the federal benefit; the phased-project approach still works for Missouri storefronts and practices because the federal band resets annually."
+      "Conformity: this is a federal-credit-only play — state income tax computations are untouched, except that states conforming to federal depreciation and expense figures, Missouri included through its federal starting point, inherit the reduced basis or deduction that §44(d)(7) forces.",
+      "PTET interaction: nothing of substance — the credit passes to owners federally, and the slightly higher entity income from the disallowed deduction flows into any pass-through entity tax base just as ordinary income would.",
+      "Missouri: a state companion credit does exist — RSMo 135.490 (Form MO-8826) gives eligible small businesses 50% of eligible access expenditures above the federal §44 cap of $10,250, up to $5,000 a year — so larger Missouri projects can stack a state credit on top of the federal one; the model tracks only the federal benefit, and the phased-project approach still works because the federal band resets annually."
     ],
     "interactions": {
       "requires": [],
@@ -86,50 +96,50 @@
       "synergiesWith": []
     },
     "reviewChecklist": [
-      "Eligibility test documented for the claim year — prior-year receipts or FTE headcount, with the supporting schedule in the file.",
-      "The expenditure removes a barrier or provides access in an existing facility or service, and the ADA basis is written down; new-construction spend is screened out.",
-      "No packaged or promoter-marketed “accessibility investment” is anywhere near the claim.",
-      "Deduction/basis reduction for the credited amount is reflected in the depreciation schedule or expense detail.",
-      "Larger projects are phased deliberately, with the §190 deduction applied to qualifying excess."
+      "Eligibility test documented for the claim year — prior-year receipts or FTE headcount — with the supporting schedule in the file.",
+      "The expenditure removes a barrier or provides access in an existing facility or service, with the ADA basis written down; new-construction spend screened out.",
+      "No packaged or promoter-marketed “accessibility investment” anywhere near the claim.",
+      "The deduction/basis reduction for the credited amount posted to the depreciation schedule or expense detail.",
+      "Larger projects phased deliberately, with the §190 deduction applied to the qualifying excess."
     ]
   },
   "client": {
-    "teaser": "Make your business easier to access — and get half the cost back, up to $5,000 a year.",
-    "headline": "Accessibility upgrades at half price",
+    "teaser": "Make your business easier to visit — and get half the cost back, up to $5,000 a year.",
+    "headline": "Accessibility upgrades at half the cost",
     "plainEnglish": [
-      "If your business spends money to serve people with disabilities, the tax law pays you back half. A ramp, wider doorways, better signs, hearing equipment, or a sign-language interpreter can all count. The credit tops out at $5,000 per year.",
-      "This is a credit, not a deduction. It comes straight off your tax bill, dollar for dollar. It is built for small businesses, and most of the work is something you may need to do anyway.",
-      "The limit resets every year. If your project is bigger, we can phase the work across two or more years. That way you claim the credit more than once, and a separate deduction covers larger costs."
+      "When your business spends money to serve people with disabilities, the tax law pays half of it back. A ramp, wider doorways, better signs, hearing equipment, or a sign-language interpreter can all count. The credit tops out at $5,000 a year.",
+      "This is a credit, not a deduction. It comes straight off your tax bill, dollar for dollar. It is built for small businesses. And most of the work is something you may need to do anyway.",
+      "The limit resets every year. If your project is bigger, we can spread the work over two or more years. You claim the credit each time, and a separate deduction picks up the larger costs."
     ],
-    "analogy": "Think of it as a half-off deal on accessibility work — and the deal comes back fresh every January.",
+    "analogy": "Think of it as a half-off deal on accessibility work — and the deal starts fresh every January.",
     "benefits": [
-      "Half of qualifying accessibility costs back, up to $5,000 off your taxes each year",
+      "Get back half of qualifying accessibility costs — up to $5,000 off your taxes each year",
       "Covers equipment and services, not just building work",
-      "The yearly limit resets, so bigger projects can be phased for repeat credits",
+      "The yearly limit resets, so bigger projects can earn the credit more than once",
       "Pairs with a separate deduction for larger renovation costs"
     ],
     "steps": [
-      "WE confirm your business fits the small-business rules for the credit.",
-      "WE map which planned improvements count and phase the timing across years.",
+      "WE confirm your business meets the small-business rules for the credit.",
+      "WE map out which planned improvements count and spread the timing across years.",
       "YOU complete the work and keep the invoices and photos we ask for.",
       "WE claim the credit and make the matching adjustments on your return."
     ],
     "clientCommitments": [
       "Spend on real accessibility needs for your own business — never a packaged investment someone is selling",
-      "Save invoices and simple before/after photos of the work"
+      "Keep invoices and simple before-and-after photos of the work"
     ]
   },
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
       "Re-test small-business eligibility each year before recommending new qualifying spend",
-      "Review planned facility work for eligible costs and phase larger projects across annual bands",
+      "Screen planned facility work for eligible costs and phase larger projects across annual bands",
       "Confirm the deduction/basis reduction posts to the fixed-asset records"
     ],
     "deliverables": [
       "Eligibility memo (gross receipts / FTE test) for the claim year",
-      "Qualifying-expenditure worksheet with phasing plan and §190 overlay",
-      "Form 8826 computation workpapers with invoice and photo documentation index"
+      "Qualifying-expenditure worksheet with the phasing plan and §190 overlay",
+      "Form 8826 computation workpapers with an invoice and photo documentation index"
     ],
     "feeGuidanceBand": null
   },

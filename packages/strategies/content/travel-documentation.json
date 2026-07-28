@@ -1,6 +1,6 @@
 {
   "id": "travel-documentation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Business Travel Optimization (Mixed Trips)",
@@ -23,58 +28,58 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "under-5k",
   "advisor": {
-    "summary": "For mixed business-personal trips, the deductible outcome is decided mostly before the trip is taken. Domestic transportation is all-or-nothing on the trip's primary purpose under Reg. §1.162-2(b) — primarily business means the full airfare deducts even with personal days attached; primarily personal means none of it, even if real work happened. Lodging and meals follow the day count either way, and the counting rules are generous to planners: travel days count, client-required standby days count, and a weekend sandwiched between business days counts when going home is impractical. Foreign trips carry a harder allocation regime under §274(c) with two safe harbors worth designing into the itinerary, and spouse costs are nondeductible without employee status and a bona fide role. Advisory: the value is trip design and a contemporaneous file, not a number the engine can honestly compute.",
+    "summary": "For a mixed business-personal trip, the deductible outcome is largely settled before departure. Domestic transportation is all-or-nothing on the trip's primary purpose under Reg. §1.162-2(b): a primarily business trip deducts the full airfare even with personal days attached; a primarily personal trip deducts none of it, however real the work performed. Lodging and meals follow the day count either way, and the counting rules reward planners — travel days count, client-required standby days count, and a weekend sandwiched between business days counts when going home is impractical. Foreign trips face a stricter allocation regime under §274(c), with two safe harbors worth building into the itinerary, and spouse costs are nondeductible absent employee status and a bona fide role. Advisory: the value lies in trip design and a contemporaneous file, not in a number the engine can honestly compute.",
     "mechanics": [
-      "Reg. §1.162-2(b) makes domestic transportation all-or-nothing on primary purpose, with time devoted to each activity the most important factor — win the day count and the round-trip fare deducts in full; lose it and the fare is entirely personal.",
-      "On-site costs allocate by day regardless of the transportation answer: lodging, meals at 50 percent under §274(n), and local costs deduct for business days only.",
-      "Business days include travel days, days the client requires presence even if little work occurs, and intervening weekends or holidays when returning home is impractical — a Friday-and-Monday meeting schedule makes the weekend count for lodging and meals.",
-      "Foreign travel allocates transportation between business and personal days under §274(c) unless the trip runs one week or less or personal time stays under 25 percent — safe harbors to schedule into, not discover afterward.",
-      "Spouse and companion costs are nondeductible under §274(m)(3) unless the spouse is a bona fide employee traveling for a genuine business purpose — and even then the lodging deduction is the single-room rate, not half the double.",
-      "§274(d) makes travel a strict-substantiation category: amount, dates, destination, and business purpose, recorded contemporaneously — the practical standard is a per-trip file of itinerary, meeting confirmations, and receipts built during the trip."
+      "Under Reg. §1.162-2(b), domestic transportation turns entirely on primary purpose, with time devoted to each activity the most important factor — win the day count and the round-trip fare deducts in full; lose it and the fare is wholly personal.",
+      "On-site costs allocate by day whatever the transportation answer: lodging, meals at 50 percent under §274(n), and local costs deduct only for business days.",
+      "Business days include travel days, days a client requires presence even if little work occurs, and intervening weekends or holidays when returning home is impractical — meetings on Friday and Monday make the weekend count for lodging and meals.",
+      "Foreign travel requires allocating transportation between business and personal days under §274(c) unless the trip runs one week or less or personal time stays under 25 percent — safe harbors to design into the schedule, not discover afterward.",
+      "Spouse and companion costs are nondeductible under §274(m)(3) unless the spouse is a bona fide employee traveling for a genuine business purpose — and even then lodging deducts at the single-room rate, not half the double.",
+      "§274(d) places travel in the strict-substantiation category — amount, dates, destination, and business purpose, recorded contemporaneously; the practical standard is a per-trip file of itinerary, meeting confirmations, and receipts assembled during the trip."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §162(a)(2)",
-        "note": "Traveling expenses while away from home in pursuit of the trade or business."
+        "note": "Authorizes deducting traveling expenses while away from home in pursuit of the trade or business."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.162-2(b)",
-        "note": "The domestic primary-purpose test and its time-based weighing."
+        "note": "The domestic primary-purpose test, weighed chiefly by time devoted to each activity."
       },
       {
         "type": "IRC",
         "cite": "IRC §§274(c), 274(m)(3), 274(n), 274(d)",
-        "note": "Foreign-travel allocation and its safe harbors; the spouse rule; the 50 percent meal limit; strict substantiation."
+        "note": "Foreign-travel allocation with its safe harbors; the spouse rule; the 50 percent meal limitation; strict substantiation."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.274-4",
-        "note": "Mechanics of the foreign-travel allocation and the business-day counting rules used by analogy in practice."
+        "note": "The foreign-travel allocation mechanics and the business-day counting rules practitioners apply by analogy."
       },
       {
         "type": "Case",
         "cite": "Sanford v. Commissioner, 50 T.C. 823 (1968), aff'd, 412 F.2d 201 (2d Cir. 1969)",
-        "note": "Strict substantiation displaces estimation — a reconstructed travel file is a losing travel file."
+        "note": "Strict substantiation forecloses estimation — a reconstructed travel file is a losing one."
       }
     ],
     "requirements": [
-      "A genuine business reason for the destination, documented before departure.",
-      "A day-by-day itinerary distinguishing business from personal days, retained with calendar entries and confirmations.",
-      "Receipts for transportation and lodging assembled during the trip, not at filing time.",
-      "For spouse costs: employee status and a real business role, or exclusion of those costs."
+      "A genuine business purpose for the destination, documented before departure.",
+      "A day-by-day itinerary separating business from personal days, retained with calendar entries and confirmations.",
+      "Transportation and lodging receipts gathered during the trip, not at filing time.",
+      "For spouse costs: employee status and a genuine business role, or exclusion of those costs."
     ],
     "risks": [
-      "The leading audit theory is the vacation with a meeting attached: a trip that is really personal fails the primary-purpose test, zeroing the transportation deduction — and under the Sanford strict-substantiation line, reconstructed records leave no estimate to fall back on.",
-      "Foreign trips outside the safe harbors require an allocation many preparers never make — an automatic adjustment when examined.",
-      "Spouse airfare and the double-room premium deducted without employee status is a recurring, easily spotted adjustment.",
-      "Aggressive day counts — an hour of email does not make a business day — invite recharacterization of the whole trip."
+      "The leading audit theory is the vacation with a meeting attached: a trip that is really personal fails the primary-purpose test and zeroes the transportation deduction — and under the Sanford strict-substantiation line, reconstructed records leave no estimate to fall back on.",
+      "Foreign trips outside the safe harbors demand an allocation many preparers never make — an automatic adjustment on exam.",
+      "Spouse airfare and the double-room premium claimed without employee status are a recurring, easily spotted adjustment.",
+      "Aggressive day counts invite recharacterization of the entire trip — an hour of email does not make a business day."
     ],
     "stateNotes": [
-      "Conformity: travel deductions ride inside federal business income, and conformity states absorb them without separate computation.",
-      "PTET interaction: entity-paid travel reduces the pass-through entity tax base like any ordinary deduction; no separate PTET step exists for this strategy.",
-      "Missouri: conforms through its federal starting points (RSMo §143.121, §143.431) with no travel-specific modification."
+      "Conformity: travel deductions sit inside federal business income, so conforming states absorb them with no separate computation.",
+      "PTET interaction: entity-paid travel reduces the pass-through entity tax base like any other ordinary deduction; the strategy needs no separate PTET step.",
+      "Missouri: conforms through its federal starting points (RSMo §143.121, §143.431) and makes no travel-specific modification."
     ],
     "interactions": {
       "requires": [],
@@ -82,47 +87,47 @@
       "synergiesWith": ["meals-optimization", "accountable-plan"]
     },
     "reviewChecklist": [
-      "Trip files exist and were built contemporaneously — itinerary, confirmations, receipts.",
-      "Primary-purpose call supportable from the day count for each mixed trip.",
-      "Foreign trips checked against the one-week and under-25-percent safe harbors.",
-      "Spouse travel matched to employment status and a documented role, or excluded."
+      "Trip files exist and were assembled contemporaneously — itinerary, confirmations, receipts.",
+      "Primary-purpose determination supportable from the day count on every mixed trip.",
+      "Foreign trips tested against the one-week and under-25-percent safe harbors.",
+      "Spouse travel tied to employment status and a documented role, or excluded."
     ]
   },
   "client": {
-    "teaser": "A few scheduling habits turn more of each trip into a deduction.",
-    "headline": "Plan trips so the business part actually gets deducted",
+    "teaser": "A few smart scheduling habits turn more of every trip into a deduction.",
+    "headline": "Plan your trips so the business part really gets deducted",
     "plainEnglish": [
-      "When a trip mixes business and pleasure, the tax result depends on how the trip is built. Here is the surprising rule for U.S. trips: if the trip is mainly business, the entire airfare is deductible — even with beach days attached. If it is mainly personal, none of the airfare counts.",
-      "Hotels and meals follow the days themselves. Business days count; personal days do not. And the calendar is a tool: meetings on Friday and Monday can make the weekend between them count. Keeping an overseas trip inside certain time limits protects the whole fare.",
-      "The other half is a simple habit. Keep a small trip file — itinerary, meeting confirmations, receipts — as you go. It takes minutes, and it is the difference between deductions that survive questions and deductions that vanish."
+      "When a trip mixes work and fun, the tax result depends on how you build the trip. Here is the surprising rule for U.S. trips: if the trip is mainly business, the whole airfare is deductible — even with beach days attached. If it is mainly personal, none of the airfare counts.",
+      "Hotels and meals follow the days. Business days count; personal days do not. The calendar is a tool here: meetings on Friday and Monday can make the weekend between them count too. And keeping an overseas trip inside certain time limits protects the whole fare.",
+      "The other half is one simple habit. Keep a small trip file — itinerary, meeting confirmations, receipts — as you go. It takes minutes, and it separates deductions that survive questions from deductions that vanish."
     ],
-    "analogy": "Two travelers can take the same trip and spend the same money — and only the one who planned the calendar gets the deduction.",
+    "analogy": "Two travelers can take the same trip and spend the same money — yet only the one who planned the calendar gets the deduction.",
     "benefits": [
-      "Full airfare deductions on properly structured trips",
-      "More hotel nights counted as business, including some weekends",
-      "Clear rules for bringing your spouse along",
-      "Records that hold up if anyone asks"
+      "The full airfare deducted on well-structured trips",
+      "More hotel nights count as business, including some weekends",
+      "Clear ground rules for bringing your spouse along",
+      "Records that stand up if anyone asks"
     ],
     "steps": [
-      "WE help you structure the schedule before you book a mixed trip.",
-      "WE give you a per-trip checklist for the records.",
-      "YOU keep the itinerary and receipts as you travel.",
-      "WE apply the day-count rules at tax time to claim the maximum."
+      "WE help you shape the schedule before you book a mixed trip.",
+      "WE give you a simple per-trip records checklist.",
+      "YOU save the itinerary and receipts as you travel.",
+      "WE apply the day-count rules at tax time to claim the most allowed."
     ],
     "clientCommitments": [
-      "Build the trip file during the trip, not months later",
-      "Ask us before booking long international trips — the schedule matters"
+      "Build each trip file during the trip, not months later",
+      "Check with us before booking long international trips — the schedule matters"
     ]
   },
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
-      "Year-end review of trip files and day counts before the return",
-      "Pre-trip planning consults for major or international travel"
+      "Year-end review of trip files and day counts before the return is filed",
+      "Pre-trip planning consultations for major or international travel"
     ],
     "deliverables": [
-      "Per-trip documentation checklist",
-      "Annual travel deduction summary with the primary-purpose calls documented"
+      "Documentation checklist for each trip",
+      "Annual travel deduction summary documenting each primary-purpose determination"
     ],
     "feeGuidanceBand": null
   },

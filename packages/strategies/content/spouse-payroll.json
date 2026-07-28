@@ -1,6 +1,6 @@
 {
   "id": "spouse-payroll",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Adding Spouse to Payroll",
@@ -23,57 +28,57 @@
   "entityTypes": ["sole-prop"],
   "typicalSavingsBand": "under-5k",
   "advisor": {
-    "summary": "Putting a working spouse on a sole proprietorship's payroll is not an income-tax play on a joint return — the wage deduction and the wage income meet on the same 1040 — and the payroll-tax math is a genuine trade: two-sided FICA on the spouse's wages against the SE tax the owner sheds as the Schedule C profit falls. The model prices exactly that swap (wages plus employer FICA out of the business, wages into the household, employee FICA as a cash cost) and declares mayIncreaseBurden because the trade can run slightly negative, particularly once the owner's remaining SE base drops relative to the Social Security wage cap. The durable value is what the W-2 unlocks: up to $24,500 of elective deferral capacity (2026), dependent-care FSA eligibility, fringe access, and Social Security earnings credits — none of which are inside this module. Spouse wages are at least FUTA-exempt under §3306(c)(5). The wages must be reasonable for services actually performed, or the deduction fails while the payroll tax sticks.",
+    "summary": "Putting a working spouse on a sole proprietorship's payroll is not an income-tax play on a joint return — the wage deduction and the wage income meet on the same 1040. The payroll-tax math is a genuine trade: two-sided FICA on the spouse's wages against the SE tax the owner sheds as Schedule C profit falls. The model prices exactly that swap (wages plus employer FICA out of the business, wages into the household, employee FICA as a cash cost) and declares mayIncreaseBurden because the trade can run slightly negative, particularly once the owner's remaining SE base drops relative to the Social Security wage cap. The durable value is what the W-2 unlocks: up to $24,500 of elective deferral capacity (2026), dependent-care FSA eligibility, fringe access, and Social Security earnings credits — none of which sit inside this module. Spouse wages are at least FUTA-exempt under §3306(c)(5). The wages must be reasonable for services actually performed, or the deduction fails while the payroll tax sticks.",
     "mechanics": [
-      "On a joint return the income-tax legs cancel: the Schedule C deducts the salary plus the employer's 7.65% FICA share under §162(a), and the same salary reappears as household wages — the model moves both legs, and the net income-tax effect is modest.",
-      "The payroll-tax trade is the real arithmetic: full two-sided FICA lands on the spouse's wages while the owner's SE base shrinks by the salary and employer FICA — roughly offsetting in many profiles, and capable of running either direction, which is why the record declares mayIncreaseBurden.",
-      "Spouse wages are exempt from FUTA under §3306(c)(5), though never from FICA.",
-      "The W-2 is the unlock: elective deferrals up to the §402(g) limit ($24,500 for 2026, per Notice 2025-67), dependent-care FSA eligibility under §129 (the household limit is $7,500 for 2026), fringe access, and Social Security credits in the spouse's own record — all outside this module and modeled, where applicable, by the paired strategies.",
-      "The salary must be reasonable for genuine services under §162(a) and must run through actual payroll with deposits and a W-2 — a no-show salary loses the deduction and keeps the payroll tax."
+      "On a joint return the income-tax legs cancel: the Schedule C deducts the salary plus the employer's 7.65% FICA share under §162(a), and the same salary reappears as household wages — the model moves both legs, leaving a modest net income-tax effect.",
+      "The payroll-tax trade is the real arithmetic: full two-sided FICA lands on the spouse's wages while the owner's SE base shrinks by the salary and employer FICA — roughly offsetting in many profiles, and able to run either direction, which is why the record declares mayIncreaseBurden.",
+      "Spouse wages are exempt from FUTA under §3306(c)(5) — but never from FICA.",
+      "The W-2 is the unlock: elective deferrals up to the §402(g) limit ($24,500 for 2026, per Notice 2025-67), dependent-care FSA eligibility under §129 (the household limit is $7,500 for 2026), fringe access, and Social Security credits in the spouse's own record — all outside this module, and modeled where applicable by the paired strategies.",
+      "The salary must be reasonable for genuine services under §162(a) and must run through real payroll with deposits and a W-2 — a no-show salary loses the deduction and keeps the payroll tax."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §162(a)",
-        "note": "The deductibility standard — reasonable compensation for services the spouse actually performs."
+        "note": "The deductibility standard — reasonable compensation for services the spouse genuinely performs."
       },
       {
         "type": "IRC",
         "cite": "IRC §3306(c)(5)",
-        "note": "Spouse wages are FUTA-exempt but fully FICA-taxed — the asymmetry the model prices."
+        "note": "Spouse wages are FUTA-exempt yet fully FICA-taxed — the asymmetry the model prices."
       },
       {
         "type": "IRC",
         "cite": "IRC §402(g)",
-        "note": "The elective deferral limit the W-2 makes available — $24,500 for 2026."
+        "note": "The elective deferral limit the W-2 unlocks — $24,500 for 2026."
       },
       {
         "type": "Admin",
         "cite": "Notice 2025-67",
-        "note": "The 2026 retirement COLAs behind the deferral figures."
+        "note": "The 2026 retirement COLAs underlying the deferral figures."
       },
       {
         "type": "IRC",
         "cite": "IRC §129",
-        "note": "Dependent care assistance — the spouse's earned income is what makes the household's $7,500 (2026) FSA limit usable."
+        "note": "Dependent care assistance — the spouse's earned income is what makes the household's $7,500 FSA limit (2026) usable."
       }
     ],
     "requirements": [
       "A spouse performing genuine, documented services — bookkeeping, admin, scheduling — commensurate with the salary.",
-      "Real payroll mechanics: W-4, withholding, deposits, quarterly filings, and a W-2, not a year-end journal entry.",
+      "Real payroll mechanics: W-4, withholding, deposits, quarterly filings, and a W-2 — not a year-end journal entry.",
       "A defensible market rate for the role and hours, memorialized in a simple job description.",
-      "A retirement plan (or a plan to adopt one) whose terms cover the spouse, since the deferral is where the value lives."
+      "A retirement plan (or a plan to adopt one) whose terms cover the spouse, because the deferral is where the value lives."
     ],
     "risks": [
-      "The leading audit theory is compensation without services: a salary that buys no documented work is disallowed under §162(a) reasonableness while the payroll taxes remain — the family-wage substantiation cases make this the first exam question.",
-      "The classic planning error is presenting the salary itself as savings — on a joint return it is income-tax neutral and can be payroll-tax negative, which is why the model declares mayIncreaseBurden; the deferral and benefit unlocks carry the strategy.",
+      "The leading audit theory is compensation without services: a salary that buys no documented work fails §162(a) reasonableness and is disallowed while the payroll taxes remain — the family-wage substantiation cases make this the first exam question.",
+      "The classic planning error is selling the salary itself as savings — on a joint return it is income-tax neutral and can be payroll-tax negative, which is why the model declares mayIncreaseBurden; the deferral and benefit unlocks carry the strategy.",
       "If the spouse holds outside W-2 wages near the Social Security base, stacking another salary multiplies FICA cost — and the §402(g) limit is per person across all employers, so the deferral headroom may already be spent.",
       "Payroll compliance overhead — registrations, deposits, filings — is a recurring cash cost that can swamp the benefit at small salaries."
     ],
     "stateNotes": [
       "Missouri conforms via the federal-AGI starting point (RSMo §143.121): the deduction and the wage income net out for Missouri exactly as they do federally.",
-      "No PTET interaction: Missouri's pass-through entity tax (RSMo §143.436) is elected by S corporations and partnerships — a Schedule C payor has no PTET election to coordinate.",
-      "Missouri-specific: register for Missouri withholding on the spouse's wages, and confirm the unemployment-tax registration treatment — Missouri's employment security law carries its own family-employment exclusions for a spouse employed by a sole proprietor."
+      "No PTET interaction: Missouri's pass-through entity tax (RSMo §143.436) is an election for S corporations and partnerships — a Schedule C payor has no PTET election to coordinate.",
+      "Missouri-specific: register for Missouri withholding on the spouse's wages and confirm the unemployment-tax registration treatment — Missouri's employment security law carries its own family-employment exclusions for a spouse employed by a sole proprietor."
     ],
     "interactions": {
       "requires": [],
@@ -83,9 +88,9 @@
     "reviewChecklist": [
       "Job description, hours, and market-rate support on file before the first payroll run.",
       "Modeled result presented to the client as the honest near-neutral trade it is, with the deferral and benefit unlocks quantified separately.",
-      "Payroll registrations, deposit schedule, and W-2 issuance verified, with the FUTA exemption coded.",
+      "Payroll registrations, deposit schedule, and W-2 issuance verified, with the FUTA exemption coded correctly.",
       "Spouse's outside wages checked against the Social Security base and the shared §402(g) limit.",
-      "Retirement plan eligibility confirmed (or adoption planned) so the unlock is actually usable."
+      "Retirement plan eligibility confirmed (or adoption planned) so the unlock is genuinely usable."
     ]
   },
   "client": {
@@ -93,12 +98,12 @@
     "headline": "Put your spouse on payroll — and double your retirement tax shelter",
     "plainEnglish": [
       "If your spouse already helps run the business — books, scheduling, admin — putting them on payroll opens a door. Only employees with a paycheck can use the company retirement plan. With a W-2, your spouse can put up to $24,500 a year (2026) into a 401(k).",
-      "We will be straight about the math. The salary itself does not save income tax on a joint return. The business deducts it, you report it, and it cancels out. Payroll taxes apply too, so some years the payroll math costs a little.",
+      "We will be straight about the math. The salary itself does not save income tax on a joint return. The business deducts it, you report it, and it cancels out. Payroll taxes apply too, so in some years the payroll side costs a little.",
       "The win is what the paycheck unlocks: a second large retirement contribution, Social Security credits in your spouse's own name, and family benefits like dependent care accounts. For most couples that outweighs the payroll-tax cost — and we run your numbers before you commit."
     ],
     "analogy": "Think of the salary as a ticket, not a prize. The ticket costs a little in payroll tax, but it admits your spouse to a shelter that holds far more.",
     "benefits": [
-      "Up to $24,500 more per year (2026) in tax-deferred retirement savings",
+      "Up to $24,500 more each year (2026) in tax-deferred retirement savings",
       "Social Security credits earned in your spouse's own name",
       "Access to benefits like dependent care accounts",
       "Decades of compounding on the extra contributions"
@@ -106,7 +111,7 @@
     "steps": [
       "WE define the role and set a fair, defensible salary.",
       "WE set up payroll — forms, withholding, deposits, W-2.",
-      "YOU have your spouse enroll in the retirement plan and pick a contribution.",
+      "YOU have your spouse join the retirement plan and pick a contribution.",
       "WE re-check the numbers each year as limits change."
     ],
     "clientCommitments": [
@@ -117,14 +122,14 @@
   "engagement": {
     "implementationEffort": "multi-step",
     "annualMaintenance": [
-      "Annual salary-versus-services review and market-rate refresh",
+      "Annual salary-versus-services review with a market-rate refresh",
       "Payroll compliance check — deposits, filings, W-2, FUTA-exemption coding",
-      "Re-run the deferral and benefit math against new COLA limits"
+      "Re-run the deferral and benefit math against the new COLA limits"
     ],
     "deliverables": [
       "Spouse job description and compensation memo",
       "Payroll setup package — registrations, W-4, deposit calendar",
-      "Annual payroll-tax trade and deferral-value summary"
+      "Annual summary of the payroll-tax trade and deferral value"
     ],
     "feeGuidanceBand": null
   },

@@ -1,6 +1,6 @@
 {
   "id": "state-credits-review",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "State Credits Review (incl. Idaho PTE Credit)",
@@ -23,62 +28,62 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "5k-25k",
   "advisor": {
-    "summary": "This is the annual sweep that keeps state money from evaporating by default: an inventory of every state where the client has nexus, matched against that year's credit menus, election calendars, and pre-approval deadlines. The anchor items are the pass-through entity tax regimes — federally deductible entity-level state tax under the Notice 2020-75 framework, which survived OBBBA even as the personal SALT cap moved to $40,000 with a high-income phase-down — plus investment and jobs credits that routinely require certification before the hire or purchase. For Idaho clients the centerpiece is the Affected Business Entity election at the state's flat rate (5.3% after the 2025 cut in H.B. 40, verified annually because Idaho keeps cutting), with member credits reported on Form PTE-12, alongside Idaho's 3% investment credit. For the Missouri base, the SALT Parity Act election and the state's application-based credits get the same treatment. Advisory by design: the PTET module models the federal math whenever an election is quantified.",
+    "summary": "This is the annual sweep that keeps state money from evaporating by default: an inventory of every state where the client has nexus, matched against that year's credit menus, election calendars, and pre-approval deadlines. The anchors are the pass-through entity tax regimes — federally deductible entity-level state tax under the Notice 2020-75 framework, which survived OBBBA even as the personal SALT cap moved to $40,000 with a high-income phase-down — plus investment and jobs credits that routinely demand certification before the hire or purchase. For Idaho clients the centerpiece is the Affected Business Entity election at the state's flat rate (5.3% after the 2025 cut in H.B. 40, re-verified annually because Idaho keeps cutting), with member credits reported on Form PTE-12, alongside Idaho's 3% investment credit. The Missouri base gets the same treatment: the SALT Parity Act election and the state's application-based credits. Advisory by design: the PTET module models the federal math whenever an election is quantified.",
     "mechanics": [
-      "PTE regimes follow one architecture: the entity elects to pay state income tax at the entity level, owners claim a credit or exclusion on their personal state returns, and the entity-level tax deducts federally against pass-through income without touching the owner's personal SALT cap under §164 — the structure blessed by Notice 2020-75 and left standing by OBBBA.",
+      "PTE regimes share one architecture: the entity elects to pay state income tax at the entity level, owners claim a credit or exclusion on their personal state returns, and the entity-level tax deducts federally against pass-through income without touching the owner's personal SALT cap under §164 — the structure blessed by Notice 2020-75 and left standing by OBBBA.",
       "Idaho's version is the Affected Business Entity election: the entity pays the flat individual rate — 5.3% following H.B. 40 (2025), re-verified each year because the legislature has cut repeatedly — and each member's share of entity-paid tax is reported on Form PTE-12 (Idaho) and claimed as a credit on the member's Idaho return.",
-      "Idaho's investment tax credit allows 3% of qualifying new depreciable tangible personal property placed in service in Idaho (Idaho Code §63-3029B), with carryforward — the item most often missed on equipment-heavy returns.",
-      "The recurring cross-state finds are jobs and training credits, state research credits piggybacking the federal computation, sales-tax exemptions for manufacturing inputs, and negotiated incentives — many of which require application and certification before the qualifying hire or investment, which is why the sweep runs in the fall rather than at filing.",
-      "Federal coordination closes the loop: refundable state credits in excess of tax can be federal income, credits received reduce the state-tax deduction, and every quantified PTET election belongs in the PTET module so the federal benefit shows in the scenario math rather than being asserted."
+      "Idaho's investment tax credit allows 3% of qualifying new depreciable tangible personal property placed in service in Idaho (Idaho Code §63-3029B), with carryforward — the line item most often missed on equipment-heavy returns.",
+      "The recurring cross-state finds are jobs and training credits, state research credits piggybacking the federal computation, sales-tax exemptions for manufacturing inputs, and negotiated incentives — many requiring application and certification before the qualifying hire or investment, which is why the sweep runs in the fall rather than at filing.",
+      "Federal coordination closes the loop: refundable state credits in excess of tax can be federal income, credits received reduce the state-tax deduction, and every quantified PTET election belongs in the PTET module so the federal benefit shows up in the scenario math rather than being asserted."
     ],
     "authority": [
       {
         "type": "Admin",
         "cite": "Notice 2020-75",
-        "note": "The IRS position that entity-level state taxes on pass-throughs are deductible in computing non-separately-stated income — the foundation under every PTET regime in the sweep."
+        "note": "The IRS position that entity-level state taxes on pass-throughs are deductible in computing non-separately-stated income — the foundation beneath every PTET regime in the sweep."
       },
       {
         "type": "IRC",
         "cite": "IRC §164",
-        "note": "The SALT deduction framework: OBBBA set the personal cap at $40,000 (MFJ, 2026) with a phase-down toward the $10,000 floor at high incomes — the reason entity-level deductions matter."
+        "note": "The SALT deduction framework: OBBBA set the personal cap at $40,000 (MFJ, 2026), phasing down toward the $10,000 floor at high incomes — the reason entity-level deductions matter."
       },
       {
         "type": "Admin",
         "cite": "Idaho Code §63-3026B (Affected Business Entity election statute)",
-        "note": "Idaho’s PTET: the electing entity pays at the flat rate and members claim the credit; mechanics and rate re-verified annually with the State Tax Commission."
+        "note": "Idaho's PTET: the electing entity pays at the flat rate and members claim the credit; re-verify mechanics and rate annually with the State Tax Commission."
       },
       {
         "type": "Admin",
         "cite": "Form PTE-12 (Idaho)",
-        "note": "The owner schedule reporting each member’s share of entity-paid Idaho tax for the member-level credit."
+        "note": "The owner schedule that reports each member's share of entity-paid Idaho tax for the member-level credit."
       },
       {
         "type": "Admin",
         "cite": "Idaho Code §63-3029B (investment tax credit statute)",
-        "note": "The 3% Idaho credit on qualifying depreciable tangible personal property — the most commonly missed line item for equipment-heavy Idaho filers."
+        "note": "The 3% Idaho credit on qualifying depreciable tangible personal property — the line item equipment-heavy Idaho filers miss most often."
       },
       {
         "type": "Admin",
         "cite": "Missouri SALT Parity Act, RSMo §143.436",
-        "note": "Missouri’s elective entity-level tax for S corporations and partnerships, with the corresponding member credit — the home-state anchor of the sweep."
+        "note": "Missouri's elective entity-level tax for S corporations and partnerships, with the matching member credit — the home-state anchor of the sweep."
       }
     ],
     "requirements": [
       "A current-year nexus inventory: every state with client payroll, property, sales, or carryforward credits.",
-      "Election calendars honored in real time — many PTET regimes require the election or estimated payments during the year, not at filing.",
-      "Pre-approval and certification applications filed before the qualifying hire or investment where a state requires advance approval.",
-      "Per-owner modeling before any PTET election: resident-credit treatment in each owner's home state determines whether the election helps or hurts."
+      "Election calendars honored in real time — many PTET regimes demand the election or estimated payments during the year, not at filing.",
+      "Pre-approval and certification applications filed ahead of the qualifying hire or investment wherever a state requires advance approval.",
+      "Per-owner modeling before any PTET election: resident-credit treatment in each owner's home state decides whether the election helps or hurts."
     ],
     "risks": [
-      "The leading failure mode is the missed procedural deadline — late PTET elections, skipped estimated payments, and un-filed pre-approvals forfeit benefits that are almost never recoverable; no case law is needed to lose this money.",
-      "Rates move annually — Idaho alone has cut repeatedly, most recently to 5.3% in H.B. 40 (2025) — and pricing an election on last year's rate misstates the benefit.",
+      "The leading failure mode is the missed procedural deadline — late PTET elections, skipped estimated payments, and un-filed pre-approvals forfeit benefits that are almost never recoverable; losing this money requires no case law at all.",
+      "Rates move annually — Idaho alone has cut repeatedly, most recently to 5.3% in H.B. 40 (2025) — so pricing an election on last year's rate misstates the benefit.",
       "A PTET election can leave nonresident or credit-limited owners worse off; entity-level enthusiasm without per-owner modeling is the classic error.",
-      "Refundable or transferable state credits can generate federal taxable income, and negotiated incentives usually carry clawback covenants tied to jobs or investment maintenance."
+      "Refundable or transferable state credits can generate federal taxable income, and negotiated incentives usually carry clawback covenants tied to maintaining jobs or investment."
     ],
     "stateNotes": [
-      "Conformity: each state's starting point (federal AGI or federal taxable income) determines how federal-side changes ripple into state credits — the sweep confirms conformity posture per state before quantifying anything.",
+      "Conformity: each state's starting point (federal AGI or federal taxable income) governs how federal-side changes ripple into state credits — the sweep confirms conformity posture state by state before quantifying anything.",
       "PTET interaction: this strategy is substantially about PTET placement — elections are made entity by entity and state by state, and every quantified election runs through the PTET module so federal and state effects stay consistent.",
-      "Missouri: the SALT Parity Act election (RSMo §143.436) is the default home-state item, alongside application-based credits like the qualified research expense credit (RSMo §620.1039) and Missouri Works — several of which are capped pools that reward filing the day the window opens."
+      "Missouri: the SALT Parity Act election (RSMo §143.436) is the default home-state item, alongside application-based credits like the qualified research expense credit (RSMo §620.1039) and Missouri Works — several are capped pools that reward filing the day the window opens."
     ],
     "interactions": {
       "requires": [],
@@ -87,9 +92,9 @@
     },
     "reviewChecklist": [
       "Nexus inventory refreshed this year, with each state's credit menu and election calendar pulled current.",
-      "Every recommended PTET election supported by per-owner modeling, including nonresident and resident-credit effects.",
-      "Pre-approval-required credits identified with application deadlines calendared ahead of the qualifying event.",
-      "Idaho rate and ABE mechanics verified against current-year law before quantifying.",
+      "Every recommended PTET election backed by per-owner modeling, including nonresident and resident-credit effects.",
+      "Pre-approval-required credits identified, with application deadlines calendared ahead of the qualifying event.",
+      "Idaho rate and ABE mechanics verified against current-year law before anything is quantified.",
       "Carryforward schedule documented in the permanent file so credits survive preparer transitions."
     ]
   },
@@ -98,21 +103,21 @@
     "headline": "Stop leaving state tax money on the table",
     "plainEnglish": [
       "Most owners focus on federal taxes and treat the state return as an afterthought. But states offer real money: credits for buying equipment, hiring, training workers, and more. Much of it goes unclaimed because nobody looked.",
-      "There is also a powerful election in many states. Your company can pay your state income tax for you. You still get full credit on your state return, and the business gets a federal deduction that federal limits would block you from taking personally.",
+      "Many states also offer a powerful election. Your company can pay your state income tax for you. You still get full credit on your state return, and the business gets a federal deduction that federal limits would block you from taking personally.",
       "This is a yearly sweep, not a one-time project. Some credits require paperwork before you hire or buy. So each fall we review every state you touch, catch what you qualify for, and file the elections on time."
     ],
     "analogy": "It is like checking every coat pocket at the start of winter — the money was always yours; someone just has to go look for it.",
     "benefits": [
       "Captures state credits that go unclaimed by default",
       "The company-pays-your-state-tax election can restore a federal deduction you would otherwise lose",
-      "Catches deadline-driven credits before they expire",
+      "Catches deadline-driven credits before they slip away",
       "Compounds every year as programs and your business change"
     ],
     "steps": [
       "WE map every state your business touches and pull each one's current credit list.",
       "WE model the company-level tax election owner by owner before recommending it.",
       "YOU tell us about planned hires and equipment purchases before you commit, so pre-approvals get filed in time.",
-      "WE file the elections and applications and track any unused credits forward."
+      "WE file the elections and applications and carry any unused credits forward."
     ],
     "clientCommitments": [
       "Loop us in before major hires, equipment buys, or expansion into a new state",
@@ -122,7 +127,7 @@
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
-      "Fall nexus and credit-menu sweep across every client state",
+      "Fall sweep of nexus and credit menus across every client state",
       "Verify current-year PTET rates and election deadlines (Idaho ABE and Missouri SALT Parity in particular)",
       "File pre-approval applications ahead of qualifying hires and investments",
       "Update the credit carryforward schedule in the permanent file"

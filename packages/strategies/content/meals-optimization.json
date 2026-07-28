@@ -1,6 +1,6 @@
 {
   "id": "meals-optimization",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Meals Deduction Optimization",
@@ -23,63 +28,63 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "under-5k",
   "advisor": {
-    "summary": "Most clients do not have a meals problem; they have a chart-of-accounts problem. Post-TCJA, entertainment is nondeductible under §274(a), business meals survive at 50 percent under §274(n), and a short list of categories — company recreational events for rank-and-file employees, food sold to customers, items available to the general public — stays at 100 percent through the §274(e) exceptions. One blended 'Meals & Entertainment' account produces the wrong answer in both directions: fully deductible items get haircut to 50 percent, and nondeductible entertainment leaks into the deduction. The fix is separated accounts, a receipt habit that captures who and why, and a year-end reclassification pass. The model applies the advisor-computed incremental deduction — enter the after-percentage recovery, never gross spend.",
+    "summary": "The typical client problem is not the meals rules; it is a chart of accounts that ignores them. Post-TCJA, §274(a) makes entertainment nondeductible, §274(n) holds business meals at 50 percent, and a short list of categories — company recreational events for rank-and-file employees, food sold to customers, items available to the general public — remains fully deductible through the §274(e) exceptions. A single blended 'Meals & Entertainment' account fails in both directions: fully deductible items get cut to 50 percent, and nondeductible entertainment slips into the deduction. The remedy is separated accounts, a receipt habit that records who and why, and a year-end reclassification pass. The model applies the advisor-computed incremental deduction — enter the after-percentage recovery, never gross spend.",
     "mechanics": [
-      "§274(a)(1) disallows entertainment outright — tickets, golf, club dues, suites — and Reg. §1.274-11 allows the food at an entertainment event only when purchased separately or separately stated on the invoice.",
-      "Business meals hold at 50 percent under §274(n): not lavish, taxpayer or an employee present, provided to a business associate — with Notice 2018-76 and the final regulations confirming client meals survived the TCJA.",
-      "The 100 percent lane runs through the §274(e) exceptions: recreational and social events primarily for non-highly-compensated employees, food and beverages sold to customers for adequate consideration, items available to the general public, and meals treated as W-2 compensation.",
-      "Substantiation follows §274(d) discipline — amount, date, place, business purpose, and the business relationship of attendees; a card statement alone concedes the deduction, while an annotated receipt defends it.",
-      "For amounts paid after 2025, §274(o) makes employer eating-facility and convenience-of-the-employer meal costs nondeductible — on-site meal programs need their own account because their answer changed.",
-      "The modeled amount is the incremental deduction recovered by reclassification and documentation at the correct percentages — the advisor computes it from the actual meal accounts, and the engine deducts it exactly as entered."
+      "Entertainment is nondeductible outright under §274(a)(1) — tickets, golf, club dues, suites — and Reg. §1.274-11 permits the food at an entertainment event only if purchased separately or separately stated on the invoice.",
+      "Business meals stay at 50 percent under §274(n): not lavish, the taxpayer or an employee present, provided to a business associate — with Notice 2018-76 and the final regulations confirming that client meals survived the TCJA.",
+      "The 100 percent lane runs through the §274(e) exceptions: recreational and social events held primarily for non-highly-compensated employees, food and beverages sold to customers for adequate consideration, items made available to the general public, and meals treated as W-2 compensation.",
+      "Substantiation runs on §274(d) discipline — amount, date, place, business purpose, and the attendees' business relationship; a card statement alone forfeits the deduction, while an annotated receipt defends it.",
+      "For amounts paid after 2025, §274(o) strips the deduction for employer eating-facility and convenience-of-the-employer meal costs — on-site meal programs need their own account because their answer has changed.",
+      "The modeled amount is the incremental deduction that reclassification and documentation recover at the correct percentages — the advisor computes it from the actual meal accounts, and the engine deducts exactly what is entered."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §274(a)(1)",
-        "note": "The post-TCJA entertainment disallowance."
+        "note": "The blanket post-TCJA disallowance of entertainment."
       },
       {
         "type": "IRC",
         "cite": "IRC §274(n)",
-        "note": "The 50 percent food-and-beverage limitation and its cross-references to the 100 percent exceptions."
+        "note": "The 50 percent food-and-beverage cap, with its cross-references into the 100 percent exceptions."
       },
       {
         "type": "IRC",
         "cite": "IRC §274(e)",
-        "note": "The 100 percent categories: employee recreational events, items sold to customers, public availability, compensation-treated meals."
+        "note": "The fully deductible categories: employee recreational events, items sold to customers, public availability, and meals treated as compensation."
       },
       {
         "type": "Reg",
         "cite": "Reg. §§1.274-11, 1.274-12",
-        "note": "The final TCJA regulations: entertainment boundaries, the separately-stated food rule, and the business-meal requirements."
+        "note": "The final TCJA regulations — entertainment boundaries, the separately-stated food rule, and the business-meal tests."
       },
       {
         "type": "Admin",
         "cite": "Notice 2018-76",
-        "note": "The interim confirmation that client business meals remained 50 percent deductible after the TCJA."
+        "note": "Interim guidance confirming that client business meals stayed 50 percent deductible after the TCJA."
       },
       {
         "type": "IRC",
         "cite": "IRC §§274(o), 274(d)",
-        "note": "The 2026 eating-facility disallowance, and the substantiation standard the meal file must meet."
+        "note": "The 2026 eating-facility disallowance, and the substantiation standard every meal file must meet."
       }
     ],
     "requirements": [
       "Separate ledger accounts for 100 percent, 50 percent, and nondeductible spend (plus eating-facility costs where they exist).",
-      "Receipts annotated with attendees and purpose, captured at the time — a ten-second habit, not a year-end project.",
-      "A bookkeeper briefed on the categories and sample-checked during the year."
+      "Receipts annotated with attendees and purpose at the moment of spend — a ten-second habit, not a year-end project.",
+      "A bookkeeper trained on the categories and sample-checked during the year."
     ],
     "risks": [
-      "The leading exam pattern is concession by silence: undocumented meals are simply given up, because a §274(d)-style substantiation failure leaves nothing to argue — the annotated receipt is the entire defense.",
-      "Entertainment miscoded as meals draws adjustment plus accuracy penalties, and the separately-stated rule for event food is applied literally.",
-      "The 100 percent employee-event category requires the event to be primarily for non-highly-compensated employees — an owners' dinner does not qualify.",
-      "This strategy recovers deductions on spending that already occurs; presenting it as new savings overstates it — the honest frame is stopping an annual forfeiture.",
-      "On-site meal programs lose their deduction in 2026; budgets built on the old treatment will miss."
+      "The dominant exam pattern is concession by silence: undocumented meals are simply surrendered, because a §274(d)-style substantiation failure leaves nothing to argue — the annotated receipt is the entire defense.",
+      "Entertainment miscoded as meals draws adjustment plus accuracy penalties, and examiners apply the separately-stated rule for event food literally.",
+      "The 100 percent employee-event category demands an event primarily for non-highly-compensated employees — an owners' dinner does not qualify.",
+      "This strategy recovers deductions on spending that already occurs; presenting it as new savings overstates it — the honest frame is ending an annual forfeiture.",
+      "On-site meal programs lose their deduction in 2026; budgets built on the old treatment will come up short."
     ],
     "stateNotes": [
-      "Conformity: federal-conformity states absorb the meal percentages inside federal business income with no separate computation; a handful decouple on specific §274 items, so confirm each filing state.",
-      "PTET interaction: the recovered deduction reduces entity income ahead of any pass-through entity tax computation — the engine sequences PTET after it.",
-      "Missouri: conforms through rolling conformity and its federal starting points (RSMo §143.091, §143.121), so the federal meal percentages carry into the Missouri base unchanged."
+      "Conformity: states that conform to federal law absorb the meal percentages inside federal business income with no separate computation; a handful decouple on specific §274 items, so confirm each filing state.",
+      "PTET interaction: the recovered deduction lowers entity income before any pass-through entity tax computation — the engine sequences PTET after it.",
+      "Missouri: conforms on a rolling basis through its federal starting points (RSMo §143.091, §143.121), so the federal meal percentages flow into the Missouri base unchanged."
     ],
     "interactions": {
       "requires": [],
@@ -87,47 +92,47 @@
       "synergiesWith": ["travel-documentation"]
     },
     "reviewChecklist": [
-      "Chart of accounts restructured — the trial balance no longer shows a single blended meals line.",
-      "The modeled incremental deduction computed at correct percentages from actual accounts, not estimated from gross spend.",
-      "Receipt-annotation habit confirmed operating by sample test, not just instructed.",
-      "Eating-facility and convenience-meal costs isolated and excluded from the deduction."
+      "Chart of accounts restructured — no single blended meals line remains on the trial balance.",
+      "The modeled incremental deduction computed at the correct percentages from actual accounts, never estimated from gross spend.",
+      "Receipt-annotation habit verified by sample test, not merely instructed.",
+      "Eating-facility and convenience-meal costs isolated and kept out of the deduction."
     ]
   },
   "client": {
-    "teaser": "Stop giving away meal deductions your books already earned.",
-    "headline": "Get full credit for the meals your business already buys",
+    "teaser": "Stop forfeiting meal deductions your books already earned.",
+    "headline": "Claim full credit for the meals your business already buys",
     "plainEnglish": [
-      "The tax rules for meals are fussy. A client lunch is 50 percent deductible. The office holiday party is 100 percent. Sports tickets are zero. Most businesses throw all of it into one pile in their books.",
-      "When everything sits in one pile, the safe move at tax time is to cut it all in half. That means the fully deductible items lose half their value — every single year. And meals with no note about who and why can be lost entirely if the IRS asks.",
-      "The fix is simple and permanent. We split your books into the right categories and give you a ten-second receipt habit: snap a photo, note who you were with and why. At year end we check the coding and claim each category at its full allowed rate."
+      "The tax rules for meals are picky. A client lunch is 50 percent deductible. The office holiday party is 100 percent. Sports tickets are zero. Most businesses dump all of it into one pile in their books.",
+      "When it all sits in one pile, the safe move at tax time is to cut everything in half. So the fully deductible items lose half their value — year after year. And a meal with no note about who and why can be lost completely if the IRS asks.",
+      "The fix is simple and it lasts. We split your books into the right categories and give you a ten-second receipt habit: snap a photo, jot down who you met and why. At year end we check the coding and claim each category at its full allowed rate."
     ],
-    "analogy": "It is like sorting your recycling. Toss everything in one bin and the whole load gets treated as trash. Sort it, and each item keeps its full value.",
+    "analogy": "It works like sorting your recycling. Dump everything in one bin and the whole load gets treated as trash. Sort it, and each item keeps its full value.",
     "benefits": [
       "Full credit for 100 percent items like the company party",
-      "Every meal deduction backed by records that hold up",
-      "A one-time bookkeeping fix that pays off every year",
-      "Ten seconds per receipt is the whole ongoing effort"
+      "Meal deductions backed by records that stand up to questions",
+      "A one-time bookkeeping fix that keeps paying every year",
+      "Ten seconds per receipt is the entire ongoing effort"
     ],
     "steps": [
       "WE reorganize the meal categories in your books.",
-      "WE give you and your bookkeeper a one-page cheat sheet.",
-      "YOU snap the receipt and note who and why, every time.",
-      "WE review the coding at year end and claim each category correctly."
+      "WE hand you and your bookkeeper a one-page cheat sheet.",
+      "YOU snap each receipt and note who and why, every time.",
+      "WE review the coding at year end and claim each category at its right rate."
     ],
     "clientCommitments": [
-      "Use the receipt habit — photo plus who and why",
-      "Keep the categories separate, and ask us when unsure where something goes"
+      "Stick to the receipt habit — photo plus who and why",
+      "Keep the categories separate, and ask us when you are not sure where something goes"
     ]
   },
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
-      "Quarterly sample test of meal coding",
-      "Year-end reclassification review before the return is prepared"
+      "Sample-test the meal coding each quarter",
+      "Run the year-end reclassification review before the return is prepared"
     ],
     "deliverables": [
-      "Restructured meal accounts with a coding cheat sheet",
-      "Year-end reclassification memo supporting each percentage claimed"
+      "Restructured meal accounts plus a one-page coding cheat sheet",
+      "Year-end reclassification memo documenting each percentage claimed"
     ],
     "feeGuidanceBand": null
   },

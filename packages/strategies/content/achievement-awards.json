@@ -1,6 +1,6 @@
 {
   "id": "achievement-awards",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Employee Achievement Awards",
@@ -23,52 +28,52 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "under-5k",
   "advisor": {
-    "summary": "Sections 274(j) and 74(c) together preserve one of the few remaining clean double benefits in compensation: a qualifying employee achievement award is deductible to the employer and excluded from the employee's income, and §3121(a)(20) keeps it out of FICA wages on both sides. The qualification rules are narrow and mechanical — tangible personal property only, awarded for length of service or safety achievement as part of a meaningful presentation, capped at $400 per employee per year without a plan and $1,600 under a written qualified plan. The dollars are deliberately small; the value is converting recognition spending the client already does into a channel that beats a taxable bonus dollar for dollar and survives a payroll exam.",
+    "summary": "Sections 274(j) and 74(c) together preserve one of the few clean double benefits left in compensation: a qualifying employee achievement award is deductible to the employer, excluded from the employee's income, and — through §3121(a)(20) — kept out of FICA wages on both sides. The qualification rules are narrow and mechanical: tangible personal property only, awarded for length of service or safety achievement as part of a meaningful presentation, capped at $400 per employee per year without a plan and $1,600 under a written qualified plan. The dollars are deliberately small; the value lies in converting recognition spending the client already does into a channel that beats a taxable bonus dollar for dollar and survives a payroll exam.",
     "mechanics": [
-      "§274(j)(3)(A) defines the award: an item of tangible personal property, given for length of service or safety achievement, as part of a meaningful presentation, and not disguised compensation; the TCJA wrote the exclusions into the statute — cash, gift cards and certificates, vacations, meals, lodging, tickets, and securities never qualify.",
-      "The deduction and matching exclusion cap at $400 per employee per year for nonqualified awards, and $1,600 in aggregate where awards are made under a written qualified plan that does not favor highly compensated employees and holds average award cost to $400 or less.",
-      "Length-of-service awards fail inside the employee's first five years and cannot repeat for the same employee more often than every five years under §274(j)(4)(B); safety awards fail if made to managers, administrators, clerical, or other professional employees, or once more than 10 percent of eligible employees receive one in the year.",
-      "The employee-side exclusion runs through §74(c) and is limited to the employer's deductible amount — an award over the cap puts the excess, not the whole award, on the W-2.",
-      "§3121(a)(20) excludes qualifying awards from FICA wages, completing the result: no income tax, no payroll tax on either side, full deduction."
+      "§274(j)(3)(A) defines the award: tangible personal property, given for length of service or safety achievement, as part of a meaningful presentation, and not disguised compensation; the TCJA wrote the exclusions into the statute — cash, gift cards and certificates, vacations, meals, lodging, tickets, and securities never qualify.",
+      "The deduction and its matching exclusion cap at $400 per employee per year for nonqualified awards, rising to $1,600 in aggregate where awards are made under a written qualified plan that does not favor highly compensated employees and holds average award cost to $400 or less.",
+      "Length-of-service awards fail during the employee's first five years and cannot repeat for the same employee more often than every five years under §274(j)(4)(B); safety awards fail if made to managers, administrators, clerical, or other professional employees, or once more than 10 percent of eligible employees receive one in the year.",
+      "The employee-side exclusion runs through §74(c) and stops at the employer's deductible amount — an award over the cap puts the excess, not the whole award, on the W-2.",
+      "§3121(a)(20) removes qualifying awards from FICA wages, completing the result: no income tax, no payroll tax on either side, full deduction."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §274(j)",
-        "note": "Employer deduction limits, the definition of an employee achievement award, and the statutory list of property that never qualifies."
+        "note": "The employer deduction limits, the definition of an employee achievement award, and the statutory list of property that never qualifies."
       },
       {
         "type": "IRC",
         "cite": "IRC §74(c)",
-        "note": "The employee-side income exclusion, tied dollar for dollar to the employer's deductible amount."
+        "note": "The employee-side income exclusion, matched dollar for dollar to the employer's deductible amount."
       },
       {
         "type": "IRC",
         "cite": "IRC §274(j)(4)",
-        "note": "The five-year length-of-service timing rules and the manager/10-percent limits on safety awards."
+        "note": "The five-year timing rules for length-of-service awards and the manager/10-percent limits on safety awards."
       },
       {
         "type": "IRC",
         "cite": "IRC §3121(a)(20)",
-        "note": "The FICA wage exclusion that makes the result payroll-tax-free on both sides."
+        "note": "The FICA wage exclusion that leaves the result payroll-tax-free on both sides."
       }
     ],
     "requirements": [
-      "W-2 employees and genuine length-of-service or safety milestones to recognize — an owner-only program is not what this rule is for.",
+      "W-2 employees and genuine length-of-service or safety milestones to recognize — this rule was not built for an owner-only program.",
       "Tangible personal property only: a watch, tools, equipment — never cash, gift cards, or broadly redeemable points.",
-      "A real presentation moment (recognition event or all-hands), not an item slipped into a paycheck.",
-      "For the $1,600 ceiling: a written plan with nondiscriminatory eligibility and a $400-or-less average award cost."
+      "A real presentation moment (a recognition event or all-hands), not an item slipped into a paycheck.",
+      "For the $1,600 ceiling: a written plan with nondiscriminatory eligibility and an average award cost of $400 or less."
     ],
     "risks": [
-      "The leading exam theory is reclassification of cash equivalents: gift cards are W-2 wages by statute regardless of amount, and a payroll exam applies the adjustment across every recipient and every open year — there is no de minimis defense once the item is a card.",
-      "Awards above the deductible limit push the excess into the employee's income under §74(c) — the clean design stays inside the caps rather than defending overages.",
-      "Length-of-service awards given early or too often, and safety awards reaching managers or more than 10 percent of eligible staff, fail by statute with no facts-and-circumstances rescue.",
+      "The leading exam theory is reclassification of cash equivalents: gift cards are W-2 wages by statute whatever the amount, and a payroll exam applies the adjustment across every recipient and every open year — once the item is a card, no de minimis defense exists.",
+      "Awards above the deductible limit push the excess into the employee's income under §74(c) — the clean design stays inside the caps instead of defending overages.",
+      "Length-of-service awards given too early or too often, and safety awards reaching managers or more than 10 percent of eligible staff, fail by statute with no facts-and-circumstances rescue.",
       "A program aimed mostly at the owner reads as disguised distributions, not employee recognition."
     ],
     "stateNotes": [
-      "Conformity: states that begin with federal AGI or federal taxable income conform to the §74(c) exclusion automatically — the award never appears in the state base.",
-      "PTET interaction: award costs are ordinary entity deductions and already reduce the income a pass-through entity tax election is computed on; no separate PTET step is needed.",
-      "Missouri: conforms through its federal starting point (RSMo §143.121) with no addback, so the exclusion and the deduction both carry through to the Missouri return."
+      "Conformity: states beginning with federal AGI or federal taxable income conform to the §74(c) exclusion automatically — the award never enters the state base.",
+      "PTET interaction: award costs are ordinary entity deductions and already reduce the income on which a pass-through entity tax election is computed; no separate PTET step is needed.",
+      "Missouri: conforms through its federal starting point (RSMo §143.121) with no addback, so both the exclusion and the deduction carry through to the Missouri return."
     ],
     "interactions": {
       "requires": [],
@@ -76,10 +81,10 @@
       "synergiesWith": ["de-minimis-fringe"]
     },
     "reviewChecklist": [
-      "Every planned award is tangible property — the catalog contains no cash, cards, or certificate-style items.",
+      "Every planned award is tangible property — no cash, cards, or certificate-style items anywhere in the catalog.",
       "Milestone timing verified against the five-year rules and the 10 percent safety-award ceiling.",
-      "Written plan in place (if the $1,600 limit is used) with eligibility that does not favor highly compensated employees.",
-      "Payroll instructed: qualifying awards stay off the W-2, and any non-qualifying gift goes on it."
+      "Written plan in place (where the $1,600 limit is used) with eligibility that does not favor highly compensated employees.",
+      "Payroll instructed: qualifying awards stay off the W-2, and every non-qualifying gift goes on it."
     ]
   },
   "client": {
@@ -87,7 +92,7 @@
     "headline": "Recognize your team — tax-free for them, deductible for you",
     "plainEnglish": [
       "Almost anything you give an employee counts as taxable pay. Bonuses, gift cards, even a holiday certificate all land on the W-2. The tax law keeps one clean exception: real, physical gifts that mark years of service or a safety milestone.",
-      "Done right, the business deducts the cost and the employee owes nothing. No income tax and no payroll tax on either side. The gift must be an actual item — a watch, quality tools, good gear. It has to mark a real milestone, like five or ten years with you. And it should be presented at a real moment, like a team lunch.",
+      "Done right, the business deducts the cost and the employee owes nothing. No income tax and no payroll tax on either side. The gift must be an actual item — a watch, quality tools, good gear. It has to mark a true milestone, like five or ten years with you. And it should be handed over at a real moment, like a team lunch.",
       "With a simple written plan, you can give up to $1,600 of value per honoree. A bonus that size would cost you payroll tax and leave the employee maybe $1,100 after withholding. Same generosity, better math, and a better moment."
     ],
     "analogy": "A gold watch handed over at the company dinner and the same value tucked into a paycheck are worlds apart at tax time. Only one of them is taxed — and it is not the watch.",
@@ -95,7 +100,7 @@
       "Fully deductible to the business",
       "Tax-free to the employee — no income tax, no payroll tax",
       "Up to $1,600 per honoree with a simple written plan",
-      "Builds a recognition habit that helps keep good people"
+      "Builds a recognition habit that helps you keep good people"
     ],
     "steps": [
       "WE draft the written award plan, the milestones, and the dollar limits.",
@@ -105,18 +110,18 @@
     ],
     "clientCommitments": [
       "Keep awards to actual items — never cash or gift cards, no exceptions",
-      "Stick to the milestone schedule in the plan rather than ad-hoc gifts"
+      "Follow the milestone schedule in the plan rather than giving ad-hoc gifts"
     ]
   },
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
-      "Review the year's awards against the plan limits and five-year timing rules",
+      "Review the year's awards against the plan limits and the five-year timing rules",
       "Confirm payroll treated qualifying and non-qualifying items correctly at year end"
     ],
     "deliverables": [
       "Written employee achievement award plan",
-      "Qualifying-award catalog with per-award cost worksheet",
+      "Qualifying-award catalog with a per-award cost worksheet",
       "Payroll treatment memo for the bookkeeper"
     ],
     "feeGuidanceBand": null

@@ -1,6 +1,6 @@
 {
   "id": "backdoor-roth",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Backdoor Roth IRA",
@@ -23,59 +28,59 @@
   "entityTypes": ["individual"],
   "typicalSavingsBand": "structural",
   "advisor": {
-    "summary": "The Roth IRA MAGI phase-out closes the front door for high earners, but §408(o) permits a nondeductible traditional IRA contribution at any income level, and Roth conversions have carried no income limit since 2010. Contribute $7,500 for 2026 ($8,600 with the age-50 catch-up), convert promptly, and under §408A(d)(3) only post-contribution earnings are taxable — the client ends up with a full Roth contribution through the two-step path Congress itself acknowledged in the TCJA conference discussion. The controlling hazard is §408(d)(2): every traditional, SEP, and SIMPLE IRA the client owns aggregates into one pro-rata fraction measured at December 31, so an overlooked pre-tax rollover IRA converts a near-tax-free move into a substantially taxable one. The cure is rolling pre-tax IRA balances into an employer or solo 401(k) before year-end, or not running the play at all. Executed annually for both spouses, the strategy compounds into six figures of Roth money over a decade; the risk profile is procedural, not doctrinal.",
+    "summary": "The Roth IRA MAGI phase-out closes the front door to high earners, but §408(o) allows a nondeductible traditional IRA contribution at any income level, and Roth conversions have carried no income limit since 2010. Contribute $7,500 for 2026 ($8,600 with the age-50 catch-up), convert promptly, and §408A(d)(3) taxes only the post-contribution earnings — the client reaches a full Roth contribution through the two-step path Congress itself acknowledged in the TCJA conference discussion. The controlling hazard is §408(d)(2): every traditional, SEP, and SIMPLE IRA the client owns aggregates into one pro-rata fraction measured at December 31, so an overlooked pre-tax rollover IRA turns a near-tax-free move into a substantially taxable one. The cure is rolling pre-tax IRA balances into an employer or solo 401(k) before year-end — or declining to run the play. Executed annually for both spouses, the strategy compounds into six figures of Roth money over a decade; the risk is procedural, not doctrinal.",
     "mechanics": [
-      "Step one is a nondeductible traditional IRA contribution under §408(o) — $7,500 for 2026, or $8,600 at age 50 and up — permitted regardless of MAGI so long as there is compensation; a non-working spouse can contribute on the working spouse's compensation.",
-      "Step two is a Roth conversion, taxable under §408A(d)(3) only to the extent the converted value exceeds basis; converting within days of the contribution keeps earnings, and therefore the tax, near zero.",
-      "§408(d)(2) aggregates every traditional, SEP, and SIMPLE IRA the client owns into a single fraction measured at December 31 of the conversion year — a $92,500 pre-tax rollover IRA sitting beside a $7,500 basis contribution makes any conversion 92.5% taxable, and basis cannot be cherry-picked.",
-      "The cleanup move is rolling pre-tax IRA balances into an employer or solo 401(k), because qualified-plan balances sit outside the §408(d)(2) fraction — the roll-in must be complete before December 31 of the conversion year.",
-      "Form 8606 documents both steps for each spouse every year: Part I records the nondeductible contribution and the running basis, and the conversion computation reconciles against it — missing 8606s are how basis gets taxed twice years later.",
-      "Spouses are tested separately under the pro-rata rule, so one spouse's pre-tax IRA balances do not taint the other spouse's conversion."
+      "Step one: a nondeductible traditional IRA contribution under §408(o) — $7,500 for 2026, or $8,600 at age 50 and up — allowed at any MAGI so long as there is compensation; a non-working spouse can contribute on the working spouse's compensation.",
+      "Step two: a Roth conversion, taxable under §408A(d)(3) only to the extent the converted value exceeds basis — converting within days of the contribution keeps earnings, and therefore the tax, near zero.",
+      "§408(d)(2) aggregates every traditional, SEP, and SIMPLE IRA the client owns into a single fraction measured at December 31 of the conversion year — a $92,500 pre-tax rollover IRA beside a $7,500 basis contribution makes any conversion 92.5% taxable, and basis cannot be cherry-picked.",
+      "The cleanup move is rolling pre-tax IRA balances into an employer or solo 401(k): qualified-plan balances sit outside the §408(d)(2) fraction, but the roll-in must be complete before December 31 of the conversion year.",
+      "Form 8606 documents both steps for each spouse every year: Part I records the nondeductible contribution and running basis, and the conversion computation reconciles against it — missing 8606s are how basis gets taxed twice years later.",
+      "Spouses are tested separately under the pro-rata rule: one spouse's pre-tax IRA balances never taint the other spouse's conversion."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §408(o)",
-        "note": "Authorizes nondeductible traditional IRA contributions with no income ceiling — the basis-creating first step."
+        "note": "Authorizes nondeductible traditional IRA contributions with no income ceiling — the first step, which creates the basis."
       },
       {
         "type": "IRC",
         "cite": "IRC §408(d)(2)",
-        "note": "The pro-rata aggregation rule: all non-Roth IRAs are treated as one, and basis is recovered ratably — the rule that makes the December 31 balance inventory decisive."
+        "note": "The pro-rata aggregation rule: all non-Roth IRAs count as one, and basis is recovered ratably — this is what makes the December 31 balance inventory decisive."
       },
       {
         "type": "IRC",
         "cite": "IRC §408A(d)(3)",
-        "note": "Taxes the conversion as ordinary income only above basis — the reason a prompt conversion is close to tax-neutral."
+        "note": "Taxes the conversion as ordinary income only above basis — why a prompt conversion is close to tax-neutral."
       },
       {
         "type": "Admin",
         "cite": "Form 8606 and instructions",
-        "note": "The annual basis ledger: reports the nondeductible contribution and computes the taxable share of the conversion for each spouse."
+        "note": "The annual basis ledger: reports each spouse's nondeductible contribution and computes the taxable share of the conversion."
       },
       {
         "type": "Admin",
         "cite": "Notice 2025-67",
-        "note": "Sets the 2026 IRA figures this record relies on: $7,500 contribution limit and $1,100 age-50 catch-up."
+        "note": "Source of the 2026 IRA figures used here: $7,500 contribution limit and $1,100 age-50 catch-up."
       }
     ],
     "requirements": [
-      "Compensation at least equal to the contribution (the spousal-compensation rule is available), with MAGI above the Roth phase-out — below it, a direct contribution is simpler.",
-      "A combined December 31 pre-tax balance at or near zero across all traditional, SEP, and SIMPLE IRAs for the converting spouse — or a completed 401(k) roll-in cleanup first.",
-      "An employer or solo 401(k) that accepts roll-ins, if cleanup is needed.",
-      "The discipline to file Form 8606 for each spouse, every year the strategy runs."
+      "Compensation at least equal to the contribution (the spousal-compensation rule applies), with MAGI above the Roth phase-out — below it, a direct contribution is simpler.",
+      "A December 31 pre-tax balance at or near zero across the converting spouse's traditional, SEP, and SIMPLE IRAs — or a completed 401(k) roll-in cleanup beforehand.",
+      "An employer or solo 401(k) that accepts roll-ins, where cleanup is needed.",
+      "The discipline to file Form 8606 for each spouse in every year the strategy runs."
     ],
     "risks": [
-      "The leading exam issue is a broken pro-rata computation: an overlooked rollover IRA or a still-active SEP (often one the client's own advisor keeps funding) makes the conversion largely taxable under §408(d)(2), and because the fraction is measured at December 31, a late-year SEP contribution can retroactively poison a conversion executed months earlier.",
-      "Missing or inconsistent Forms 8606 destroy the basis record; the IRS default is that the whole conversion is taxable, and reconstructing basis years later is slow and expensive.",
-      "A long gap between contribution and conversion lets earnings accrue and become avoidable conversion income.",
-      "Legislative proposals to close the nondeductible-contribution-plus-conversion path recur; completed conversions have historically been left undisturbed, which argues for executing rather than waiting.",
-      "The annual dollars are modest — roughly $7,500 per spouse — so this should be positioned as a compounding yearly habit, never as headline savings."
+      "The leading exam issue is a broken pro-rata computation: an overlooked rollover IRA or a still-active SEP (often one the client's own advisor keeps funding) makes the conversion largely taxable under §408(d)(2) — and because the fraction is measured at December 31, a late-year SEP contribution can retroactively poison a conversion executed months earlier.",
+      "Missing or inconsistent Forms 8606 destroy the basis record; the IRS default treats the whole conversion as taxable, and reconstructing basis years later is slow and expensive.",
+      "A long gap between contribution and conversion lets earnings accrue into avoidable conversion income.",
+      "Legislative proposals to close the nondeductible-contribution-plus-conversion path recur; completed conversions have historically been left undisturbed — an argument for executing rather than waiting.",
+      "The annual dollars are modest — roughly $7,500 per spouse — so position this as a compounding yearly habit, never as headline savings."
     ],
     "stateNotes": [
-      "States that begin their returns at federal AGI conform to the federal treatment automatically: the nondeductible contribution never appears, and only the (usually trivial) taxable conversion slice flows through to the state.",
-      "No PTET interaction — this is an individual IRA transaction with no entity-level deduction for a pass-through entity tax election to act on.",
-      "Missouri conforms through its federal-AGI starting point (RSMo §143.121); any taxable conversion amount lands on the Missouri return in the same year with no separate Missouri adjustment."
+      "States that begin their returns at federal AGI conform to the federal treatment automatically: the nondeductible contribution never appears, and only the (usually trivial) taxable conversion slice flows to the state.",
+      "No PTET interaction — this is an individual IRA transaction, leaving no entity-level deduction for a pass-through entity tax election to act on.",
+      "Missouri conforms through its federal-AGI starting point (RSMo §143.121); any taxable conversion amount lands on the Missouri return in the same year, with no separate Missouri adjustment."
     ],
     "interactions": {
       "requires": [],
@@ -83,25 +88,25 @@
       "synergiesWith": ["mega-backdoor-roth", "solo-401k"]
     },
     "reviewChecklist": [
-      "Complete IRA inventory for both spouses (traditional, SEP, SIMPLE, old rollovers) shows zero or near-zero pre-tax value — or the 401(k) roll-in cleanup is documented as finished.",
+      "Complete IRA inventory for both spouses (traditional, SEP, SIMPLE, old rollovers) shows zero or near-zero pre-tax value — or the 401(k) roll-in cleanup is documented as complete.",
       "No SEP or SIMPLE contribution is planned later in the conversion year that would repopulate the December 31 fraction.",
-      "Form 8606 is prepared for each spouse and prior-year basis history reconciles.",
-      "The 1099-R and Form 5498 tie to the reported amounts, and the conversion followed the contribution promptly.",
-      "The client understands this is an annual, repeating move and it is on the engagement calendar."
+      "Form 8606 is prepared for each spouse and reconciles with prior-year basis history.",
+      "The 1099-R and Form 5498 tie to the reported amounts, and the conversion promptly followed the contribution.",
+      "The client understands this is an annual, repeating move, and it sits on the engagement calendar."
     ]
   },
   "client": {
-    "teaser": "Earn too much for a Roth IRA? A two-step path still gets you in.",
+    "teaser": "Earn too much for a Roth IRA? A simple two-step path still gets you in.",
     "headline": "Over the Roth income limit? There is still a legal way in",
     "plainEnglish": [
-      "A Roth IRA is a great deal. The money grows for decades, and you never pay tax on it again. But once your income is too high, the IRS will not let you put money in the front door.",
+      "A Roth IRA is a great deal. The money grows for decades, and you never pay tax on it again. But once your income is too high, the IRS closes the front door.",
       "There is a second path with two steps. First, you put money into a regular IRA without taking a deduction. No income limit applies to that. Second, we promptly move that money into a Roth. No income limit applies there either. Done quickly and papered right, little or no tax is due.",
-      "One check comes first. If you have old pre-tax IRA money sitting anywhere, the IRS mixes it all together, and part of the move gets taxed. So we look at every account you own before step one. If needed, we tidy up old balances first."
+      "One check comes first. If old pre-tax IRA money sits anywhere in your name, the IRS mixes it all together, and part of the move gets taxed. So we review every account you own before step one. If needed, we tidy up old balances first."
     ],
     "analogy": "The front door has an income limit posted on it. The side door does not. We walk you through the side door and file the form that proves you did it right.",
     "benefits": [
       "Adds up to $7,500 per spouse each year to tax-free savings",
-      "Works no matter how high your income is",
+      "Works no matter how high your income climbs",
       "Little or no tax cost when done promptly and papered right",
       "Repeats every year — a decade of this builds real money"
     ],
@@ -112,17 +117,17 @@
       "YOU fund the contribution each year — we put it on the calendar for both spouses."
     ],
     "clientCommitments": [
-      "Tell us about every retirement account you own, even old ones",
+      "Tell us about every retirement account you own, even the old ones",
       "Check with us before opening or funding any other IRA during the year",
-      "Fund it every year — the value comes from repetition"
+      "Fund it every year — the value comes from repeating it"
     ]
   },
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
       "Re-inventory both spouses' IRA balances before each year's contribution and conversion",
-      "Prepare and reconcile Form 8606 for each spouse with the return",
-      "Confirm the December 31 pre-tax IRA balance stayed at zero after all year-end activity"
+      "Prepare Form 8606 for each spouse and reconcile it with the return",
+      "Confirm the December 31 pre-tax IRA balance held at zero after all year-end activity"
     ],
     "deliverables": [
       "IRA inventory and pro-rata exposure memo",

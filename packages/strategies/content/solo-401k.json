@@ -1,6 +1,6 @@
 {
   "id": "solo-401k",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial authoring to schema v1.0 with 2026 limits (Notice 2025-67)."
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Solo 401(k)",
@@ -23,74 +28,74 @@
   "entityTypes": ["sole-prop", "s-corp", "partnership"],
   "typicalSavingsBand": "5k-25k",
   "advisor": {
-    "summary": "A one-participant 401(k) lets a business owner with no common-law employees fund retirement in two capacities at once. Wearing the employee hat, the owner defers up to $24,500 for 2026 under §402(g), with an $8,000 catch-up at age 50 and an $11,250 catch-up in the ages-60-through-63 window. Wearing the employer hat, the business adds a profit-sharing contribution — up to 25% of W-2 wages for an S corp owner, or roughly 20% of net self-employment earnings for a Schedule C filer — deductible under §404. The two layers together are limited to $72,000 of annual additions under §415(c), with catch-up amounts stacking above that ceiling. Because the deferral layer is dollar-for-dollar rather than a percentage of compensation, this design outperforms a SEP at most income levels. The compliance profile is benign; the two recurring failure points are hiring an employee without redesigning the plan and missing the Form 5500-EZ filing once assets cross $250,000.",
+    "summary": "A one-participant 401(k) lets an owner with no common-law employees fund retirement in two capacities at once. As employee, the owner defers up to $24,500 for 2026 under §402(g), plus an $8,000 catch-up at age 50 and $11,250 in the ages-60-through-63 window. As employer, the business adds a profit-sharing contribution — up to 25% of W-2 wages for an S corp owner, roughly 20% of net self-employment earnings for a Schedule C filer — deductible under §404. Combined annual additions are capped at $72,000 under §415(c), with catch-up amounts stacking above that ceiling. Because the deferral layer applies dollar-for-dollar rather than as a percentage of compensation, the design beats a SEP at most income levels. The compliance profile is benign; the two recurring failure points are hiring an employee without redesigning the plan and missing the Form 5500-EZ filing once assets cross $250,000.",
     "mechanics": [
-      "The plan is an ordinary cash-or-deferred arrangement under §401(k), stripped to a single participant: the owner elects to defer compensation, and the deferral election must be in place before the compensation being deferred is earned — for a W-2 owner that means the election runs through payroll during the calendar year.",
-      "The employee deferral is limited to $24,500 for 2026 under §402(g). It applies dollar-for-dollar against compensation, so a meaningful contribution is available even in a modest-profit year — the structural advantage over percentage-only designs like the SEP.",
-      "Catch-up contributions under §414(v) add $8,000 for owners age 50 and over, and $11,250 in any year the owner is age 60 through 63. If the owner's prior-year FICA wages exceeded the indexed threshold, SECURE 2.0 §603 requires the catch-up to be designated Roth.",
-      "The employer profit-sharing layer is deductible under §404: up to 25% of W-2 wages for an S corp owner-employee, and effectively about 20% of net self-employment earnings for a sole proprietor because the base shrinks by the contribution itself and half of self-employment tax. Compensation counts only up to $360,000 (§401(a)(17), 2026).",
-      "Total annual additions — deferral plus employer contribution, excluding catch-up — cannot exceed $72,000 for 2026 under §415(c). Catch-up amounts sit on top of that cap rather than inside it.",
-      "The one-participant design holds only while the business has no common-law employees other than the owner's spouse. An employee who reaches 1,000 hours — or crosses the SECURE 2.0 long-term part-time threshold — becomes eligible, and the plan converts into a full 401(k) with coverage and nondiscrimination obligations. Separately, once plan assets exceed $250,000 at year-end, Form 5500-EZ is due annually."
+      "The plan is an ordinary cash-or-deferred arrangement under §401(k) reduced to a single participant: the owner elects to defer compensation, and the election must exist before the deferred compensation is earned — a W-2 owner therefore runs the deferral through payroll during the calendar year.",
+      "The employee deferral tops out at $24,500 for 2026 under §402(g) and applies dollar-for-dollar against compensation, so a meaningful contribution survives even a modest-profit year — the structural edge over percentage-only designs like the SEP.",
+      "Catch-up contributions under §414(v) add $8,000 at age 50 and over, rising to $11,250 in any year the owner is 60 through 63. When prior-year FICA wages exceeded the indexed threshold, SECURE 2.0 §603 forces the catch-up into designated Roth form.",
+      "The employer profit-sharing layer is deductible under §404: up to 25% of W-2 wages for an S corp owner-employee, and effectively about 20% of net self-employment earnings for a sole proprietor, since the base shrinks by the contribution itself and half of self-employment tax. Only the first $360,000 of compensation counts (§401(a)(17), 2026).",
+      "Annual additions — deferral plus employer contribution, catch-up excluded — cannot exceed $72,000 for 2026 under §415(c). Catch-up amounts stack above that cap, not inside it.",
+      "The one-participant design survives only while the business employs no common-law employee other than the owner's spouse. An employee reaching 1,000 hours — or the SECURE 2.0 long-term part-time threshold — becomes eligible and converts the plan into a full 401(k) with coverage and nondiscrimination duties. Separately, Form 5500-EZ becomes an annual filing once year-end plan assets exceed $250,000."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §401(k)",
-        "note": "The cash-or-deferred arrangement the plan is built on; election timing and plan-document requirements flow from here."
+        "note": "The cash-or-deferred arrangement underlying the plan; election timing and plan-document requirements all trace here."
       },
       {
         "type": "IRC",
         "cite": "IRC §402(g)",
-        "note": "Elective deferral ceiling — $24,500 for 2026. The dollar-for-dollar layer that distinguishes this design from a SEP."
+        "note": "Elective deferral ceiling — $24,500 for 2026. The dollar-for-dollar layer that sets this design apart from a SEP."
       },
       {
         "type": "IRC",
         "cite": "IRC §414(v)",
-        "note": "Catch-up contributions: $8,000 at age 50+, $11,250 for ages 60–63 under the SECURE 2.0 enhancement, for 2026."
+        "note": "Catch-up contributions for 2026: $8,000 at age 50+, and $11,250 for ages 60–63 under the SECURE 2.0 enhancement."
       },
       {
         "type": "IRC",
         "cite": "IRC §415(c)",
-        "note": "Annual-additions cap of $72,000 (2026) on the combined deferral and employer layers; catch-up is excluded from the cap."
+        "note": "Caps combined deferral and employer layers at $72,000 of annual additions (2026); catch-up sits outside the cap."
       },
       {
         "type": "IRC",
         "cite": "IRC §404(a)(8); §401(a)(17)",
-        "note": "Deduction rules for self-employed individuals (the source of the ~20% effective rate) and the $360,000 compensation cap for 2026."
+        "note": "Deduction rules for the self-employed (the origin of the ~20% effective rate) and the $360,000 compensation cap for 2026."
       },
       {
         "type": "Admin",
         "cite": "SECURE 2.0 Act §603 (P.L. 117-328)",
-        "note": "Catch-up must be Roth when prior-year FICA wages exceed the indexed threshold — verify before assuming a pre-tax catch-up."
+        "note": "Requires Roth catch-up when prior-year FICA wages exceed the indexed threshold — confirm before assuming a pre-tax catch-up."
       },
       {
         "type": "Admin",
         "cite": "Form 5500-EZ instructions",
-        "note": "Defines the one-participant plan (owner and spouse, no common-law employees) and imposes the annual filing once assets exceed $250,000."
+        "note": "Define the one-participant plan (owner and spouse, no common-law employees) and require the annual filing once assets exceed $250,000."
       },
       {
         "type": "Admin",
         "cite": "Notice 2025-67",
-        "note": "2026 cost-of-living adjustments fixing the $24,500 / $72,000 / $360,000 figures used throughout this record."
+        "note": "The 2026 cost-of-living adjustments setting the $24,500 / $72,000 / $360,000 figures used throughout this record."
       }
     ],
     "requirements": [
-      "Earned income to contribute against — net self-employment earnings or W-2 wages paid by the client's own entity.",
-      "No common-law employees other than a spouse, tested annually including SECURE 2.0 long-term part-time hours.",
-      "Plan document adopted by the employer's return due date; deferral elections in place by December 31 (W-2 owners must run the deferral through payroll during the year).",
-      "For S corp owners, salary high enough to support the intended contributions — the employer layer is a percentage of W-2 wages only."
+      "Earned income to contribute against — net self-employment earnings or W-2 wages from the client's own entity.",
+      "No common-law employees other than a spouse, retested every year including SECURE 2.0 long-term part-time hours.",
+      "Plan document adopted by the employer's return due date and deferral elections in place by December 31 (W-2 owners must run the deferral through payroll during the year).",
+      "For S corp owners, a salary large enough to support the intended contributions — the employer layer is a percentage of W-2 wages alone."
     ],
     "risks": [
-      "The leading failure mode is a hire: one eligible common-law employee ends the one-participant design and triggers full 401(k) coverage and testing duties. Headcount and part-time hours must be reviewed every year, not just at setup.",
-      "The most common compliance miss is Form 5500-EZ after assets pass $250,000 — late-filing penalties accrue per day, though the IRS delinquent-filer relief program caps the damage for voluntary corrections.",
-      "Deferrals reduce income tax only; they do not reduce SE tax or FICA. Presenting payroll-tax savings that do not exist is a credibility risk with sophisticated clients.",
-      "S corp owners with lean salaries cannot support large employer contributions — 25% of a small W-2 is a small number — and raising salary to chase a contribution has its own payroll-tax cost. Coordinate with reasonable-compensation analysis.",
-      "Contributions above the §402(g) or §415(c) limits require timely corrective distributions with earnings; sloppy year-end funding is the usual cause."
+      "The leading failure mode is a hire: a single eligible common-law employee ends the one-participant design and triggers full 401(k) coverage and testing duties. Review headcount and part-time hours every year, not just at setup.",
+      "The most common compliance miss is Form 5500-EZ once assets pass $250,000 — late-filing penalties run per day, though the IRS delinquent-filer relief program caps the damage on voluntary corrections.",
+      "Deferrals reduce income tax only — never SE tax or FICA. Quoting payroll-tax savings that do not exist is a credibility risk with sophisticated clients.",
+      "S corp owners on lean salaries cannot support large employer contributions — 25% of a small W-2 is a small number — and raising salary to chase a contribution carries its own payroll-tax cost. Coordinate with reasonable-compensation analysis.",
+      "Contributions exceeding the §402(g) or §415(c) limits demand timely corrective distributions with earnings; sloppy year-end funding is the usual culprit."
     ],
     "stateNotes": [
-      "Conformity: states that begin their computation with federal AGI or federal taxable income pick up the deduction automatically — the self-employed owner's above-the-line deduction and the S corp's entity deduction both flow through. Confirm treatment in any non-conformity state in the client's footprint before quoting a combined savings number.",
-      "PTET interaction: for an S corp or partnership owner, the employer contribution is an entity deduction that shrinks the pass-through income a PTET is computed on. The engine sequences this correctly — retirement runs in the 50s band, PTET at 80 — so do not hand-adjust the PTET base for the contribution.",
-      "Missouri: conforms through its federal AGI starting point (RSMo §143.121); no addback for qualified plan contributions, so the state benefit tracks the federal deduction at Missouri rates."
+      "Conformity: states starting from federal AGI or federal taxable income pick up the deduction automatically — both the self-employed owner's above-the-line deduction and the S corp's entity deduction flow through. Confirm treatment in any non-conformity state in the client's footprint before quoting a combined savings figure.",
+      "PTET interaction: for an S corp or partnership owner, the employer contribution is an entity deduction that shrinks the pass-through income base a PTET is computed on. The engine already sequences this — retirement runs in the 50s band, PTET at 80 — so never hand-adjust the PTET base for the contribution.",
+      "Missouri: conforms through its federal AGI starting point (RSMo §143.121) with no addback for qualified plan contributions, so the state benefit tracks the federal deduction at Missouri rates."
     ],
     "interactions": {
       "requires": [],
@@ -104,54 +109,54 @@
       ]
     },
     "reviewChecklist": [
-      "Confirmed no common-law employees, including SECURE 2.0 long-term part-time eligibility, for the plan year",
-      "Deferral amount within §402(g) plus the correct catch-up tier for the owner's age this year",
-      "Employer contribution supported by actual W-2 wages or net SE earnings — not a placeholder salary",
-      "Combined layers within $72,000 §415(c) cap (catch-up excluded from the test)",
-      "For W-2 owners, deferral is actually coded through payroll before December 31",
+      "No common-law employees confirmed for the plan year, including SECURE 2.0 long-term part-time eligibility",
+      "Deferral within §402(g) plus the correct catch-up tier for the owner's age this year",
+      "Employer contribution supported by actual W-2 wages or net SE earnings, not a placeholder salary",
+      "Combined layers inside the $72,000 §415(c) cap (catch-up excluded from the test)",
+      "For W-2 owners, deferral actually coded through payroll before December 31",
       "Plan-asset total checked against the $250,000 Form 5500-EZ trigger and calendared"
     ]
   },
   "client": {
-    "teaser": "One retirement account, two contributions — you fund it as the worker and again as the owner.",
+    "teaser": "One retirement account, two ways in — you fund it as the worker and again as the owner.",
     "headline": "Be both sides of your own 401(k) match.",
     "plainEnglish": [
-      "At a big company, an employee puts money in a 401(k) and the company adds a match. When you own the business, you get to play both parts. You put money in as the employee, and then your business puts in more as the employer.",
-      "For 2026, the two parts together can reach $72,000 — and more if you are 50 or older. Every dollar going in is a dollar the IRS does not tax this year. The money then grows for your retirement instead.",
-      "The first part does not depend on how big your profit was. Even in a slower year, you can still set aside a real amount. That is what makes this plan stronger than most other small-business retirement accounts.",
-      "The main rule to respect: this plan is for owners with no employees (a spouse on payroll is fine). If you hire someone, tell us right away so we can adjust the plan before it becomes a problem."
+      "At a big company, an employee puts money in a 401(k) and the company adds a match. When you own the business, you play both parts. You put money in as the employee. Then your business adds more as the employer.",
+      "For 2026, the two parts together can reach $72,000 — more if you are 50 or older. Every dollar that goes in is a dollar the IRS does not tax this year. The money grows for your retirement instead.",
+      "The first part does not depend on how big your profit was. Even in a slower year, you can still set aside a real amount. That is why this plan beats most other small-business retirement accounts.",
+      "One rule matters most: this plan is for owners with no employees (a spouse on payroll is fine). If you hire someone, tell us right away so we can adjust the plan before it becomes a problem."
     ],
-    "analogy": "Think of it as a two-story savings building. The first floor is what you put in from your own pay. The second floor is what your business stacks on top. Most plans only give you one floor — this one gives you both.",
+    "analogy": "Picture a two-story savings building. The first floor is what you put in from your own pay. The second floor is what your business stacks on top. Most plans give you one floor — this one gives you both.",
     "benefits": [
       "Shelter up to $72,000 in 2026 — more at age 50 and up",
       "Two layers: your own contribution plus a business contribution",
-      "You pick the amount each year — heavy in strong years, light in lean ones",
+      "You choose the amount each year — heavy in strong years, light in lean ones",
       "The money grows tax-deferred until you take it out in retirement"
     ],
     "steps": [
       "WE confirm the business qualifies and set up the plan document with the right provider before the deadline.",
       "WE calculate your exact maximum each year — both layers — from your real payroll or profit numbers.",
       "YOU sign the deferral election and move the money into the account on the schedule we give you.",
-      "WE take the deduction on the right return and watch the account balance for the government filing that kicks in at $250,000."
+      "WE take the deduction on the right return and watch the balance for the government filing that starts at $250,000."
     ],
     "clientCommitments": [
       "Tell us before you hire anyone, even part-time — one hire changes the plan's rules.",
       "Fund the account by the deadlines we set; late money can't count for the year.",
-      "If you take a W-2 from your company, keep your contribution running through payroll during the year."
+      "If you take a W-2 from your company, keep your contribution running through payroll all year."
     ]
   },
   "engagement": {
     "implementationEffort": "multi-step",
     "annualMaintenance": [
       "Recompute both contribution layers against current-year limits and actual compensation",
-      "Annual headcount and part-time-hours review to protect the one-participant status",
-      "Year-end deferral election refresh and payroll coding check for W-2 owners",
-      "Plan-asset check against the $250,000 Form 5500-EZ threshold; prepare the filing when triggered"
+      "Review headcount and part-time hours annually to protect one-participant status",
+      "Refresh the year-end deferral election and verify payroll coding for W-2 owners",
+      "Check plan assets against the $250,000 Form 5500-EZ threshold; prepare the filing when triggered"
     ],
     "deliverables": [
       "Plan adoption package and deferral election form",
       "Annual contribution worksheet showing the employee and employer layers",
-      "Funding calendar with hard deadlines",
+      "Funding calendar with firm deadlines",
       "Year-end summary schedule for the tax file"
     ],
     "feeGuidanceBand": null

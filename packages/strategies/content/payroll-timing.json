@@ -1,6 +1,6 @@
 {
   "id": "payroll-timing",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "Payroll & Bonus Timing",
@@ -23,57 +28,57 @@
   "entityTypes": ["s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "under-5k",
   "advisor": {
-    "summary": "Compensation timing is two levers with very different legal footing. For non-owner employees of an accrual-basis business, a bonus fixed by year-end and paid within 2.5 months after it is deductible in the accrual year rather than treated as deferred compensation (Reg. §1.404(b)-1T). For owners and their families the door is closed: §267(a)(2) forces the deduction onto the cash method for amounts owed to related payees, and §267(e) makes every S-corporation shareholder — at any ownership level — related, so an owner bonus is deductible only when actually paid and included. The owner-side lever is therefore the payment date itself: December versus January placement against the household's two-year rate picture, the Social Security wage-base restart ($184,500 for 2026), and the QBI thresholds. Cheap, repeatable, and advisory because its value rides on year-over-year rate differences the engine holds flat.",
+    "summary": "Compensation timing is two levers on very different legal footing. For non-owner employees of an accrual-basis business, a bonus fixed by year-end and paid within the following 2.5 months is deductible in the accrual year rather than treated as deferred compensation (Reg. §1.404(b)-1T). For owners and their families the door is shut: §267(a)(2) puts the deduction on the cash method for amounts owed to related payees, and §267(e) makes every S-corporation shareholder — at any ownership level — related, so an owner bonus deducts only when actually paid and included. The owner-side lever is therefore the payment date itself: December versus January, weighed against the household's two-year rate picture, the Social Security wage-base restart ($184,500 for 2026), and the QBI thresholds. Cheap, repeatable, and advisory-only, because its value rides on year-over-year rate differences the engine holds flat.",
     "mechanics": [
-      "Accrual-basis rule for non-owner bonuses: the all-events test of Reg. §1.461-1(a)(2) must close by year-end — liability fixed, amount determinable — and payment must land within 2.5 months after year-end under Reg. §1.404(b)-1T; later payment converts the bonus to deferred compensation deductible only when paid under §404(a)(5).",
-      "Bonus pools that revert a departing employee's share to the employer can fail the all-events test at year-end — the liability is not fixed while the contingency lives.",
-      "The related-party override of §267(a)(2) defers any accrued deduction owed to a related person until that person's inclusion year, and §267(e) sweeps in every S-corp shareholder plus family on payroll — an owner bonus accrued in December and paid in January belongs to next year.",
-      "The owner's lever is placement: run the bonus through December payroll to pull income in, or first-quarter payroll to push it out, tested against both years' brackets, the $184,500 Social Security wage base (2026), the 0.9% additional Medicare threshold, and the QBI phase-in bands.",
-      "Payment means payroll: the bonus must actually run through a payroll cycle with timely deposits — a journal entry is not payment and does not move the deduction."
+      "Accrual-basis rule for non-owner bonuses: the all-events test of Reg. §1.461-1(a)(2) must close at year-end — liability fixed, amount determinable — and payment must land within 2.5 months after year-end under Reg. §1.404(b)-1T; pay later and the bonus becomes deferred compensation deductible only when paid under §404(a)(5).",
+      "Bonus pools that return a departing employee's share to the employer can flunk the all-events test at year-end — the liability is not fixed while the contingency lives.",
+      "The related-party override of §267(a)(2) defers any accrued deduction owed to a related person until that person's inclusion year, and §267(e) pulls in every S-corp shareholder plus family on payroll — so an owner bonus accrued in December and paid in January lands in next year.",
+      "The owner's lever is placement: run the bonus through December payroll to pull income forward, or through first-quarter payroll to push it out — tested against both years' brackets, the $184,500 Social Security wage base (2026), the 0.9% additional Medicare threshold, and the QBI phase-in bands.",
+      "Payment means payroll: the bonus must actually run through a payroll cycle with timely deposits — a journal entry is not payment and moves nothing."
     ],
     "authority": [
       {
         "type": "Reg",
         "cite": "Reg. §1.404(b)-1T",
-        "note": "The 2.5-month presumption separating a current-year bonus accrual from deferred compensation."
+        "note": "The 2.5-month line dividing a current-year bonus accrual from deferred compensation."
       },
       {
         "type": "IRC",
         "cite": "IRC §267(a)(2)",
-        "note": "The matching rule deferring accrual deductions to related payees until inclusion — the provision that blocks accrued owner bonuses."
+        "note": "The matching rule that defers accrual deductions owed to related payees until inclusion — the provision blocking accrued owner bonuses."
       },
       {
         "type": "IRC",
         "cite": "IRC §267(e)",
-        "note": "Extends related-person status to every shareholder of a pass-through — no minority-ownership escape."
+        "note": "Extends related-person status to every shareholder of a pass-through — minority ownership is no escape."
       },
       {
         "type": "IRC",
         "cite": "IRC §404(a)(5)",
-        "note": "Deferred compensation deductible only in the recipient's inclusion year — the fallback when the 2.5-month window is missed."
+        "note": "Deferred compensation deducts only in the recipient's inclusion year — the fallback when the 2.5-month window closes."
       },
       {
         "type": "Reg",
         "cite": "Reg. §1.461-1(a)(2)",
-        "note": "The all-events test an accrued bonus must pass at year-end."
+        "note": "The all-events test every accrued bonus must satisfy at year-end."
       }
     ],
     "requirements": [
-      "Knowledge of the accounting method — the 2.5-month window is an accrual-method benefit only; cash-method businesses deduct when paid, full stop.",
-      "For non-owner accruals, a bonus obligation genuinely fixed by year-end via board resolution or written plan, with forfeiture-reversion terms reviewed.",
-      "A two-year household rate projection each fall to place the owner's bonus on the right side of December 31.",
-      "Payroll capacity to run a year-end cycle with on-schedule deposits."
+      "Certainty about the accounting method — the 2.5-month window is an accrual-method benefit only; cash-method businesses deduct when paid, full stop.",
+      "For non-owner accruals, a bonus obligation truly fixed by year-end through a board resolution or written plan, with forfeiture-reversion terms reviewed.",
+      "A two-year household rate projection each fall to put the owner's bonus on the right side of December 31.",
+      "Payroll capacity to run a year-end cycle with deposits on schedule."
     ],
     "risks": [
-      "The leading exam adjustment is the classic one: an S corporation accrues the owner's December bonus, pays it in January, and deducts it a year early — §267(a)(2) with §267(e) attribution makes this a near-automatic disallowance, and it is common in shops that treat owners like ordinary employees.",
-      "Non-owner accruals fail quietly when the plan's forfeiture terms leave the liability unfixed at year-end — the all-events test is decided by the document, not the intent.",
-      "Timing plays are a bet on next year's rates; legislation, an income surprise, or a filing-status change can flip the answer after the bonus is paid.",
-      "Owner comp shifts ripple into reasonable compensation, the wage-base restart, and the QBI wage limit — the December decision has to be made against the whole system, not one bracket."
+      "The leading exam adjustment is the classic one: an S corporation accrues the owner's December bonus, pays it in January, and deducts it a year early — §267(a)(2) plus §267(e) attribution makes that a near-automatic disallowance, and it is common in shops that treat owners like ordinary employees.",
+      "Non-owner accruals fail quietly when forfeiture terms leave the liability unfixed at year-end — the all-events test is decided by the document, not the intent.",
+      "Timing plays are a bet on next year's rates: legislation, an income surprise, or a filing-status change can flip the answer after the bonus is paid.",
+      "Owner comp shifts ripple into reasonable compensation, the wage-base restart, and the QBI wage limit — make the December call against the whole system, not one bracket."
     ],
     "stateNotes": [
-      "Missouri conforms to federal deduction timing through its federal starting point (RSMo §143.121) — the bonus lands in the same year for Missouri as for federal.",
-      "PTET interaction: moving a deductible bonus across year-end moves the Missouri pass-through entity tax base between years (RSMo §143.436) — a December run shrinks this year's PTET base, a January run next year's; coordinate with the election and estimates.",
-      "Missouri-specific: a December bonus cycle carries Missouri withholding due on the state's deposit schedule — late state deposits are an avoidable cost of the play."
+      "Missouri conforms to federal deduction timing through its federal starting point (RSMo §143.121), so the bonus lands in the same year for Missouri as it does federally.",
+      "PTET interaction: shifting a deductible bonus across year-end shifts the Missouri pass-through entity tax base between years (RSMo §143.436) — a December run shrinks this year's PTET base, a January run shrinks next year's; coordinate with the election and estimates.",
+      "Missouri-specific: a December bonus cycle triggers Missouri withholding due on the state's deposit schedule — late state deposits are an avoidable cost of the play."
     ],
     "interactions": {
       "requires": [],
@@ -81,48 +86,48 @@
       "synergiesWith": ["bracket-management"]
     },
     "reviewChecklist": [
-      "Accounting method confirmed and every bonus recipient classified owner/related versus non-owner under §267(e) attribution.",
-      "Non-owner accruals supported by a year-end resolution or plan document with no employer-reversion contingency.",
-      "Two-year rate projection in the file showing why December or January was chosen for each owner bonus.",
-      "Payroll and deposit records show payment actually occurred in the chosen period."
+      "Accounting method confirmed and every bonus recipient classified as owner/related or non-owner under §267(e) attribution.",
+      "Non-owner accruals backed by a year-end resolution or plan document with no employer-reversion contingency.",
+      "Two-year rate projection on file showing why December or January was chosen for each owner bonus.",
+      "Payroll and deposit records prove payment actually occurred in the chosen period."
     ]
   },
   "client": {
-    "teaser": "The same bonus can cost different tax depending on one date — we pick the right one.",
-    "headline": "Time your bonuses so the tax lands in the cheaper year",
+    "teaser": "The same bonus can carry a different tax bill depending on one date — we pick the right one.",
+    "headline": "Land each bonus in the year that taxes it less",
     "plainEnglish": [
-      "The tax on a bonus depends on when it is paid, not just how much it is. Paid December 31, it lands in this year's taxes. Paid January 2, it lands in next year's. If one year taxes you at a lower rate, picking the right side of New Year's saves real money.",
-      "For bonuses to your employees, the rules are friendlier still. A business on the accrual method can often deduct this year a bonus it pays early next year — if the promise was locked in by December 31 and payment comes within two and a half months.",
-      "For your own bonus as the owner, a special rule closes that shortcut. The business gets its deduction only when you are actually paid. So each fall we look at both years side by side and pay your bonus into the cheaper one."
+      "The tax on a bonus depends on when it is paid, not just how big it is. Paid December 31, it counts in this year's taxes. Paid January 2, it counts in next year's. If one year taxes you at a lower rate, picking the right side of New Year's saves real money.",
+      "For bonuses to your employees, the rules are even friendlier. A business on the accrual method can often deduct this year a bonus it pays early next year — as long as the promise was locked in by December 31 and payment comes within two and a half months.",
+      "For your own bonus as the owner, a special rule closes that shortcut. The business gets its deduction only when you are actually paid. So each fall we compare both years side by side and pay your bonus into the cheaper one."
     ],
-    "analogy": "It is like choosing your lane before a toll plaza — same car, same road, but one booth charges less. You just have to pick before December 31.",
+    "analogy": "It is like picking your lane before a toll plaza — same car, same road, but one booth charges less. You just have to choose before December 31.",
     "benefits": [
       "The same pay, taxed in the cheaper year",
       "Employee bonuses can be deducted before they are paid (accrual businesses)",
       "Costs nothing — it is scheduling, not spending",
-      "Repeats every year as part of the fall planning cycle"
+      "Repeats every year as part of fall planning"
     ],
     "steps": [
       "WE project your taxes for this year and next, side by side, each fall.",
-      "WE recommend December or January for each planned bonus.",
+      "WE recommend December or January for every planned bonus.",
       "WE paper the employee bonus commitments before year-end.",
       "YOU run payroll on the dates we set — that is the whole job."
     ],
     "clientCommitments": [
-      "Decide on bonus timing with us before mid-December, not after",
+      "Settle bonus timing with us before mid-December, not after",
       "Run bonuses through payroll on the agreed dates — no journal entries"
     ]
   },
   "engagement": {
     "implementationEffort": "one-meeting",
     "annualMaintenance": [
-      "Fall two-year rate projection and bonus-placement memo",
+      "Fall two-year rate projection with a bonus-placement memo",
       "Year-end resolutions for non-owner bonus accruals",
-      "Post-season verification that payments and deposits matched the plan"
+      "Post-season check that payments and deposits matched the plan"
     ],
     "deliverables": [
-      "Annual bonus-timing memo with both years' projections",
-      "Board resolution templates fixing non-owner bonus liabilities",
+      "Annual bonus-timing memo showing both years' projections",
+      "Board resolution templates that fix non-owner bonus liabilities",
       "Owner and related-party classification worksheet under §267(e)"
     ],
     "feeGuidanceBand": null

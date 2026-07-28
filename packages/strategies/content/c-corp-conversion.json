@@ -1,6 +1,6 @@
 {
   "id": "c-corp-conversion",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -13,6 +13,11 @@
       "version": "1.0.0",
       "date": "2026-07-19",
       "note": "Initial original authoring to schema v1.0"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-07-28",
+      "note": "Editorial rewrite of advisor and client prose; substance unchanged."
     }
   ],
   "name": "C-Corp Conversion (Retained Earnings / QSBS)",
@@ -23,70 +28,70 @@
   "entityTypes": ["s-corp", "partnership", "c-corp"],
   "typicalSavingsBand": "structural",
   "advisor": {
-    "summary": "Converting a profitable pass-through to C status is a rate-spread wager with a long-dated option attached. Profit the corporation retains is taxed once at the flat 21% rate of §11 instead of the owner's marginal stack, but every dollar distributed beyond salary picks up a second tax at qualified-dividend rates plus NIIT, and the §199A deduction on that income is forfeited entirely — which is why the engine models this as a strategy that can raise current burden, and the record honestly declares it. The structure wins for owners in the top brackets who genuinely reinvest, and the OBBBA-expanded §1202 exclusion — up to the greater of $15 million or 10x basis for post-July 4, 2025 issuances, with 50/75/100% tiers at three-, four-, and five-year holds — can convert the patience into a substantially tax-free exit for qualified businesses under the $75 million asset cap. The guardrails are the §531 accumulated earnings tax and §541 personal holding company regimes, and the door out is expensive: this is a structural commitment, not an annual election.",
+    "summary": "Converting a profitable pass-through to C status is a rate-spread wager with a long-dated option attached. Profit the corporation retains is taxed once at the flat 21% rate of §11 rather than the owner's marginal stack, but every dollar distributed beyond salary draws a second tax at qualified-dividend rates plus NIIT, and the §199A deduction on that income is forfeited outright — which is why the engine models this as a strategy that can raise current burden, and the record declares it honestly. The structure wins for top-bracket owners who genuinely reinvest, and the OBBBA-expanded §1202 exclusion — up to the greater of $15 million or 10x basis for post-July 4, 2025 issuances, with 50/75/100% tiers at three-, four-, and five-year holds — can turn that patience into a substantially tax-free exit for qualified businesses under the $75 million asset cap. The guardrails are the §531 accumulated earnings tax and the §541 personal holding company regime, and the door out is expensive: this is a structural commitment, not an annual election.",
     "mechanics": [
-      "The conversion path is mechanical: an LLC or sole proprietorship incorporates tax-free under §351 or checks the box on Form 8832, while an existing S corporation revokes or terminates its election; either way the owner becomes a W-2 employee and the business files Form 1120.",
-      "Retained profit is taxed at the flat 21% rate under §11 with no self-employment tax and no individual brackets — but also no §199A deduction, so the honest comparison is against the owner's effective pass-through rate after QBI, not the headline bracket.",
-      "Cash the owner takes beyond salary is a dividend under §§301 and 316, taxed again at qualified-dividend rates plus the 3.8% net investment income tax; at meaningful distribution levels the combined burden generally exceeds the pass-through alternative, which is exactly what the engine's dividend input demonstrates.",
-      "The §1202 exit thesis requires original-issuance C corporation stock in a qualified trade or business with aggregate gross assets of $75 million or less at issuance; for stock issued after July 4, 2025, P.L. 119-21 allows exclusion of the greater of $15 million or 10x basis, vesting 50% at a three-year hold, 75% at four, and 100% at five — and stock issued while an S election was in effect never qualifies, so the holding-period clock starts at conversion or later issuance, not at company founding.",
-      "Two penalty regimes police the retained-earnings story: the §531 accumulated earnings tax (20% on retention beyond documented reasonable business needs, above the $250,000 credit) and the §541 personal holding company tax (20% where passive income and concentrated ownership tests are met) — board-documented reinvestment plans are the defense file.",
-      "The engine removes the flow-through business, pays the entered salary as W-2 wages, charges 21% corporate tax on the remainder, and runs entered dividends through the personal return — deliberately surfacing the cases where conversion increases the current-year burden."
+      "The conversion path is mechanical: an LLC or sole proprietorship incorporates tax-free under §351 or checks the box on Form 8832, while an existing S corporation revokes or terminates its election; either way, the owner becomes a W-2 employee and the business files Form 1120.",
+      "Retained profit is taxed at the flat 21% rate under §11 with no self-employment tax and no individual brackets — but also no §199A deduction, so the honest comparison runs against the owner's effective pass-through rate after QBI, not the headline bracket.",
+      "Cash the owner takes beyond salary is a dividend under §§301 and 316, taxed again at qualified-dividend rates plus the 3.8% net investment income tax; at meaningful distribution levels the combined burden generally exceeds the pass-through alternative — exactly what the engine's dividend input demonstrates.",
+      "The §1202 exit thesis requires original-issuance C corporation stock in a qualified trade or business with aggregate gross assets of $75 million or less at issuance; for stock issued after July 4, 2025, P.L. 119-21 permits exclusion of the greater of $15 million or 10x basis, vesting 50% at a three-year hold, 75% at four, and 100% at five — and stock issued while an S election was in effect never qualifies, so the holding-period clock starts at conversion or later issuance, not at company founding.",
+      "Two penalty regimes police the retained-earnings story: the §531 accumulated earnings tax (20% on retention beyond documented reasonable business needs, above the $250,000 credit) and the §541 personal holding company tax (20% where the passive-income and concentrated-ownership tests are met) — board-documented reinvestment plans are the defense file.",
+      "The engine removes the flow-through business, pays the entered salary as W-2 wages, charges 21% corporate tax on the remainder, and runs entered dividends through the personal return — deliberately surfacing the cases where conversion raises the current-year burden."
     ],
     "authority": [
       {
         "type": "IRC",
         "cite": "IRC §11",
-        "note": "The flat 21% corporate rate — the deferral spread against the owner’s marginal rate is the entire near-term case."
+        "note": "The flat 21% corporate rate — the deferral spread against the owner’s marginal rate is the whole near-term case."
       },
       {
         "type": "IRC",
         "cite": "IRC §1202 (as amended by P.L. 119-21)",
-        "note": "QSBS exclusion for post-July 4, 2025 issuances: $75M gross-asset cap, greater of $15M or 10x basis, and the 50/75/100% tiers at three-, four-, and five-year holds."
+        "note": "QSBS exclusion for post-July 4, 2025 issuances: the $75M gross-asset cap, the greater of $15M or 10x basis, and 50/75/100% tiers at three-, four-, and five-year holds."
       },
       {
         "type": "IRC",
         "cite": "IRC §§301, 316; §1(h)(11)",
-        "note": "Distributions out of earnings and profits are dividends — the second tax layer, at qualified-dividend rates for domestic corporations."
+        "note": "Distributions out of earnings and profits are dividends — the second layer of tax, at qualified-dividend rates for domestic corporations."
       },
       {
         "type": "IRC",
         "cite": "IRC §531",
-        "note": "The 20% accumulated earnings tax on retention beyond reasonable business needs — documented growth plans are the defense."
+        "note": "The 20% accumulated earnings tax on retention beyond reasonable business needs — documented growth plans supply the defense."
       },
       {
         "type": "IRC",
         "cite": "IRC §541",
-        "note": "The 20% personal holding company tax — the trap for closely held corporations that drift into passive income."
+        "note": "The 20% personal holding company tax — the trap awaiting closely held corporations that drift into passive income."
       },
       {
         "type": "IRC",
         "cite": "IRC §351",
-        "note": "Tax-free incorporation in exchange for stock — the transaction that starts the §1202 original-issuance and holding-period analysis."
+        "note": "Tax-free incorporation in exchange for stock — the transaction that opens the §1202 original-issuance and holding-period analysis."
       },
       {
         "type": "IRC",
         "cite": "IRC §199A",
-        "note": "The pass-through deduction forfeited on conversion — the offset that shrinks the apparent rate spread."
+        "note": "The pass-through deduction forfeited on conversion — the offset that narrows the apparent rate spread."
       }
     ],
     "requirements": [
-      "Sustained profitability with genuine reinvestment need — the structure only outruns a pass-through when cash actually stays in the business.",
-      "Owner marginal rates high enough that the 21% rate creates a real spread after losing §199A.",
+      "Sustained profitability with a genuine reinvestment need — the structure outruns a pass-through only when cash actually stays in the business.",
+      "Owner marginal rates high enough that the 21% rate yields a real spread after losing §199A.",
       "For the QSBS thesis: a qualified trade or business (service fields excluded under §1202(e)(3)), gross assets of $75 million or less at issuance, and stock issued while the corporation is a C corporation.",
-      "Reasonable W-2 compensation run through payroll and annual Form 1120 compliance.",
+      "Reasonable W-2 compensation run through payroll, plus annual Form 1120 compliance.",
       "Board-documented retention plans maintained as the §531 defense file from year one."
     ],
     "risks": [
       "The dominant failure mode is distribution reality: owners who need the cash personally pay the double tax, and the modeled dividend scenario frequently shows conversion increasing total burden — this record declares mayIncreaseBurden because that is the honest result.",
-      "The §531 accumulated earnings tax and §541 personal holding company tax are the classic exam theories against retained-earnings structures; hoarded cash without documented plans, or drift into investment income, invites a 20% surcharge.",
-      "Unwinding is expensive: appreciated assets exit a C corporation only through taxable distributions, and re-electing S status carries built-in-gain toll charges and waiting periods — treat the conversion as a five-to-ten-year commitment.",
+      "The §531 accumulated earnings tax and the §541 personal holding company tax are the classic exam theories against retained-earnings structures; hoarded cash without documented plans, or drift into investment income, invites a 20% surcharge.",
+      "Unwinding is expensive: appreciated assets leave a C corporation only through taxable distributions, and re-electing S status carries built-in-gain toll charges and waiting periods — treat the conversion as a five-to-ten-year commitment.",
       "The §1202 exclusion is facts-heavy — original issuance, qualified-business status, the asset cap at issuance, and holding periods must be documented contemporaneously, because an exam five years later reconstructs all of it.",
-      "Losing §199A and the pass-through PTET deduction narrows the spread more than clients expect; the comparison must be run on the client's real numbers, which is what the model exists to do."
+      "Losing §199A and the pass-through PTET deduction narrows the spread more than clients expect; the comparison must run on the client's real numbers — which is precisely what the model exists to do."
     ],
     "stateNotes": [
-      "Conformity: Missouri conforms on a rolling basis, and its 4% corporate rate (RSMo §143.071) is among the lowest in the country — the combined federal-plus-Missouri corporate rate keeps the retention spread attractive for Missouri operating companies.",
-      "PTET interaction: conversion forfeits it — a C corporation cannot make a pass-through entity tax election, so the SALT-cap workaround the owner enjoyed as an S corporation or partnership disappears with the flow-through; this record conflicts with the PTET strategy by design.",
-      "Missouri: HB 594 (2025) lets individuals deduct 100% of federally reported capital gains from Missouri income, so a future stock sale — QSBS or not — is effectively Missouri-tax-free for individual sellers; a matching corporate subtraction activates only when the individual rate reaches 4.5%, so track the trigger."
+      "Conformity: Missouri conforms on a rolling basis, and its 4% corporate rate (RSMo §143.071) ranks among the lowest in the country — the combined federal-plus-Missouri corporate rate keeps the retention spread attractive for Missouri operating companies.",
+      "PTET interaction: conversion forfeits it — a C corporation cannot make a pass-through entity tax election, so the SALT-cap workaround the owner enjoyed as an S corporation or partnership vanishes with the flow-through; this record conflicts with the PTET strategy by design.",
+      "Missouri: HB 594 (2025) lets individuals deduct 100% of federally reported capital gains from Missouri income, so a future stock sale — QSBS or not — is effectively Missouri-tax-free for individual sellers; a matching corporate subtraction activates only once the individual rate reaches 4.5%, so track the trigger."
     ],
     "interactions": {
       "requires": [],
@@ -94,24 +99,24 @@
       "synergiesWith": ["qsbs-1202", "hra-c-corp"]
     },
     "reviewChecklist": [
-      "Both scenarios modeled on the client's actual profit, salary, and distribution needs — including the dividend case that shows the structure losing.",
+      "Both scenarios modeled on the client's actual profit, salary, and distribution needs — including the dividend case where the structure loses.",
       "Reasonable compensation set and documented for the post-conversion W-2, with payroll actually running.",
-      "QSBS documentation assembled at issuance where §1202 is part of the thesis: qualified-business analysis, gross-asset test, and holding-period calendar.",
+      "QSBS documentation assembled at issuance where §1202 anchors the thesis: qualified-business analysis, gross-asset test, and holding-period calendar.",
       "Retained-earnings plans recorded in board minutes as the §531 defense; passive-income mix screened against §541 annually.",
-      "PTET forfeiture and §199A loss included in the presented comparison.",
-      "Client has acknowledged in writing that the structure is a multi-year commitment with taxable exit ramps."
+      "PTET forfeiture and the §199A loss included in the presented comparison.",
+      "Client's written acknowledgment on file that the structure is a multi-year commitment with taxable exit ramps."
     ]
   },
   "client": {
     "teaser": "Profits you keep in the business can be taxed at a flat 21% — and a future sale might be largely tax-free.",
-    "headline": "A flat 21% rate on reinvested profits, and a path to a tax-free exit",
+    "headline": "A flat 21% rate on reinvested profits, plus a path to a tax-free exit",
     "plainEnglish": [
       "Right now, every dollar your business earns lands on your personal return, even profit you never take out. Your personal rate can run well past 30%. As a regular corporation, profit the business keeps is taxed once, at a flat 21%.",
-      "That gap matters when you are reinvesting. Money kept in the company to hire, buy equipment, or build inventory grows from a bigger after-tax base each year. The catch: cash you pull out beyond your salary is taxed a second time. So this works best when the business, not your household, needs the money.",
+      "That gap matters when you are reinvesting. Money kept in the company to hire, buy equipment, or build inventory grows from a larger after-tax base each year. The catch: cash you pull out beyond your salary is taxed a second time. So this works best when the business, not your household, needs the money.",
       "There is also a long-term prize. Hold the company's stock long enough, and current law can make a large part of a future sale tax-free — up to fifteen million dollars or more for qualifying companies. The clock starts when the structure is set up, which is a reason to decide early.",
       "This is a big, structural move, and it is not right for everyone. We model your real numbers both ways first, because for owners who spend most of their profit, staying a pass-through usually wins."
     ],
-    "analogy": "Think of the corporation as a greenhouse for profits: money that stays inside grows in a better climate, but every trip out the door costs a toll — so we only build it for profits you truly mean to keep planted.",
+    "analogy": "Think of the corporation as a greenhouse for profits. Money that stays inside grows in a better climate. Every trip out the door costs a toll. So we build it only for profits you truly mean to keep planted.",
     "benefits": [
       "A flat 21% rate on profits kept in the business instead of your higher personal rate",
       "More after-tax money compounding inside the company each year",
@@ -121,11 +126,11 @@
     "steps": [
       "WE model your current setup against the corporate structure using your real profit and spending needs.",
       "WE handle the conversion paperwork, payroll setup, and the day-one records the future sale rules demand.",
-      "YOU take your salary through payroll and route personal spending through it — not through company draws.",
+      "YOU take your salary through payroll and cover personal spending from it — never through company draws.",
       "WE meet each year to set the keep-versus-distribute mix and document the reinvestment plan."
     ],
     "clientCommitments": [
-      "Live on your salary — money pulled out beyond it gets taxed twice",
+      "Live on your salary — money pulled out beyond it is taxed twice",
       "Keep board minutes and reinvestment plans current with our help",
       "Commit for the long haul; unwinding this structure is costly"
     ]
@@ -139,9 +144,9 @@
       "Advance the QSBS holding-period calendar and refresh the qualification file"
     ],
     "deliverables": [
-      "Conversion decision memo modeling both structures on client facts",
+      "Conversion decision memo modeling both structures on the client's facts",
       "Incorporation / check-the-box filing package and payroll setup",
-      "QSBS qualification file: qualified-business analysis, gross-asset test at issuance, holding-period calendar",
+      "QSBS qualification file: qualified-business analysis, gross-asset test at issuance, and holding-period calendar",
       "Annual retained-earnings resolution template"
     ],
     "feeGuidanceBand": null
