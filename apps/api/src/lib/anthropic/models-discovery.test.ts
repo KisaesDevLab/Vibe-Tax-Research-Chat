@@ -142,4 +142,35 @@ describe('discoverAnthropicModels', () => {
     expect(r.ok).toBe(false);
     expect(r.error).toBe('malformed_response_missing_data_array');
   });
+
+  it('returns no_models_available_for_api_key on a 200 OK with empty data[]', async () => {
+    // A 200 OK with zero models almost always means the key has no
+    // model entitlements (revoked, brand-new account, regional
+    // restriction). Without this guard the route handler would walk
+    // every DB model and mass-flag them as removed[].
+    getSettingMock.mockResolvedValue('sk-ant-test');
+    mockFetchOnce(async () =>
+      Response.json({ data: [], has_more: false, first_id: '', last_id: '' }),
+    );
+    const r = await discoverAnthropicModels();
+    expect(r.ok).toBe(false);
+    expect(r.error).toBe('no_models_available_for_api_key');
+    expect(r.models).toEqual([]);
+  });
+
+  it('sends an accept: application/json header', async () => {
+    getSettingMock.mockResolvedValue('sk-ant-secret');
+    let capturedHeaders: Record<string, string> | undefined;
+    globalThis.fetch = vi.fn(async (_input: FetchInput, init?: FetchInit) => {
+      capturedHeaders = (init?.headers ?? {}) as Record<string, string>;
+      return Response.json({
+        data: [{ id: 'x', display_name: 'X', created_at: '2026-01-01T00:00:00Z' }],
+        has_more: false,
+        first_id: 'x',
+        last_id: 'x',
+      });
+    }) as typeof fetch;
+    await discoverAnthropicModels();
+    expect(capturedHeaders).toMatchObject({ accept: 'application/json' });
+  });
 });

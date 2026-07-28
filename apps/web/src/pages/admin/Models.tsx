@@ -122,7 +122,7 @@ export function AdminModelsPage() {
             <div className="font-display text-lg">Pending changes</div>
             <SourceBadge diff={diff} />
           </div>
-          {diff.source === 'bundled' && diff.discovery_error && (
+          {diff.discovery_error && (
             <div className="text-xs text-ink/70 mb-2">
               Anthropic API discovery failed:{' '}
               <span className="font-mono">{diff.discovery_error}</span>.
@@ -132,8 +132,19 @@ export function AdminModelsPage() {
                   Set the API key under <strong>Admin → Settings</strong> to enable live model
                   discovery.
                 </>
+              ) : diff.discovery_error === 'no_models_available_for_api_key' ? (
+                <>
+                  {' '}
+                  Your API key has no models available — confirm it's still active and provisioned.
+                </>
               ) : (
-                <> Showing diff against the bundled pricing seed only.</>
+                <>
+                  {' '}
+                  Showing diff against the {diff.source === 'upstream'
+                    ? 'upstream'
+                    : 'bundled'}{' '}
+                  pricing manifest only — DB rows are not flagged as removed in this mode.
+                </>
               )}
             </div>
           )}
