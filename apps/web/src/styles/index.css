@@ -31,4 +31,53 @@
   .footnote-chip {
     @apply font-mono text-xs px-2 py-0.5 rounded border border-gold/30 bg-gold/5 text-gold;
   }
+
+  /* WYSIWYG memo editor (MemoEditor.tsx). @tailwindcss/typography is not
+     installed — same reasoning as components/Markdown.tsx — so the editing
+     surface gets an explicit block-level style map. Keep these visually in
+     step with Markdown.tsx so "edit" and "preview" agree. */
+  .prose-memo :where(h1) {
+    @apply font-display text-xl mt-4 mb-2 first:mt-0;
+  }
+  .prose-memo :where(h2) {
+    @apply font-display text-lg mt-4 mb-2 first:mt-0;
+  }
+  .prose-memo :where(h3) {
+    @apply font-display text-base font-medium mt-3 mb-1.5 first:mt-0;
+  }
+  .prose-memo :where(p) {
+    @apply my-2 leading-relaxed;
+  }
+  .prose-memo :where(ul) {
+    @apply list-disc pl-5 my-2 space-y-1;
+  }
+  .prose-memo :where(ol) {
+    @apply list-decimal pl-5 my-2 space-y-1;
+  }
+  .prose-memo :where(blockquote) {
+    @apply border-l-2 border-gold/50 pl-3 my-2 text-ink/80;
+  }
+  .prose-memo :where(code) {
+    @apply font-mono text-[0.85em] px-1 py-0.5 rounded bg-ink/5;
+  }
+  .prose-memo :where(pre) {
+    @apply font-mono text-xs p-3 my-2 rounded bg-ink/5 overflow-x-auto;
+  }
+  .prose-memo :where(pre code) {
+    @apply p-0 bg-transparent;
+  }
+  .prose-memo :where(a) {
+    @apply text-oxblood underline;
+  }
+  .prose-memo :where(hr) {
+    @apply my-4 border-ink/15;
+  }
+  .prose-memo :where(strong) {
+    @apply font-semibold;
+  }
+  /* Placeholder for an empty document — ProseMirror leaves a bare <p>. */
+  .prose-memo:focus-within :where(p.is-editor-empty:first-child)::before {
+    content: attr(data-placeholder);
+    @apply text-ink/35 float-left h-0 pointer-events-none;
+  }
 }

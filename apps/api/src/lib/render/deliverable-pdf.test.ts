@@ -55,6 +55,27 @@ const fixture = (): RenderData => ({
   strategies: [strategy('alpha', true), strategy('beta', false)],
   revealStrategies: false,
   generatedAt: '1/1/2026, 9:00:00 AM',
+  memo: null,
+});
+
+const MEMO_MARKDOWN = [
+  '# Situation',
+  '',
+  'The client runs an **S corporation** with *material* profit.',
+  '',
+  '- Augusta rule',
+  '- Accountable plan',
+  '',
+  '> Verify every figure.',
+].join('\n');
+
+const withMemo = (claudeDrafted = false): RenderData => ({
+  ...fixture(),
+  memo: {
+    bodyMarkdown: MEMO_MARKDOWN,
+    claudeDrafted,
+    updatedAt: '2026-07-29T12:00:00.000Z',
+  },
 });
 
 function pageCount(pdf: Buffer): number {
@@ -110,6 +131,30 @@ describe('buildDeliverablePdf', () => {
     const d = { ...fixture(), strategies: [] };
     await expect(buildDeliverablePdf('handout', d)).rejects.toThrow('no strategy for handout');
   });
+
+  it('advisor-pdf gains a memo page when a memo is saved', async () => {
+    const without = await buildDeliverablePdf('advisor-pdf', fixture());
+    const withIt = await buildDeliverablePdf('advisor-pdf', withMemo());
+    expect(pageCount(withIt)).toBe(pageCount(without) + 1);
+  });
+
+  it('advisor-pdf marks an unedited Claude draft', async () => {
+    const edited = await buildDeliverablePdf('advisor-pdf', withMemo(false));
+    const draft = await buildDeliverablePdf('advisor-pdf', withMemo(true));
+    expect(draft.toString('latin1')).not.toBe(edited.toString('latin1'));
+  });
+
+  // The memo is internal advisor copy: it must never reach a client-facing
+  // deliverable, so those renders are byte-identical with and without one.
+  it.each(['client-pdf', 'handout', 'pitch-deck', 'slideshow'] as DeliverableKind[])(
+    '%s omits the memo entirely',
+    async (kind) => {
+      const without = await buildDeliverablePdf(kind, fixture(), 'alpha');
+      const withIt = await buildDeliverablePdf(kind, withMemo(), 'alpha');
+      expect(pageCount(withIt)).toBe(pageCount(without));
+      expect(withIt.length).toBe(without.length);
+    },
+  );
 
   it('handout hides the strategy name until revealed', async () => {
     const hidden = await buildDeliverablePdf('handout', fixture());

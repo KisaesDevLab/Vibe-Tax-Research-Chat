@@ -114,6 +114,7 @@ export async function runSeed(): Promise<void> {
     [SETTING_KEYS.CHAT_RETENTION_DAYS, null],
     [SETTING_KEYS.PLANNING_ENABLED, false],
     [SETTING_KEYS.PLAN_MEMOS_ENABLED, false],
+    [SETTING_KEYS.PLAN_REVIEW_REQUIRED, false],
     [
       SETTING_KEYS.SKILLS_REPO_REF,
       {

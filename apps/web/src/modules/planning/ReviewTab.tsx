@@ -1,7 +1,7 @@
 // TP-8 — partner review screen: per-strategy checklist cards, the
 // elevated-risk hard gate (checkbox disabled until a research archive is
 // linked), the "Research this" launcher, and lifecycle transitions.
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { PlanStatus } from '@vibe/shared';
@@ -9,7 +9,14 @@ import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../components/AuthProvider';
 import type { PlanDetail } from './PlanDetailPage';
 
+// TipTap + ProseMirror are ~200 kB; keep them out of the entry chunk since
+// the memo editor lives on one tab of one route.
+const MemoEditor = lazy(() => import('./MemoEditor').then((m) => ({ default: m.MemoEditor })));
+
 interface GateResponse {
+  /** False = partner review is optional; gate failures are advisory only. */
+  required: boolean;
+  allowed_transitions: PlanStatus[];
   gate: { ok: boolean; failures: Array<{ code: string; strategyId?: string; message: string }> };
   checklist: Array<{
     strategyId: string;
@@ -18,6 +25,16 @@ interface GateResponse {
     linked: boolean;
     selected: boolean;
   }>;
+}
+
+interface MemoResponse {
+  memo: {
+    body_markdown: string;
+    claude_drafted: boolean;
+    updated_at: string;
+    updated_by: string | null;
+  } | null;
+  editable: boolean;
 }
 
 interface LinksResponse {
@@ -121,6 +138,9 @@ function reviewErrorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
+// Fallback only — the server is authoritative and returns
+// `allowed_transitions` (which includes draft → presented when partner
+// review is switched off). Used until that response lands.
 const NEXT_STATUS: Partial<Record<PlanStatus, PlanStatus[]>> = {
   draft: ['in-review'],
   'in-review': ['draft', 'presented'],
@@ -207,6 +227,24 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
     onError: (err) => setError((err as Error).message),
   });
 
+  const { data: memoData } = useQuery<MemoResponse>({
+    queryKey: ['plan-memo', plan.id],
+    queryFn: () => api(`/api/planning/plans/${plan.id}/memo`),
+  });
+
+  const saveMemo = useMutation({
+    mutationFn: (body_markdown: string) =>
+      api<{ memo: MemoResponse['memo'] }>(`/api/planning/plans/${plan.id}/memo`, {
+        method: 'PUT',
+        body: JSON.stringify({ body_markdown }),
+      }),
+    onSuccess: () => {
+      setMemoError(null);
+      qc.invalidateQueries({ queryKey: ['plan-memo', plan.id] });
+    },
+    onError: (err) => setMemoError((err as Error).message),
+  });
+
   const memo = useMutation({
     mutationFn: () =>
       api<{ memo_markdown: string }>(`/api/planning/plans/${plan.id}/memo`, { method: 'POST' }),
@@ -247,7 +285,13 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
   // The server rejects ticks from anyone but the assigned reviewer —
   // mirror that client-side instead of letting the click 403.
   const isReviewer = Boolean(plan.reviewer_id) && user?.id === plan.reviewer_id;
-  const editable = plan.status === 'in-review' && isReviewer;
+  // With review required the ticks are reviewer-only in-review. With it
+  // optional the checklist is a shared working aid, editable by anyone
+  // until the plan freezes at presented.
+  const reviewRequired = gateData?.required !== false;
+  const editable = reviewRequired
+    ? plan.status === 'in-review' && isReviewer
+    : !['presented', 'engaged', 'delivered', 'archived'].includes(plan.status);
 
   const reviewers = reviewersData?.reviewers ?? [];
   // Keep the current reviewer visible even if the list hasn't loaded (or
@@ -286,7 +330,7 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
         <span className="text-[11px] uppercase tracking-wider px-2 py-0.5 rounded bg-ink text-paper">
           {plan.status}
         </span>
-        {(NEXT_STATUS[plan.status] ?? []).map((to) => (
+        {(gateData?.allowed_transitions ?? NEXT_STATUS[plan.status] ?? []).map((to) => (
           <button
             key={to}
             onClick={() => transition.mutate(to)}
@@ -298,18 +342,29 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
         ))}
       </div>
       {error && <div className="text-oxblood text-sm whitespace-pre-wrap">{error}</div>}
-      {gateData && !gateData.gate.ok && plan.status === 'in-review' && (
-        <div className="border border-gold/40 bg-gold/10 rounded p-3 text-sm">
-          <div className="font-medium mb-1">Blocking “presented”:</div>
-          <ul className="list-disc pl-5 space-y-0.5">
-            {gateData.gate.failures.map((f, i) => (
-              <li key={i}>{f.message}</li>
-            ))}
-          </ul>
+      {gateData && !gateData.required && (
+        <div className="text-xs text-ink/50">
+          Partner review is optional on this appliance — a plan can go straight from draft to
+          presented. The checklist below stays available as a working aid. An admin can require
+          review again in Admin → Settings.
         </div>
       )}
+      {gateData &&
+        !gateData.gate.ok &&
+        (gateData.required ? plan.status === 'in-review' : true) && (
+          <div className="border border-gold/40 bg-gold/10 rounded p-3 text-sm">
+            <div className="font-medium mb-1">
+              {gateData.required ? 'Blocking “presented”:' : 'Open review items (not blocking):'}
+            </div>
+            <ul className="list-disc pl-5 space-y-0.5">
+              {gateData.gate.failures.map((f, i) => (
+                <li key={i}>{f.message}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-      {plan.status === 'in-review' && !isReviewer && checklist.length > 0 && (
+      {gateData?.required && plan.status === 'in-review' && !isReviewer && checklist.length > 0 && (
         <div className="text-xs text-ink/50">
           {plan.reviewer_id
             ? 'Only the assigned reviewer can tick the checklist.'
@@ -360,7 +415,7 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
                       title={
                         blocked
                           ? 'Link an archived research session before checking off this strategy.'
-                          : plan.status === 'in-review' && !isReviewer
+                          : reviewRequired && plan.status === 'in-review' && !isReviewer
                             ? 'Only the assigned reviewer can tick the checklist.'
                             : undefined
                       }
@@ -413,31 +468,43 @@ export function ReviewTab({ detail }: { detail: PlanDetail }) {
         <EngagementPanel planId={plan.id} onChanged={invalidate} />
       )}
 
-      {plan.status !== 'draft' && (
-        <section className="border border-ink/10 rounded p-4 bg-white">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="font-display text-lg">Plan memo</h3>
+      <section className="border border-ink/10 rounded p-4 bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="font-display text-lg">Plan memo</h3>
+          <div className="flex items-center gap-2">
+            {memoData?.memo?.updated_at && (
+              <span className="text-xs text-ink/50">
+                Saved {new Date(memoData.memo.updated_at).toLocaleString()}
+              </span>
+            )}
             <button
               onClick={() => memo.mutate()}
-              disabled={memo.isPending}
+              disabled={memo.isPending || memoData?.editable === false}
+              title="Replaces the editor contents with a fresh Claude draft — nothing is saved until you click Save memo."
               className="px-2.5 py-1 border border-ink/20 rounded text-sm hover:bg-ink/5 disabled:opacity-50"
             >
-              {memo.isPending ? 'Drafting…' : 'Draft memo (Claude)'}
+              {memo.isPending ? 'Drafting…' : 'Draft with Claude'}
             </button>
           </div>
-          {memoError && <div className="text-oxblood text-sm mt-2">{memoError}</div>}
-          {memoMarkdown && (
-            <details open className="mt-2">
-              <summary className="text-xs cursor-pointer text-ink/60">
-                Memo draft (markdown)
-              </summary>
-              <pre className="mt-2 text-xs whitespace-pre-wrap border border-ink/10 rounded p-3 bg-paper overflow-x-auto">
-                {memoMarkdown}
-              </pre>
-            </details>
-          )}
-        </section>
-      )}
+        </div>
+        {memoData?.memo?.claude_drafted && (
+          <div className="mt-2 text-xs border border-gold/40 bg-gold/10 rounded px-2 py-1">
+            This memo is an unedited Claude draft — verify every figure and citation before any
+            client use.
+          </div>
+        )}
+        {memoError && <div className="text-oxblood text-sm mt-2">{memoError}</div>}
+        <Suspense fallback={<div className="mt-2 text-sm text-ink/40">Loading editor…</div>}>
+          <MemoEditor
+            value={memoData?.memo?.body_markdown ?? ''}
+            editable={memoData?.editable !== false}
+            saving={saveMemo.isPending}
+            onSave={(md) => saveMemo.mutate(md)}
+            incoming={memoMarkdown}
+            onIncomingConsumed={() => setMemoMarkdown(null)}
+          />
+        </Suspense>
+      </section>
 
       {linksData && linksData.links.length > 0 && (
         <section className="border border-ink/10 rounded p-4 bg-white">

@@ -11,8 +11,20 @@ export const TRANSITIONS: Record<PlanStatus, PlanStatus[]> = {
   archived: [],
 };
 
-export function canTransition(from: PlanStatus, to: PlanStatus): boolean {
-  return (TRANSITIONS[from] ?? []).includes(to);
+/**
+ * Transitions available from `from`. Partner review is opt-in
+ * (SETTING_KEYS.PLAN_REVIEW_REQUIRED): with it off, draft short-circuits
+ * straight to presented. The in-review path stays reachable either way so
+ * a firm that wants the four-eyes discipline loses nothing by the default.
+ */
+export function allowedTransitions(from: PlanStatus, reviewRequired: boolean): PlanStatus[] {
+  const base = TRANSITIONS[from] ?? [];
+  if (!reviewRequired && from === 'draft') return [...base, 'presented'];
+  return base;
+}
+
+export function canTransition(from: PlanStatus, to: PlanStatus, reviewRequired = true): boolean {
+  return allowedTransitions(from, reviewRequired).includes(to);
 }
 
 export interface ReviewGateInput {

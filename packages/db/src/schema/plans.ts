@@ -14,6 +14,7 @@ import {
   timestamp,
   index,
   uniqueIndex,
+  boolean,
 } from 'drizzle-orm/pg-core';
 import type { BaselineProfile, StrategySelection, YearResult } from '@vibe/shared';
 import { clients } from './clients.js';
@@ -115,7 +116,33 @@ export const plan_research_links = pgTable(
   }),
 );
 
+// One editable memo per plan. Markdown is the source of truth: the
+// WYSIWYG editor serializes back to markdown on save, so the stored body
+// stays diffable and renderable by the same <Markdown> component the
+// rest of the app uses. `claude_drafted` records whether the CURRENT
+// body still traces to a Claude draft — any manual save clears it, which
+// is what lets the UI drop the "unreviewed draft" banner honestly.
+export const plan_memos = pgTable(
+  'plan_memos',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    plan_id: uuid('plan_id')
+      .notNull()
+      .references(() => plans.id, { onDelete: 'cascade' }),
+    body_markdown: text('body_markdown').notNull().default(''),
+    claude_drafted: boolean('claude_drafted').notNull().default(false),
+    created_by: uuid('created_by').references(() => users.id),
+    updated_by: uuid('updated_by').references(() => users.id),
+    created_at: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updated_at: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    plan_uq: uniqueIndex('plan_memos_plan_uq').on(t.plan_id),
+  }),
+);
+
 export type Plan = typeof plans.$inferSelect;
 export type PlanScenario = typeof plan_scenarios.$inferSelect;
 export type PlanResult = typeof plan_results.$inferSelect;
 export type PlanResearchLink = typeof plan_research_links.$inferSelect;
+export type PlanMemo = typeof plan_memos.$inferSelect;

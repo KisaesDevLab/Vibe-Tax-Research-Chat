@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canTransition, evaluateReviewGate } from './workflow.js';
+import { allowedTransitions, canTransition, evaluateReviewGate } from './workflow.js';
 
 describe('canTransition', () => {
   it.each([
@@ -16,6 +16,33 @@ describe('canTransition', () => {
     ['engaged', 'presented', false],
   ] as const)('%s → %s = %s', (from, to, expected) => {
     expect(canTransition(from, to)).toBe(expected);
+  });
+});
+
+describe('optional partner review', () => {
+  it('lets draft reach presented directly when review is not required', () => {
+    expect(canTransition('draft', 'presented', false)).toBe(true);
+    expect(allowedTransitions('draft', false)).toEqual(['in-review', 'presented']);
+  });
+
+  it('keeps the in-review path available when review is not required', () => {
+    expect(canTransition('draft', 'in-review', false)).toBe(true);
+    expect(canTransition('in-review', 'presented', false)).toBe(true);
+  });
+
+  it('still blocks draft → presented when review IS required', () => {
+    expect(canTransition('draft', 'presented', true)).toBe(false);
+    expect(allowedTransitions('draft', true)).toEqual(['in-review']);
+  });
+
+  it('defaults to the strict graph when the flag is omitted', () => {
+    expect(canTransition('draft', 'presented')).toBe(false);
+  });
+
+  it('does not loosen any transition other than draft → presented', () => {
+    for (const from of ['in-review', 'presented', 'engaged', 'delivered', 'archived'] as const) {
+      expect(allowedTransitions(from, false)).toEqual(allowedTransitions(from, true));
+    }
   });
 });
 

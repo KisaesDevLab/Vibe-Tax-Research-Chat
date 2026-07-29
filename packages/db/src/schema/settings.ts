@@ -43,4 +43,9 @@ export const SETTING_KEYS = {
   // TP-14 — allow Claude to draft plan memos (always draft-labeled;
   // endpoint returns 503 when no key is configured). Off by default.
   PLAN_MEMOS_ENABLED: 'plan_memos_enabled',
+  // Partner review is opt-in. Off (the default) lets a plan go straight
+  // draft → presented with no reviewer, no checklist, and no four-eyes
+  // rule. On restores the full TP-8 gate. The review machinery stays in
+  // place either way so a firm can turn it back on without a migration.
+  PLAN_REVIEW_REQUIRED: 'plan_review_required',
 } as const;
