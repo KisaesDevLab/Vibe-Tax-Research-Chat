@@ -425,6 +425,34 @@ adminSettingsRouter.put('/plan-memos-enabled', async (req, res) => {
   res.json({ ok: true, enabled: parsed.data.enabled });
 });
 
+// ── Partner-review requirement flag ─────────────────────────────────────
+// Off by default: plans go draft → presented with no reviewer and no
+// checklist gate. Turning it on restores the full four-eyes workflow.
+const planReviewSchema = z.object({ enabled: z.boolean() });
+
+adminSettingsRouter.get('/plan-review-required', async (_req, res) => {
+  const enabled = await getSetting<boolean>(SETTING_KEYS.PLAN_REVIEW_REQUIRED);
+  res.json({ enabled: enabled === true });
+});
+
+adminSettingsRouter.put('/plan-review-required', async (req, res) => {
+  const parsed = planReviewSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request' });
+    return;
+  }
+  await setSetting(SETTING_KEYS.PLAN_REVIEW_REQUIRED, parsed.data.enabled, {
+    updated_by: req.auth!.user_id,
+  });
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'admin.settings.plan_review_required.set',
+    metadata: { enabled: parsed.data.enabled },
+    ip: req.ip,
+  });
+  res.json({ ok: true, enabled: parsed.data.enabled });
+});
+
 // Keep TS happy — provider is consumed via parsed.data.provider above, but
 // the type import is otherwise just for the EmailConfig signature.
 void (null as unknown as EmailProviderKind);

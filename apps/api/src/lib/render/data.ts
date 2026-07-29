@@ -7,6 +7,7 @@ import {
   plans,
   plan_scenarios,
   plan_results,
+  plan_memos,
   clients,
   strategies,
   strategy_versions,
@@ -75,6 +76,12 @@ export async function buildRenderData(
       };
     });
 
+  const [memoRow] = await db
+    .select()
+    .from(plan_memos)
+    .where(eq(plan_memos.plan_id, plan.id))
+    .limit(1);
+
   return {
     branding: await loadBranding(),
     plan: plan as unknown as PlanDTO,
@@ -85,5 +92,13 @@ export async function buildRenderData(
     strategies: strategyData,
     revealStrategies,
     generatedAt: new Date().toLocaleString('en-US'),
+    memo:
+      memoRow && memoRow.body_markdown.trim()
+        ? {
+            bodyMarkdown: memoRow.body_markdown,
+            claudeDrafted: memoRow.claude_drafted,
+            updatedAt: memoRow.updated_at.toISOString(),
+          }
+        : null,
   };
 }

@@ -33,6 +33,14 @@ export interface StrategyRenderData {
   };
 }
 
+/** The saved plan memo (plan_memos), markdown as authored in the editor. */
+export interface MemoRenderData {
+  bodyMarkdown: string;
+  /** True while the body is still an unedited Claude draft. */
+  claudeDrafted: boolean;
+  updatedAt: string | null;
+}
+
 export interface RenderData {
   branding: Branding;
   plan: PlanDTO;
@@ -43,6 +51,9 @@ export interface RenderData {
   strategies: StrategyRenderData[];
   revealStrategies: boolean;
   generatedAt: string;
+  /** Null when the plan has no saved memo. Internal copy only — see
+   *  deliverable-pdf.ts for which kinds are allowed to print it. */
+  memo: MemoRenderData | null;
 }
 
 export type DeliverableKind = 'advisor-pdf' | 'client-pdf' | 'handout' | 'pitch-deck' | 'slideshow';

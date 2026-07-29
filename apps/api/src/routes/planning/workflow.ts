@@ -15,13 +15,27 @@ import {
   messages,
 } from '@vibe/db/schema';
 import type { PlanStatus, StrategySelection } from '@vibe/shared';
+import { SETTING_KEYS } from '@vibe/db/schema';
 import { audit } from '../../lib/audit.js';
-import { canTransition, evaluateReviewGate } from '../../lib/planning/workflow.js';
+import { getSetting } from '../../lib/settings-store.js';
+import {
+  allowedTransitions,
+  canTransition,
+  evaluateReviewGate,
+} from '../../lib/planning/workflow.js';
 import { FROZEN_STATUSES as FROZEN_WORKFLOW_STATUSES } from './plans.js';
 
 export const planWorkflowRouter = Router({ mergeParams: true });
 
 const uuidSchema = z.string().uuid();
+
+/**
+ * Partner review is opt-in and OFF unless an admin turns it on, so an
+ * unset row must read as "not required" — never default this to true.
+ */
+async function isReviewRequired(): Promise<boolean> {
+  return (await getSetting<boolean>(SETTING_KEYS.PLAN_REVIEW_REQUIRED)) === true;
+}
 
 async function loadPlan(planId: string) {
   const [plan] = await getDb().select().from(plans).where(eq(plans.id, planId)).limit(1);
@@ -91,19 +105,27 @@ planWorkflowRouter.patch('/review-state', async (req, res) => {
     res.status(404).json({ error: 'not_found' });
     return;
   }
-  if (plan.status !== 'in-review') {
-    res.status(409).json({ error: 'not_in_review' });
-    return;
-  }
-  // Four-eyes is identity-enforced: only the ASSIGNED reviewer ticks the
-  // checklist. Without this the preparer could tick everything and
-  // self-present — the reviewer_id field alone proves nothing.
-  if (!plan.reviewer_id) {
-    res.status(409).json({ error: 'no_reviewer_assigned' });
-    return;
-  }
-  if (req.auth!.user_id !== plan.reviewer_id) {
-    res.status(403).json({ error: 'reviewer_only' });
+  const reviewRequired = await isReviewRequired();
+  if (reviewRequired) {
+    if (plan.status !== 'in-review') {
+      res.status(409).json({ error: 'not_in_review' });
+      return;
+    }
+    // Four-eyes is identity-enforced: only the ASSIGNED reviewer ticks the
+    // checklist. Without this the preparer could tick everything and
+    // self-present — the reviewer_id field alone proves nothing.
+    if (!plan.reviewer_id) {
+      res.status(409).json({ error: 'no_reviewer_assigned' });
+      return;
+    }
+    if (req.auth!.user_id !== plan.reviewer_id) {
+      res.status(403).json({ error: 'reviewer_only' });
+      return;
+    }
+  } else if (FROZEN_WORKFLOW_STATUSES.includes(plan.status)) {
+    // Review is optional, so the checklist is a working aid anyone on the
+    // plan may tick — but a presented plan's ticks are still provenance.
+    res.status(409).json({ error: 'plan_frozen' });
     return;
   }
   const [row] = await getDb()
@@ -133,7 +155,12 @@ planWorkflowRouter.get('/review-gate', async (req, res) => {
     reviewerId: plan.reviewer_id,
     preparerId: plan.created_by,
   });
+  const reviewRequired = await isReviewRequired();
   res.json({
+    // `required: false` means the failures below are advisory — the UI
+    // shows them as guidance and never as a block on presenting.
+    required: reviewRequired,
+    allowed_transitions: allowedTransitions(plan.status as PlanStatus, reviewRequired),
     gate,
     checklist: Array.from(input.records.entries()).map(([strategyId, r]) => ({
       strategyId,
@@ -163,11 +190,14 @@ planWorkflowRouter.post('/transition', async (req, res) => {
     return;
   }
   const to = parsed.data.to;
-  if (!canTransition(plan.status as PlanStatus, to)) {
+  const reviewRequired = await isReviewRequired();
+  if (!canTransition(plan.status as PlanStatus, to, reviewRequired)) {
     res.status(409).json({ error: 'invalid_transition', from: plan.status, to });
     return;
   }
-  if (plan.status === 'in-review' && to === 'presented') {
+  // Reviewer identity and the checklist gate only bind when review is
+  // required. With it off, presenting is an ordinary transition.
+  if (reviewRequired && plan.status === 'in-review' && to === 'presented') {
     // Only the assigned reviewer can present — the ticks are theirs, so
     // the final act must be too.
     if (req.auth!.user_id !== plan.reviewer_id) {

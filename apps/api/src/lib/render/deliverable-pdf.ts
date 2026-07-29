@@ -13,6 +13,7 @@
 // pitch deck and slideshow until the plan is engaged (revealStrategies).
 import PDFDocument from 'pdfkit';
 import { sanitizeForHelvetica } from '../export/response-pdf.js';
+import { renderMarkdown } from './markdown-pdf.js';
 import type { DeliverableKind, RenderData, StrategyRenderData } from './types.js';
 
 const MARGIN = 54; // 0.75in
@@ -317,6 +318,41 @@ function stampFooter(doc: Doc, d: RenderData, withPageNumbers: boolean): void {
 
 // ── the five kinds ───────────────────────────────────────────────────────
 
+/**
+ * The plan memo, rendered from its markdown.
+ *
+ * Internal copy ONLY. The memo is drafted as "an internal planning memo for
+ * a CPA" and routinely carries open questions and caveats, so it prints on
+ * the advisor deliverable and is deliberately withheld from every
+ * client-facing kind. An unedited Claude draft is banner-labelled here the
+ * same way it is in the editor.
+ */
+function memoSection(doc: Doc, d: RenderData): void {
+  if (!d.memo) return;
+  doc.addPage();
+  h2(doc, 'Plan memo');
+  if (d.memo.claudeDrafted) {
+    para(doc, 'DRAFT — Claude-generated and not yet edited. Verify every figure and citation.', {
+      size: 9.5,
+      color: COST,
+      italic: true,
+    });
+  }
+  if (d.memo.updatedAt) {
+    para(doc, `Last saved ${new Date(d.memo.updatedAt).toLocaleString('en-US')}`, {
+      size: 8.5,
+      color: FAINT,
+    });
+  }
+  renderMarkdown(doc, d.memo.bodyMarkdown, {
+    ink: INK,
+    muted: MUTED,
+    rule: RULE,
+    link: COST,
+    size: 11,
+  });
+}
+
 function renderAdvisorPdf(doc: Doc, d: RenderData): void {
   cover(doc, () => {
     h1(doc, d.plan.title);
@@ -331,6 +367,10 @@ function renderAdvisorPdf(doc: Doc, d: RenderData): void {
   doc.addPage();
   h2(doc, `Projection — ${d.scenarioLabel}`);
   comparisonTable(doc, d);
+
+  // Memo before the per-strategy detail: it frames the plan the way the
+  // preparer wants it read.
+  memoSection(doc, d);
 
   for (const strat of d.strategies) {
     doc.addPage();

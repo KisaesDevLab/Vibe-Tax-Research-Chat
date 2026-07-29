@@ -113,6 +113,7 @@ export function AdminSettingsPage() {
       </section>
 
       <PlanningModuleSection />
+      <PlanReviewSection />
       <PlanMemosSection />
       <WebResourceStrategySection />
       <EmailSettingsSection />
@@ -202,6 +203,55 @@ function PlanMemosSection() {
           onChange={(e) => toggle.mutate(e.target.checked)}
         />
         <span>{enabled ? 'Enabled' : 'Disabled'}</span>
+      </label>
+      {error && <div className="text-oxblood text-sm mt-2">{error}</div>}
+    </section>
+  );
+}
+
+// ── Partner-review requirement toggle ──────────────────────────────────
+// Off (the default) lets a plan go straight draft → presented. On restores
+// the four-eyes gate: assigned reviewer, full checklist, and the
+// elevated-risk research-link requirement.
+function PlanReviewSection() {
+  const qc = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
+  const { data } = useQuery<{ enabled: boolean }>({
+    queryKey: ['admin', 'settings', 'plan-review-required'],
+    queryFn: () => api('/api/admin/settings/plan-review-required'),
+  });
+
+  const toggle = useMutation({
+    mutationFn: (enabled: boolean) =>
+      api('/api/admin/settings/plan-review-required', {
+        method: 'PUT',
+        body: JSON.stringify({ enabled }),
+      }),
+    onSuccess: () => {
+      setError(null);
+      qc.invalidateQueries({ queryKey: ['admin', 'settings', 'plan-review-required'] });
+    },
+    onError: (err) => setError((err as Error).message),
+  });
+
+  const enabled = data?.enabled ?? false;
+  return (
+    <section className="border border-ink/10 rounded p-6 bg-white max-w-2xl mt-6">
+      <h2 className="font-display text-xl mb-2">Require partner review</h2>
+      <p className="text-sm text-ink/60 mb-4">
+        When on, a plan can only reach “presented” through in-review: a reviewing partner other than
+        the preparer must be assigned, every strategy checklist item ticked, and each elevated-risk
+        strategy backed by a linked research archive. When off, staff can present a plan straight
+        from draft and the checklist stays available as an optional working aid.
+      </p>
+      <label className="flex items-center gap-3 text-sm">
+        <input
+          type="checkbox"
+          checked={enabled}
+          disabled={toggle.isPending}
+          onChange={(e) => toggle.mutate(e.target.checked)}
+        />
+        <span>{enabled ? 'Review required' : 'Review optional'}</span>
       </label>
       {error && <div className="text-oxblood text-sm mt-2">{error}</div>}
     </section>
