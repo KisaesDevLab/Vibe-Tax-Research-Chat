@@ -7,6 +7,8 @@ import { api } from '../../lib/api';
 interface KeyStatus {
   configured: boolean;
   fingerprint?: string;
+  /** MIG-4: 'router' → background jobs go through the Vibe AI Router */
+  ai_mode?: 'direct' | 'router';
 }
 
 type WebResourceMode = 'anthropic' | 'mcp';
@@ -70,6 +72,21 @@ export function AdminSettingsPage() {
   return (
     <div>
       <h1 className="font-display text-3xl mb-6">Settings</h1>
+
+      {data?.ai_mode === 'router' && (
+        <section className="border border-sky-300 rounded p-4 bg-sky-50 max-w-2xl mb-6">
+          <h2 className="font-display text-lg mb-1 text-sky-900">
+            Background jobs managed by Vibe AI Router
+          </h2>
+          <p className="text-sm text-sky-800">
+            This installation routes background AI jobs (titles, summaries, memo drafts, strategy
+            and skill authoring) through the appliance&apos;s Vibe AI Router — model choice,
+            data-boundary policy, and cost tracking for those jobs live in the router console. The
+            research chat and the weekly legal-development watch still use the Anthropic key below
+            directly, so it remains required.
+          </p>
+        </section>
+      )}
 
       <section className="border border-ink/10 rounded p-6 bg-white max-w-2xl">
         <h2 className="font-display text-xl mb-2">Anthropic API key</h2>

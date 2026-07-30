@@ -27,6 +27,7 @@ import { fingerprint } from '../crypto.js';
 import { audit } from '../audit.js';
 import { logger } from '../logger.js';
 import { CLAUDE_JOBS, type ClaudeJobName } from './jobs-config.js';
+import { aiMode, callClaudeViaRouter, jobRoutable } from './router-mode.js';
 
 export class ClaudeDisabledError extends Error {
   code = 'claude_disabled' as const;
@@ -124,6 +125,15 @@ export async function callClaude(
   opts: { actorUserId?: string | null; timeoutMs?: number } = {},
 ): Promise<ClaudeJobResult> {
   const config = CLAUDE_JOBS[job];
+  // MIG-4: routable background jobs go through the Vibe AI Router in router
+  // mode. The kill switch still applies first (it is the emergency spend
+  // brake regardless of backend). strategy-watch (server-side web_search) and
+  // the streaming chat path stay direct until R1 — a static split, never a
+  // runtime fallback: router errors surface to the caller's degrade logic.
+  if (aiMode() === 'router' && jobRoutable(job)) {
+    if (killSwitchOn()) throw new ClaudeDisabledError();
+    return callClaudeViaRouter(job, request, opts);
+  }
   const { client } = await getAnthropic(); // kill switch + shield routing live here
   const maxTokens = Math.min(Math.max(request.max_tokens ?? config.maxTokens, 1), config.maxTokens);
   const body: Anthropic.MessageCreateParamsNonStreaming = {

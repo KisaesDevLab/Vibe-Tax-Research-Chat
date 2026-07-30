@@ -5,6 +5,7 @@ import { env } from './config/env.js';
 import { logger } from './lib/logger.js';
 import { startWorkers } from './jobs/workers.js';
 import { recoverOrphanedStreams } from './lib/stream-recovery.js';
+import { registerTrcTaskClasses } from './lib/anthropic/router-mode.js';
 
 // Last-line-of-defense: any promise that escapes our handlers should be
 // logged, not abort the process. BullMQ workers + their per-queue 'error'
@@ -58,6 +59,9 @@ async function start(): Promise<void> {
   const app = createApp();
   const server = app.listen(env.PORT, () => {
     logger.info({ port: env.PORT, env: env.NODE_ENV }, 'api listening');
+    // MIG-4: router mode only; non-blocking with retry — routable jobs fail
+    // closed at the router until registration lands, which is correct.
+    registerTrcTaskClasses();
   });
 
   if (process.env.WORKERS_ENABLED !== 'false') {
