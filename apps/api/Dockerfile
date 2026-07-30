@@ -87,6 +87,21 @@ COPY --from=builder /app/packages/strategies/node_modules packages/strategies/no
 # failure is fatal before the listener binds. Override with
 # `-e MIGRATIONS_AUTO=false` to keep migrations a manual step.
 ENV MIGRATIONS_AUTO=true
+
+# Runtime write paths, created and owned by `node` BEFORE dropping
+# privileges. Everything COPYed above lands root-owned, so without this the
+# unprivileged process cannot create its own directories: deliverable
+# rendering died with
+#   EACCES: permission denied, mkdir '/app/storage/deliverables'
+# and chat attachments / reference uploads would fail the same way.
+#
+# This also fixes the volume case. When a named volume is mounted over one
+# of these paths, Docker seeds the empty volume from the image — including
+# ownership — so the mount inherits node:node instead of root:root. (Bind
+# mounts keep host ownership; that stays an operator concern.)
+RUN mkdir -p /app/storage/deliverables /app/attachments /app/workspaces \
+ && chown -R node:node /app/storage /app/attachments /app/workspaces
+
 EXPOSE 4000
 USER node
 CMD ["node", "apps/api/dist/index.js"]
