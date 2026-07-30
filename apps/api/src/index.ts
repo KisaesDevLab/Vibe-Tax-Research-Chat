@@ -1,5 +1,5 @@
 // Phase 1 + 25 — entrypoint. Starts Express + BullMQ workers.
-import { runMigrations, runSeed } from '@vibe/db';
+import { runMigrations, runSeed, pendingMigrationCount } from '@vibe/db';
 import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { logger } from './lib/logger.js';
@@ -39,6 +39,20 @@ async function start(): Promise<void> {
     logger.info('migrations complete');
     await runSeed();
     logger.info('seed complete');
+  } else {
+    // Not auto-migrating is a legitimate choice, but a schema behind the
+    // image breaks features in ways that surface far from the cause (an
+    // un-applied 0015 made every deliverable render fail with `relation
+    // "plan_memos" does not exist`). Say so at startup, once, loudly.
+    const state = await pendingMigrationCount().catch(() => null);
+    if (state && state.pending > 0) {
+      logger.error(
+        { shipped: state.shipped, applied: state.applied, pending: state.pending },
+        `DATABASE SCHEMA IS BEHIND THIS BUILD — ${state.pending} migration(s) not applied. ` +
+          'Run `pnpm db:migrate:prod` (or set MIGRATIONS_AUTO=true) before using the app; ' +
+          'features touching new tables will fail until you do.',
+      );
+    }
   }
 
   const app = createApp();

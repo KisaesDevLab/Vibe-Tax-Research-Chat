@@ -169,6 +169,20 @@ export function DeliverablesTab({ detail }: { detail: PlanDetail }) {
                   >
                     {d.status}
                   </span>
+                  {/* A failure reason hidden in a tooltip is a failure reason
+                      nobody reads — show it where the operator is looking. */}
+                  {d.status === 'failed' && d.error && (
+                    <div className="mt-1 text-[11px] text-oxblood/90 max-w-md whitespace-pre-wrap break-words">
+                      {d.error}
+                      {/rela(t|)ion .* does not exist|column .* does not exist/i.test(d.error) && (
+                        <div className="text-ink/50 mt-0.5">
+                          The database schema is behind this build — run migrations (
+                          <code>pnpm db:migrate</code>, or set <code>MIGRATIONS_AUTO=true</code>)
+                          and render again.
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </td>
                 <td className="py-2 pr-3 font-mono text-[10px] text-ink/40">
                   {d.sha256 ? `${d.sha256.slice(0, 16)}…` : '—'}

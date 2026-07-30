@@ -5,11 +5,21 @@ import type { PlanStatus, StrategySelection } from '@vibe/shared';
 export const TRANSITIONS: Record<PlanStatus, PlanStatus[]> = {
   draft: ['in-review'],
   'in-review': ['draft', 'presented'],
-  presented: ['engaged', 'archived'],
+  // presented → draft reopens the plan for changes. Presenting freezes
+  // results (app-side and via the migration-0012 trigger), so without a
+  // back-edge a typo after presenting meant rebuilding the plan from
+  // scratch. Reopening thaws it and clears any review ticks so a stale
+  // sign-off cannot pre-satisfy the gate on the way back out.
+  presented: ['engaged', 'archived', 'draft'],
   engaged: ['delivered', 'archived'],
   delivered: ['archived'],
   archived: [],
 };
+
+/** Transitions that reopen a frozen plan for editing. */
+export function isReopen(from: PlanStatus, to: PlanStatus): boolean {
+  return from === 'presented' && to === 'draft';
+}
 
 /**
  * Transitions available from `from`. Partner review is opt-in

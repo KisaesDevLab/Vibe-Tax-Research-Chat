@@ -221,9 +221,12 @@ planWorkflowRouter.post('/transition', async (req, res) => {
     .set({
       status: to,
       updated_at: new Date(),
-      // The back-edge to draft reopens editing; stale ticks must not
-      // survive the round-trip and pre-satisfy a future gate.
-      ...(plan.status === 'in-review' && to === 'draft' ? { review_state: {} } : {}),
+      // Any back-edge to draft reopens editing; stale ticks must not
+      // survive the round-trip and pre-satisfy a future gate. Covers both
+      // in-review → draft and the presented → draft reopen.
+      ...((plan.status === 'in-review' || plan.status === 'presented') && to === 'draft'
+        ? { review_state: {} }
+        : {}),
     })
     .where(eq(plans.id, plan.id))
     .returning();
