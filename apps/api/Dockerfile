@@ -45,8 +45,10 @@ RUN pnpm --filter @vibe/shared build \
 FROM node:24-alpine AS runtime
 WORKDIR /app
 # git is required at runtime by the skills sync job (simple-git spawns
-# `git` to fetch the skills repo). Keep the rest of the runtime slim.
-RUN apk add --no-cache git \
+# `git` to fetch the skills repo). su-exec lets the entrypoint fix the
+# ownership of mounted data directories as root and then drop to `node`.
+# Keep the rest of the runtime slim.
+RUN apk add --no-cache git su-exec \
  && corepack enable && corepack prepare pnpm@9.15.9 --activate
 COPY --from=builder /app/package.json /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/apps/api/package.json apps/api/
@@ -99,9 +101,17 @@ ENV MIGRATIONS_AUTO=true
 # of these paths, Docker seeds the empty volume from the image — including
 # ownership — so the mount inherits node:node instead of root:root. (Bind
 # mounts keep host ownership; that stays an operator concern.)
-RUN mkdir -p /app/storage/deliverables /app/attachments /app/workspaces \
- && chown -R node:node /app/storage /app/attachments /app/workspaces
+RUN mkdir -p /app/storage/deliverables /app/attachments /app/workspaces /app/backups \
+ && chown -R node:node /app/storage /app/attachments /app/workspaces /app/backups
+
+# The entrypoint runs as root only long enough to take ownership of mounted
+# data directories, then execs the app as `node`. A Dockerfile chown cannot
+# do this alone: bind mounts (the appliance uses /opt/vibe/data/...) and
+# non-empty named volumes always keep the source's ownership, so the fix has
+# to happen after the mounts exist. Set `user:` in compose to skip the
+# root phase entirely.
+COPY --chmod=0755 apps/api/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 4000
-USER node
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["node", "apps/api/dist/index.js"]
