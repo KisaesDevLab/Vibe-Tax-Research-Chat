@@ -40,6 +40,54 @@ Admin → Users.
 
 ## Backup & restore
 
+### Moving an install to another server (Admin → Backup & restore)
+
+The in-app path needs no shell and is the one to use when relocating a firm
+to new hardware. **Admin → Backup & restore** produces a single encrypted
+file (`.vtbk`) containing everything:
+
+| Included                       | Notes                                              |
+| ------------------------------ | -------------------------------------------------- |
+| Full `pg_dump` of the database | Clients, plans, chats, strategies, settings, audit |
+| `attachments/`                 | Uploaded documents and reference library files     |
+| `storage/deliverables/`        | Rendered plan PDFs                                 |
+| `workspaces/`                  | Cloned skills repo and scratch                     |
+| `MASTER_KEY`                   | So encrypted settings still decrypt on the new box |
+
+The archive is AES-256-GCM encrypted with a key derived from a passphrase
+you choose (scrypt). **There is no recovery if the passphrase is lost** —
+nothing on the server can open the file afterwards. Because it carries
+`MASTER_KEY` plus every client record, treat the file itself as a
+credential.
+
+To move a server:
+
+1. On the **old** server: Admin → Backup & restore → set a passphrase →
+   _Create and download backup_.
+2. Stand up the new server and complete first-run setup.
+3. On the **new** server: Admin → Backup & restore → choose the file, enter
+   the passphrase, type `REPLACE` → _Restore from backup_.
+4. Restart the API container so the restored settings are read fresh.
+
+If the new server's `MASTER_KEY` differs from the archive's, the restore
+result says so and prints the key to set. Until it matches, the stored
+Anthropic key and SMTP password cannot be decrypted — everything else
+restores normally.
+
+Restoring **replaces** the database and data directories on the target. The
+database is loaded with `ON_ERROR_STOP=1`, so a bad archive fails loudly
+rather than leaving a half-restored install, and files are staged to a
+temporary directory and swapped in only after the database load succeeds.
+
+The client major is matched to the server major automatically (the image
+ships both), because a `pg_dump` 17 dump cannot be loaded into PostgreSQL
+16 — it writes a `transaction_timeout` setting that 16 rejects.
+
+### Scheduled host-side dumps
+
+For unattended nightly backups the shell path still applies and is
+complementary to the above.
+
 Backup: `scripts/backup.sh` — `pg_dump | gzip` into `./backups/`. Cron from the host.
 
 Restore on a fresh appliance:

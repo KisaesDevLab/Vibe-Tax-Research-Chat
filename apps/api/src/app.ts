@@ -25,6 +25,7 @@ import { adminSkillsRouter } from './routes/admin/skills.js';
 import { adminCustomSkillsRouter } from './routes/admin/custom-skills.js';
 import { adminReferencesRouter } from './routes/admin/references.js';
 import { adminUsageRouter } from './routes/admin/usage.js';
+import { adminBackupRouter } from './routes/admin/backup.js';
 import { chatsRouter } from './routes/chats/index.js';
 import { configRouter } from './routes/config.js';
 import { clientsRouter } from './routes/clients/index.js';
@@ -113,6 +114,7 @@ export function createApp(): Express {
   app.use('/api/admin/custom-skills', adminCustomSkillsRouter);
   app.use('/api/admin/references', adminReferencesRouter);
   app.use('/api/admin/usage', adminUsageRouter);
+  app.use('/api/admin/backup', adminBackupRouter);
   app.use('/api/admin/table-sets', adminTableSetsRouter);
   app.use('/api/admin/review-queue', adminReviewQueueRouter);
   app.use('/api/admin/strategies', adminStrategyDraftRouter);

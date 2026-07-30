@@ -48,7 +48,12 @@ WORKDIR /app
 # `git` to fetch the skills repo). su-exec lets the entrypoint fix the
 # ownership of mounted data directories as root and then drop to `node`.
 # Keep the rest of the runtime slim.
-RUN apk add --no-cache git su-exec \
+# postgresql client for Admin → Backup & Restore. BOTH majors are installed
+# so the app can match the client to the server: pg_dump 17 writes
+# `SET transaction_timeout` into every dump, which PostgreSQL 16 rejects on
+# restore — the backup looks fine and only fails when you need it. Alpine
+# keeps them side by side under /usr/libexec/postgresql<major>/.
+RUN apk add --no-cache git su-exec postgresql16-client postgresql17-client \
  && corepack enable && corepack prepare pnpm@9.15.9 --activate
 COPY --from=builder /app/package.json /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/apps/api/package.json apps/api/

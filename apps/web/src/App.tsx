@@ -18,6 +18,7 @@ import { AdminSkillsPage } from './pages/admin/Skills';
 import { AdminCustomSkillsPage } from './pages/admin/CustomSkills';
 import { AdminReferencesPage } from './pages/admin/References';
 import { AdminUsagePage } from './pages/admin/Usage';
+import { AdminBackupPage } from './pages/admin/Backup';
 import { AdminTableSetsPage } from './pages/admin/TableSets';
 import { AdminStrategiesPage } from './pages/admin/Strategies';
 import { AdminReviewQueuePage } from './pages/admin/ReviewQueue';
@@ -70,6 +71,7 @@ export function App() {
             <Route path="custom-skills" element={<AdminCustomSkillsPage />} />
             <Route path="references" element={<AdminReferencesPage />} />
             <Route path="usage" element={<AdminUsagePage />} />
+            <Route path="backup" element={<AdminBackupPage />} />
             <Route path="table-sets" element={<AdminTableSetsPage />} />
             <Route path="strategies" element={<AdminStrategiesPage />} />
             <Route path="review-queue" element={<AdminReviewQueuePage />} />
