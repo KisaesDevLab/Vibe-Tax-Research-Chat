@@ -41,6 +41,18 @@ export function DeliverablesTab({ detail }: { detail: PlanDetail }) {
         : false,
   });
 
+  // The advisor PDF includes the plan memo, but only once it is SAVED —
+  // a Claude draft sitting unsaved in the Review tab's editor renders
+  // nothing, with no way to tell from this screen. Say so up front rather
+  // than letting the omission be discovered in the finished PDF.
+  const { data: memoData } = useQuery<{
+    memo: { body_markdown: string; claude_drafted: boolean; updated_at: string } | null;
+  }>({
+    queryKey: ['plan-memo', plan.id],
+    queryFn: () => api(`/api/planning/plans/${plan.id}/memo`),
+  });
+  const memoSaved = Boolean(memoData?.memo?.body_markdown?.trim());
+
   const create = useMutation({
     mutationFn: (kind: string) =>
       api(`/api/planning/plans/${plan.id}/deliverables`, {
@@ -131,6 +143,20 @@ export function DeliverablesTab({ detail }: { detail: PlanDetail }) {
         >
           Slideshow web view →
         </button>
+      </div>
+      <div className="text-xs text-ink/60">
+        {memoSaved ? (
+          <>
+            Plan memo is saved and will be included in the <strong>advisor-pdf</strong>
+            {memoData?.memo?.claude_drafted && ' (still an unedited Claude draft)'}. It is
+            deliberately left out of client-facing kinds.
+          </>
+        ) : (
+          <>
+            No plan memo saved — the <strong>advisor-pdf</strong> will omit it. Write or draft one
+            on the Review tab and click <em>Save memo</em>; an unsaved draft does not render.
+          </>
+        )}
       </div>
       {error && <div className="text-oxblood text-sm">{error}</div>}
       {mintedUrl && (
