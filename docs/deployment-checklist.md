@@ -59,19 +59,13 @@ checklist is the single place they are tracked.
 - [ ] Webhook endpoints are reachable from the provider (they sit OUTSIDE auth by
       design; signatures are the gate).
 
-## 6. Licensing / entitlement (external, optional)
-
-- [ ] `LICENSING_URL` + `LICENSE_KEY` set if the firm uses licensing.kisaes.com.
-      Absent → internal features fail open, client-facing deliverables fail closed
-      (402 license_required) — confirm that posture is what the firm expects.
-
-## 7. Rendering
+## 6. Rendering
 
 - [ ] Deliverables render server-side via PDFKit (the same engine as chat exports) —
       no browser, no extra image layers. Smoke: generate an advisor PDF on a test plan
       (multi-page output: cover + projection + one page per strategy).
 
-## 8. Jobs
+## 7. Jobs
 
 - [ ] Redis reachable; Bull Board (`/admin/queues`) shows the cron rows:
       `cron-skills-sync-nightly`, `cron-usage-rollup-hourly`, `cron-tables-draft-annual`,
@@ -82,7 +76,7 @@ checklist is the single place they are tracked.
 - [ ] Review queue (`/admin/review-queue`) is checked by a named owner on a cadence —
       the pipeline never publishes anything without a decision there.
 
-## 9. Go-live gates
+## 8. Go-live gates
 
 - [ ] `planning_enabled` flipped for the firm; non-planning users see zero change.
 - [ ] One full dry-run on production hardware: client → intake → plan → compute →
