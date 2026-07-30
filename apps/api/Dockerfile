@@ -78,6 +78,15 @@ COPY --from=builder /app/packages/shared/node_modules packages/shared/node_modul
 COPY --from=builder /app/packages/schema/node_modules packages/schema/node_modules
 COPY --from=builder /app/packages/engine/node_modules packages/engine/node_modules
 COPY --from=builder /app/packages/strategies/node_modules packages/strategies/node_modules
+# Migrate (and idempotently seed) on boot. The image ships
+# packages/db/drizzle, so a container upgrade applies its own schema
+# instead of silently running new code against an old database — the
+# failure mode that made every deliverable render die with
+# `relation "plan_memos" does not exist`. Migration is serialized by a
+# Postgres advisory lock, so parallel container starts are safe, and a
+# failure is fatal before the listener binds. Override with
+# `-e MIGRATIONS_AUTO=false` to keep migrations a manual step.
+ENV MIGRATIONS_AUTO=true
 EXPOSE 4000
 USER node
 CMD ["node", "apps/api/dist/index.js"]

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { allowedTransitions, canTransition, evaluateReviewGate } from './workflow.js';
+import { allowedTransitions, canTransition, evaluateReviewGate, isReopen } from './workflow.js';
 
 describe('canTransition', () => {
   it.each([
@@ -10,12 +10,31 @@ describe('canTransition', () => {
     ['engaged', 'delivered', true],
     ['delivered', 'archived', true],
     ['draft', 'presented', false],
-    ['presented', 'draft', false],
+    ['presented', 'draft', true],
     ['presented', 'in-review', false],
     ['archived', 'draft', false],
     ['engaged', 'presented', false],
   ] as const)('%s → %s = %s', (from, to, expected) => {
     expect(canTransition(from, to)).toBe(expected);
+  });
+});
+
+describe('reopening a presented plan', () => {
+  it('allows presented → draft so a frozen plan can be corrected', () => {
+    expect(canTransition('presented', 'draft')).toBe(true);
+    expect(canTransition('presented', 'draft', false)).toBe(true);
+    expect(isReopen('presented', 'draft')).toBe(true);
+  });
+
+  it('keeps the forward path from presented intact', () => {
+    expect(allowedTransitions('presented', true)).toEqual(['engaged', 'archived', 'draft']);
+  });
+
+  it('does not open a back-edge from engaged, delivered, or archived', () => {
+    expect(canTransition('engaged', 'draft')).toBe(false);
+    expect(canTransition('delivered', 'draft')).toBe(false);
+    expect(canTransition('archived', 'draft')).toBe(false);
+    expect(isReopen('engaged', 'draft')).toBe(false);
   });
 });
 
