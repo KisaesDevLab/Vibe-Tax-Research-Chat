@@ -67,11 +67,15 @@ function refreshOnce(): Promise<boolean> {
   return inflightRefresh;
 }
 
-// Human message for a failed download/export. HTTP 402 is the licensing
-// gate on client-facing deliverables — surface it as guidance, not JSON.
+/**
+ * Human message for a failed render/download/export. ApiError's own message
+ * is the machine `error` code, so prefer the server's prose `message` when
+ * it sent one (e.g. the render-queue-unavailable hint).
+ */
 export function downloadErrorMessage(err: unknown): string {
-  if (err instanceof ApiError && err.status === 402) {
-    return 'Client-facing deliverables need an active license — see Admin → Settings.';
+  if (err instanceof ApiError) {
+    const body = err.body as { message?: string } | null;
+    if (typeof body?.message === 'string' && body.message) return body.message;
   }
   return err instanceof Error ? err.message : String(err);
 }

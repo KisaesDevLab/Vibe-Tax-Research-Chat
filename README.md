@@ -9,7 +9,7 @@
 **Status:** scaffolding pass. See `BUILD_PLAN.md` for the v1.0.0 spec and `QUESTIONS.md` for the
 applied defaults during the build.
 
-**License:** BSL 1.1 with 4-year change to Apache 2.0. See `LICENSE`.
+**License:** MIT. See `LICENSE`.
 
 ## Quick start (dev)
 

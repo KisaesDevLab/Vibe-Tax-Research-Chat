@@ -51,8 +51,6 @@ export function DeliverablesTab({ detail }: { detail: PlanDetail }) {
       setError(null);
       qc.invalidateQueries({ queryKey: ['deliverables', plan.id] });
     },
-    // Render-create is a 402 source — the licensing gate on client-facing
-    // kinds — so route through the same mapping as downloads.
     onError: (err) => setError(downloadErrorMessage(err)),
   });
 
@@ -66,7 +64,6 @@ export function DeliverablesTab({ detail }: { detail: PlanDetail }) {
       setMintedUrl(`${window.location.origin}${apiUrl(r.url)}`);
       qc.invalidateQueries({ queryKey: ['deliverable-links'] });
     },
-    // Mint-link can also 402 on unlicensed client-facing deliverables.
     onError: (err) => setError(downloadErrorMessage(err)),
   });
 

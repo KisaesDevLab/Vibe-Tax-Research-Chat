@@ -1,17 +1,19 @@
 // TP-9 — deliverable creation/listing/download + signed links. Rules:
 // client-facing kinds (client-pdf, handout, pitch-deck, slideshow)
-// require the planning.deliverables entitlement (fail-closed) and plan
-// ≥ presented; advisor-pdf is internal (fail-open). Local-only clients
-// (all clients in this deployment until a Connect identity exists) get
-// staff-manual delivery; signed links remain available for firms that
-// accept link delivery.
+// require plan ≥ presented; advisor-pdf is internal and always allowed.
+// Local-only clients (all clients in this deployment until a Connect
+// identity exists) get staff-manual delivery; signed links remain
+// available for firms that accept link delivery.
+//
+// There is no licensing/entitlement gate: the project is MIT-licensed and
+// this appliance is self-hosted, so client-facing rendering is limited by
+// plan status alone.
 import { Router } from 'express';
 import { z } from 'zod';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import { deliverables, deliverable_links, plans } from '@vibe/db/schema';
 import { audit } from '../../lib/audit.js';
-import { checkEntitlement } from '../../lib/entitlement.js';
 import { mintLinkToken } from '../../lib/signed-links.js';
 import { pdfRenderQueue } from '../../jobs/queues.js';
 import { deliverableStoragePath } from '../../jobs/handlers/pdf-render.js';
@@ -23,6 +25,32 @@ export const deliverablesRouter = Router({ mergeParams: true });
 const uuidSchema = z.string().uuid();
 const CLIENT_FACING = new Set(['client-pdf', 'handout', 'pitch-deck', 'slideshow']);
 const PRESENTED_PLUS = ['presented', 'engaged', 'delivered'];
+
+/**
+ * Enqueue must not be able to hang the request.
+ *
+ * The Redis client is configured with `maxRetriesPerRequest: null`, which
+ * makes ioredis queue commands indefinitely while the server is
+ * unreachable instead of rejecting. Without this bound, a stopped Redis
+ * turned "Render" into a request that never returned and a deliverable
+ * stuck on `queued` with no error to show. Failing fast lets the row be
+ * marked failed with something a human can act on.
+ */
+const ENQUEUE_TIMEOUT_MS = 5000;
+
+async function enqueueWithTimeout(job: Promise<unknown>): Promise<void> {
+  let timer: NodeJS.Timeout | undefined;
+  try {
+    await Promise.race([
+      job,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error('enqueue_timeout')), ENQUEUE_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
 
 const createSchema = z.object({
   kind: z.enum(['advisor-pdf', 'client-pdf', 'handout', 'pitch-deck', 'slideshow']),
@@ -48,16 +76,9 @@ deliverablesRouter.post('/', async (req, res) => {
   }
   const kind = parsed.data.kind;
   const clientFacing = CLIENT_FACING.has(kind);
-  if (clientFacing) {
-    if (!PRESENTED_PLUS.includes(plan.status)) {
-      res.status(409).json({ error: 'plan_not_presented' });
-      return;
-    }
-    const ent = await checkEntitlement('planning.deliverables', 'client-facing');
-    if (!ent.allowed) {
-      res.status(402).json({ error: ent.reason });
-      return;
-    }
+  if (clientFacing && !PRESENTED_PLUS.includes(plan.status)) {
+    res.status(409).json({ error: 'plan_not_presented' });
+    return;
   }
   // Strategy names stay hidden in client-facing artifacts until the plan
   // is engaged; the advisor copy always shows them. (The renderers key
@@ -73,12 +94,24 @@ deliverablesRouter.post('/', async (req, res) => {
       created_by: req.auth!.user_id,
     })
     .returning();
-  await pdfRenderQueue.add('render', {
-    deliverable_id: row!.id,
-    ...(kind === 'handout' && parsed.data.strategy_id
-      ? { handout_strategy_id: parsed.data.strategy_id }
-      : {}),
-  });
+  try {
+    await enqueueWithTimeout(
+      pdfRenderQueue.add('render', {
+        deliverable_id: row!.id,
+        ...(kind === 'handout' && parsed.data.strategy_id
+          ? { handout_strategy_id: parsed.data.strategy_id }
+          : {}),
+      }),
+    );
+  } catch {
+    const message = 'Render queue unavailable — check that Redis is running.';
+    await db
+      .update(deliverables)
+      .set({ status: 'failed', error: message })
+      .where(eq(deliverables.id, row!.id));
+    res.status(503).json({ error: 'render_queue_unavailable', message });
+    return;
+  }
   await audit({
     actor_user_id: req.auth!.user_id,
     action: 'deliverable.create',
@@ -165,13 +198,6 @@ deliverablesRouter.post('/:deliverableId/links', async (req, res) => {
   if (!row || row.status !== 'ready') {
     res.status(404).json({ error: 'not_ready' });
     return;
-  }
-  if (CLIENT_FACING.has(row.kind)) {
-    const ent = await checkEntitlement('planning.deliverables', 'client-facing');
-    if (!ent.allowed) {
-      res.status(402).json({ error: ent.reason });
-      return;
-    }
   }
   let minted;
   try {
