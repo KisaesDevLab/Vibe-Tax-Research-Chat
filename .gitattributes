@@ -1,0 +1,10 @@
+# Shell scripts and Dockerfiles must keep LF endings even when checked out
+# on Windows. apps/api/docker-entrypoint.sh is COPYed into the runtime
+# image; with CRLF the kernel reads the shebang as `/bin/sh\r` and the
+# container dies with "bad interpreter". CI checks out on Linux and would
+# never catch it — only a local Windows build would, at which point the
+# published and local images differ for no visible reason.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf
+docker-entrypoint.sh text eol=lf
