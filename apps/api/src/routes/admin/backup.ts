@@ -119,6 +119,29 @@ adminBackupRouter.post('/', async (req, res) => {
   }
 });
 
+/**
+ * A restore runs in the BACKGROUND, not inside the request.
+ *
+ * Restoring can take minutes, and a reverse proxy will not hold a request
+ * open that long: Cloudflare cut one at 125s, after psql had executed the
+ * dump's DROP statements and before the CREATEs, leaving the database
+ * unusable and the operator locked out. Nothing about the work needs the
+ * connection — the archive is already on disk by then — so the request
+ * returns immediately and the UI polls for the outcome.
+ *
+ * One restore at a time, tracked in memory: a second concurrent restore
+ * would fight the first over the same tables, and the state is only
+ * meaningful for the life of the process anyway (a restart means the
+ * restore died with it, which the UI surfaces as an unknown outcome).
+ */
+type RestoreState =
+  | { status: 'idle' }
+  | { status: 'running'; startedAt: string; step: string }
+  | { status: 'succeeded'; finishedAt: string; result: unknown }
+  | { status: 'failed'; finishedAt: string; error: string; code: string; harmless: boolean };
+
+let restoreState: RestoreState = { status: 'idle' };
+
 const upload = multer({
   storage: multer.diskStorage({
     destination: (_req, _file, cb) => cb(null, tmpdir()),
@@ -133,6 +156,10 @@ const restoreSchema = z.object({
   passphrase: z.string().min(1),
   /** Restoring overwrites everything; make the caller say so explicitly. */
   confirm: z.literal('replace-all-data'),
+});
+
+adminBackupRouter.get('/restore/status', (_req, res) => {
+  res.json(restoreState);
 });
 
 adminBackupRouter.post('/restore', upload.single('file'), async (req, res) => {
@@ -151,6 +178,60 @@ adminBackupRouter.post('/restore', upload.single('file'), async (req, res) => {
     });
     return;
   }
+  if (restoreState.status === 'running') {
+    await cleanup();
+    res.status(409).json({
+      error: 'restore_in_progress',
+      message: 'A restore is already running. Wait for it to finish.',
+    });
+    return;
+  }
+
+  // Hand back control immediately; the work continues without the request.
+  restoreState = {
+    status: 'running',
+    startedAt: new Date().toISOString(),
+    step: 'reading archive',
+  };
+  const actorUserId = req.auth!.user_id;
+  const ip = req.ip;
+  res.status(202).json({ status: 'running' });
+  void runRestore(file.path, parsed.data.passphrase, actorUserId, ip);
+});
+
+async function runRestore(
+  filePath: string,
+  passphrase: string,
+  actorUserId: string,
+  ip: string | undefined,
+): Promise<void> {
+  const cleanup = () => rm(filePath, { force: true }).catch(() => {});
+  const file = { path: filePath };
+  const req = { auth: { user_id: actorUserId }, ip } as {
+    auth: { user_id: string };
+    ip: string | undefined;
+  };
+  const res = {
+    // The response is long gone; record the outcome for /restore/status
+    // instead of writing to a socket nobody is holding.
+    status(code: number) {
+      return {
+        json(body: Record<string, unknown>) {
+          restoreState = {
+            status: 'failed',
+            finishedAt: new Date().toISOString(),
+            error: String(body.message ?? body.error ?? 'restore failed'),
+            code: String(body.error ?? 'restore_failed'),
+            // 409 is raised by the preflight, before anything destructive.
+            harmless: code === 409,
+          };
+        },
+      };
+    },
+    json(body: Record<string, unknown>) {
+      restoreState = { status: 'succeeded', finishedAt: new Date().toISOString(), result: body };
+    },
+  };
 
   const dirs = dataDirs();
   // Restore into a staging directory first, then swap: a failure partway
@@ -161,7 +242,7 @@ adminBackupRouter.post('/restore', upload.single('file'), async (req, res) => {
   let files = 0;
 
   try {
-    await readBackup(file.path, parsed.data.passphrase, {
+    await readBackup(file.path, passphrase, {
       onManifest: (m) => {
         manifest = m;
       },
@@ -260,8 +341,17 @@ adminBackupRouter.post('/restore', upload.single('file'), async (req, res) => {
   } finally {
     await cleanup();
     await rm(staging, { recursive: true, force: true }).catch(() => {});
+    if (restoreState.status === 'running') {
+      restoreState = {
+        status: 'failed',
+        finishedAt: new Date().toISOString(),
+        error: 'The restore ended without reporting a result.',
+        code: 'unknown',
+        harmless: false,
+      };
+    }
   }
-});
+}
 
 /** What the UI needs to render the page without attempting a backup. */
 adminBackupRouter.get('/status', async (_req, res) => {

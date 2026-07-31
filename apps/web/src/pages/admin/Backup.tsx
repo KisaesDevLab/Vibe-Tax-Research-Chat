@@ -6,7 +6,7 @@
 // whole body before it can hand over a file, so the passphrase gate and
 // the "this may take a while" messaging matter more than usual here.
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, apiFetch } from '../../lib/api';
 
 interface BackupStatus {
@@ -18,6 +18,12 @@ interface BackupStatus {
   masterKeyFingerprint: string;
   minPassphrase: number;
 }
+
+type RestoreState =
+  | { status: 'idle' }
+  | { status: 'running'; startedAt: string; step: string }
+  | { status: 'succeeded'; finishedAt: string; result: RestoreResult }
+  | { status: 'failed'; finishedAt: string; error: string; code: string; harmless: boolean };
 
 interface RestoreResult {
   ok: true;
@@ -32,6 +38,7 @@ interface RestoreResult {
 }
 
 export function AdminBackupPage() {
+  const qc = useQueryClient();
   const { data: status } = useQuery<BackupStatus>({
     queryKey: ['admin', 'backup', 'status'],
     queryFn: () => api('/api/admin/backup/status'),
@@ -47,7 +54,18 @@ export function AdminBackupPage() {
   const [restorePass, setRestorePass] = useState('');
   const [restoreTyped, setRestoreTyped] = useState('');
   const [restoring, setRestoring] = useState(false);
-  const [restoreResult, setRestoreResult] = useState<RestoreResult | null>(null);
+
+  // The restore runs server-side, detached from the request that started
+  // it — a reverse proxy will not hold a connection open for minutes, and
+  // a request killed mid-restore is what corrupts a database. Poll while
+  // one is running.
+  const { data: restoreState } = useQuery<RestoreState>({
+    queryKey: ['admin', 'backup', 'restore-status'],
+    queryFn: () => api('/api/admin/backup/restore/status'),
+    refetchInterval: (q) => (q.state.data?.status === 'running' ? 2000 : false),
+  });
+  const running = restoreState?.status === 'running' || restoring;
+  const restoreResult = restoreState?.status === 'succeeded' ? restoreState.result : null;
 
   const minLen = status?.minPassphrase ?? 12;
   const passOk = passphrase.length >= minLen && passphrase === confirmPass;
@@ -87,14 +105,15 @@ export function AdminBackupPage() {
     if (!file) return;
     setRestoring(true);
     setError(null);
-    setRestoreResult(null);
     try {
       const form = new FormData();
       form.append('file', file);
       form.append('passphrase', restorePass);
       form.append('confirm', 'replace-all-data');
-      const res = await apiFetch('/api/admin/backup/restore', { method: 'POST', body: form });
-      setRestoreResult((await res.json()) as RestoreResult);
+      // Returns 202 as soon as the upload lands; the outcome arrives via
+      // the status poll below.
+      await apiFetch('/api/admin/backup/restore', { method: 'POST', body: form });
+      await qc.invalidateQueries({ queryKey: ['admin', 'backup', 'restore-status'] });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -211,15 +230,27 @@ export function AdminBackupPage() {
         </label>
         <button
           onClick={() => void runRestore()}
-          disabled={!file || !restorePass || restoreTyped !== 'REPLACE' || restoring}
+          disabled={!file || !restorePass || restoreTyped !== 'REPLACE' || running}
           className="px-3 py-1.5 rounded text-sm bg-oxblood text-paper hover:bg-oxblood/90 disabled:opacity-40"
         >
-          {restoring ? 'Restoring…' : 'Restore from backup'}
+          {running ? 'Restoring…' : 'Restore from backup'}
         </button>
-        {restoring && (
+        {running && (
           <p className="text-xs text-ink/50">
-            Uploading and restoring. Do not navigate away or restart the server.
+            Restoring on the server. This continues even if you close this tab — do not restart the
+            server until it finishes.
           </p>
+        )}
+        {restoreState?.status === 'failed' && (
+          <div className="border border-oxblood/40 bg-oxblood/5 rounded p-3 text-sm">
+            <div className="font-medium text-oxblood">Restore failed</div>
+            <p className="mt-0.5">{restoreState.error}</p>
+            <p className="text-xs text-ink/60 mt-1">
+              {restoreState.harmless
+                ? 'This was caught before anything was changed — fix the cause and try again.'
+                : 'The database may be incomplete. Fix the cause and restore again before using the app.'}
+            </p>
+          </div>
         )}
         {restoreResult && (
           <div className="border border-moss/40 bg-moss/5 rounded p-3 text-sm space-y-1">
