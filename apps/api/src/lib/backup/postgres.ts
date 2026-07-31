@@ -130,6 +130,21 @@ export function dumpDatabase(): Readable {
  * instead of psql cheerfully continuing and leaving a half-restored
  * database that looks like a success.
  */
+/** Run one statement in its own psql process; never touches the app pool. */
+function psqlCommand(bin: string, statement: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const proc = spawn(bin, ['-v', 'ON_ERROR_STOP=1', '-tAqX', databaseUrl(), '-c', statement], {
+      stdio: ['ignore', 'ignore', 'pipe'],
+    });
+    let stderr = '';
+    proc.stderr.on('data', (c) => (stderr += String(c)));
+    proc.on('error', reject);
+    proc.on('close', (code) =>
+      code === 0 ? resolve() : reject(new Error(`psql exited ${code}: ${stderr.slice(0, 300)}`)),
+    );
+  });
+}
+
 export async function restoreDatabase(sql: Readable): Promise<void> {
   const version = await toolVersion('psql'); // Fails fast when absent.
   const bin = await toolPath('psql');
@@ -165,31 +180,31 @@ export async function restoreDatabase(sql: Readable): Promise<void> {
     );
   }
 
-  // Evict every other connection to this database first. The app's own
-  // pool keeps querying (health checks, the operator's browser session),
-  // and psql cannot DROP TABLE users while another session holds a lock on
-  // it — it waits. That wait is what pushed a restore past the reverse
-  // proxy's timeout, killing the connection after the DROPs had run and
-  // before the CREATEs, leaving the database unusable. Terminated
-  // connections simply reconnect afterwards.
-  await getDb()
-    .execute(
-      raw`SELECT pg_terminate_backend(pid) FROM pg_stat_activity
-          WHERE datname = current_database() AND pid <> pg_backend_pid()`,
-    )
-    .catch((err) =>
-      logger.warn(
-        { err: (err as Error).message },
-        'could not evict other database connections; restore may block on locks',
-      ),
-    );
+  // Close our OWN pool first, then evict the rest with a separate psql
+  // process.
+  //
+  // Doing it the other way round deadlocks: pg_terminate_backend issued
+  // THROUGH the app's pool kills that pool's own sibling connections, and
+  // the closeDb() that follows then waits forever for connections that
+  // will never drain. The restore hung there with psql never spawned and
+  // no error to show for it. Bounded, because a pool that refuses to close
+  // must not be able to block a restore either.
+  logger.info('restore: closing application connection pool');
+  await Promise.race([closeDb().catch(() => {}), new Promise((r) => setTimeout(r, 5000))]);
+  logger.info('restore: pool closed; evicting remaining sessions');
 
-  // Evicting once is not enough on its own: the app's pool reconnects in
-  // milliseconds and re-locks the very tables psql is about to drop. Close
-  // our own pool too, so nothing on this side reacquires a lock while the
-  // load runs. It reconnects lazily afterwards.
-  await closeDb().catch(() => {});
+  await psqlCommand(
+    bin,
+    `SELECT pg_terminate_backend(pid) FROM pg_stat_activity
+     WHERE datname = current_database() AND pid <> pg_backend_pid()`,
+  ).catch((err) =>
+    logger.warn(
+      { err: (err as Error).message },
+      'could not evict other database connections; restore may block on locks',
+    ),
+  );
 
+  logger.info('restore: sessions evicted; starting psql load');
   const skipped: string[] = [];
   const filtered = sql.pipe(stripSuperuserOnly((line) => skipped.push(line)));
   await new Promise<void>((resolve, reject) => {
@@ -209,7 +224,7 @@ export async function restoreDatabase(sql: Readable): Promise<void> {
     proc.on('error', reject);
     proc.on('close', (code) => {
       if (code === 0) {
-        if (skipped.length) logger.info({ skipped }, 'restore skipped superuser-only statements');
+        logger.info({ skipped: skipped.length }, 'restore: psql load finished cleanly');
         return resolve();
       }
       reject(new Error(`psql exited ${code}: ${stderr.slice(0, 1000)}`));
