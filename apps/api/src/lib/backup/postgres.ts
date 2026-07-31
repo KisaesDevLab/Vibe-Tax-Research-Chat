@@ -165,6 +165,25 @@ export async function restoreDatabase(sql: Readable): Promise<void> {
     );
   }
 
+  // Evict every other connection to this database first. The app's own
+  // pool keeps querying (health checks, the operator's browser session),
+  // and psql cannot DROP TABLE users while another session holds a lock on
+  // it — it waits. That wait is what pushed a restore past the reverse
+  // proxy's timeout, killing the connection after the DROPs had run and
+  // before the CREATEs, leaving the database unusable. Terminated
+  // connections simply reconnect afterwards.
+  await getDb()
+    .execute(
+      raw`SELECT pg_terminate_backend(pid) FROM pg_stat_activity
+          WHERE datname = current_database() AND pid <> pg_backend_pid()`,
+    )
+    .catch((err) =>
+      logger.warn(
+        { err: (err as Error).message },
+        'could not evict other database connections; restore may block on locks',
+      ),
+    );
+
   const skipped: string[] = [];
   const filtered = sql.pipe(stripSuperuserOnly((line) => skipped.push(line)));
   await new Promise<void>((resolve, reject) => {
