@@ -38,6 +38,17 @@ describe('stripSuperuserOnly', () => {
     expect(skipped).toEqual(['SET transaction_timeout = 0;']);
   });
 
+  it("removes the dump's own SET lock_timeout so the caller's bound survives", async () => {
+    const { out, skipped } = await run(
+      ['SET statement_timeout = 0;', 'SET lock_timeout = 0;', 'DROP TABLE users;'].join('\n'),
+    );
+    // statement_timeout must stay: a large restore is legitimately slow.
+    expect(out).toContain('SET statement_timeout = 0;');
+    expect(out).not.toMatch(/lock_timeout/);
+    expect(out).toContain('DROP TABLE users;');
+    expect(skipped).toEqual(['SET lock_timeout = 0;']);
+  });
+
   it('keeps every other statement byte-for-byte', async () => {
     const sql = [
       'SET statement_timeout = 0;',

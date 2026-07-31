@@ -130,6 +130,9 @@ export function dumpDatabase(): Readable {
  * instead of psql cheerfully continuing and leaving a half-restored
  * database that looks like a success.
  */
+/** Identifies the restore's own psql session so the eviction loop spares it. */
+const RESTORE_APP_NAME = 'vibe-tax-restore';
+
 /** Run one statement in its own psql process; never touches the app pool. */
 function psqlCommand(bin: string, statement: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -215,8 +218,31 @@ export async function restoreDatabase(sql: Readable): Promise<void> {
     // lock wait here.
     const proc = spawn(bin, ['-v', 'ON_ERROR_STOP=1', '--quiet', databaseUrl()], {
       stdio: ['pipe', 'ignore', 'pipe'],
-      env: { ...process.env, PGOPTIONS: '-c lock_timeout=60s -c statement_timeout=0' },
+      env: {
+        ...process.env,
+        // Tagged so the eviction loop below can kill every session EXCEPT
+        // this one.
+        PGAPPNAME: RESTORE_APP_NAME,
+        PGOPTIONS: '-c lock_timeout=60s -c statement_timeout=0',
+      },
     });
+
+    // Evicting once before the load is not enough: the app reconnects
+    // within seconds (health checks, background jobs) and takes locks on
+    // the very tables being dropped. Keep evicting for as long as the load
+    // runs, excluding the restore's own connection by application_name.
+    const evictor = setInterval(() => {
+      void psqlCommand(
+        bin,
+        `SELECT pg_terminate_backend(pid) FROM pg_stat_activity
+         WHERE datname = current_database()
+           AND pid <> pg_backend_pid()
+           AND coalesce(application_name, '') <> '${RESTORE_APP_NAME}'`,
+      ).catch(() => {});
+    }, 2000);
+    const stopEvictor = () => clearInterval(evictor);
+    proc.on('close', stopEvictor);
+    proc.on('error', stopEvictor);
     let stderr = '';
     proc.stderr.on('data', (c) => {
       stderr += String(c);
