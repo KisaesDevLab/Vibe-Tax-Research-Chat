@@ -85,6 +85,24 @@ attempt costs nothing:
 CREATE EXTENSION vector;
 ```
 
+### Restoring offline (recommended for a server move)
+
+Restoring through the browser competes with the running app: a reverse
+proxy can time out the request, and the app's own connections hold locks on
+the tables being replaced. With the API stopped, none of that applies. Copy
+the archive to the destination server and:
+
+```bash
+docker cp backup.vtbk vibe-tax-api:/tmp/backup.vtbk
+docker stop vibe-tax-api                      # no traffic, no locks
+docker run --rm   --network <appliance network>   --env-file /opt/vibe/env/vibe-tax-research.env   -v /tmp:/work   -e BACKUP_PASSPHRASE='…'   ghcr.io/kisaesdevlab/vibe-tax-api:latest   node apps/api/dist/lib/backup/cli.js /work/backup.vtbk
+docker start vibe-tax-api
+```
+
+The exit code is the real outcome, and the output says plainly whether
+anything was changed on failure. If the destination's `MASTER_KEY` differs
+from the archive's, it prints the key to set.
+
 Restoring **replaces** the database and data directories on the target. The
 database is loaded with `ON_ERROR_STOP=1`, so a bad archive fails loudly
 rather than leaving a half-restored install, and files are staged to a
