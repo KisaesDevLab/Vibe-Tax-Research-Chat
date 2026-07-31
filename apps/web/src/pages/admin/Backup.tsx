@@ -101,6 +101,15 @@ export function AdminBackupPage() {
     }
   }
 
+  async function clearStatus() {
+    try {
+      await apiFetch('/api/admin/backup/restore/reset', { method: 'POST' });
+      await qc.invalidateQueries({ queryKey: ['admin', 'backup', 'restore-status'] });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  }
+
   async function runRestore() {
     if (!file) return;
     setRestoring(true);

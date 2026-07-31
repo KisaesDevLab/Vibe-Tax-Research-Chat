@@ -158,8 +158,51 @@ const restoreSchema = z.object({
   confirm: z.literal('replace-all-data'),
 });
 
+/**
+ * A restore that dies without unwinding — the process is killed, psql is
+ * OOM'd — leaves the in-memory state stuck on `running`, which disables
+ * the button forever with no way back short of restarting the container.
+ * Treat a run older than this as finished-with-unknown-outcome so the
+ * operator is told what to check rather than simply blocked.
+ */
+const RESTORE_STALE_MS = 60 * 60 * 1000;
+
+function currentRestoreState(): RestoreState {
+  if (
+    restoreState.status === 'running' &&
+    Date.now() - Date.parse(restoreState.startedAt) > RESTORE_STALE_MS
+  ) {
+    restoreState = {
+      status: 'failed',
+      finishedAt: new Date().toISOString(),
+      error:
+        'The restore has been running for over an hour with no result. It was probably interrupted. Check the database before using the app, and check the server logs.',
+      code: 'stale',
+      harmless: false,
+    };
+  }
+  return restoreState;
+}
+
 adminBackupRouter.get('/restore/status', (_req, res) => {
-  res.json(restoreState);
+  res.json(currentRestoreState());
+});
+
+/**
+ * Clear a stuck status. Deliberately does NOT stop work already in flight
+ * — there is no safe way to interrupt a running psql — so it only resets
+ * the bookkeeping the UI reads.
+ */
+adminBackupRouter.post('/restore/reset', async (req, res) => {
+  const previous = restoreState.status;
+  restoreState = { status: 'idle' };
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'admin.backup.restore_status_reset',
+    metadata: { previous },
+    ip: req.ip,
+  });
+  res.json({ ok: true, previous });
 });
 
 adminBackupRouter.post('/restore', upload.single('file'), async (req, res) => {
@@ -178,7 +221,7 @@ adminBackupRouter.post('/restore', upload.single('file'), async (req, res) => {
     });
     return;
   }
-  if (restoreState.status === 'running') {
+  if (currentRestoreState().status === 'running') {
     await cleanup();
     res.status(409).json({
       error: 'restore_in_progress',
