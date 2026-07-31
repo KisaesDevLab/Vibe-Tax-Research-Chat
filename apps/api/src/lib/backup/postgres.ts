@@ -14,8 +14,11 @@ import { sql as raw } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import { env } from '../../config/env.js';
 import { logger } from '../logger.js';
+import { stripSuperuserOnly } from './sql-filter.js';
 
 export class PgToolMissingError extends Error {}
+/** Thrown before any destructive statement runs. */
+export class RestorePrerequisiteError extends Error {}
 
 /**
  * Resolve pg_dump/psql matching the SERVER's major version.
@@ -131,6 +134,39 @@ export async function restoreDatabase(sql: Readable): Promise<void> {
   const version = await toolVersion('psql'); // Fails fast when absent.
   const bin = await toolPath('psql');
   logger.info({ psql: version, bin }, 'restoring database from backup');
+
+  // Best effort: if this role CAN create the extension, do it before the
+  // filtered dump lands (which no longer carries CREATE EXTENSION). When
+  // the role lacks the privilege this is a no-op and the destination is
+  // expected to already have the extension — it could not run the app
+  // otherwise.
+  await getDb()
+    .execute(raw`CREATE EXTENSION IF NOT EXISTS vector`)
+    .catch((err) =>
+      logger.info(
+        { err: (err as Error).message },
+        'vector extension not created by restore (expected on a non-superuser role)',
+      ),
+    );
+
+  // Preflight BEFORE psql runs. The dump starts with DROP statements, so a
+  // failure partway through leaves the destination partially wiped — the
+  // one outcome a restore must never produce. pgvector cannot be installed
+  // without superuser, so if it is still missing after the attempt above,
+  // stop now while the database is untouched.
+  const ext = (await getDb().execute(
+    raw`SELECT count(*)::int AS n FROM pg_extension WHERE extname = 'vector'`,
+  )) as unknown as Array<{ n: number }>;
+  if ((ext[0]?.n ?? 0) === 0) {
+    throw new RestorePrerequisiteError(
+      'This database is missing the "vector" extension, which the backup needs and this ' +
+        'role cannot create. Ask a superuser to run: CREATE EXTENSION vector; on the ' +
+        'destination database, then restore again. Nothing has been changed.',
+    );
+  }
+
+  const skipped: string[] = [];
+  const filtered = sql.pipe(stripSuperuserOnly((line) => skipped.push(line)));
   await new Promise<void>((resolve, reject) => {
     const proc = spawn(bin, ['-v', 'ON_ERROR_STOP=1', '--quiet', databaseUrl()], {
       stdio: ['pipe', 'ignore', 'pipe'],
@@ -141,7 +177,10 @@ export async function restoreDatabase(sql: Readable): Promise<void> {
     });
     proc.on('error', reject);
     proc.on('close', (code) => {
-      if (code === 0) return resolve();
+      if (code === 0) {
+        if (skipped.length) logger.info({ skipped }, 'restore skipped superuser-only statements');
+        return resolve();
+      }
       reject(new Error(`psql exited ${code}: ${stderr.slice(0, 1000)}`));
     });
     // When psql aborts early (ON_ERROR_STOP on a bad statement) it closes
@@ -153,6 +192,7 @@ export async function restoreDatabase(sql: Readable): Promise<void> {
       if (err.code !== 'EPIPE') reject(err);
     });
     sql.on('error', reject);
-    sql.pipe(proc.stdin);
+    filtered.on('error', reject);
+    filtered.pipe(proc.stdin);
   });
 }
