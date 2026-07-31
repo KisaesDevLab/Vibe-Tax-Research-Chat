@@ -254,6 +254,11 @@ async function runRestore(
     auth: { user_id: string };
     ip: string | undefined;
   };
+  const step = (step: string) => {
+    if (restoreState.status === 'running') restoreState = { ...restoreState, step };
+    logger.info({ step }, 'restore progress');
+  };
+
   const res = {
     // The response is long gone; record the outcome for /restore/status
     // instead of writing to a socket nobody is holding.
@@ -288,11 +293,15 @@ async function runRestore(
     await readBackup(file.path, passphrase, {
       onManifest: (m) => {
         manifest = m;
+        step(`archive opened (from ${m.appVersion}, ${new Date(m.createdAt).toLocaleString()})`);
       },
       onMasterKey: (k) => {
         archiveMasterKey = k;
       },
-      onDatabase: (sql) => restoreDatabase(sql),
+      onDatabase: (sql) => {
+        step('loading database — this is the slow part');
+        return restoreDatabase(sql);
+      },
       resolveFile: (archivePath) => {
         const [top, ...rest] = archivePath.split('/');
         if (!top || !(top in dirs) || rest.length === 0) return null;
@@ -306,6 +315,7 @@ async function runRestore(
       },
     });
 
+    step('database loaded; writing files');
     // Database is in; now publish the files.
     const { rename, mkdir } = await import('node:fs/promises');
     for (const [key, live] of Object.entries(dirs)) {
