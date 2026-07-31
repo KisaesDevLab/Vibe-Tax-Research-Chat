@@ -74,6 +74,17 @@ result says so and prints the key to set. Until it matches, the stored
 Anthropic key and SMTP password cannot be decrypted — everything else
 restores normally.
 
+**Prerequisite on the destination: the `vector` extension must already
+exist.** Installing it requires superuser, which a shared-database
+appliance role does not have. Restore checks this _before_ running anything
+destructive and stops with instructions if it is missing, so a failed
+attempt costs nothing:
+
+```sql
+-- as a superuser, on the destination database
+CREATE EXTENSION vector;
+```
+
 Restoring **replaces** the database and data directories on the target. The
 database is loaded with `ON_ERROR_STOP=1`, so a bad archive fails loudly
 rather than leaving a half-restored install, and files are staged to a

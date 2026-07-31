@@ -30,6 +30,7 @@ import {
   databaseName,
   pgDumpVersion,
   PgToolMissingError,
+  RestorePrerequisiteError,
 } from '../../lib/backup/postgres.js';
 
 export const adminBackupRouter = Router();
@@ -246,6 +247,12 @@ adminBackupRouter.post('/restore', upload.single('file'), async (req, res) => {
     }
     if (err instanceof PgToolMissingError) {
       res.status(503).json({ error: 'pg_tools_missing', message: err.message });
+      return;
+    }
+    if (err instanceof RestorePrerequisiteError) {
+      // Raised before anything destructive ran, so the operator can fix the
+      // prerequisite and retry without having lost the current install.
+      res.status(409).json({ error: 'restore_prerequisite', message: err.message });
       return;
     }
     logger.error({ err }, 'restore failed');
