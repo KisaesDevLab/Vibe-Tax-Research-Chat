@@ -36,6 +36,13 @@ const SKIP = [
   // one restoring it. The value pg_dump emits is the parameter's own
   // default, so dropping the line changes nothing about the restore.
   /^\s*SET\s+transaction_timeout\b/i,
+  // pg_dump also writes `SET lock_timeout = 0;` into the header, which
+  // silently undoes whatever lock_timeout the restore set on the
+  // connection. With it in place a DROP blocked by another session waits
+  // forever: no error, no psql exit, no timeout — the restore simply hangs.
+  // Dropping the line lets the caller's bound survive. statement_timeout is
+  // deliberately NOT stripped; a large restore is legitimately slow.
+  /^\s*SET\s+lock_timeout\b/i,
 ];
 
 /**
