@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { tokenStore } from '../lib/token-store';
+import { SetupRestore } from './SetupRestore';
 import type { AuthUser } from '@vibe/shared';
 
 type Step = 'admin' | 'key' | 'model' | 'done';
@@ -16,6 +17,7 @@ interface BootstrapResponse {
 
 export function SetupPage() {
   const [step, setStep] = useState<Step>('admin');
+  const [mode, setMode] = useState<'new' | 'restore'>('new');
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [apiKey, setApiKey] = useState('');
@@ -88,9 +90,15 @@ export function SetupPage() {
     <div className="min-h-screen grid place-items-center bg-paper px-4 py-8">
       <div className="bg-white border border-ink/10 rounded p-6 sm:p-8 w-full max-w-[480px]">
         <h1 className="font-display text-2xl mb-2">First-run setup</h1>
-        <p className="text-ink/60 text-sm mb-6">Three steps. Should take under five minutes.</p>
+        <p className="text-ink/60 text-sm mb-6">
+          {mode === 'restore'
+            ? 'Restore this install from a backup taken on another server.'
+            : 'Three steps. Should take under five minutes.'}
+        </p>
 
-        {step === 'admin' && (
+        {mode === 'restore' && <SetupRestore onCancel={() => setMode('new')} />}
+
+        {mode === 'new' && step === 'admin' && (
           <div className="space-y-3">
             <input
               placeholder="admin email"
@@ -107,6 +115,13 @@ export function SetupPage() {
               className="w-full px-3 py-2 border border-ink/20 rounded font-mono text-sm"
               autoComplete="new-password"
             />
+            <button
+              type="button"
+              onClick={() => setMode('restore')}
+              className="text-xs underline text-ink/60"
+            >
+              Moving from another server? Restore from a backup instead
+            </button>
           </div>
         )}
         {step === 'key' && (

@@ -13,6 +13,10 @@ import { users, auth_refresh_tokens } from '@vibe/db/schema';
 import { audit } from '../lib/audit.js';
 import { signAccess, signRefresh, hashToken } from '../lib/jwt.js';
 import { setupBootstrapLimiter } from '../lib/rate-limit.js';
+import multer from 'multer';
+import { rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { getRestoreState, beginRestore, runRestore } from '../lib/backup/restore-job.js';
 import { ACCESS_COOKIE_NAME, accessCookieOptions } from '../lib/cookies.js';
 
 export const setupRouter = Router();
@@ -120,3 +124,70 @@ setupRouter.post('/bootstrap', setupBootstrapLimiter, async (req, res) => {
     },
   });
 });
+
+// ── Restore instead of creating an admin ────────────────────────────────
+//
+// Standing up a replacement server and restoring onto it is the same act,
+// and this is the only moment when a restore is completely safe: no users,
+// no sessions, no data to lose. Doing it here also sidesteps the failure
+// mode that plagued the admin path — an authenticated operator's browser
+// session holding locks on the very tables being replaced.
+//
+// Same trust boundary as bootstrap: allowed ONLY while zero admins exist.
+// Whoever can reach an un-bootstrapped install can already claim it by
+// creating the first admin, so restoring into it grants nothing further —
+// and the archive is useless without its passphrase.
+const restoreUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, tmpdir()),
+    filename: (_req, _file, cb) => cb(null, `vibe-setup-restore-${Date.now()}.vtbk`),
+  }),
+  limits: { fileSize: 20 * 1024 * 1024 * 1024 },
+});
+
+async function adminCount(): Promise<number> {
+  const rows = await getDb().select({ value: count() }).from(users).where(eq(users.role, 'admin'));
+  return Number(rows[0]?.value ?? 0);
+}
+
+setupRouter.get('/restore/status', (_req, res) => {
+  res.json(getRestoreState());
+});
+
+setupRouter.post(
+  '/restore',
+  setupBootstrapLimiter,
+  restoreUpload.single('file'),
+  async (req, res) => {
+    const file = req.file;
+    const passphrase = String((req.body as { passphrase?: string }).passphrase ?? '');
+    const cleanup = () => rm(file?.path ?? '', { force: true }).catch(() => {});
+    if (!file || !passphrase) {
+      await cleanup();
+      res
+        .status(400)
+        .json({ error: 'bad_request', message: 'A backup file and passphrase are required.' });
+      return;
+    }
+    if ((await adminCount()) > 0) {
+      await cleanup();
+      res.status(409).json({
+        error: 'already_bootstrapped',
+        message:
+          'This install already has an admin. Restore from Admin → Backup & restore instead.',
+      });
+      return;
+    }
+    if (!beginRestore()) {
+      await cleanup();
+      res
+        .status(409)
+        .json({ error: 'restore_in_progress', message: 'A restore is already running.' });
+      return;
+    }
+    res.status(202).json({ status: 'running' });
+    // No actor to attribute this to yet — the accounts arrive with the
+    // archive — so the audit row records the requesting address instead.
+    void runRestore(file.path, passphrase, null, req.ip);
+  },
+);
