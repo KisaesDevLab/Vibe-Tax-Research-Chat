@@ -11,7 +11,7 @@ import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { PassThrough, Readable } from 'node:stream';
 import { sql as raw } from 'drizzle-orm';
-import { getDb } from '@vibe/db';
+import { getDb, closeDb } from '@vibe/db';
 import { env } from '../../config/env.js';
 import { logger } from '../logger.js';
 import { stripSuperuserOnly } from './sql-filter.js';
@@ -184,11 +184,23 @@ export async function restoreDatabase(sql: Readable): Promise<void> {
       ),
     );
 
+  // Evicting once is not enough on its own: the app's pool reconnects in
+  // milliseconds and re-locks the very tables psql is about to drop. Close
+  // our own pool too, so nothing on this side reacquires a lock while the
+  // load runs. It reconnects lazily afterwards.
+  await closeDb().catch(() => {});
+
   const skipped: string[] = [];
   const filtered = sql.pipe(stripSuperuserOnly((line) => skipped.push(line)));
   await new Promise<void>((resolve, reject) => {
+    // lock_timeout turns "wait forever behind another session's lock" into
+    // a real error. Without it a blocked DROP simply hangs, the operator
+    // sees a spinner, and the only evidence is a half-dropped database
+    // after they give up and restart. 60s is far longer than any healthy
+    // lock wait here.
     const proc = spawn(bin, ['-v', 'ON_ERROR_STOP=1', '--quiet', databaseUrl()], {
       stdio: ['pipe', 'ignore', 'pipe'],
+      env: { ...process.env, PGOPTIONS: '-c lock_timeout=60s -c statement_timeout=0' },
     });
     let stderr = '';
     proc.stderr.on('data', (c) => {
