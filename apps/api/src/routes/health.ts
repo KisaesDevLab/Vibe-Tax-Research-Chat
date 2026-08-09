@@ -7,7 +7,15 @@ import { pingRedis } from '../lib/redis.js';
 export const healthRouter = Router();
 
 healthRouter.get('/', (_req, res) => {
-  res.json({ status: 'ok', uptime: process.uptime() });
+  res.json({
+    status: 'ok',
+    uptime: process.uptime(),
+    // Build provenance baked in by the Dockerfile (release.yml build-args);
+    // 'dev' outside a released image.
+    version: process.env.APP_VERSION ?? 'dev',
+    git_sha: process.env.GIT_SHA ?? 'unknown',
+    build_date: process.env.BUILD_DATE ?? 'unknown',
+  });
 });
 
 healthRouter.get('/deep', async (_req, res) => {

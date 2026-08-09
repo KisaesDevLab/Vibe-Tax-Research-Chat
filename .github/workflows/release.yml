@@ -85,6 +85,11 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ steps.img.outputs.ref }}
+          # `latest` comes ONLY from semver tag builds (metadata-action's
+          # auto-latest flavor). It used to also be minted on main pushes,
+          # so pushing a commit and its release tag together raced two
+          # concurrent runs for `latest` and the loser's build kept the
+          # tag — v0.9.1 shipped with api:latest self-reporting a bare sha.
           tags: |
             type=ref,event=branch
             type=ref,event=tag
@@ -92,7 +97,6 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
             type=sha,format=short,prefix=sha-
-            type=raw,value=latest,enable={{is_default_branch}}
           labels: |
             org.opencontainers.image.title=Vibe Tax Research Chat — ${{ matrix.name }}
             org.opencontainers.image.description=Self-hosted single-tenant AI tax-research chat appliance (${{ matrix.name }} image).

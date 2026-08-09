@@ -85,6 +85,16 @@ COPY --from=builder /app/packages/shared/node_modules packages/shared/node_modul
 COPY --from=builder /app/packages/schema/node_modules packages/schema/node_modules
 COPY --from=builder /app/packages/engine/node_modules packages/engine/node_modules
 COPY --from=builder /app/packages/strategies/node_modules packages/strategies/node_modules
+# Build provenance, passed by release.yml. Declared here (previously the
+# workflow sent these build-args but nothing consumed them) so the image
+# self-reports what it is: `docker inspect` shows the ENVs, /api/health
+# returns them, and backup manifests record the real appVersion instead
+# of 'dev'.
+ARG APP_VERSION=dev
+ARG GIT_SHA=unknown
+ARG BUILD_DATE=unknown
+ENV APP_VERSION=$APP_VERSION GIT_SHA=$GIT_SHA BUILD_DATE=$BUILD_DATE
+
 # Migrate (and idempotently seed) on boot. The image ships
 # packages/db/drizzle, so a container upgrade applies its own schema
 # instead of silently running new code against an old database — the

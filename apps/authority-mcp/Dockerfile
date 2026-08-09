@@ -69,6 +69,11 @@ COPY --from=builder /app/packages/shared/node_modules packages/shared/node_modul
 COPY --from=builder /app/packages/schema/node_modules packages/schema/node_modules
 COPY --from=builder /app/packages/engine/node_modules packages/engine/node_modules
 COPY --from=builder /app/packages/strategies/node_modules packages/strategies/node_modules
+# Build provenance, passed by release.yml — same pattern as apps/api.
+ARG APP_VERSION=dev
+ARG GIT_SHA=unknown
+ARG BUILD_DATE=unknown
+ENV APP_VERSION=$APP_VERSION GIT_SHA=$GIT_SHA BUILD_DATE=$BUILD_DATE
 EXPOSE 4100
 USER node
 CMD ["node", "apps/authority-mcp/dist/server.js"]
