@@ -51,6 +51,7 @@
     "pdfkit": "^0.18.0",
     "pino": "^9.6.0",
     "pino-http": "^10.4.0",
+    "postgres": "^3.4.5",
     "rate-limit-redis": "^4.2.0",
     "resend": "^6.12.3",
     "simple-git": "^3.27.0",
