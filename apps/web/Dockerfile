@@ -31,6 +31,13 @@ RUN pnpm --filter @vibe/shared build \
 # pass `VITE_BASE_PATH=/tax/` and the same image serves
 # `/tax/assets/...` instead. No rebuild needed to switch modes.
 FROM nginx:1.27-alpine AS runtime
+# Build provenance, passed by release.yml — `docker inspect` on the
+# running container answers "what build is this" without guessing from
+# registry timestamps.
+ARG APP_VERSION=dev
+ARG GIT_SHA=unknown
+ARG BUILD_DATE=unknown
+ENV APP_VERSION=$APP_VERSION GIT_SHA=$GIT_SHA BUILD_DATE=$BUILD_DATE
 COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
 COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 
