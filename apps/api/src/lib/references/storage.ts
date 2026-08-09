@@ -7,11 +7,9 @@
 // behavior, since references are firm-private and need backup coverage.
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
+import { dataDirs } from '../../config/paths.js';
 
-export const REFERENCES_ROOT = path.resolve(
-  process.env.ATTACHMENTS_DIR ?? './attachments',
-  'references',
-);
+export const REFERENCES_ROOT = path.join(dataDirs().attachments, 'references');
 
 export function referenceStoragePath(documentId: string, filename: string): string {
   // documentId is a uuid — safe as a directory name. Sanitize the filename

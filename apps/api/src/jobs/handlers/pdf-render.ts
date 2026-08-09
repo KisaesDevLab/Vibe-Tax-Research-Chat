@@ -13,8 +13,9 @@ import { audit } from '../../lib/audit.js';
 import { buildRenderData } from '../../lib/render/data.js';
 import { buildDeliverablePdf } from '../../lib/render/deliverable-pdf.js';
 import type { DeliverableKind } from '../../lib/render/types.js';
+import { dataDirs } from '../../config/paths.js';
 
-const STORAGE_ROOT = path.resolve(process.env.DELIVERABLES_DIR ?? './storage/deliverables');
+const STORAGE_ROOT = dataDirs().deliverables;
 
 export async function renderDeliverable(
   deliverableId: string,

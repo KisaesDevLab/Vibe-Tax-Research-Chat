@@ -104,9 +104,16 @@ const schema = z
     // surface; it's an internal-only side channel.
     AUTHORITY_MCP_URL: z.string().url().default('http://authority-mcp:4100'),
 
+    // DR v2 — every path the backup captures (and the archive store itself)
+    // comes from here; lib and routes must go through config/paths.ts, never
+    // raw process.env.
+    ATTACHMENTS_DIR: z.string().default('./attachments'),
+    DELIVERABLES_DIR: z.string().default('./storage/deliverables'),
+    WORKSPACES_DIR: z.string().default('./workspaces'),
     BACKUP_DIR: z.string().default('./backups'),
-    BACKUP_RETENTION_DAYS: z.coerce.number().int().default(30),
-    DUPLICATI_TARGET: z.string().optional(),
+    // Same volume as BACKUP_DIR by default so multi-GB uploads and dump
+    // spools never land on container tmpfs.
+    BACKUP_TMP_DIR: z.string().default('./backups/tmp'),
 
     // MIG-4 — Vibe AI Router dual-mode for BACKGROUND JOBS only (streaming chat
     // and strategy-watch stay direct until router backlog R1). "router" sends
