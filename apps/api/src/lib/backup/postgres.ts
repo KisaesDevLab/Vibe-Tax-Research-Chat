@@ -133,10 +133,13 @@ export function dumpDatabase(): Readable {
 /** Identifies the restore's own psql session so the eviction loop spares it. */
 const RESTORE_APP_NAME = 'vibe-tax-restore';
 
-/** Run one statement in its own psql process; never touches the app pool. */
+/** Run one statement in its own psql process; never touches the app pool.
+ *  The URL rides behind -d: Windows psql does not permute argv, so any
+ *  option after a positional dbname is silently IGNORED — `psql <url> -c
+ *  <sql>` connects and then does nothing, exit 0. */
 function psqlCommand(bin: string, url: string, statement: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const proc = spawn(bin, ['-v', 'ON_ERROR_STOP=1', '-tAqX', url, '-c', statement], {
+    const proc = spawn(bin, ['-v', 'ON_ERROR_STOP=1', '-tAqX', '-d', url, '-c', statement], {
       stdio: ['ignore', 'ignore', 'pipe'],
     });
     let stderr = '';
@@ -151,7 +154,7 @@ function psqlCommand(bin: string, url: string, statement: string): Promise<void>
 /** Like psqlCommand, but returns the statement's (tuples-only) stdout. */
 function psqlQuery(bin: string, url: string, statement: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const proc = spawn(bin, ['-v', 'ON_ERROR_STOP=1', '-tAqX', url, '-c', statement], {
+    const proc = spawn(bin, ['-v', 'ON_ERROR_STOP=1', '-tAqX', '-d', url, '-c', statement], {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     let out = '';
