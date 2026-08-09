@@ -14,6 +14,7 @@ import {
   plans,
   SETTING_KEYS,
 } from '@vibe/db/schema';
+import { VibeAiError } from '@kisaes/vibe-ai-client';
 import { getSetting } from '../../lib/settings-store.js';
 import { callClaude, ClaudeDisabledError } from '../../lib/anthropic/client.js';
 import { audit } from '../../lib/audit.js';
@@ -224,10 +225,15 @@ planMemoRouter.post('/', async (req, res) => {
     });
     res.json({ memo_markdown: memo, draft: true });
   } catch (err) {
-    if (err instanceof ClaudeDisabledError || (err as Error).message?.includes('not configured')) {
+    if (
+      err instanceof ClaudeDisabledError ||
+      (err instanceof VibeAiError && err.code === 'policy_blocked') ||
+      (err as Error).message?.includes('not configured')
+    ) {
       res.status(503).json({
         error: 'claude_unavailable',
-        message: 'Plan memos need a configured Anthropic key (and the kill switch off).',
+        message:
+          'Memo drafting is currently unavailable. Check the AI backend configuration (key, kill switch, or router policy).',
       });
       return;
     }
