@@ -77,6 +77,7 @@ describe('journal lifecycle', () => {
 
   it('classifies a dead runner with a stale heartbeat as interrupted', async () => {
     const dead: RestoreJournal = {
+      ...INIT,
       version: 1,
       pid: 999_999_1, // no such pid
       startedAt: new Date(0).toISOString(),
@@ -85,7 +86,6 @@ describe('journal lifecycle', () => {
       phase: 'load',
       phases: emptyPhases(),
       rollbackAvailable: false,
-      ...INIT,
     };
     await writeFile(path.join(dir, JOURNAL_FILE), JSON.stringify(dead));
     const back = await readJournal(dir, () => HEARTBEAT_STALE_MS + 60_000);
@@ -98,6 +98,7 @@ describe('journal lifecycle', () => {
 
   it('a LIVE runner with a fresh heartbeat stays running', async () => {
     const alive: RestoreJournal = {
+      ...INIT,
       version: 1,
       pid: process.pid,
       startedAt: new Date().toISOString(),
@@ -106,7 +107,6 @@ describe('journal lifecycle', () => {
       phase: 'load',
       phases: emptyPhases(),
       rollbackAvailable: false,
-      ...INIT,
     };
     await writeFile(path.join(dir, JOURNAL_FILE), JSON.stringify(alive));
     const back = await readJournal(dir);
@@ -115,6 +115,7 @@ describe('journal lifecycle', () => {
 
   it('redacts the archive master key from status views', () => {
     const j: RestoreJournal = {
+      ...INIT,
       version: 1,
       pid: 1,
       startedAt: 'x',
@@ -124,7 +125,6 @@ describe('journal lifecycle', () => {
       phases: emptyPhases(),
       rollbackAvailable: true,
       result: { masterKeyMatches: false, keyFromArchive: 'SECRET', filesRestored: 3 },
-      ...INIT,
     };
     const redacted = redactJournal(j);
     expect(JSON.stringify(redacted)).not.toContain('SECRET');
