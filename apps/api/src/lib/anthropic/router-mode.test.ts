@@ -180,23 +180,122 @@ describe('callClaudeViaRouter', () => {
     ).rejects.toThrow(/cannot translate content block/);
   });
 
-  it('router failure surfaces to the caller and audits — never falls back', async () => {
+  it('router failure surfaces to the caller and audits — never falls back, never retried', async () => {
+    let fetches = 0;
     _setRouterClientForTests(
-      clientWithFetch(
-        (async () =>
-          new Response(
-            JSON.stringify({ error: { code: 'policy_blocked', message: 'no policy' } }),
-            { status: 403 },
-          )) as typeof fetch,
-      ),
+      clientWithFetch((async () => {
+        fetches += 1;
+        return new Response(
+          JSON.stringify({ error: { code: 'policy_blocked', message: 'no policy' } }),
+          { status: 403 },
+        );
+      }) as typeof fetch),
     );
     await expect(
       callClaudeViaRouter('plan-memo', { messages: [{ role: 'user', content: 'memo' }] }),
     ).rejects.toThrow(/no policy/);
+    expect(fetches).toBe(1); // policy_blocked is not retryable
     const auditCalls = vi.mocked(audit).mock.calls;
-    const failure = auditCalls.find((c) => (c[0].metadata as { failed?: boolean }).failed);
-    expect(failure).toBeTruthy();
-    expect((failure![0].metadata as { backend: string }).backend).toBe('vibe_router');
+    const failures = auditCalls.filter((c) => (c[0].metadata as { failed?: boolean }).failed);
+    expect(failures).toHaveLength(1);
+    expect((failures[0]![0].metadata as { backend: string }).backend).toBe('vibe_router');
+  });
+
+  it('bounds every request with an AbortSignal (A3)', async () => {
+    const calls: { init: RequestInit }[] = [];
+    _setRouterClientForTests(
+      clientWithFetch((async (_url: unknown, init?: RequestInit) => {
+        calls.push({ init: init ?? {} });
+        return completionResponse();
+      }) as typeof fetch),
+    );
+    await callClaudeViaRouter('chat-title', { messages: [{ role: 'user', content: 'x' }] });
+    expect(calls[0]!.init.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it('a hung router aborts within the timeout on each attempt, then throws (A3+A9)', async () => {
+    let fetches = 0;
+    _setRouterClientForTests(
+      clientWithFetch(((_url: unknown, init?: RequestInit) => {
+        fetches += 1;
+        // Hang until the timeout signal fires, like a stalled router.
+        return new Promise((_resolve, reject) => {
+          init!.signal!.addEventListener('abort', () => reject(init!.signal!.reason));
+        });
+      }) as unknown as typeof fetch),
+    );
+    await expect(
+      callClaudeViaRouter(
+        'chat-title',
+        { messages: [{ role: 'user', content: 'x' }] },
+        { timeoutMs: 30 },
+      ),
+    ).rejects.toThrow();
+    expect(fetches).toBe(3); // timeout aborts retried, direct-path parity
+    const failures = vi
+      .mocked(audit)
+      .mock.calls.filter((c) => (c[0].metadata as { failed?: boolean }).failed);
+    expect(failures).toHaveLength(1);
+  }, 15_000);
+
+  it('retries rate_limited honoring retry-after, then succeeds (A9)', async () => {
+    let fetches = 0;
+    _setRouterClientForTests(
+      clientWithFetch((async () => {
+        fetches += 1;
+        if (fetches === 1) {
+          return new Response(
+            JSON.stringify({ error: { code: 'rate_limited', message: 'slow down' } }),
+            { status: 429, headers: { 'retry-after': '0' } },
+          );
+        }
+        return completionResponse();
+      }) as typeof fetch),
+    );
+    const result = await callClaudeViaRouter('chat-title', {
+      messages: [{ role: 'user', content: 'x' }],
+    });
+    expect(fetches).toBe(2);
+    expect(result.text).toBe('router says hi');
+    const meta = vi.mocked(audit).mock.calls[0]![0].metadata as Record<string, unknown>;
+    expect(meta.attempts).toBe(2);
+    expect(meta.failed).toBeUndefined();
+  });
+
+  it('reports disjoint input vs cache-read tokens (A4)', async () => {
+    _setRouterClientForTests(
+      clientWithFetch((async () =>
+        completionResponse({
+          usage: {
+            prompt_tokens: 10,
+            completion_tokens: 4,
+            prompt_tokens_details: { cached_tokens: 6 },
+          },
+        })) as typeof fetch),
+    );
+    const result = await callClaudeViaRouter('chat-title', {
+      messages: [{ role: 'user', content: 'x' }],
+    });
+    expect(result.response.usage.input_tokens).toBe(4);
+    expect(result.response.usage.cache_read_input_tokens).toBe(6);
+    const meta = vi.mocked(audit).mock.calls[0]![0].metadata as Record<string, unknown>;
+    expect(meta.input_tokens).toBe(4);
+    expect(meta.cache_read_input_tokens).toBe(6);
+  });
+
+  it('preserves content_filter and error finish reasons', async () => {
+    for (const finish of ['content_filter', 'error']) {
+      _setRouterClientForTests(
+        clientWithFetch((async () =>
+          completionResponse({
+            choices: [{ message: { content: 'partial' }, finish_reason: finish }],
+          })) as typeof fetch),
+      );
+      const result = await callClaudeViaRouter('chat-title', {
+        messages: [{ role: 'user', content: 'x' }],
+      });
+      expect(result.response.stop_reason).toBe(finish);
+    }
   });
 
   it('audit rows carry hashes and dims, never payload text', async () => {

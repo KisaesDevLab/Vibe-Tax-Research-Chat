@@ -12,7 +12,9 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import {
   VibeAiClient,
+  VibeAiError,
   type ChatMessage,
+  type CompletionResult,
   type RequestOptions,
   type ToolDef,
 } from '@kisaes/vibe-ai-client';
@@ -176,14 +178,66 @@ function toRequestOptions(
 // router result is reshaped into a structurally-compatible Message. This is
 // what keeps all nine job call sites byte-for-byte untouched.
 
-function toStopReason(finishReason: string): Anthropic.Message['stop_reason'] {
+// Widened past Anthropic's StopReason union: 'content_filter' and 'error' have
+// no member there, and collapsing them to 'end_turn' would make a filtered
+// response indistinguishable from a normal stop.
+function toStopReason(finishReason: string): string {
   if (finishReason === 'tool_calls') return 'tool_use';
   if (finishReason === 'length') return 'max_tokens';
+  if (finishReason === 'content_filter' || finishReason === 'error') return finishReason;
   return 'end_turn';
 }
 
 function sha256(value: unknown): string {
   return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+}
+
+// ── retry (mirrors the direct path in client.ts) ─────────────────────────
+
+const MAX_ATTEMPTS = 3;
+const BASE_BACKOFF_MS = 500;
+const MAX_RETRY_AFTER_MS = 30_000;
+
+function isRetryable(err: unknown): boolean {
+  // VibeAiError.retryable covers rate_limited / provider_unavailable. Anything
+  // that is NOT a VibeAiError never got a router verdict (fetch TypeError,
+  // timeout abort) — connection-level, retried like the direct path's
+  // status-less rule.
+  return err instanceof VibeAiError ? err.retryable : true;
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function completeWithRetry(
+  job: ClaudeJobName,
+  taskClass: string,
+  messages: ChatMessage[],
+  requestOptions: RequestOptions,
+  timeoutMs: number,
+): Promise<{ result: CompletionResult; attempts: number }> {
+  for (let attempt = 1; ; attempt += 1) {
+    // Fresh signal per attempt — a fired timeout signal stays aborted.
+    const signal = AbortSignal.timeout(timeoutMs);
+    try {
+      const result = await routerClient().complete(taskClass, messages, {
+        ...requestOptions,
+        signal,
+      });
+      return { result, attempts: attempt };
+    } catch (err) {
+      if (!isRetryable(err) || attempt >= MAX_ATTEMPTS) throw err;
+      const retryAfterMs =
+        err instanceof VibeAiError && Number.isFinite(err.retryAfterSeconds)
+          ? Math.min(err.retryAfterSeconds! * 1000, MAX_RETRY_AFTER_MS)
+          : null;
+      const backoff = retryAfterMs ?? BASE_BACKOFF_MS * 2 ** (attempt - 1) * (0.5 + Math.random());
+      logger.warn(
+        { job, attempt, backoff_ms: Math.round(backoff), err: (err as Error).message },
+        'claude.call (router) retrying',
+      );
+      await sleep(backoff);
+    }
+  }
 }
 
 /**
@@ -207,7 +261,13 @@ export async function callClaudeViaRouter(
   const requestHash = sha256({ taskClass, messages, requestOptions });
 
   try {
-    const result = await routerClient().complete(taskClass, messages, requestOptions);
+    const { result, attempts } = await completeWithRetry(
+      job,
+      taskClass,
+      messages,
+      requestOptions,
+      opts.timeoutMs ?? config.timeoutMs,
+    );
 
     const content: Anthropic.ContentBlock[] = [];
     if (result.content) {
@@ -222,6 +282,10 @@ export async function callClaudeViaRouter(
       }
       content.push({ type: 'tool_use', id: tc.id, name: tc.name, input } as Anthropic.ToolUseBlock);
     }
+    // Router wire promptTokens INCLUDES cached tokens (OpenAI semantics);
+    // Anthropic usage fields are disjoint, so subtract the cached subset.
+    const cachedTokens = result.usage.cachedTokens ?? 0;
+    const inputTokens = Math.max(0, result.usage.promptTokens - cachedTokens);
     const response = {
       id: result.requestId || `router_${job}`,
       type: 'message',
@@ -231,10 +295,10 @@ export async function callClaudeViaRouter(
       stop_reason: toStopReason(result.finishReason),
       stop_sequence: null,
       usage: {
-        input_tokens: result.usage.promptTokens,
+        input_tokens: inputTokens,
         output_tokens: result.usage.completionTokens,
         cache_creation_input_tokens: null,
-        cache_read_input_tokens: result.usage.cachedTokens || null,
+        cache_read_input_tokens: cachedTokens || null,
       },
     } as unknown as Anthropic.Message;
 
@@ -253,9 +317,11 @@ export async function callClaudeViaRouter(
         max_tokens: maxTokens,
         request_hash: requestHash,
         response_hash: responseHash,
-        input_tokens: result.usage.promptTokens,
+        input_tokens: inputTokens,
         output_tokens: result.usage.completionTokens,
+        cache_read_input_tokens: cachedTokens,
         stop_reason: response.stop_reason,
+        attempts,
       },
     });
     return { response, text, request_hash: requestHash, response_hash: responseHash };
