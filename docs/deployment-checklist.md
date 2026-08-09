@@ -38,11 +38,11 @@ checklist is the single place they are tracked.
 - [ ] Migrations 0000–0012 applied (`pnpm db:migrate`); verify the 0012 triggers exist:
       `SELECT tgname FROM pg_trigger WHERE tgname IN ('plan_results_freeze','audit_log_append_only');`
 - [ ] Seed run twice — second run must insert 0 strategy versions (idempotency proof).
-- [ ] Nightly `scripts/backup.sh` cron in place (`BACKUP_MODE=compose` in docker,
-      `BACKUP_MODE=local` + libpq vars otherwise).
-- [ ] **Restore drill performed on this install** (not just in CI): restore the latest
-      dump into a scratch database, confirm strategy/golden/audit counts and that the
-      0012 triggers still raise. The TP-15 drill procedure is in `STATE.md` notes.
+- [ ] A backup created from Admin → Backup & restore, downloaded off the server, and a
+      recurring reminder in place to repeat it (backups are manual by design).
+- [ ] **Restore drill performed** (not just in CI): run `scripts/dr-e2e.sh` against a
+      disposable stack — bootstrap → backup → wipe → first-run restore → sign in with the
+      pre-wipe credentials. The engine verifies row counts against the manifest itself.
 - [ ] **Offsite** (external): Vault/B2 (or the firm's equivalent) receives the dumps —
       `DUPLICATI_TARGET` hook or an external sync job. Verify at least one offsite
       restore before go-live.

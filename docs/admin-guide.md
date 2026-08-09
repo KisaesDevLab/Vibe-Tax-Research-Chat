@@ -38,102 +38,107 @@ Admin → Users.
 | Set password | `POST /api/admin/users/:id/set-password`           | Admin sets a new password directly         |
 | Soft-delete  | `DELETE /api/admin/users/:id`                      | `deleted_at` set; audit history preserved  |
 
-## Backup & restore
+## Backup & restore (disaster recovery)
 
-### Moving an install to another server (Admin → Backup & restore)
+### What a backup is
 
-The in-app path needs no shell and is the one to use when relocating a firm
-to new hardware. **Admin → Backup & restore** produces a single encrypted
-file (`.vtbk`) containing everything:
+**Admin → Backup & restore → Create backup** builds a single encrypted
+archive (`.vtbk`, format 2) **on the server**, in the backups volume. It
+contains everything a replacement server needs:
 
-| Included                       | Notes                                              |
-| ------------------------------ | -------------------------------------------------- |
-| Full `pg_dump` of the database | Clients, plans, chats, strategies, settings, audit |
-| `attachments/`                 | Uploaded documents and reference library files     |
-| `storage/deliverables/`        | Rendered plan PDFs                                 |
-| `workspaces/`                  | Cloned skills repo and scratch                     |
-| `MASTER_KEY`                   | So encrypted settings still decrypt on the new box |
+| Included                      | Notes                                              |
+| ----------------------------- | -------------------------------------------------- |
+| `pg_dump -Fc` of the database | Users, clients, plans, chats, settings, audit      |
+| `attachments/`                | Uploaded documents and reference library files     |
+| `storage/deliverables/`       | Rendered plan PDFs                                 |
+| `workspaces/`                 | Cloned skills repo and scratch                     |
+| `MASTER_KEY`                  | So encrypted settings still decrypt on the new box |
+| Verification manifest         | Per-table row counts taken at the dump's snapshot  |
 
-The archive is AES-256-GCM encrypted with a key derived from a passphrase
-you choose (scrypt). **There is no recovery if the passphrase is lost** —
-nothing on the server can open the file afterwards. Because it carries
-`MASTER_KEY` plus every client record, treat the file itself as a
-credential.
+The archive is AES-256-GCM encrypted with a key derived (scrypt) from a
+passphrase you choose. **There is no recovery if the passphrase is lost.**
+Because the file carries `MASTER_KEY` plus every client record, treat it as
+a credential.
 
-To move a server:
+Backups are **manual**: create one before risky changes and on a cadence
+you choose, then **Download** it off the server — your recovery point is
+the newest archive you can still reach when the machine is gone. Archives
+remain listed on the page (download/delete) until you remove them.
 
-1. On the **old** server: Admin → Backup & restore → set a passphrase →
-   _Create and download backup_.
-2. Stand up the new server and complete first-run setup.
-3. On the **new** server: Admin → Backup & restore → choose the file, enter
-   the passphrase, type `REPLACE` → _Restore from backup_.
-4. Restart the API container so the restored settings are read fresh.
+Not included, by design: Redis contents (queued jobs and rate-limit
+windows are transient) and the CDN-redownloadable model/skills caches.
 
-If the new server's `MASTER_KEY` differs from the archive's, the restore
-result says so and prints the key to set. Until it matches, the stored
-Anthropic key and SMTP password cannot be decrypted — everything else
-restores normally.
+### Restoring
 
-**Prerequisite on the destination: the `vector` extension must already
-exist.** Installing it requires superuser, which a shared-database
-appliance role does not have. Restore checks this _before_ running anything
-destructive and stops with instructions if it is missing, so a failed
-attempt costs nothing:
+Restore from **Admin → Backup & restore** (upload a `.vtbk` or pick a
+retained archive), from **first-run setup** on a fresh install (the wizard
+offers "Restore from backup" while no admin exists), or from the offline
+CLI. All three run the same engine:
 
-```sql
--- as a superuser, on the destination database
-CREATE EXTENSION vector;
-```
+1. **inspect** — the manifest is read; incompatible archives (newer app
+   version, newer PostgreSQL dump) are refused before anything runs.
+2. **prepare** — a scratch database is created. Privilege problems stop
+   here; the live install is untouched.
+3. **extract / load** — the archive is decrypted (integrity-verified) and
+   `pg_restore`d into the scratch database. Progress is visible phase by
+   phase; a load that produces no activity for 5 minutes is killed and
+   reported with the PostgreSQL activity snapshot — a restore can be slow,
+   but it can never silently hang.
+4. **verify** — row counts are compared against the manifest and the
+   restored data must contain an active admin. Any mismatch aborts with
+   the live install untouched.
+5. **swap** — the databases and data directories are exchanged by rename.
+   This is the only moment the install changes, it takes seconds, and
+   every step is journaled: a crash mid-swap is completed automatically at
+   the next start.
+6. **finalize** — migrations run (older archives are upgraded forward),
+   and the previous generation is kept for rollback.
 
-### Restoring offline (recommended for a server move)
+After a successful restore, **restart the api container** and sign in with
+the credentials from the server the backup came from. If the archive's
+`MASTER_KEY` differs from this server's, the result says so and shows the
+key to set — until it matches, the stored Anthropic key and SMTP password
+cannot be decrypted.
 
-Restoring through the browser competes with the running app: a reverse
-proxy can time out the request, and the app's own connections hold locks on
-the tables being replaced. With the API stopped, none of that applies. Copy
-the archive to the destination server and:
+**Rollback**: until the next restore, the previous database and files are
+retained; _Roll back to the previous generation_ (or `vibe-backup
+rollback`) swaps them back in seconds.
 
-```bash
-docker cp backup.vtbk vibe-tax-api:/tmp/backup.vtbk
-docker stop vibe-tax-api                      # no traffic, no locks
-docker run --rm   --network <appliance network>   --env-file /opt/vibe/env/vibe-tax-research.env   -v /tmp:/work   -e BACKUP_PASSPHRASE='…'   ghcr.io/kisaesdevlab/vibe-tax-api:latest   node apps/api/dist/lib/backup/cli.js /work/backup.vtbk
-docker start vibe-tax-api
-```
+Format-1 archives (created before DR v2) are not restorable by this
+release — restore them on the release that created them, then create a
+fresh backup.
 
-The exit code is the real outcome, and the output says plainly whether
-anything was changed on failure. If the destination's `MASTER_KEY` differs
-from the archive's, it prints the key to set.
+### Offline CLI
 
-Restoring **replaces** the database and data directories on the target. The
-database is loaded with `ON_ERROR_STOP=1`, so a bad archive fails loudly
-rather than leaving a half-restored install, and files are staged to a
-temporary directory and swapped in only after the database load succeeds.
-
-The client major is matched to the server major automatically (the image
-ships both), because a `pg_dump` 17 dump cannot be loaded into PostgreSQL
-16 — it writes a `transaction_timeout` setting that 16 rejects.
-
-### Scheduled host-side dumps
-
-For unattended nightly backups the shell path still applies and is
-complementary to the above.
-
-Backup: `scripts/backup.sh` — `pg_dump | gzip` into `./backups/`. Cron from the host.
-
-Restore on a fresh appliance:
+For automation, or when the app itself is the problem:
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d postgres redis
-pnpm tsx scripts/restore.ts ./backups/vibe-2026-04-27.sql.gz
-docker compose -f docker-compose.prod.yml up -d
+docker compose exec api vibe-backup list
+docker compose exec -e BACKUP_PASSPHRASE='…' api vibe-backup inspect vibe-tax-backup-<stamp>.vtbk
+docker compose exec -e BACKUP_PASSPHRASE='…' api vibe-backup restore vibe-tax-backup-<stamp>.vtbk
+docker compose exec api vibe-backup rollback
+docker compose exec api vibe-backup recover     # complete/clean an interrupted restore
 ```
 
-The restore script:
+`restore` follows the journal and prints each phase; the exit code is the
+real outcome. A file path outside the backups volume works too (mount it
+into the container first).
 
-1. `FLUSHALL` on Redis (drains queues + rate limit + cached sessions).
-2. Drops + recreates `vibe_tax`.
-3. `gunzip | psql` the tarball.
-4. Runs `node packages/db/dist/migrate.js` inside the api container to catch any schema added since the backup.
-5. Queues a skills sync dry-run so you can re-acknowledge any drift.
+### RTO / RPO
+
+- **RPO** — the age of the newest archive you can reach. Backups are
+  manual; download after every backup and back up before risky changes.
+- **RTO** — install the appliance, then first-run restore: dominated by
+  archive upload + `pg_restore` time, both visible phase by phase. The
+  swap itself is seconds, and a failed restore before the swap costs
+  nothing.
+
+### Restore drill
+
+A backup nobody has restored is a hope, not a plan. `scripts/dr-e2e.sh`
+runs the full loop against a disposable compose stack (bootstrap → create
+backup → destroy volumes → first-run restore → sign in with the original
+credentials); run it after upgrades that touch the schema or storage.
 
 ## Skills sync
 

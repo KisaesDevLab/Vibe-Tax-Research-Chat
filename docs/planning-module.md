@@ -130,9 +130,10 @@ draft → in-review → presented → engaged → delivered → archived
 - Queues: Bull Board at `/admin/queues` (crons: skills nightly, usage hourly,
   tables-draft Oct 1, strategy-watch + archive-scan weekly).
 - Review queue: `/admin/review-queue` — assign a named owner and cadence.
-- Backups: `scripts/backup.sh` (compose or `BACKUP_MODE=local`), restore via
-  `scripts/restore.ts`; run the restore drill per `docs/deployment-checklist.md`
-  §4. `DELIVERABLES_DIR` and `attachments/` need file-level backup separately.
+- Backups: Admin → Backup & restore builds an encrypted archive covering the
+  database AND the file dirs (`attachments/`, deliverables, workspaces) in one
+  unit; run the restore drill (`scripts/dr-e2e.sh`) per
+  `docs/deployment-checklist.md` §4.
 - Migrations: 0000–0012, additive-only. `pnpm db:migrate` then `pnpm db:seed`
   (idempotent — safe to re-run on every deploy).
 

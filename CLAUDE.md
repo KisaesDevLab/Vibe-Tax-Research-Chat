@@ -106,12 +106,25 @@ positional dbname (exit 0, no error). Always pass the URL via `-d` with options 
 
 ### Destructive integration tests never target the app database
 
-`restoreDatabase` against the live DB closes the app pool and evicts every session; run
-inside the parallel vitest suite it once killed sibling tests mid-run and left the dev
-database half-restored (all constraints/indexes lost). The roundtrip test now restores
-into a scratch database via `restoreDatabase(sql, { targetUrl })`; keep it that way. If
-the dev DB is ever corrupted again: drop schema `public` + `drizzle`, then
-`pnpm db:migrate && pnpm db:seed`.
+The DR v2 engine is parameterized by `EngineConfig.liveDbName`; its integration tests
+create and destroy only `vibe_dr_*` databases. This rule exists because a v1 test restore
+once replayed a dump into the LIVE dev database from the parallel suite and stripped
+every constraint and index. If the dev DB is ever corrupted again: drop schema `public` +
+`drizzle`, then `pnpm db:migrate && pnpm db:seed`.
+
+### DR v2 invariants (lib/backup)
+
+- The live database is NEVER written by a restore — scratch DB + verify + rename swap
+  only. Every swap step is journaled before execution; `recoverRestore()` runs at boot
+  BEFORE `MIGRATIONS_AUTO` (a mid-swap crash leaves no live DB and migrations would
+  fatal-loop).
+- The restore journal (`BACKUP_DIR/restore-journal.json`) is the single source of truth
+  for restore state; in-memory state is forbidden (v1 lost it on restart).
+- Extension DDL is skipped via pg_restore TOC filtering (`-L`), never regex on SQL.
+- Manifest row counts come from `pg_export_snapshot()` shared with `pg_dump --snapshot`
+  — exact compare after restore is sound.
+- New features storing user data must put it under `config/paths.ts` `dataDirs()` or it
+  is NOT covered by backups.
 
 ### nginx upload cap vs backup restores
 

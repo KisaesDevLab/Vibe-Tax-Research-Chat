@@ -61,7 +61,8 @@
     "autoEnvVar": "MIGRATIONS_AUTO"
   },
   "backup": {
-    "volumes": ["vibe-tax-attachments", "vibe-tax-skills"],
-    "databases": ["vibe_tax"]
+    "volumes": ["vibe-tax-attachments", "vibe-tax-skills", "vibe-tax-backups"],
+    "databases": ["vibe_tax"],
+    "note": "DR v2: the app also builds self-contained encrypted archives (db + files + MASTER_KEY) into the backups volume via Admin -> Backup & restore; the volume list above is the appliance-level (Duplicati) safety net on top of that."
   }
 }
