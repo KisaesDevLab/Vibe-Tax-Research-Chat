@@ -221,7 +221,11 @@ export async function readBackup(
   const body = createReadStream(file, { start: HEADER_LEN, end: st.size - TAG_LEN - 1 });
   const extract = tar.extract();
 
-  const pending: Promise<void>[] = [];
+  // Handler failures are collected, never left as floating rejected
+  // promises: if the outer pipeline also fails (e.g. the decipher aborts
+  // because psql stopped consuming the dump), the FIRST handler error is
+  // the actionable cause and must win over the secondary stream error.
+  const failures: unknown[] = [];
   extract.on('entry', (header, stream, next) => {
     const name = header.name;
     const collect = async () => {
@@ -252,7 +256,7 @@ export async function readBackup(
       .then(() => next())
       .catch((err) => {
         stream.resume();
-        pending.push(Promise.reject(err));
+        failures.push(err);
         next();
       });
   });
@@ -260,6 +264,7 @@ export async function readBackup(
   try {
     await pipeline(body, decipher, createGunzip(), extract);
   } catch (err) {
+    if (failures.length) throw failures[0];
     const msg = (err as Error).message ?? '';
     // GCM surfaces both a wrong passphrase and a truncated/edited file the
     // same way; say so plainly instead of leaking "unable to authenticate".
@@ -270,7 +275,7 @@ export async function readBackup(
     }
     throw err;
   }
-  await Promise.all(pending);
+  if (failures.length) throw failures[0];
 }
 
 /** Non-reversible fingerprint so a manifest can be compared without

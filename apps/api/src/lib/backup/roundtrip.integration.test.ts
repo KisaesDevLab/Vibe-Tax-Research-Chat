@@ -3,9 +3,17 @@
 // is a backup feature nobody has actually restored; this proves the loop
 // closes on live schema and real data.
 //
+// The restore lands in a SCRATCH database, never the application database:
+// restoreDatabase against the app DB closes the app pool and evicts every
+// other session, which inside a parallel test run kills sibling test files
+// — and a restore that fails partway would leave the shared dev database
+// half-wiped. The scratch target proves the same loop with none of the
+// blast radius.
+//
 // Skips when pg_dump/psql are absent (local dev without the postgres
 // client) or no database is reachable, so bare CI stays green.
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { spawn } from 'node:child_process';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import { createWriteStream } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -19,8 +27,41 @@ import { writeBackup, readBackup, fingerprint, type BackupManifest } from './arc
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenvConfig({ path: path.resolve(__dirname, '../../../../../.env') });
 
+const SCRATCH_DB = 'vibe_tax_backup_roundtrip';
+
 let available = false;
 let work: string;
+
+function scratchUrl(): string {
+  const u = new URL(process.env.DATABASE_URL!);
+  u.pathname = `/${SCRATCH_DB}`;
+  return u.toString();
+}
+
+/** Tuples-only psql query against an arbitrary database URL. */
+function psql(url: string, statement: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const proc = spawn('psql', ['-v', 'ON_ERROR_STOP=1', '-tAqX', url, '-c', statement], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let out = '';
+    let stderr = '';
+    proc.stdout.on('data', (c) => (out += String(c)));
+    proc.stderr.on('data', (c) => (stderr += String(c)));
+    proc.on('error', reject);
+    proc.on('close', (code) =>
+      code === 0
+        ? resolve(out.trim())
+        : reject(new Error(`psql exited ${code}: ${stderr.slice(0, 300)}`)),
+    );
+  });
+}
+
+async function dropScratch(): Promise<void> {
+  await getDb()
+    .execute(raw`DROP DATABASE IF EXISTS ${raw.raw(SCRATCH_DB)} WITH (FORCE)`)
+    .catch(() => {});
+}
 
 beforeAll(async () => {
   if (!process.env.DATABASE_URL) return;
@@ -40,6 +81,7 @@ afterAll(async () => {
     await getDb()
       .execute(raw`DROP TABLE IF EXISTS backup_roundtrip_marker`)
       .catch(() => {});
+    await dropScratch();
   }
   if (work) await rm(work, { recursive: true, force: true });
 });
@@ -50,7 +92,7 @@ describe('backup round-trip against a real database', () => {
     expect(true).toBe(true);
   });
 
-  it('dumps live data and restores it after the table is dropped', async ({ skip }) => {
+  it('dumps live data and restores it into a scratch database', async ({ skip }) => {
     if (!available) return skip();
     const db = getDb();
     const { dumpDatabase, restoreDatabase } = await import('./postgres.js');
@@ -84,23 +126,26 @@ describe('backup round-trip against a real database', () => {
     const bytes = await readFile(file);
     expect(bytes.length).toBeGreaterThan(1000);
 
-    // Destroy the table, then restore from the archive.
-    await db.execute(raw`DROP TABLE backup_roundtrip_marker`);
-    const gone = await db
-      .execute(raw`SELECT to_regclass('public.backup_roundtrip_marker') AS t`)
-      .then((r) => (r as unknown as Array<{ t: string | null }>)[0]?.t);
-    expect(gone).toBeNull();
+    // Restore into an empty scratch database and prove the marker row —
+    // schema and data — made the trip.
+    await dropScratch();
+    await db.execute(raw`CREATE DATABASE ${raw.raw(SCRATCH_DB)}`);
 
     await readBackup(file, 'a-sufficiently-long-passphrase', {
       onManifest: (m) => expect(m.appVersion).toBe('test'),
       onMasterKey: (k) => expect(k).toBe('k'),
-      onDatabase: (s) => restoreDatabase(s),
+      onDatabase: (s) => restoreDatabase(s, { targetUrl: scratchUrl() }),
       resolveFile: () => null,
     });
 
-    const rows = (await db.execute(
+    const note = await psql(scratchUrl(), `SELECT note FROM backup_roundtrip_marker WHERE id = 1`);
+    expect(note).toBe('survives the round trip');
+
+    // The app database was never the restore target: its pool is still
+    // usable and its marker row untouched.
+    const appRows = (await db.execute(
       raw`SELECT note FROM backup_roundtrip_marker WHERE id = 1`,
     )) as unknown as Array<{ note: string }>;
-    expect(rows[0]?.note).toBe('survives the round trip');
+    expect(appRows[0]?.note).toBe('survives the round trip');
   }, 180_000);
 });

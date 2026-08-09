@@ -134,9 +134,9 @@ export function dumpDatabase(): Readable {
 const RESTORE_APP_NAME = 'vibe-tax-restore';
 
 /** Run one statement in its own psql process; never touches the app pool. */
-function psqlCommand(bin: string, statement: string): Promise<void> {
+function psqlCommand(bin: string, url: string, statement: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const proc = spawn(bin, ['-v', 'ON_ERROR_STOP=1', '-tAqX', databaseUrl(), '-c', statement], {
+    const proc = spawn(bin, ['-v', 'ON_ERROR_STOP=1', '-tAqX', url, '-c', statement], {
       stdio: ['ignore', 'ignore', 'pipe'],
     });
     let stderr = '';
@@ -148,34 +148,67 @@ function psqlCommand(bin: string, statement: string): Promise<void> {
   });
 }
 
-export async function restoreDatabase(sql: Readable): Promise<void> {
+/** Like psqlCommand, but returns the statement's (tuples-only) stdout. */
+function psqlQuery(bin: string, url: string, statement: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const proc = spawn(bin, ['-v', 'ON_ERROR_STOP=1', '-tAqX', url, '-c', statement], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let out = '';
+    let stderr = '';
+    proc.stdout.on('data', (c) => (out += String(c)));
+    proc.stderr.on('data', (c) => (stderr += String(c)));
+    proc.on('error', reject);
+    proc.on('close', (code) =>
+      code === 0
+        ? resolve(out.trim())
+        : reject(new Error(`psql exited ${code}: ${stderr.slice(0, 300)}`)),
+    );
+  });
+}
+
+export async function restoreDatabase(
+  sql: Readable,
+  opts: {
+    /**
+     * Load into this database instead of the application's own. When set to
+     * a different database, the app's connection pool is left alone and no
+     * sessions are evicted — a failed restore can never take the running
+     * app's database with it.
+     */
+    targetUrl?: string;
+  } = {},
+): Promise<void> {
+  const url = opts.targetUrl ?? databaseUrl();
+  const restoringAppDb = url === databaseUrl();
   const version = await toolVersion('psql'); // Fails fast when absent.
   const bin = await toolPath('psql');
-  logger.info({ psql: version, bin }, 'restoring database from backup');
+  logger.info({ psql: version, bin, appDb: restoringAppDb }, 'restoring database from backup');
 
   // Best effort: if this role CAN create the extension, do it before the
   // filtered dump lands (which no longer carries CREATE EXTENSION). When
   // the role lacks the privilege this is a no-op and the destination is
   // expected to already have the extension — it could not run the app
-  // otherwise.
-  await getDb()
-    .execute(raw`CREATE EXTENSION IF NOT EXISTS vector`)
-    .catch((err) =>
-      logger.info(
-        { err: (err as Error).message },
-        'vector extension not created by restore (expected on a non-superuser role)',
-      ),
-    );
+  // otherwise. Runs through psql so it works against any target database,
+  // not just the one behind the app pool.
+  await psqlCommand(bin, url, 'CREATE EXTENSION IF NOT EXISTS vector').catch((err) =>
+    logger.info(
+      { err: (err as Error).message },
+      'vector extension not created by restore (expected on a non-superuser role)',
+    ),
+  );
 
   // Preflight BEFORE psql runs. The dump starts with DROP statements, so a
   // failure partway through leaves the destination partially wiped — the
   // one outcome a restore must never produce. pgvector cannot be installed
   // without superuser, so if it is still missing after the attempt above,
   // stop now while the database is untouched.
-  const ext = (await getDb().execute(
-    raw`SELECT count(*)::int AS n FROM pg_extension WHERE extname = 'vector'`,
-  )) as unknown as Array<{ n: number }>;
-  if ((ext[0]?.n ?? 0) === 0) {
+  const ext = await psqlQuery(
+    bin,
+    url,
+    `SELECT count(*) FROM pg_extension WHERE extname = 'vector'`,
+  ).catch(() => '0');
+  if (Number(ext) === 0) {
     throw new RestorePrerequisiteError(
       'This database is missing the "vector" extension, which the backup needs and this ' +
         'role cannot create. Ask a superuser to run: CREATE EXTENSION vector; on the ' +
@@ -183,29 +216,32 @@ export async function restoreDatabase(sql: Readable): Promise<void> {
     );
   }
 
-  // Close our OWN pool first, then evict the rest with a separate psql
-  // process.
-  //
-  // Doing it the other way round deadlocks: pg_terminate_backend issued
-  // THROUGH the app's pool kills that pool's own sibling connections, and
-  // the closeDb() that follows then waits forever for connections that
-  // will never drain. The restore hung there with psql never spawned and
-  // no error to show for it. Bounded, because a pool that refuses to close
-  // must not be able to block a restore either.
-  logger.info('restore: closing application connection pool');
-  await Promise.race([closeDb().catch(() => {}), new Promise((r) => setTimeout(r, 5000))]);
-  logger.info('restore: pool closed; evicting remaining sessions');
+  if (restoringAppDb) {
+    // Close our OWN pool first, then evict the rest with a separate psql
+    // process.
+    //
+    // Doing it the other way round deadlocks: pg_terminate_backend issued
+    // THROUGH the app's pool kills that pool's own sibling connections, and
+    // the closeDb() that follows then waits forever for connections that
+    // will never drain. The restore hung there with psql never spawned and
+    // no error to show for it. Bounded, because a pool that refuses to close
+    // must not be able to block a restore either.
+    logger.info('restore: closing application connection pool');
+    await Promise.race([closeDb().catch(() => {}), new Promise((r) => setTimeout(r, 5000))]);
+    logger.info('restore: pool closed; evicting remaining sessions');
 
-  await psqlCommand(
-    bin,
-    `SELECT pg_terminate_backend(pid) FROM pg_stat_activity
-     WHERE datname = current_database() AND pid <> pg_backend_pid()`,
-  ).catch((err) =>
-    logger.warn(
-      { err: (err as Error).message },
-      'could not evict other database connections; restore may block on locks',
-    ),
-  );
+    await psqlCommand(
+      bin,
+      url,
+      `SELECT pg_terminate_backend(pid) FROM pg_stat_activity
+       WHERE datname = current_database() AND pid <> pg_backend_pid()`,
+    ).catch((err) =>
+      logger.warn(
+        { err: (err as Error).message },
+        'could not evict other database connections; restore may block on locks',
+      ),
+    );
+  }
 
   logger.info('restore: sessions evicted; starting psql load');
   const skipped: string[] = [];
@@ -216,7 +252,7 @@ export async function restoreDatabase(sql: Readable): Promise<void> {
     // sees a spinner, and the only evidence is a half-dropped database
     // after they give up and restart. 60s is far longer than any healthy
     // lock wait here.
-    const proc = spawn(bin, ['-v', 'ON_ERROR_STOP=1', '--quiet', databaseUrl()], {
+    const proc = spawn(bin, ['-v', 'ON_ERROR_STOP=1', '--quiet', url], {
       stdio: ['pipe', 'ignore', 'pipe'],
       env: {
         ...process.env,
@@ -231,16 +267,23 @@ export async function restoreDatabase(sql: Readable): Promise<void> {
     // within seconds (health checks, background jobs) and takes locks on
     // the very tables being dropped. Keep evicting for as long as the load
     // runs, excluding the restore's own connection by application_name.
-    const evictor = setInterval(() => {
-      void psqlCommand(
-        bin,
-        `SELECT pg_terminate_backend(pid) FROM pg_stat_activity
-         WHERE datname = current_database()
-           AND pid <> pg_backend_pid()
-           AND coalesce(application_name, '') <> '${RESTORE_APP_NAME}'`,
-      ).catch(() => {});
-    }, 2000);
-    const stopEvictor = () => clearInterval(evictor);
+    // Only when restoring the app's own database — a scratch target has no
+    // competing sessions to evict.
+    const evictor = restoringAppDb
+      ? setInterval(() => {
+          void psqlCommand(
+            bin,
+            url,
+            `SELECT pg_terminate_backend(pid) FROM pg_stat_activity
+             WHERE datname = current_database()
+               AND pid <> pg_backend_pid()
+               AND coalesce(application_name, '') <> '${RESTORE_APP_NAME}'`,
+          ).catch(() => {});
+        }, 2000)
+      : null;
+    const stopEvictor = () => {
+      if (evictor) clearInterval(evictor);
+    };
     proc.on('close', stopEvictor);
     proc.on('error', stopEvictor);
     let stderr = '';
