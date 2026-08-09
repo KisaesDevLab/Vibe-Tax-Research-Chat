@@ -38,10 +38,12 @@ function scratchUrl(): string {
   return u.toString();
 }
 
-/** Tuples-only psql query against an arbitrary database URL. */
+/** Tuples-only psql query against an arbitrary database URL. The URL rides
+ *  behind -d: Windows psql does not permute argv, so options after a
+ *  positional dbname are silently ignored. */
 function psql(url: string, statement: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const proc = spawn('psql', ['-v', 'ON_ERROR_STOP=1', '-tAqX', url, '-c', statement], {
+    const proc = spawn('psql', ['-v', 'ON_ERROR_STOP=1', '-tAqX', '-d', url, '-c', statement], {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     let out = '';
