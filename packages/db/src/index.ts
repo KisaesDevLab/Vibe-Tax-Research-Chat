@@ -17,11 +17,23 @@ export function getDb(url?: string): PostgresJsDatabase<typeof schema> {
 }
 
 export async function closeDb(): Promise<void> {
-  if (pool) {
-    await pool.end({ timeout: 5 });
-    pool = undefined;
-    db = undefined;
-  }
+  // Reset the singletons BEFORE awaiting the drain: callers race this
+  // against a timeout, and if the timer used to win, pool/db stayed
+  // pointing at a half-ended pool that every later getDb() returned.
+  const p = pool;
+  pool = undefined;
+  db = undefined;
+  if (p) await p.end({ timeout: 5 });
+}
+
+/** Synchronous force-reset: the next getDb() builds a fresh pool
+ *  immediately; the old pool drains (or dies) in the background. Used by
+ *  the restore engine around the database swap. */
+export function resetDb(): void {
+  const p = pool;
+  pool = undefined;
+  db = undefined;
+  if (p) void p.end({ timeout: 5 }).catch(() => {});
 }
 
 export * as schema from './schema/index.js';
