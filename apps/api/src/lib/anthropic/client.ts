@@ -25,8 +25,8 @@ import { getSetting } from '../settings-store.js';
 import { SETTING_KEYS } from '@vibe/db/schema';
 import { fingerprint } from '../crypto.js';
 import { audit } from '../audit.js';
-import { logger } from '../logger.js';
 import { CLAUDE_JOBS, type ClaudeJobName } from './jobs-config.js';
+import { withRetry } from './retry.js';
 import { aiMode, callClaudeViaRouter, jobRoutable } from './router-mode.js';
 
 export class ClaudeDisabledError extends Error {
@@ -81,10 +81,8 @@ export async function validateKey(rawKey: string): Promise<{ ok: boolean; error?
 
 // ── TP-13: the job seam ──────────────────────────────────────────────────
 
-const MAX_ATTEMPTS = 3;
-const BASE_BACKOFF_MS = 500;
-
 function isRetryable(err: unknown): boolean {
+  if (err instanceof ClaudeDisabledError) return false;
   const status = (err as { status?: number }).status;
   if (typeof status === 'number') return status === 429 || status >= 500;
   // No HTTP status → connection-level failure (ECONNRESET, timeout…).
@@ -94,8 +92,6 @@ function isRetryable(err: unknown): boolean {
 function sha256(value: unknown): string {
   return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 }
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export type ClaudeJobRequest = Omit<
   Anthropic.MessageCreateParamsNonStreaming,
@@ -143,60 +139,53 @@ export async function callClaude(
   };
   const requestHash = sha256(body);
 
-  let lastErr: unknown;
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-    try {
-      const response = await client.messages.create(body, {
-        timeout: opts.timeoutMs ?? config.timeoutMs,
-      });
-      const text = response.content
-        .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-        .map((b) => b.text)
-        .join('');
-      const responseHash = sha256(response.content);
-      await audit({
-        actor_user_id: opts.actorUserId ?? null,
-        action: 'claude.call',
-        target_type: 'claude_job',
-        target_id: job,
-        metadata: {
-          job,
-          model: config.model,
-          max_tokens: maxTokens,
-          attempts: attempt,
-          request_hash: requestHash,
-          response_hash: responseHash,
-          input_tokens: response.usage.input_tokens,
-          output_tokens: response.usage.output_tokens,
-          stop_reason: response.stop_reason,
-        },
-      });
-      return { response, text, request_hash: requestHash, response_hash: responseHash };
-    } catch (err) {
-      lastErr = err;
-      if (err instanceof ClaudeDisabledError || !isRetryable(err) || attempt === MAX_ATTEMPTS) {
-        break;
-      }
-      const backoff = BASE_BACKOFF_MS * 2 ** (attempt - 1) * (0.5 + Math.random());
-      logger.warn(
-        { job, attempt, backoff_ms: Math.round(backoff), err: (err as Error).message },
-        'claude.call retrying',
-      );
-      await sleep(backoff);
-    }
+  let attempts = 0;
+  try {
+    const response = await withRetry(
+      (attempt) => {
+        attempts = attempt;
+        return client.messages.create(body, { timeout: opts.timeoutMs ?? config.timeoutMs });
+      },
+      { job, label: 'claude.call', isRetryable },
+    );
+    const text = response.content
+      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+      .map((b) => b.text)
+      .join('');
+    const responseHash = sha256(response.content);
+    await audit({
+      actor_user_id: opts.actorUserId ?? null,
+      action: 'claude.call',
+      target_type: 'claude_job',
+      target_id: job,
+      metadata: {
+        job,
+        model: config.model,
+        max_tokens: maxTokens,
+        attempts,
+        request_hash: requestHash,
+        response_hash: responseHash,
+        input_tokens: response.usage.input_tokens,
+        output_tokens: response.usage.output_tokens,
+        stop_reason: response.stop_reason,
+      },
+    });
+    return { response, text, request_hash: requestHash, response_hash: responseHash };
+  } catch (err) {
+    await audit({
+      actor_user_id: opts.actorUserId ?? null,
+      action: 'claude.call',
+      target_type: 'claude_job',
+      target_id: job,
+      metadata: {
+        job,
+        model: config.model,
+        request_hash: requestHash,
+        failed: true,
+        attempts,
+        error: (err as Error)?.message?.slice(0, 500) ?? 'unknown',
+      },
+    });
+    throw err;
   }
-  await audit({
-    actor_user_id: opts.actorUserId ?? null,
-    action: 'claude.call',
-    target_type: 'claude_job',
-    target_id: job,
-    metadata: {
-      job,
-      model: config.model,
-      request_hash: requestHash,
-      failed: true,
-      error: (lastErr as Error)?.message?.slice(0, 500) ?? 'unknown',
-    },
-  });
-  throw lastErr;
 }

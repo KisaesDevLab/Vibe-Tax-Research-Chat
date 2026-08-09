@@ -22,6 +22,7 @@ import crypto from 'node:crypto';
 import { audit } from '../audit.js';
 import { logger } from '../logger.js';
 import { CLAUDE_JOBS, type ClaudeJobName } from './jobs-config.js';
+import { withRetry } from './retry.js';
 import type { ClaudeJobRequest, ClaudeJobResult } from './client.js';
 
 // ── mode flag ────────────────────────────────────────────────────────────
@@ -178,13 +179,14 @@ function toRequestOptions(
 // router result is reshaped into a structurally-compatible Message. This is
 // what keeps all nine job call sites byte-for-byte untouched.
 
-// Widened past Anthropic's StopReason union: 'content_filter' and 'error' have
-// no member there, and collapsing them to 'end_turn' would make a filtered
-// response indistinguishable from a normal stop.
+// Widened past Anthropic's StopReason union: 'content_filter' has no member
+// there, and collapsing it to 'end_turn' would make a filtered response
+// indistinguishable from a normal stop. finish_reason 'error' never reaches
+// synthesis — it is treated as a failed call (see RouterProviderFailure).
 function toStopReason(finishReason: string): string {
   if (finishReason === 'tool_calls') return 'tool_use';
   if (finishReason === 'length') return 'max_tokens';
-  if (finishReason === 'content_filter' || finishReason === 'error') return finishReason;
+  if (finishReason === 'content_filter') return finishReason;
   return 'end_turn';
 }
 
@@ -192,52 +194,41 @@ function sha256(value: unknown): string {
   return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 }
 
-// ── retry (mirrors the direct path in client.ts) ─────────────────────────
+// ── retry classification ─────────────────────────────────────────────────
 
-const MAX_ATTEMPTS = 3;
-const BASE_BACKOFF_MS = 500;
 const MAX_RETRY_AFTER_MS = 30_000;
 
-function isRetryable(err: unknown): boolean {
-  // VibeAiError.retryable covers rate_limited / provider_unavailable. Anything
-  // that is NOT a VibeAiError never got a router verdict (fetch TypeError,
-  // timeout abort) — connection-level, retried like the direct path's
-  // status-less rule.
-  return err instanceof VibeAiError ? err.retryable : true;
+/** HTTP 200 whose finish_reason is 'error': the provider failed mid-generation.
+ *  Must never be reshaped into a successful (possibly empty) completion. */
+export class RouterProviderFailure extends Error {
+  constructor(job: ClaudeJobName) {
+    super(
+      `router returned finish_reason "error" for job "${job}" (provider failed mid-generation)`,
+    );
+    this.name = 'RouterProviderFailure';
+  }
 }
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+function isRetryable(err: unknown): boolean {
+  // Router verdicts: the SDK's retryable codes, plus any 5xx — a proxy in
+  // front of the router can answer 502/503 with a non-JSON body, which the
+  // SDK maps to code 'unknown'.
+  if (err instanceof VibeAiError) return err.retryable || err.status >= 500;
+  if (err instanceof RouterProviderFailure) return true;
+  // Connection-level failures that never got a router verdict: undici network
+  // errors surface as TypeError, timeout aborts as DOMException. Anything
+  // else (response parse errors, programming bugs) is deterministic — fail
+  // fast instead of re-sending the same doomed request.
+  if (err instanceof TypeError) return true;
+  if (err instanceof DOMException) return err.name === 'TimeoutError' || err.name === 'AbortError';
+  return false;
+}
 
-async function completeWithRetry(
-  job: ClaudeJobName,
-  taskClass: string,
-  messages: ChatMessage[],
-  requestOptions: RequestOptions,
-  timeoutMs: number,
-): Promise<{ result: CompletionResult; attempts: number }> {
-  for (let attempt = 1; ; attempt += 1) {
-    // Fresh signal per attempt — a fired timeout signal stays aborted.
-    const signal = AbortSignal.timeout(timeoutMs);
-    try {
-      const result = await routerClient().complete(taskClass, messages, {
-        ...requestOptions,
-        signal,
-      });
-      return { result, attempts: attempt };
-    } catch (err) {
-      if (!isRetryable(err) || attempt >= MAX_ATTEMPTS) throw err;
-      const retryAfterMs =
-        err instanceof VibeAiError && Number.isFinite(err.retryAfterSeconds)
-          ? Math.min(err.retryAfterSeconds! * 1000, MAX_RETRY_AFTER_MS)
-          : null;
-      const backoff = retryAfterMs ?? BASE_BACKOFF_MS * 2 ** (attempt - 1) * (0.5 + Math.random());
-      logger.warn(
-        { job, attempt, backoff_ms: Math.round(backoff), err: (err as Error).message },
-        'claude.call (router) retrying',
-      );
-      await sleep(backoff);
-    }
-  }
+function retryAfterMs(err: unknown): number | null {
+  // Guards NaN (an HTTP-date retry-after) and caps adversarial values.
+  return err instanceof VibeAiError && Number.isFinite(err.retryAfterSeconds)
+    ? Math.min(err.retryAfterSeconds! * 1000, MAX_RETRY_AFTER_MS)
+    : null;
 }
 
 /**
@@ -260,13 +251,24 @@ export async function callClaudeViaRouter(
   const requestOptions = toRequestOptions(request, maxTokens, opts.actorUserId);
   const requestHash = sha256({ taskClass, messages, requestOptions });
 
+  const deadlineMs = opts.timeoutMs ?? config.timeoutMs;
+  let attempts = 0;
   try {
-    const { result, attempts } = await completeWithRetry(
-      job,
-      taskClass,
-      messages,
-      requestOptions,
-      opts.timeoutMs ?? config.timeoutMs,
+    const result = await withRetry(
+      async (attempt, remainingMs): Promise<CompletionResult> => {
+        attempts = attempt;
+        // Fresh signal per attempt (a fired timeout signal stays aborted),
+        // bounded by what is LEFT of the overall deadline — a hung router
+        // fails within deadlineMs total, never attempts × deadlineMs.
+        const signal = AbortSignal.timeout(Math.max(1, remainingMs ?? deadlineMs));
+        const r = await routerClient().complete(taskClass, messages, {
+          ...requestOptions,
+          signal,
+        });
+        if (r.finishReason === 'error') throw new RouterProviderFailure(job);
+        return r;
+      },
+      { job, label: 'claude.call (router)', isRetryable, retryAfterMs, deadlineMs },
     );
 
     const content: Anthropic.ContentBlock[] = [];
@@ -337,6 +339,7 @@ export async function callClaudeViaRouter(
         task_class: taskClass,
         request_hash: requestHash,
         failed: true,
+        attempts,
         error: (err as Error)?.message?.slice(0, 500) ?? 'unknown',
       },
     });
