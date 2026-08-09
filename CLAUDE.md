@@ -113,6 +113,15 @@ into a scratch database via `restoreDatabase(sql, { targetUrl })`; keep it that 
 the dev DB is ever corrupted again: drop schema `public` + `drizzle`, then
 `pnpm db:migrate && pnpm db:seed`.
 
+### nginx upload cap vs backup restores
+
+nginx defaults `client_max_body_size` to 1MB; without an override in
+`apps/web/nginx.conf`'s `/api/` location, every backup-archive upload (first-run setup
+restore, Admin → Backup & restore) died at nginx with 413 before the api saw it. The
+location now sets `client_max_body_size 0` + `proxy_request_buffering off` — the api's
+multer limits are authoritative. Keep any future proxy layer (Caddy etc.) at least as
+permissive.
+
 ### Claude call retry/timeout semantics (shared)
 
 Both call paths use `lib/anthropic/retry.ts` (`withRetry`): 3 attempts, jittered backoff,
