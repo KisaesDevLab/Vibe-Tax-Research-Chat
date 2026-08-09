@@ -163,14 +163,23 @@ export function SetupPage() {
           </div>
         )}
 
-        {error && <div className="text-oxblood text-sm mt-3">{error}</div>}
-        <button
-          onClick={next}
-          disabled={busy}
-          className="mt-6 w-full bg-ink text-paper py-2 rounded font-display tracking-wide disabled:opacity-50"
-        >
-          {busy ? 'Working…' : step === 'model' ? 'Finish' : 'Next'}
-        </button>
+        {/* The wizard's own error + Next belong to the create-an-admin steps
+            ONLY. In restore mode the SetupRestore panel has its own actions;
+            rendering Next here made it the page's most prominent CTA, and
+            clicking it ran the admin bootstrap with empty fields — the user
+            filled the restore form and got an unexplained "bad_request". */}
+        {mode === 'new' && (
+          <>
+            {error && <div className="text-oxblood text-sm mt-3">{error}</div>}
+            <button
+              onClick={next}
+              disabled={busy}
+              className="mt-6 w-full bg-ink text-paper py-2 rounded font-display tracking-wide disabled:opacity-50"
+            >
+              {busy ? 'Working…' : step === 'model' ? 'Finish' : 'Next'}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
