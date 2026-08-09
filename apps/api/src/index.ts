@@ -2,10 +2,12 @@
 import { runMigrations, runSeed, pendingMigrationCount } from '@vibe/db';
 import { createApp } from './app.js';
 import { env } from './config/env.js';
+import { backupDir, backupTmpDir, dataDirs } from './config/paths.js';
 import { logger } from './lib/logger.js';
 import { startWorkers } from './jobs/workers.js';
 import { recoverOrphanedStreams } from './lib/stream-recovery.js';
 import { registerTrcTaskClasses } from './lib/anthropic/router-mode.js';
+import { recoverRestore, defaultEngineConfig } from './lib/backup/engine.js';
 
 // Last-line-of-defense: any promise that escapes our handlers should be
 // logged, not abort the process. BullMQ workers + their per-queue 'error'
@@ -23,6 +25,26 @@ process.on('uncaughtException', (err) => {
 });
 
 async function start(): Promise<void> {
+  // DR v2 — recover an interrupted restore BEFORE migrations. A crash
+  // mid-swap can leave the server without the live database; running the
+  // migrator first would turn that into a fatal restart loop. Rolls a
+  // partial swap forward (journaled steps) or cleans up a pre-swap crash
+  // with the live install untouched.
+  try {
+    await recoverRestore(
+      defaultEngineConfig('cli', null, {
+        dataDirs: dataDirs(),
+        backupDir: backupDir(),
+        backupTmpDir: backupTmpDir(),
+      }),
+    );
+  } catch (err) {
+    logger.error(
+      { err },
+      'restore crash-recovery failed — the restore journal has details; the app will still try to start',
+    );
+  }
+
   // Auto-migrate before binding the listener. Default off so the standalone
   // install flow stays "operator runs db:migrate:prod explicitly"; the
   // appliance manifest sets MIGRATIONS_AUTO=true so the bootstrapper doesn't

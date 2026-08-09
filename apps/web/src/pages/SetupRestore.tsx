@@ -5,17 +5,15 @@
 // operator does not have yet — the accounts they would log in with are
 // inside the archive.
 //
-// It is also the only moment a restore is completely safe: no users, no
-// sessions, nothing to lose if it fails.
+// DR v2: the restore runs in the scratch-database engine and this panel
+// renders the durable journal — real phases, byte/item progress, and on
+// failure the exact phase plus the pg_restore stderr tail. The live
+// install is untouched until the final swap, and the journal survives an
+// api restart.
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, apiFetch } from '../lib/api';
-
-type RestoreState =
-  | { status: 'idle' }
-  | { status: 'running'; startedAt: string; step: string }
-  | { status: 'succeeded'; finishedAt: string; result: { restored?: { files?: number } } }
-  | { status: 'failed'; finishedAt: string; error: string; code: string; harmless: boolean };
+import { RestoreFailure, RestorePhases, type JournalView } from '../components/RestorePhases';
 
 export function SetupRestore({ onCancel }: { onCancel: () => void }) {
   const [file, setFile] = useState<File | null>(null);
@@ -23,10 +21,10 @@ export function SetupRestore({ onCancel }: { onCancel: () => void }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: state } = useQuery<RestoreState>({
+  const { data: state } = useQuery<JournalView>({
     queryKey: ['setup', 'restore-status'],
     queryFn: () => api('/api/setup/restore/status', { skipRefresh: true }),
-    refetchInterval: (q) => (q.state.data?.status === 'running' ? 2000 : false),
+    refetchInterval: (q) => (q.state.data?.status === 'running' ? 1500 : false),
   });
   const running = state?.status === 'running' || submitting;
 
@@ -56,6 +54,16 @@ export function SetupRestore({ onCancel }: { onCancel: () => void }) {
             the credentials from the server the backup came from — the accounts that existed here
             before have been replaced.
           </p>
+          {state.result && !state.result.masterKeyMatches && (
+            <p className="mt-2 text-oxblood">
+              The archive was made with a different MASTER_KEY. Set MASTER_KEY on this server to the
+              value from the source server, then restart — until then the stored Anthropic key and
+              SMTP password cannot be decrypted.
+              {state.result.keyFromArchive && (
+                <span className="block font-mono text-xs mt-1">{state.result.keyFromArchive}</span>
+              )}
+            </p>
+          )}
         </div>
         <a
           href="/login"
@@ -95,21 +103,16 @@ export function SetupRestore({ onCancel }: { onCancel: () => void }) {
       </label>
 
       {state?.status === 'running' && (
-        <div className="text-xs text-ink/60">
-          Restoring — {state.step}. This continues on the server even if you close the tab; a large
-          archive can take several minutes.
-        </div>
-      )}
-      {state?.status === 'failed' && (
-        <div className="border border-oxblood/40 bg-oxblood/5 rounded p-3 text-sm">
-          <div className="font-medium text-oxblood">Restore failed</div>
-          <p className="mt-0.5">{state.error}</p>
-          <p className="text-xs text-ink/60 mt-1">
-            {state.harmless
-              ? 'Nothing was changed — fix the cause and try again.'
-              : 'The database may be incomplete. Resolve the cause before using this install.'}
+        <div className="space-y-2">
+          <RestorePhases journal={state} />
+          <p className="text-xs text-ink/60">
+            This continues on the server even if you close the tab; the database only changes at the
+            final “swap” step.
           </p>
         </div>
+      )}
+      {(state?.status === 'failed' || state?.status === 'interrupted') && (
+        <RestoreFailure journal={state} />
       )}
       {error && <div className="text-oxblood text-sm">{error}</div>}
 

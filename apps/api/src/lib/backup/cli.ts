@@ -1,123 +1,171 @@
 #!/usr/bin/env node
-// Offline restore — the reliable way to move an install.
+// DR v2 — offline backup/restore CLI. Same engine as the admin UI and the
+// first-run wizard; exists for the cases where the app itself is the
+// problem (container wedged, operator prefers a shell, automation).
 //
-//   node apps/api/dist/lib/backup/cli.js /path/to/backup.vtbk
+//   vibe-backup list
+//   vibe-backup inspect <file|name>
+//   vibe-backup restore <file|name>     (BACKUP_PASSPHRASE from env)
+//   vibe-backup rollback
+//   vibe-backup recover
 //
-// Passphrase comes from BACKUP_PASSPHRASE (avoids it landing in shell
-// history or `ps` output).
+// Run inside the api container (or a one-off container on the same
+// network/env):
+//   docker compose exec api node apps/api/dist/lib/backup/cli.js list
 //
-// Every restore failure this feature has had came from restoring while the
-// API was serving traffic: a reverse proxy killing the request mid-DROP,
-// the app's own pool holding locks on the tables being dropped, health
-// checks reconnecting the instant they were evicted. Run this with the API
-// container stopped and none of those exist — no HTTP, no timeout, no
-// competing connections, and the exit code is the real outcome.
-import { createWriteStream } from 'node:fs';
-import { mkdtemp, rm, rename, stat, mkdir, cp } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+// The passphrase comes from BACKUP_PASSPHRASE, never argv — argv leaks
+// into `ps`, shell history, and container inspect output.
 import path from 'node:path';
-import { readBackup, fingerprint, BackupPassphraseError, BackupFormatError } from './archive.js';
-import { restoreDatabase, RestorePrerequisiteError } from './postgres.js';
-import type { BackupManifest } from './archive.js';
+import { stat } from 'node:fs/promises';
+import { backupDir, backupTmpDir, dataDirs } from '../../config/paths.js';
+import { readManifestOnly } from './archive.js';
+import { BackupFormatError, BackupPassphraseError, RestorePrerequisiteError } from './errors.js';
+import { ARCHIVE_NAME_RE, listArchives } from './backup-job.js';
+import { beginRestore, defaultEngineConfig, recoverRestore, rollbackRestore } from './engine.js';
+import { readJournal } from './journal.js';
 
-function dataDirs(): Record<string, string> {
-  return {
-    attachments: path.resolve(process.env.ATTACHMENTS_DIR ?? './attachments'),
-    deliverables: path.resolve(process.env.DELIVERABLES_DIR ?? './storage/deliverables'),
-    workspaces: path.resolve(process.env.WORKSPACES_DIR ?? './workspaces'),
-  };
+function enginePaths() {
+  return { dataDirs: dataDirs(), backupDir: backupDir(), backupTmpDir: backupTmpDir() };
 }
 
-async function main(): Promise<void> {
-  const file = process.argv[2];
-  const passphrase = process.env.BACKUP_PASSPHRASE;
-  if (!file || !passphrase) {
-    console.error('Usage: BACKUP_PASSPHRASE=… node apps/api/dist/lib/backup/cli.js <backup.vtbk>');
+function usage(): never {
+  console.error(
+    'Usage: vibe-backup <list | inspect <file|name> | restore <file|name> | rollback | recover>\n' +
+      '  restore/inspect read the passphrase from BACKUP_PASSPHRASE.',
+  );
+  process.exit(2);
+}
+
+function requirePassphrase(): string {
+  const p = process.env.BACKUP_PASSPHRASE ?? '';
+  if (!p) {
+    console.error('BACKUP_PASSPHRASE is not set.');
     process.exit(2);
   }
-  if (!(await stat(file).catch(() => null))) {
-    console.error(`No such file: ${file}`);
+  return p;
+}
+
+/** A bare archive name resolves inside BACKUP_DIR; a path is used as-is. */
+async function resolveArchive(arg: string): Promise<string> {
+  const candidate = ARCHIVE_NAME_RE.test(arg) ? path.join(backupDir(), arg) : path.resolve(arg);
+  await stat(candidate).catch(() => {
+    console.error(`No such file: ${candidate}`);
     process.exit(2);
+  });
+  return candidate;
+}
+
+async function cmdList(): Promise<number> {
+  const archives = await listArchives(backupDir());
+  if (!archives.length) {
+    console.log(`No archives in ${backupDir()}.`);
+    return 0;
   }
+  for (const a of archives) {
+    console.log(`${a.createdAt}  ${String(a.size).padStart(12)}  ${a.name}`);
+  }
+  return 0;
+}
 
-  const dirs = dataDirs();
-  const staging = await mkdtemp(path.join(tmpdir(), 'vibe-restore-cli-'));
-  let manifest: BackupManifest | null = null;
-  let archiveKey: string | null = null;
-  let files = 0;
+async function cmdInspect(arg: string): Promise<number> {
+  const file = await resolveArchive(arg);
+  const m = await readManifestOnly(file, requirePassphrase());
+  console.log(JSON.stringify(m, null, 2));
+  return 0;
+}
 
+async function cmdRestore(arg: string): Promise<number> {
+  const file = await resolveArchive(arg);
+  const passphrase = requirePassphrase();
+  console.log(`Restoring ${file} …`);
+  await beginRestore(
+    { kind: 'archive', file, name: path.basename(file), deleteAfter: false },
+    passphrase,
+    defaultEngineConfig('cli', null, enginePaths()),
+  );
+  // Follow the journal until terminal, echoing phase transitions.
+  let lastPhase = '';
+  for (;;) {
+    const j = await readJournal(backupDir());
+    if (!j) break;
+    if (j.phase !== lastPhase) {
+      lastPhase = j.phase;
+      console.log(`  phase: ${j.phase}`);
+    }
+    if (j.status !== 'running') {
+      if (j.status === 'succeeded') {
+        console.log('Restore complete. Restart the app container.');
+        if (j.result && !j.result.masterKeyMatches) {
+          console.log(
+            'MASTER_KEY MISMATCH: set MASTER_KEY on this server to the value from the source ' +
+              'server (printed below), then restart. Until then the stored Anthropic key and ' +
+              'SMTP password cannot be decrypted.',
+          );
+          console.log(`MASTER_KEY from archive: ${j.result.keyFromArchive ?? '(unavailable)'}`);
+        }
+        return 0;
+      }
+      console.error(`Restore ${j.status}: [${j.error?.phase}] ${j.error?.message ?? ''}`);
+      if (j.error?.stderrTail?.length) {
+        console.error('--- pg_restore stderr tail ---');
+        for (const line of j.error.stderrTail) console.error(line);
+      }
+      return 1;
+    }
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  console.error('Restore journal vanished — check the server logs.');
+  return 1;
+}
+
+async function cmdRollback(): Promise<number> {
+  const j = await rollbackRestore(defaultEngineConfig('cli', null, enginePaths()));
+  console.log(`Rolled back to the previous generation (restore ${j.id}). Restart the app.`);
+  return 0;
+}
+
+async function cmdRecover(): Promise<number> {
+  await recoverRestore(defaultEngineConfig('cli', null, enginePaths()));
+  const j = await readJournal(backupDir());
+  console.log(`Journal status: ${j?.status ?? 'none'}`);
+  return 0;
+}
+
+async function main(): Promise<number> {
+  const [cmd, arg] = process.argv.slice(2);
   try {
-    console.log('Reading archive…');
-    await readBackup(file, passphrase, {
-      onManifest: (m) => {
-        manifest = m;
-        console.log(
-          `Archive from ${m.appVersion}, created ${new Date(m.createdAt).toLocaleString()}`,
-        );
-      },
-      onMasterKey: (k) => {
-        archiveKey = k;
-      },
-      onDatabase: async (sql) => {
-        console.log('Loading database (this is the slow part)…');
-        await restoreDatabase(sql);
-        console.log('Database loaded.');
-      },
-      resolveFile: (archivePath) => {
-        const [top, ...rest] = archivePath.split('/');
-        if (!top || !(top in dirs) || rest.length === 0) return null;
-        const dest = path.resolve(staging, top, path.join(...rest));
-        if (!dest.startsWith(path.resolve(staging, top) + path.sep)) return null;
-        files += 1;
-        return dest;
-      },
-    });
-
-    console.log(`Publishing ${files} file(s)…`);
-    for (const [key, live] of Object.entries(dirs)) {
-      const staged = path.join(staging, key);
-      if (!(await stat(staged).catch(() => null))) continue;
-      await mkdir(path.dirname(live), { recursive: true }).catch(() => {});
-      const old = `${live}.replaced-${Date.now()}`;
-      if (await stat(live).catch(() => null)) await rename(live, old).catch(() => {});
-      await rename(staged, live).catch(async () => {
-        await cp(staged, live, { recursive: true });
-      });
-      await rm(old, { recursive: true, force: true }).catch(() => {});
+    switch (cmd) {
+      case 'list':
+        return await cmdList();
+      case 'inspect':
+        return arg ? await cmdInspect(arg) : usage();
+      case 'restore':
+        return arg ? await cmdRestore(arg) : usage();
+      case 'rollback':
+        return await cmdRollback();
+      case 'recover':
+        return await cmdRecover();
+      default:
+        usage();
     }
-
-    const m = manifest as BackupManifest | null;
-    console.log('\nRestore complete.');
-    console.log(`  from app version : ${m?.appVersion ?? 'unknown'}`);
-    console.log(`  files restored   : ${files}`);
-
-    const envKey = process.env.MASTER_KEY ?? '';
-    if (archiveKey && envKey && fingerprint(archiveKey) !== fingerprint(envKey)) {
-      console.log("\nWARNING: this server's MASTER_KEY differs from the archive's.");
-      console.log('Encrypted settings (Anthropic key, SMTP password) will not decrypt until');
-      console.log('MASTER_KEY is set to the value below and the API restarted:\n');
-      console.log(`  MASTER_KEY=${archiveKey}\n`);
-    }
-    console.log('Start the API container again, then log in with the credentials from the');
-    console.log("SOURCE server — the restore replaced this install's user accounts.");
-  } finally {
-    await rm(staging, { recursive: true, force: true }).catch(() => {});
-  }
-}
-
-main()
-  .then(() => process.exit(0))
-  .catch((err: unknown) => {
+  } catch (err) {
     if (err instanceof BackupPassphraseError || err instanceof BackupFormatError) {
-      console.error(`\nRestore aborted: ${err.message}`);
-      console.error('Nothing was changed.');
-      process.exit(1);
+      console.error(`${err.message} Nothing was changed.`);
+      return 1;
     }
     if (err instanceof RestorePrerequisiteError) {
-      console.error(`\nRestore aborted: ${err.message}`);
-      process.exit(1);
+      console.error(err.message);
+      return 1;
     }
-    console.error('\nRestore failed:', (err as Error).message);
-    console.error('The database may be incomplete — do not start the app until it is resolved.');
+    console.error((err as Error).message);
+    return 1;
+  }
+}
+
+main().then(
+  (code) => process.exit(code),
+  (err) => {
+    console.error(err);
     process.exit(1);
-  });
+  },
+);

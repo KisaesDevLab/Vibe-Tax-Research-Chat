@@ -14,9 +14,11 @@ import { audit } from '../lib/audit.js';
 import { signAccess, signRefresh, hashToken } from '../lib/jwt.js';
 import { setupBootstrapLimiter } from '../lib/rate-limit.js';
 import multer from 'multer';
-import { rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { getRestoreState, beginRestore, runRestore } from '../lib/backup/restore-job.js';
+import { mkdir, rm } from 'node:fs/promises';
+import path from 'node:path';
+import { backupDir, backupTmpDir, dataDirs } from '../config/paths.js';
+import { beginRestore, defaultEngineConfig } from '../lib/backup/engine.js';
+import { readJournal, redactJournal, RestoreLockError } from '../lib/backup/journal.js';
 import { ACCESS_COOKIE_NAME, accessCookieOptions } from '../lib/cookies.js';
 
 export const setupRouter = Router();
@@ -139,10 +141,17 @@ setupRouter.post('/bootstrap', setupBootstrapLimiter, async (req, res) => {
 // and the archive is useless without its passphrase.
 const restoreUpload = multer({
   storage: multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, tmpdir()),
-    filename: (_req, _file, cb) => cb(null, `vibe-setup-restore-${Date.now()}.vtbk`),
+    // The backups volume, not tmpdir: multi-GB uploads must not land on
+    // container tmpfs, and the engine spools live on the same volume.
+    destination: (_req, _file, cb) => {
+      void mkdir(backupTmpDir(), { recursive: true }).then(
+        () => cb(null, backupTmpDir()),
+        (err: Error) => cb(err, ''),
+      );
+    },
+    filename: (_req, _file, cb) => cb(null, `setup-restore-${Date.now()}.vtbk`),
   }),
-  limits: { fileSize: 20 * 1024 * 1024 * 1024 },
+  limits: { fileSize: 40 * 1024 * 1024 * 1024 },
 });
 
 async function adminCount(): Promise<number> {
@@ -150,8 +159,13 @@ async function adminCount(): Promise<number> {
   return Number(rows[0]?.value ?? 0);
 }
 
-setupRouter.get('/restore/status', (_req, res) => {
-  res.json(getRestoreState());
+setupRouter.get('/restore/status', async (_req, res) => {
+  const j = await readJournal(backupDir());
+  if (!j) {
+    res.json({ status: 'idle' });
+    return;
+  }
+  res.json(j.status === 'succeeded' ? j : redactJournal(j));
 });
 
 setupRouter.post(
@@ -178,16 +192,33 @@ setupRouter.post(
       });
       return;
     }
-    if (!beginRestore()) {
+    try {
+      // No actor to attribute this to yet — the accounts arrive with the
+      // archive.
+      const { id } = await beginRestore(
+        {
+          kind: 'upload',
+          file: file.path,
+          name: file.originalname || path.basename(file.path),
+          deleteAfter: true,
+        },
+        passphrase,
+        defaultEngineConfig('setup', null, {
+          dataDirs: dataDirs(),
+          backupDir: backupDir(),
+          backupTmpDir: backupTmpDir(),
+        }),
+      );
+      res.status(202).json({ id, status: 'running' });
+    } catch (err) {
       await cleanup();
-      res
-        .status(409)
-        .json({ error: 'restore_in_progress', message: 'A restore is already running.' });
-      return;
+      if (err instanceof RestoreLockError) {
+        res
+          .status(409)
+          .json({ error: 'restore_in_progress', message: 'A restore is already running.' });
+        return;
+      }
+      throw err;
     }
-    res.status(202).json({ status: 'running' });
-    // No actor to attribute this to yet — the accounts arrive with the
-    // archive — so the audit row records the requesting address instead.
-    void runRestore(file.path, passphrase, null, req.ip);
   },
 );

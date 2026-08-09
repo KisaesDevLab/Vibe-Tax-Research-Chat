@@ -103,18 +103,17 @@ COOKIE_SECURE=true
 
 Restart the api container after the change.
 
-## 8. (Optional) Backups
+## 8. Backups
 
-`scripts/backup.sh` runs `pg_dump` + gzip into `./backups/`. Wire it into cron:
+Backups are created from **Admin → Backup & restore**: an encrypted `.vtbk`
+archive (database + uploads + deliverables + workspaces + MASTER_KEY) is
+built into the `backups` volume, listed on the page, and downloaded from
+there — move every download off the server. Restore happens through the
+same page, through first-run setup on a fresh install, or with the
+`vibe-backup` CLI inside the api container.
 
-```bash
-crontab -e
-# nightly at 02:30
-30 2 * * * cd /home/$USER/Vibe-Tax-Research-Chat && BACKUP_DIR=$PWD/backups bash scripts/backup.sh
-```
-
-If `DUPLICATI_TARGET` is set, the script forwards to your Duplicati endpoint (S3, B2, SFTP).
-See `docs/admin-guide.md#backup--restore` for restore steps.
+See `docs/admin-guide.md#backup--restore-disaster-recovery` for the full
+procedure, rollback, RTO/RPO, and the restore drill script.
 
 ## 9. Updating
 

@@ -1,42 +1,39 @@
-// Admin backup / restore — moving an entire install to another server
-// without a shell.
+// DR v2 — Admin → Backup & restore.
 //
-// The archive is a single passphrase-encrypted file containing the
-// database, the uploaded files, the rendered deliverables, the skills
-// workspace, and MASTER_KEY. It is therefore the most sensitive artifact
-// this app can produce: admin-only, audited on both create and restore,
-// and useless to anyone without the passphrase.
+// Backups are server-side jobs retained in the backups volume (list /
+// download / delete); restores go through the scratch-database engine and
+// are observable via the durable journal. Nothing here buffers an archive
+// in memory, and nothing here can write the live database — that is the
+// engine's swap, or nothing.
 import { Router } from 'express';
 import { z } from 'zod';
 import multer from 'multer';
-import { mkdtemp, rm, stat } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { createReadStream } from 'node:fs';
+import { mkdir, rm, stat, statfs } from 'node:fs/promises';
 import path from 'node:path';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
-import { env } from '../../config/env.js';
-import { logger } from '../../lib/logger.js';
 import { audit } from '../../lib/audit.js';
+import { env } from '../../config/env.js';
+import { backupDir, backupTmpDir, dataDirs } from '../../config/paths.js';
+import { fingerprint } from '../../lib/backup/archive.js';
+import { toolVersion } from '../../lib/backup/pg.js';
+import { PgToolMissingError, RestorePrerequisiteError } from '../../lib/backup/errors.js';
 import {
-  writeBackup,
-  readBackup,
-  fingerprint,
-  BackupFormatError,
-  BackupPassphraseError,
-  type BackupManifest,
-} from '../../lib/backup/archive.js';
+  ARCHIVE_NAME_RE,
+  BackupBusyError,
+  defaultBackupJobConfig,
+  deleteArchive,
+  listArchives,
+  readBackupStatus,
+  startBackup,
+} from '../../lib/backup/backup-job.js';
 import {
-  dumpDatabase,
-  databaseName,
-  pgDumpVersion,
-  PgToolMissingError,
-} from '../../lib/backup/postgres.js';
-import {
-  dataDirs,
-  getRestoreState,
-  resetRestoreState,
   beginRestore,
-  runRestore,
-} from '../../lib/backup/restore-job.js';
+  defaultEngineConfig,
+  dropPreviousGeneration,
+  rollbackRestore,
+} from '../../lib/backup/engine.js';
+import { readJournal, redactJournal, RestoreLockError } from '../../lib/backup/journal.js';
 
 export const adminBackupRouter = Router();
 adminBackupRouter.use(requireAuth, requireRole('admin'));
@@ -46,6 +43,43 @@ const APP_VERSION = process.env.APP_VERSION ?? 'dev';
 // A passphrase short enough to brute-force defeats the point of encrypting
 // an archive that carries every credential in the install.
 const MIN_PASSPHRASE = 12;
+
+function enginePaths() {
+  return { dataDirs: dataDirs(), backupDir: backupDir(), backupTmpDir: backupTmpDir() };
+}
+
+// ── status ───────────────────────────────────────────────────────────────
+
+adminBackupRouter.get('/status', async (req, res) => {
+  let pgTools: { pg_dump?: string; pg_restore?: string; error?: string } = {};
+  try {
+    pgTools = {
+      pg_dump: await toolVersion('pg_dump'),
+      pg_restore: await toolVersion('pg_restore'),
+    };
+  } catch (err) {
+    pgTools = { error: (err as Error).message };
+  }
+  const dirs: Record<string, boolean> = {};
+  for (const [key, dir] of Object.entries(dataDirs())) {
+    dirs[key] = await stat(dir)
+      .then(() => true)
+      .catch(() => false);
+  }
+  const free = await statfs(backupDir()).catch(() => null);
+  res.json({
+    appVersion: APP_VERSION,
+    pgTools,
+    dirs,
+    backupDirFreeBytes: free ? free.bavail * free.bsize : null,
+    masterKeyFingerprint: fingerprint(env.MASTER_KEY),
+    minPassphrase: MIN_PASSPHRASE,
+  });
+  void req;
+});
+
+// ── backup job ───────────────────────────────────────────────────────────
+
 const createSchema = z.object({ passphrase: z.string().min(MIN_PASSPHRASE) });
 
 adminBackupRouter.post('/', async (req, res) => {
@@ -57,10 +91,8 @@ adminBackupRouter.post('/', async (req, res) => {
     });
     return;
   }
-
-  let dumpedWith: string;
   try {
-    dumpedWith = await pgDumpVersion();
+    await toolVersion('pg_dump');
   } catch (err) {
     if (err instanceof PgToolMissingError) {
       res.status(503).json({ error: 'pg_tools_missing', message: err.message });
@@ -68,142 +100,216 @@ adminBackupRouter.post('/', async (req, res) => {
     }
     throw err;
   }
-
-  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const filename = `vibe-tax-backup-${stamp}.vtbk`;
-  const manifest: BackupManifest = {
-    format: 1,
-    createdAt: new Date().toISOString(),
-    appVersion: APP_VERSION,
-    masterKeyFingerprint: fingerprint(env.MASTER_KEY),
-    includes: Object.keys(dataDirs()),
-    database: { name: databaseName(), dumpedWith },
-  };
-
-  res.setHeader('content-type', 'application/octet-stream');
-  res.setHeader('content-disposition', `attachment; filename="${filename}"`);
-  // Length is unknowable up front (the archive is built as it streams), so
-  // the response is chunked. Buffering it to learn the size would defeat
-  // the point on a multi-gigabyte install.
-  res.setHeader('cache-control', 'no-store');
-
   try {
-    await writeBackup(
-      {
-        dirs: dataDirs(),
-        databaseDump: dumpDatabase,
-        manifest,
-        masterKey: env.MASTER_KEY,
-      },
+    const { id } = await startBackup(
       parsed.data.passphrase,
-      res,
+      defaultBackupJobConfig(req.auth!.user_id, enginePaths()),
     );
-    res.end();
-    await audit({
-      actor_user_id: req.auth!.user_id,
-      action: 'admin.backup.create',
-      metadata: { filename, includes: manifest.includes, app_version: APP_VERSION },
-      ip: req.ip,
-    });
-    logger.info({ filename }, 'backup archive streamed');
+    res.status(202).json({ id });
   } catch (err) {
-    logger.error({ err }, 'backup failed');
-    // Headers are already sent, so the only honest signal left is to break
-    // the connection — a truncated download must not look like a good
-    // backup. The client checks for the trailing tag on restore anyway.
-    res.destroy(err as Error);
+    if (err instanceof BackupBusyError) {
+      res.status(409).json({ error: 'busy', message: err.message });
+      return;
+    }
+    throw err;
   }
 });
 
-const upload = multer({
+adminBackupRouter.get('/jobs/current', async (_req, res) => {
+  res.json((await readBackupStatus(backupDir())) ?? { status: 'idle' });
+});
+
+// ── archives ─────────────────────────────────────────────────────────────
+
+adminBackupRouter.get('/archives', async (_req, res) => {
+  res.json({ archives: await listArchives(backupDir()) });
+});
+
+adminBackupRouter.get('/archives/:name/download', async (req, res) => {
+  const name = req.params.name;
+  if (!ARCHIVE_NAME_RE.test(name)) {
+    res.status(400).json({ error: 'bad_request' });
+    return;
+  }
+  const file = path.join(backupDir(), name);
+  const st = await stat(file).catch(() => null);
+  if (!st) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'admin.backup.download',
+    metadata: { filename: name, bytes: st.size },
+    ip: req.ip,
+  });
+  res.setHeader('content-type', 'application/octet-stream');
+  res.setHeader('content-length', String(st.size));
+  res.setHeader('content-disposition', `attachment; filename="${name}"`);
+  res.setHeader('cache-control', 'no-store');
+  createReadStream(file).pipe(res);
+});
+
+adminBackupRouter.delete('/archives/:name', async (req, res) => {
+  const name = req.params.name;
+  if (!(await deleteArchive(backupDir(), name))) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'admin.backup.delete_archive',
+    metadata: { filename: name },
+    ip: req.ip,
+  });
+  res.json({ ok: true });
+});
+
+// ── restore ──────────────────────────────────────────────────────────────
+
+const restoreUpload = multer({
   storage: multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, tmpdir()),
-    filename: (_req, _file, cb) => cb(null, `vibe-restore-${Date.now()}.vtbk`),
+    // Same volume as the archives — multi-GB uploads never land on
+    // container tmpfs. Created on demand: the volume may be empty on a
+    // fresh install.
+    destination: (_req, _file, cb) => {
+      void mkdir(backupTmpDir(), { recursive: true }).then(
+        () => cb(null, backupTmpDir()),
+        (err: Error) => cb(err, ''),
+      );
+    },
+    filename: (_req, _file, cb) => cb(null, `upload-${Date.now()}.vtbk`),
   }),
-  // Disk-backed, so the ceiling is disk rather than RAM. 20 GB is well past
-  // any realistic single-firm install.
-  limits: { fileSize: 20 * 1024 * 1024 * 1024 },
+  limits: { fileSize: 40 * 1024 * 1024 * 1024 },
 });
 
 const restoreSchema = z.object({
   passphrase: z.string().min(1),
-  /** Restoring overwrites everything; make the caller say so explicitly. */
   confirm: z.literal('replace-all-data'),
+  /** Restore an archive already in the backups volume instead of an upload. */
+  archive: z.string().regex(ARCHIVE_NAME_RE).optional(),
 });
 
-adminBackupRouter.get('/restore/status', (_req, res) => {
-  res.json(getRestoreState());
+adminBackupRouter.post('/restore', restoreUpload.single('file'), async (req, res) => {
+  const parsed = restoreSchema.safeParse(req.body ?? {});
+  const cleanupUpload = () => rm(req.file?.path ?? '', { force: true }).catch(() => {});
+  if (!parsed.success) {
+    await cleanupUpload();
+    res.status(400).json({
+      error: 'bad_request',
+      message: 'A passphrase and confirm=replace-all-data are required.',
+    });
+    return;
+  }
+  let source;
+  if (req.file) {
+    source = {
+      kind: 'upload' as const,
+      file: req.file.path,
+      name: req.file.originalname || path.basename(req.file.path),
+      deleteAfter: true,
+    };
+  } else if (parsed.data.archive) {
+    const file = path.join(backupDir(), parsed.data.archive);
+    if (!(await stat(file).catch(() => null))) {
+      res.status(404).json({ error: 'not_found', message: 'No such archive.' });
+      return;
+    }
+    source = { kind: 'archive' as const, file, name: parsed.data.archive, deleteAfter: false };
+  } else {
+    res.status(400).json({
+      error: 'bad_request',
+      message: 'Provide a backup file upload or the name of a retained archive.',
+    });
+    return;
+  }
+
+  const backupRunning = (await readBackupStatus(backupDir()))?.status === 'running';
+  if (backupRunning) {
+    await cleanupUpload();
+    res.status(409).json({ error: 'busy', message: 'A backup is currently running.' });
+    return;
+  }
+
+  try {
+    const { id } = await beginRestore(
+      source,
+      parsed.data.passphrase,
+      defaultEngineConfig('admin', req.auth!.user_id, enginePaths()),
+    );
+    res.status(202).json({ id, status: 'running' });
+  } catch (err) {
+    await cleanupUpload();
+    if (err instanceof RestoreLockError) {
+      res.status(409).json({ error: 'restore_in_progress', message: err.message });
+      return;
+    }
+    throw err;
+  }
 });
 
-/**
- * Clear a stuck status. Deliberately does NOT stop work already in flight
- * — there is no safe way to interrupt a running psql — so it only resets
- * the bookkeeping the UI reads.
- */
+adminBackupRouter.get('/restore/status', async (_req, res) => {
+  const j = await readJournal(backupDir());
+  if (!j) {
+    res.json({ status: 'idle' });
+    return;
+  }
+  // The archive master key appears ONLY in the success payload of the run
+  // itself (result.keyFromArchive) — status polling gets the redacted view,
+  // EXCEPT the succeeded terminal read where the operator needs the key
+  // instruction exactly once. Mirror v1: include it on success.
+  res.json(j.status === 'succeeded' ? j : redactJournal(j));
+});
+
+adminBackupRouter.post('/restore/rollback', async (req, res) => {
+  const confirm = (req.body as { confirm?: string } | undefined)?.confirm;
+  if (confirm !== 'rollback') {
+    res.status(400).json({ error: 'bad_request', message: 'Confirm with confirm=rollback.' });
+    return;
+  }
+  try {
+    const j = await rollbackRestore(defaultEngineConfig('admin', req.auth!.user_id, enginePaths()));
+    res.json({ ok: true, status: j.status });
+  } catch (err) {
+    if (err instanceof RestorePrerequisiteError) {
+      res.status(409).json({ error: 'no_rollback', message: err.message });
+      return;
+    }
+    throw err;
+  }
+});
+
 adminBackupRouter.post('/restore/reset', async (req, res) => {
-  const previous = resetRestoreState();
+  const j = await readJournal(backupDir());
+  if (j && j.status === 'running') {
+    res.status(409).json({ error: 'restore_in_progress', message: 'The restore is running.' });
+    return;
+  }
+  if (j) await rm(path.join(backupDir(), 'restore-journal.json'), { force: true }).catch(() => {});
   await audit({
     actor_user_id: req.auth!.user_id,
     action: 'admin.backup.restore_status_reset',
-    metadata: { previous },
+    metadata: { cleared: j?.id ?? null },
     ip: req.ip,
   });
-  res.json({ ok: true, previous });
+  res.json({ ok: true });
 });
 
-adminBackupRouter.post('/restore', upload.single('file'), async (req, res) => {
-  const parsed = restoreSchema.safeParse(req.body ?? {});
-  const file = req.file;
-  if (!file) {
-    res.status(400).json({ error: 'bad_request', message: 'No backup file was uploaded.' });
-    return;
-  }
-  const cleanup = () => rm(file.path, { force: true }).catch(() => {});
-  if (!parsed.success) {
-    await cleanup();
-    res.status(400).json({
-      error: 'bad_request',
-      message: 'A passphrase and confirm="replace-all-data" are required.',
-    });
-    return;
-  }
-  if (!beginRestore()) {
-    await cleanup();
-    res.status(409).json({
-      error: 'restore_in_progress',
-      message: 'A restore is already running. Wait for it to finish.',
-    });
-    return;
-  }
-
-  // Hand back control immediately; the work continues without the request.
-  const actorUserId = req.auth!.user_id;
-  const ip = req.ip;
-  res.status(202).json({ status: 'running' });
-  void runRestore(file.path, parsed.data.passphrase, actorUserId, ip);
-});
-
-/** What the UI needs to render the page without attempting a backup. */
-adminBackupRouter.get('/status', async (_req, res) => {
-  let pgTools: string | null = null;
-  let toolError: string | null = null;
+adminBackupRouter.delete('/restore/previous', async (req, res) => {
   try {
-    pgTools = await pgDumpVersion();
+    await dropPreviousGeneration(defaultEngineConfig('admin', req.auth!.user_id, enginePaths()));
   } catch (err) {
-    toolError = (err as Error).message;
+    if (err instanceof RestorePrerequisiteError) {
+      res.status(404).json({ error: 'not_found', message: err.message });
+      return;
+    }
+    throw err;
   }
-  const dirs = dataDirs();
-  const present: Record<string, boolean> = {};
-  for (const [k, v] of Object.entries(dirs)) {
-    present[k] = Boolean(await stat(v).catch(() => null));
-  }
-  res.json({
-    appVersion: APP_VERSION,
-    database: databaseName(),
-    pgTools,
-    toolError,
-    includes: present,
-    masterKeyFingerprint: fingerprint(env.MASTER_KEY),
-    minPassphrase: MIN_PASSPHRASE,
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'admin.backup.drop_previous',
+    metadata: {},
+    ip: req.ip,
   });
+  res.json({ ok: true });
 });

@@ -11,11 +11,12 @@ import { requireAuth } from '../../middleware/auth.js';
 import { parseAttachment } from '../../lib/parsers/index.js';
 import { attachmentSummarizeQueue } from '../../jobs/queues.js';
 import { logger } from '../../lib/logger.js';
+import { dataDirs } from '../../config/paths.js';
 
 export const attachmentsRouter = Router({ mergeParams: true });
 attachmentsRouter.use(requireAuth);
 
-const STORAGE_ROOT = path.resolve(process.env.ATTACHMENTS_DIR ?? './attachments');
+const STORAGE_ROOT = dataDirs().attachments;
 
 const upload = multer({
   storage: multer.memoryStorage(),

@@ -1,99 +1,103 @@
-// Admin → Backup & restore. Moves an entire install to another server
-// without anyone opening a shell.
+// Admin → Backup & restore (DR v2).
 //
-// The archive is downloaded straight from the response stream rather than
-// buffered into a blob URL where practical — but the browser needs the
-// whole body before it can hand over a file, so the passphrase gate and
-// the "this may take a while" messaging matter more than usual here.
+// Backups are server-side jobs retained in the appliance's backups volume;
+// this page starts one, watches its durable status, and lists the finished
+// archives for streamed download (a plain link — the browser saves the
+// stream, nothing is buffered in memory) or delete. Restores go through
+// the scratch-database engine: choose an upload or a retained archive, and
+// the journal renders as a phase checklist with rollback available while
+// the previous generation exists.
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, apiFetch } from '../../lib/api';
+import { api, apiFetch, apiUrl } from '../../lib/api';
+import { RestoreFailure, RestorePhases, type JournalView } from '../../components/RestorePhases';
 
-interface BackupStatus {
+interface BackupPageStatus {
   appVersion: string;
-  database: string;
-  pgTools: string | null;
-  toolError: string | null;
-  includes: Record<string, boolean>;
+  pgTools: { pg_dump?: string; pg_restore?: string; error?: string };
+  dirs: Record<string, boolean>;
+  backupDirFreeBytes: number | null;
   masterKeyFingerprint: string;
   minPassphrase: number;
 }
 
-type RestoreState =
-  | { status: 'idle' }
-  | { status: 'running'; startedAt: string; step: string }
-  | { status: 'succeeded'; finishedAt: string; result: RestoreResult }
-  | { status: 'failed'; finishedAt: string; error: string; code: string; harmless: boolean };
+interface BackupJob {
+  status: 'idle' | 'running' | 'succeeded' | 'failed';
+  phase?: 'snapshot' | 'dump' | 'archive' | 'finalize';
+  archive?: { bytesWritten: number; currentEntry: string };
+  file?: { name: string; size: number };
+  error?: string;
+}
 
-interface RestoreResult {
-  ok: true;
-  restored: {
-    createdAt: string | null;
-    appVersion: string | null;
-    files: number;
-    database: string | null;
-  };
-  masterKey: { matches: boolean; action: string | null; keyFromArchive: string | null };
-  restartRequired: boolean;
+interface ArchiveInfo {
+  name: string;
+  size: number;
+  createdAt: string;
+}
+
+function fmtBytes(n: number): string {
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1)} GB`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1)} MB`;
+  return `${Math.ceil(n / 1e3)} KB`;
 }
 
 export function AdminBackupPage() {
   const qc = useQueryClient();
-  const { data: status } = useQuery<BackupStatus>({
+  const { data: status } = useQuery<BackupPageStatus>({
     queryKey: ['admin', 'backup', 'status'],
     queryFn: () => api('/api/admin/backup/status'),
   });
 
-  const [passphrase, setPassphrase] = useState('');
-  const [confirmPass, setConfirmPass] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [note, setNote] = useState<string | null>(null);
+  const { data: job } = useQuery<BackupJob>({
+    queryKey: ['admin', 'backup', 'job'],
+    queryFn: () => api('/api/admin/backup/jobs/current'),
+    refetchInterval: (q) => (q.state.data?.status === 'running' ? 1500 : false),
+  });
 
-  const [file, setFile] = useState<File | null>(null);
-  const [restorePass, setRestorePass] = useState('');
-  const [restoreTyped, setRestoreTyped] = useState('');
-  const [restoring, setRestoring] = useState(false);
+  const { data: archives } = useQuery<{ archives: ArchiveInfo[] }>({
+    queryKey: ['admin', 'backup', 'archives'],
+    queryFn: () => api('/api/admin/backup/archives'),
+    refetchInterval: job?.status === 'running' ? 3000 : false,
+  });
 
-  // The restore runs server-side, detached from the request that started
-  // it — a reverse proxy will not hold a connection open for minutes, and
-  // a request killed mid-restore is what corrupts a database. Poll while
-  // one is running.
-  const { data: restoreState } = useQuery<RestoreState>({
+  const { data: restore } = useQuery<JournalView>({
     queryKey: ['admin', 'backup', 'restore-status'],
     queryFn: () => api('/api/admin/backup/restore/status'),
-    refetchInterval: (q) => (q.state.data?.status === 'running' ? 2000 : false),
+    refetchInterval: (q) => (q.state.data?.status === 'running' ? 1500 : false),
   });
-  const running = restoreState?.status === 'running' || restoring;
-  const restoreResult = restoreState?.status === 'succeeded' ? restoreState.result : null;
+
+  const [passphrase, setPassphrase] = useState('');
+  const [confirmPass, setConfirmPass] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const [mode, setMode] = useState<'upload' | 'archive'>('upload');
+  const [file, setFile] = useState<File | null>(null);
+  const [archiveName, setArchiveName] = useState('');
+  const [restorePass, setRestorePass] = useState('');
+  const [restoreTyped, setRestoreTyped] = useState('');
 
   const minLen = status?.minPassphrase ?? 12;
   const passOk = passphrase.length >= minLen && passphrase === confirmPass;
+  const backupRunning = job?.status === 'running';
+  const restoreRunning = restore?.status === 'running';
+  const toolsBroken = Boolean(status?.pgTools.error);
+
+  const refresh = () => {
+    void qc.invalidateQueries({ queryKey: ['admin', 'backup'] });
+  };
 
   async function createBackup() {
     setBusy(true);
     setError(null);
-    setNote(null);
     try {
-      const res = await apiFetch('/api/admin/backup', {
+      await api('/api/admin/backup', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ passphrase }),
       });
-      const blob = await res.blob();
-      const cd = res.headers.get('content-disposition') ?? '';
-      const name = /filename="([^"]+)"/.exec(cd)?.[1] ?? 'vibe-tax-backup.vtbk';
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = name;
-      a.click();
-      URL.revokeObjectURL(url);
-      setNote(
-        `Downloaded ${name} (${(blob.size / 1024 / 1024).toFixed(1)} MB). Keep the passphrase safe — the archive cannot be opened without it.`,
-      );
       setPassphrase('');
       setConfirmPass('');
+      refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -101,196 +105,302 @@ export function AdminBackupPage() {
     }
   }
 
-  async function clearStatus() {
+  async function deleteArchive(name: string) {
+    if (!window.confirm(`Delete ${name}? A deleted archive cannot be recovered.`)) return;
     try {
-      await apiFetch('/api/admin/backup/restore/reset', { method: 'POST' });
-      await qc.invalidateQueries({ queryKey: ['admin', 'backup', 'restore-status'] });
+      await api(`/api/admin/backup/archives/${encodeURIComponent(name)}`, { method: 'DELETE' });
+      refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
   }
 
-  async function runRestore() {
-    if (!file) return;
-    setRestoring(true);
+  async function startRestore() {
+    setBusy(true);
     setError(null);
     try {
-      const form = new FormData();
-      form.append('file', file);
-      form.append('passphrase', restorePass);
-      form.append('confirm', 'replace-all-data');
-      // Returns 202 as soon as the upload lands; the outcome arrives via
-      // the status poll below.
-      await apiFetch('/api/admin/backup/restore', { method: 'POST', body: form });
-      await qc.invalidateQueries({ queryKey: ['admin', 'backup', 'restore-status'] });
+      if (mode === 'upload') {
+        if (!file) return;
+        const form = new FormData();
+        form.append('file', file);
+        form.append('passphrase', restorePass);
+        form.append('confirm', 'replace-all-data');
+        await apiFetch('/api/admin/backup/restore', { method: 'POST', body: form });
+      } else {
+        await api('/api/admin/backup/restore', {
+          method: 'POST',
+          body: JSON.stringify({
+            archive: archiveName,
+            passphrase: restorePass,
+            confirm: 'replace-all-data',
+          }),
+        });
+      }
+      setRestoreTyped('');
+      refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setRestoring(false);
+      setBusy(false);
+    }
+  }
+
+  async function rollback() {
+    if (
+      !window.confirm(
+        'Roll back to the previous generation? The current database and files will be set aside.',
+      )
+    )
+      return;
+    try {
+      await api('/api/admin/backup/restore/rollback', {
+        method: 'POST',
+        body: JSON.stringify({ confirm: 'rollback' }),
+      });
+      refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
     }
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="font-display text-2xl mb-1">Backup &amp; restore</h1>
-        <p className="text-sm text-ink/60">
-          A backup is one encrypted file holding the database, uploaded documents, rendered
-          deliverables, the skills workspace, and the master key. Restoring it on another server
-          reproduces this install completely.
+    <div className="max-w-3xl space-y-8">
+      <header>
+        <h1 className="font-display text-2xl">Backup &amp; restore</h1>
+        <p className="text-sm text-ink/60 mt-1">
+          Encrypted archives carry the database, uploads, deliverables, workspaces, and the
+          MASTER_KEY — everything a new server needs. App {status?.appVersion} · key fingerprint{' '}
+          <span className="font-mono">{status?.masterKeyFingerprint}</span>
+          {status?.backupDirFreeBytes != null &&
+            ` · ${fmtBytes(status.backupDirFreeBytes)} free on the backups volume`}
         </p>
-      </div>
-
-      {status?.toolError && (
-        <div className="border border-oxblood/40 bg-oxblood/5 rounded p-3 text-sm">
-          <div className="font-medium text-oxblood mb-1">Backups are unavailable</div>
-          {status.toolError}
-        </div>
-      )}
-
-      <section className="border border-ink/10 rounded p-5 bg-white space-y-3">
-        <h2 className="font-display text-lg">Create a backup</h2>
-        {status && (
-          <dl className="text-xs text-ink/60 grid grid-cols-[9rem_1fr] gap-y-1">
-            <dt>App version</dt>
-            <dd>{status.appVersion}</dd>
-            <dt>Database</dt>
-            <dd>{status.database}</dd>
-            <dt>Included data</dt>
-            <dd>
-              {Object.entries(status.includes)
-                .map(([k, present]) => `${k}${present ? '' : ' (empty)'}`)
-                .join(', ')}
-            </dd>
-            <dt>Master key</dt>
-            <dd className="font-mono">{status.masterKeyFingerprint}</dd>
-          </dl>
-        )}
-        <label className="block text-sm">
-          Passphrase
-          <input
-            type="password"
-            value={passphrase}
-            onChange={(e) => setPassphrase(e.target.value)}
-            placeholder={`at least ${minLen} characters`}
-            className="mt-1 w-full px-2 py-1 border border-ink/20 rounded"
-          />
-        </label>
-        <label className="block text-sm">
-          Confirm passphrase
-          <input
-            type="password"
-            value={confirmPass}
-            onChange={(e) => setConfirmPass(e.target.value)}
-            className="mt-1 w-full px-2 py-1 border border-ink/20 rounded"
-          />
-        </label>
-        <p className="text-xs text-ink/50">
-          There is no recovery if this passphrase is lost — the archive is encrypted with it and
-          nothing on this server can open it afterwards.
-        </p>
-        <button
-          onClick={() => void createBackup()}
-          disabled={!passOk || busy || Boolean(status?.toolError)}
-          className="px-3 py-1.5 rounded text-sm bg-ink text-paper hover:bg-ink/90 disabled:opacity-40"
-        >
-          {busy ? 'Building archive…' : 'Create and download backup'}
-        </button>
-        {busy && (
-          <p className="text-xs text-ink/50">
-            Large installs can take several minutes. Leave this tab open.
+        {toolsBroken && (
+          <p className="text-oxblood text-sm mt-2">
+            PostgreSQL client tools are missing: {status?.pgTools.error}
           </p>
         )}
-        {note && <div className="text-sm text-moss">{note}</div>}
+      </header>
+
+      {/* ── create ──────────────────────────────────────────────────── */}
+      <section className="space-y-3">
+        <h2 className="font-display text-lg">Create a backup</h2>
+        <p className="text-sm text-ink/60">
+          The passphrase encrypts the archive and is NOT stored anywhere — lose it and the backup is
+          unreadable. Minimum {minLen} characters.
+        </p>
+        <div className="grid sm:grid-cols-2 gap-2">
+          <input
+            type="password"
+            placeholder="passphrase"
+            value={passphrase}
+            disabled={backupRunning}
+            onChange={(e) => setPassphrase(e.target.value)}
+            className="px-3 py-2 border border-ink/20 rounded font-mono text-sm"
+          />
+          <input
+            type="password"
+            placeholder="repeat passphrase"
+            value={confirmPass}
+            disabled={backupRunning}
+            onChange={(e) => setConfirmPass(e.target.value)}
+            className="px-3 py-2 border border-ink/20 rounded font-mono text-sm"
+          />
+        </div>
+        <button
+          onClick={() => void createBackup()}
+          disabled={!passOk || busy || backupRunning || restoreRunning || toolsBroken}
+          className="px-3 py-1.5 rounded text-sm bg-ink text-paper hover:bg-ink/90 disabled:opacity-40"
+        >
+          {backupRunning ? 'Building…' : 'Create backup'}
+        </button>
+        {backupRunning && (
+          <div className="text-sm text-ink/60">
+            {job?.phase === 'dump' && 'Dumping the database…'}
+            {job?.phase === 'snapshot' && 'Snapshotting…'}
+            {job?.phase === 'archive' &&
+              `Encrypting ${job.archive?.currentEntry ?? ''} — ${fmtBytes(job.archive?.bytesWritten ?? 0)} written`}
+            {job?.phase === 'finalize' && 'Finishing…'}
+          </div>
+        )}
+        {job?.status === 'failed' && (
+          <div className="text-oxblood text-sm">Backup failed: {job.error}</div>
+        )}
+        {job?.status === 'succeeded' && job.file && (
+          <div className="text-sm text-ink/70">
+            Latest backup: <span className="font-mono">{job.file.name}</span> (
+            {fmtBytes(job.file.size)})
+          </div>
+        )}
       </section>
 
-      <section className="border border-oxblood/30 rounded p-5 bg-white space-y-3">
-        <h2 className="font-display text-lg">Restore onto this server</h2>
-        <div className="border border-oxblood/40 bg-oxblood/5 rounded p-3 text-sm">
-          <strong>This replaces everything.</strong> The current database, uploaded documents and
-          rendered deliverables on this server are overwritten by the archive's contents. Take a
-          backup of this server first if it holds anything you need.
+      {/* ── archives ────────────────────────────────────────────────── */}
+      <section className="space-y-3">
+        <h2 className="font-display text-lg">Archives on this server</h2>
+        {!archives?.archives.length && (
+          <p className="text-sm text-ink/50">No archives yet. Create one above.</p>
+        )}
+        {Boolean(archives?.archives.length) && (
+          <table className="w-full text-sm">
+            <thead className="text-left text-xs uppercase tracking-wider text-ink/50">
+              <tr>
+                <th className="py-1 pr-4">Archive</th>
+                <th className="py-1 pr-4">Size</th>
+                <th className="py-1 pr-4">Created</th>
+                <th className="py-1" />
+              </tr>
+            </thead>
+            <tbody>
+              {archives!.archives.map((a) => (
+                <tr key={a.name} className="border-t border-ink/10">
+                  <td className="py-2 pr-4 font-mono text-xs">{a.name}</td>
+                  <td className="py-2 pr-4">{fmtBytes(a.size)}</td>
+                  <td className="py-2 pr-4">{new Date(a.createdAt).toLocaleString()}</td>
+                  <td className="py-2 text-right space-x-3 whitespace-nowrap">
+                    <a
+                      href={apiUrl(
+                        `/api/admin/backup/archives/${encodeURIComponent(a.name)}/download`,
+                      )}
+                      className="underline text-ink/70 hover:text-ink"
+                    >
+                      Download
+                    </a>
+                    <button
+                      onClick={() => void deleteArchive(a.name)}
+                      className="underline text-oxblood/80 hover:text-oxblood"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        <p className="text-xs text-ink/50">
+          Download moves an archive off this server — do that regularly; a backup that lives only on
+          the machine it protects is not disaster recovery.
+        </p>
+      </section>
+
+      {/* ── restore ─────────────────────────────────────────────────── */}
+      <section className="space-y-3">
+        <h2 className="font-display text-lg">Restore</h2>
+        <p className="text-sm text-ink/60">
+          The archive is loaded and verified in a scratch database first; this install only changes
+          at the final swap, and the previous generation stays available for rollback.
+        </p>
+        <div className="flex gap-4 text-sm">
+          <label className="flex items-center gap-1.5">
+            <input
+              type="radio"
+              checked={mode === 'upload'}
+              onChange={() => setMode('upload')}
+              disabled={restoreRunning}
+            />
+            Upload a file
+          </label>
+          <label className="flex items-center gap-1.5">
+            <input
+              type="radio"
+              checked={mode === 'archive'}
+              onChange={() => setMode('archive')}
+              disabled={restoreRunning}
+            />
+            Use a retained archive
+          </label>
         </div>
-        <label className="block text-sm">
-          Backup file
+        {mode === 'upload' ? (
           <input
             type="file"
             accept=".vtbk"
+            disabled={restoreRunning}
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="mt-1 block w-full text-sm"
+            className="block w-full text-sm"
           />
-        </label>
+        ) : (
+          <select
+            value={archiveName}
+            disabled={restoreRunning}
+            onChange={(e) => setArchiveName(e.target.value)}
+            className="w-full px-3 py-2 border border-ink/20 rounded text-sm"
+          >
+            <option value="">Choose an archive…</option>
+            {archives?.archives.map((a) => (
+              <option key={a.name} value={a.name}>
+                {a.name}
+              </option>
+            ))}
+          </select>
+        )}
+        <input
+          type="password"
+          placeholder="archive passphrase"
+          value={restorePass}
+          disabled={restoreRunning}
+          onChange={(e) => setRestorePass(e.target.value)}
+          className="w-full px-3 py-2 border border-ink/20 rounded font-mono text-sm"
+        />
         <label className="block text-sm">
-          Passphrase
-          <input
-            type="password"
-            value={restorePass}
-            onChange={(e) => setRestorePass(e.target.value)}
-            className="mt-1 w-full px-2 py-1 border border-ink/20 rounded"
-          />
-        </label>
-        <label className="block text-sm">
-          Type <code className="font-mono">REPLACE</code> to confirm
+          Type <span className="font-mono">REPLACE</span> to confirm this replaces every user, chat,
+          client, and file on this server:
           <input
             value={restoreTyped}
+            disabled={restoreRunning}
             onChange={(e) => setRestoreTyped(e.target.value)}
-            className="mt-1 w-full px-2 py-1 border border-ink/20 rounded"
+            className="mt-1 w-full px-3 py-2 border border-ink/20 rounded font-mono text-sm"
           />
         </label>
         <button
-          onClick={() => void runRestore()}
-          disabled={!file || !restorePass || restoreTyped !== 'REPLACE' || running}
+          onClick={() => void startRestore()}
+          disabled={
+            busy ||
+            restoreRunning ||
+            backupRunning ||
+            restoreTyped !== 'REPLACE' ||
+            !restorePass ||
+            (mode === 'upload' ? !file : !archiveName)
+          }
           className="px-3 py-1.5 rounded text-sm bg-oxblood text-paper hover:bg-oxblood/90 disabled:opacity-40"
         >
-          {running ? 'Restoring…' : 'Restore from backup'}
+          {restoreRunning ? 'Restoring…' : 'Restore'}
         </button>
-        {running && (
-          <p className="text-xs text-ink/50">
-            Restoring on the server. This continues even if you close this tab — do not restart the
-            server until it finishes.
-          </p>
-        )}
-        {restoreState?.status === 'failed' && (
-          <div className="border border-oxblood/40 bg-oxblood/5 rounded p-3 text-sm">
-            <div className="font-medium text-oxblood">Restore failed</div>
-            <p className="mt-0.5">{restoreState.error}</p>
-            <p className="text-xs text-ink/60 mt-1">
-              {restoreState.harmless
-                ? 'This was caught before anything was changed — fix the cause and try again.'
-                : 'The database may be incomplete. Fix the cause and restore again before using the app.'}
-            </p>
-          </div>
-        )}
-        {restoreResult && (
-          <div className="border border-moss/40 bg-moss/5 rounded p-3 text-sm space-y-1">
-            <div className="font-medium">Restore complete</div>
-            <div className="text-xs text-ink/70">
-              From {restoreResult.restored.appVersion ?? 'unknown'} ·{' '}
-              {restoreResult.restored.createdAt
-                ? new Date(restoreResult.restored.createdAt).toLocaleString()
-                : 'unknown date'}{' '}
-              · {restoreResult.restored.files} files
-            </div>
-            {!restoreResult.masterKey.matches && (
-              <div className="border border-gold/50 bg-gold/10 rounded p-2 mt-1">
-                <div className="font-medium">Master key differs on this server</div>
-                <p className="text-xs mt-0.5">{restoreResult.masterKey.action}</p>
-                {restoreResult.masterKey.keyFromArchive && (
-                  <p className="text-xs mt-1">
-                    MASTER_KEY from the archive:{' '}
-                    <code className="font-mono break-all">
-                      {restoreResult.masterKey.keyFromArchive}
-                    </code>
+
+        {restore && restore.status !== 'idle' && (
+          <div className="space-y-2 border border-ink/10 rounded p-3">
+            <RestorePhases journal={restore} />
+            {(restore.status === 'failed' || restore.status === 'interrupted') && (
+              <RestoreFailure journal={restore} />
+            )}
+            {restore.status === 'succeeded' && (
+              <div className="border border-moss/40 bg-moss/5 rounded p-3 text-sm space-y-1">
+                <div className="font-medium">Restore complete — restart the api container</div>
+                {restore.result && !restore.result.masterKeyMatches && (
+                  <p className="text-oxblood">
+                    The archive was made with a different MASTER_KEY. Set it on this server to the
+                    value below, then restart — until then the stored Anthropic key and SMTP
+                    password cannot be decrypted.
+                    {restore.result.keyFromArchive && (
+                      <span className="block font-mono text-xs mt-1">
+                        {restore.result.keyFromArchive}
+                      </span>
+                    )}
                   </p>
                 )}
               </div>
             )}
-            <p className="text-xs">Restart the API container to pick up the restored data.</p>
+            {restore.rollbackAvailable && !restoreRunning && (
+              <button
+                onClick={() => void rollback()}
+                className="px-3 py-1.5 rounded text-sm border border-ink/30 hover:bg-ink/5"
+              >
+                Roll back to the previous generation
+              </button>
+            )}
           </div>
         )}
       </section>
 
-      {error && <div className="text-oxblood text-sm whitespace-pre-wrap">{error}</div>}
+      {error && <div className="text-oxblood text-sm">{error}</div>}
     </div>
   );
 }

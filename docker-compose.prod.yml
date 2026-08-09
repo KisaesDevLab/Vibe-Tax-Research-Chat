@@ -15,7 +15,6 @@ services:
       POSTGRES_DB: vibe_tax
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backups:/backups
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U vibe -d vibe_tax']
       interval: 10s
@@ -45,6 +44,11 @@ services:
       DATABASE_URL: postgres://vibe:${POSTGRES_PASSWORD}@postgres:5432/vibe_tax
       REDIS_URL: redis://redis:6379
       NODE_ENV: production
+      # DR v2 — archives are retained on the api's backups volume and
+      # streamed to the admin from there; tmp shares the volume so
+      # multi-GB uploads/dumps never land on container tmpfs.
+      BACKUP_DIR: /app/backups
+      BACKUP_TMP_DIR: /app/backups/tmp
     depends_on:
       postgres:
         condition: service_healthy
@@ -53,6 +57,7 @@ services:
     volumes:
       - attachments:/app/attachments
       - deliverables:/app/storage/deliverables
+      - backups:/app/backups
       - ./workspaces:/app/workspaces
     healthcheck:
       test: ['CMD', 'wget', '-q', '-O', '-', 'http://localhost:4000/api/health']
@@ -102,3 +107,4 @@ volumes:
   redis_data:
   attachments:
   deliverables:
+  backups:
