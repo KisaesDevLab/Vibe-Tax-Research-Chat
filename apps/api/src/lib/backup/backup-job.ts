@@ -93,6 +93,9 @@ async function walkStats(root: string): Promise<{ files: number; bytes: number }
       return;
     }
     for (const e of entries) {
+      // Restore generations inside the data dirs are excluded from
+      // archives; the manifest inventory must match.
+      if (e.name.startsWith('.dr-')) continue;
       const abs = path.join(dir, e.name);
       if (e.isDirectory()) await walk(abs);
       else if (e.isFile()) {

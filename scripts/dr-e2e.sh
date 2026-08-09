@@ -17,6 +17,11 @@ PROJECT=vibe-dr-drill
 PORT="${DR_PORT:-8098}"
 BASE="http://localhost:${PORT}"
 WORK="$(mktemp -d)"
+# The drill needs the first-run wizard OPEN: strip SEED_ADMIN_* from the
+# env (the image auto-seeds an admin when they are set, which closes the
+# wizard and 409s the bootstrap).
+grep -vE '^\s*SEED_ADMIN_' .env >"$WORK/drill.env"
+if command -v cygpath >/dev/null 2>&1; then WORKM="$(cygpath -m "$WORK")"; else WORKM="$WORK"; fi
 # Override the prod compose's fixed :80 publish so the drill never collides
 # with a real install on the same host. `!override` replaces, not appends.
 cat >"$WORK/override.yml" <<EOF
@@ -24,6 +29,12 @@ services:
   web:
     ports: !override
       - "${PORT}:80"
+  api:
+    env_file: !override
+      - ${WORKM}/drill.env
+  authority-mcp:
+    env_file: !override
+      - ${WORKM}/drill.env
 EOF
 COMPOSE=(docker compose -p "$PROJECT" -f docker-compose.prod.yml -f "$WORK/override.yml")
 ADMIN_EMAIL="drill@example.test"

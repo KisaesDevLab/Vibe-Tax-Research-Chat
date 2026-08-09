@@ -78,6 +78,9 @@ async function* walk(root: string, prefix: string): AsyncGenerator<{ abs: string
     return; // Directory absent on this install — nothing to archive.
   }
   for (const e of entries) {
+    // Restore generations (.dr-staging/.dr-prev/.dr-undone) live inside the
+    // data dirs — they must never leak into a new archive.
+    if (e.name.startsWith('.dr-')) continue;
     const abs = path.join(root, e.name);
     const rel = `${prefix}/${e.name}`;
     if (e.isDirectory()) {

@@ -170,11 +170,16 @@ export async function beginRestore(
     source: { kind: source.kind, name: source.name, size: st.size },
     phase: 'inspect',
     scratchDb,
+    // Staging and prev generations live INSIDE each data dir: the dirs are
+    // volume mountpoints in production (unrenameable, and their /app
+    // siblings are root-owned), so the swap moves entries within the same
+    // filesystem instead of renaming the dirs themselves. The backup walk
+    // skips .dr-* names so generations never leak into archives.
     dirs: Object.entries(config.dataDirs).map(([key, live]) => ({
       key,
       live,
-      staging: `${live}.staging-${dbSafe(id)}`,
-      prev: `${live}.prev-${dbSafe(id)}`,
+      staging: path.join(live, `.dr-staging-${dbSafe(id)}`),
+      prev: path.join(live, `.dr-prev-${dbSafe(id)}`),
     })),
   });
 
@@ -703,13 +708,16 @@ export async function completeSwap(
         break;
       }
       case 'dir_rename_live_to_prev': {
+        // Move every current entry of the live dir (generations excluded)
+        // into the prev generation. Entry-level renames on the same
+        // filesystem; replay just moves whatever is left.
         const d = j.dirs.find((x) => x.key === step.target)!;
-        if (existsSync(d.live) && !existsSync(d.prev)) {
-          await rename(d.live, d.prev).catch(async (err) => {
-            // Windows/EBUSY fallback: leave live in place; staging swap
-            // below will merge over it via copy in the next step's fallback.
-            logger.warn({ err, dir: d.live }, 'live dir rename failed');
-          });
+        if (existsSync(d.live)) {
+          await mkdir(d.prev, { recursive: true });
+          for (const e of await readdir(d.live)) {
+            if (e.startsWith('.dr-')) continue;
+            await rename(path.join(d.live, e), path.join(d.prev, e));
+          }
         }
         await mark();
         break;
@@ -717,15 +725,15 @@ export async function completeSwap(
       case 'dir_rename_staging_to_live': {
         const d = j.dirs.find((x) => x.key === step.target)!;
         if (existsSync(d.staging)) {
-          await mkdir(path.dirname(d.live), { recursive: true }).catch(() => {});
-          try {
-            await rename(d.staging, d.live);
-          } catch {
-            // Cross-device or busy target: copy as fallback.
-            const { cp } = await import('node:fs/promises');
-            await cp(d.staging, d.live, { recursive: true, force: true });
-            await rm(d.staging, { recursive: true, force: true }).catch(() => {});
+          await mkdir(d.live, { recursive: true });
+          for (const e of await readdir(d.staging)) {
+            const dest = path.join(d.live, e);
+            // A crash-replay may find an entry already moved; clear the
+            // half-state and move the staged copy in.
+            if (existsSync(dest)) await rm(dest, { recursive: true, force: true });
+            await rename(path.join(d.staging, e), dest);
           }
+          await rm(d.staging, { recursive: true, force: true }).catch(() => {});
         }
         await mark();
         break;
@@ -799,17 +807,10 @@ async function gcPreviousGenerations(config: EngineConfig, currentId: string): P
     ).catch(() => {});
   }
   for (const live of Object.values(config.dataDirs)) {
-    const parent = path.dirname(live);
-    const base = path.basename(live);
-    const entries = await readdir(parent).catch(() => [] as string[]);
+    const entries = await readdir(live).catch(() => [] as string[]);
     for (const e of entries) {
-      if (
-        (e.startsWith(`${base}.prev-`) ||
-          e.startsWith(`${base}.undone-`) ||
-          e.startsWith(`${base}.staging-`)) &&
-        !e.endsWith(dbSafe(currentId))
-      ) {
-        await rm(path.join(parent, e), { recursive: true, force: true }).catch(() => {});
+      if (e.startsWith('.dr-') && !e.endsWith(dbSafe(currentId))) {
+        await rm(path.join(live, e), { recursive: true, force: true }).catch(() => {});
       }
     }
   }
@@ -924,12 +925,21 @@ export async function rollbackRestore(config: EngineConfig): Promise<RestoreJour
     await psqlCommand(bin, maint, `ALTER DATABASE ${quoteIdent(live)} ALLOW_CONNECTIONS true`);
 
     for (const d of j.dirs) {
-      const undoneDir = d.live + `.undone-${dbSafe(j.id)}`;
-      if (existsSync(d.live) && !existsSync(undoneDir)) {
-        await rename(d.live, undoneDir).catch(() => {});
+      const undoneDir = path.join(d.live, `.dr-undone-${dbSafe(j.id)}`);
+      if (existsSync(d.live)) {
+        await mkdir(undoneDir, { recursive: true });
+        for (const e of await readdir(d.live)) {
+          if (e.startsWith('.dr-')) continue;
+          await rename(path.join(d.live, e), path.join(undoneDir, e)).catch(() => {});
+        }
       }
       if (existsSync(d.prev)) {
-        await rename(d.prev, d.live).catch(() => {});
+        for (const e of await readdir(d.prev)) {
+          const dest = path.join(d.live, e);
+          if (existsSync(dest)) await rm(dest, { recursive: true, force: true });
+          await rename(path.join(d.prev, e), dest).catch(() => {});
+        }
+        await rm(d.prev, { recursive: true, force: true }).catch(() => {});
       }
     }
 
