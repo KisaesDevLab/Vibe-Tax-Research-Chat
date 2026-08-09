@@ -213,7 +213,7 @@ describe('callClaudeViaRouter', () => {
     expect(calls[0]!.init.signal).toBeInstanceOf(AbortSignal);
   });
 
-  it('a hung router aborts within the timeout on each attempt, then throws (A3+A9)', async () => {
+  it('a hung router fails within the overall deadline — no retries past it (A3)', async () => {
     let fetches = 0;
     _setRouterClientForTests(
       clientWithFetch(((_url: unknown, init?: RequestInit) => {
@@ -224,6 +224,7 @@ describe('callClaudeViaRouter', () => {
         });
       }) as unknown as typeof fetch),
     );
+    const startedAt = Date.now();
     await expect(
       callClaudeViaRouter(
         'chat-title',
@@ -231,11 +232,88 @@ describe('callClaudeViaRouter', () => {
         { timeoutMs: 30 },
       ),
     ).rejects.toThrow();
-    expect(fetches).toBe(3); // timeout aborts retried, direct-path parity
+    // The first attempt consumes the whole deadline; there is no budget left
+    // to retry, so timeoutMs stays a hard bound on the logical call.
+    expect(fetches).toBe(1);
+    expect(Date.now() - startedAt).toBeLessThan(5_000);
     const failures = vi
       .mocked(audit)
       .mock.calls.filter((c) => (c[0].metadata as { failed?: boolean }).failed);
     expect(failures).toHaveLength(1);
+    expect((failures[0]![0].metadata as { attempts: number }).attempts).toBe(1);
+  });
+
+  it('retries a 5xx with a non-JSON body (VibeAiError code "unknown"), then succeeds', async () => {
+    let fetches = 0;
+    _setRouterClientForTests(
+      clientWithFetch((async () => {
+        fetches += 1;
+        if (fetches === 1) {
+          return new Response('<html>bad gateway</html>', { status: 502 });
+        }
+        return completionResponse();
+      }) as typeof fetch),
+    );
+    const result = await callClaudeViaRouter('chat-title', {
+      messages: [{ role: 'user', content: 'x' }],
+    });
+    expect(fetches).toBe(2);
+    expect(result.text).toBe('router says hi');
+  }, 15_000);
+
+  it('does NOT retry deterministic failures (malformed 200 body)', async () => {
+    let fetches = 0;
+    _setRouterClientForTests(
+      clientWithFetch((async () => {
+        fetches += 1;
+        return new Response('<html>not json</html>', { status: 200 });
+      }) as typeof fetch),
+    );
+    await expect(
+      callClaudeViaRouter('chat-title', { messages: [{ role: 'user', content: 'x' }] }),
+    ).rejects.toThrow();
+    expect(fetches).toBe(1); // a parse error is not transient — fail fast
+  });
+
+  it('treats finish_reason "error" as a failed attempt: retried, then succeeds', async () => {
+    let fetches = 0;
+    _setRouterClientForTests(
+      clientWithFetch((async () => {
+        fetches += 1;
+        if (fetches === 1) {
+          return completionResponse({
+            choices: [{ message: { content: '' }, finish_reason: 'error' }],
+          });
+        }
+        return completionResponse();
+      }) as typeof fetch),
+    );
+    const result = await callClaudeViaRouter('chat-title', {
+      messages: [{ role: 'user', content: 'x' }],
+    });
+    expect(fetches).toBe(2);
+    expect(result.text).toBe('router says hi');
+  }, 15_000);
+
+  it('finish_reason "error" on every attempt fails the call — never a blank success', async () => {
+    let fetches = 0;
+    _setRouterClientForTests(
+      clientWithFetch((async () => {
+        fetches += 1;
+        return completionResponse({
+          choices: [{ message: { content: '' }, finish_reason: 'error' }],
+        });
+      }) as typeof fetch),
+    );
+    await expect(
+      callClaudeViaRouter('chat-title', { messages: [{ role: 'user', content: 'x' }] }),
+    ).rejects.toThrow(/finish_reason "error"/);
+    expect(fetches).toBe(3);
+    const failures = vi
+      .mocked(audit)
+      .mock.calls.filter((c) => (c[0].metadata as { failed?: boolean }).failed);
+    expect(failures).toHaveLength(1); // failed, not a success row with empty text
+    expect((failures[0]![0].metadata as { attempts: number }).attempts).toBe(3);
   }, 15_000);
 
   it('retries rate_limited honoring retry-after, then succeeds (A9)', async () => {
@@ -283,19 +361,17 @@ describe('callClaudeViaRouter', () => {
     expect(meta.cache_read_input_tokens).toBe(6);
   });
 
-  it('preserves content_filter and error finish reasons', async () => {
-    for (const finish of ['content_filter', 'error']) {
-      _setRouterClientForTests(
-        clientWithFetch((async () =>
-          completionResponse({
-            choices: [{ message: { content: 'partial' }, finish_reason: finish }],
-          })) as typeof fetch),
-      );
-      const result = await callClaudeViaRouter('chat-title', {
-        messages: [{ role: 'user', content: 'x' }],
-      });
-      expect(result.response.stop_reason).toBe(finish);
-    }
+  it('preserves the content_filter finish reason', async () => {
+    _setRouterClientForTests(
+      clientWithFetch((async () =>
+        completionResponse({
+          choices: [{ message: { content: 'partial' }, finish_reason: 'content_filter' }],
+        })) as typeof fetch),
+    );
+    const result = await callClaudeViaRouter('chat-title', {
+      messages: [{ role: 'user', content: 'x' }],
+    });
+    expect(result.response.stop_reason).toBe('content_filter');
   });
 
   it('audit rows carry hashes and dims, never payload text', async () => {
