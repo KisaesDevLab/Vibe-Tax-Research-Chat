@@ -138,10 +138,48 @@ export interface JournalHandle {
   close(): void;
 }
 
+let tmpCounter = 0;
+
 async function writeAtomic(dir: string, journal: RestoreJournal): Promise<void> {
-  const tmp = journalPath(dir) + '.tmp';
-  await writeFile(tmp, JSON.stringify(journal, null, 2), 'utf-8');
-  await rename(tmp, journalPath(dir));
+  // Unique tmp name: concurrent writers must never rename each other's
+  // half-written file out from under themselves.
+  const tmp = `${journalPath(dir)}.${process.pid}.${tmpCounter++}.tmp`;
+  const body = JSON.stringify(journal, null, 2);
+  await writeFile(tmp, body, 'utf-8');
+  // Windows: rename-over-existing throws EPERM while a reader (status
+  // endpoint, poll loop) briefly holds the destination open. Retry, then
+  // fall back to a direct write — a rare torn read of the status file
+  // beats failing the restore itself.
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      await rename(tmp, journalPath(dir));
+      return;
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if ((code === 'EPERM' || code === 'EACCES' || code === 'EBUSY') && attempt < 5) {
+        await new Promise((r) => setTimeout(r, 25 * (attempt + 1)));
+        continue;
+      }
+      if (code === 'EPERM' || code === 'EACCES' || code === 'EBUSY') {
+        await writeFile(journalPath(dir), body, 'utf-8');
+        await rm(tmp, { force: true }).catch(() => {});
+        return;
+      }
+      throw err;
+    }
+  }
+}
+
+/** Serialize all writes through one handle: progress callbacks fire
+ *  unawaited while phase transitions await, and interleaved tmp+rename
+ *  pairs corrupt each other without a queue. */
+function makeWriter(dir: string, journal: RestoreJournal): () => Promise<void> {
+  let chain: Promise<void> = Promise.resolve();
+  return () => {
+    const next = chain.then(() => writeAtomic(dir, journal));
+    chain = next.catch(() => {});
+    return next;
+  };
 }
 
 /**
@@ -198,20 +236,21 @@ export async function createJournal(
     }
   }
 
-  await writeAtomic(dir, journal);
+  const write = makeWriter(dir, journal);
+  await write();
 
   const timer = setInterval(() => {
     journal.heartbeatAt = new Date(now()).toISOString();
-    void writeAtomic(dir, journal).catch(() => {});
+    void write().catch(() => {});
   }, HEARTBEAT_INTERVAL_MS);
   timer.unref?.();
 
   const handle: JournalHandle = {
     journal,
-    write: () => writeAtomic(dir, journal),
+    write,
     update: async (fn) => {
       fn(journal);
-      await writeAtomic(dir, journal);
+      await write();
     },
     close: () => {
       clearInterval(timer);
@@ -229,21 +268,22 @@ export async function reopenJournal(
 ): Promise<JournalHandle> {
   journal.pid = process.pid;
   journal.heartbeatAt = new Date(now()).toISOString();
-  await writeAtomic(dir, journal);
+  const write = makeWriter(dir, journal);
+  await write();
   const lock = journalPath(dir) + '.lock';
   await rm(lock, { force: true }).catch(() => {});
   await writeFile(lock, String(process.pid), 'utf-8');
   const timer = setInterval(() => {
     journal.heartbeatAt = new Date(now()).toISOString();
-    void writeAtomic(dir, journal).catch(() => {});
+    void write().catch(() => {});
   }, HEARTBEAT_INTERVAL_MS);
   timer.unref?.();
   return {
     journal,
-    write: () => writeAtomic(dir, journal),
+    write,
     update: async (fn) => {
       fn(journal);
-      await writeAtomic(dir, journal);
+      await write();
     },
     close: () => {
       clearInterval(timer);
