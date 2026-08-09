@@ -21,6 +21,18 @@ import { audit } from '../../lib/audit.js';
 
 export const planMemoRouter = Router({ mergeParams: true });
 
+// Router-mode configuration denials: operator-setup situations (policy row
+// missing/disabled, scrubber posture, class not enabled for the pool, token
+// or budget problems) — the same "check the backend config" 503 as
+// direct-path unavailability, never a raw 500.
+const ROUTER_DENIAL_CODES: ReadonlySet<string> = new Set([
+  'policy_blocked',
+  'scrubber_blocked',
+  'capability_missing',
+  'auth_error',
+  'budget_exceeded',
+]);
+
 /** Archived plans are read-only; every other status stays editable so an
  *  advisor can keep annotating a memo after the plan is presented. */
 const MEMO_LOCKED_STATUSES = ['archived'];
@@ -227,7 +239,7 @@ planMemoRouter.post('/', async (req, res) => {
   } catch (err) {
     if (
       err instanceof ClaudeDisabledError ||
-      (err instanceof VibeAiError && err.code === 'policy_blocked') ||
+      (err instanceof VibeAiError && ROUTER_DENIAL_CODES.has(err.code)) ||
       (err as Error).message?.includes('not configured')
     ) {
       res.status(503).json({
