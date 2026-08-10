@@ -126,6 +126,21 @@ every constraint and index. If the dev DB is ever corrupted again: drop schema `
 - New features storing user data must put it under `config/paths.ts` `dataDirs()` or it
   is NOT covered by backups.
 
+### pg_dump is schema-allowlisted (PostGIS tiger broke unscoped dumps)
+
+Servers that carry PostGIS mark the tiger geocoder's config tables
+(`tiger.geocode_settings` etc.) with `pg_extension_config_dump`, so an unscoped
+`pg_dump` tries to COPY their data and dies with "permission denied for schema tiger"
+under the app role. The backup dump is therefore allowlisted to the app's schemas via
+`-n public -n drizzle` (`DUMP_SCHEMAS` in `lib/backup/pg.ts`). Two consequences:
+
+- Any future migration that adds a third schema MUST extend `DUMP_SCHEMAS` or its data
+  is silently not backed up.
+- Naming `public` with `-n` makes pg_dump emit a `CREATE SCHEMA public` TOC entry,
+  which is fatal on the scratch database under `--exit-on-error` — `filterToc` now
+  drops the public SCHEMA/COMMENT entries alongside EXTENSION entries (non-public
+  schemas like `drizzle` are kept; the scratch DB doesn't have them).
+
 ### nginx upload cap vs backup restores
 
 nginx defaults `client_max_body_size` to 1MB; without an override in

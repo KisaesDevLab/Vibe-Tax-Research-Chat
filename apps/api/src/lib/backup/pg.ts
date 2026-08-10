@@ -203,6 +203,38 @@ export async function withDbSession<T>(
 
 // ── dump / restore ───────────────────────────────────────────────────────
 
+/**
+ * The schemas that ARE the application's database state: app tables live in
+ * `public`, migration bookkeeping in `drizzle`. The dump is allowlisted to
+ * these rather than dumping the whole database because shared servers carry
+ * extension schemas the app role cannot read — PostGIS's tiger geocoder in
+ * particular marks its config tables with pg_extension_config_dump, so an
+ * unscoped pg_dump tries to COPY tiger.geocode_settings and dies with
+ * "permission denied for schema tiger". Extension objects are recreated on
+ * restore (CREATE EXTENSION in the prepare phase + TOC filtering), so
+ * nothing outside these schemas belongs in the archive. A schema pattern
+ * that matches nothing is fine (no --strict-names), so `drizzle` being
+ * absent on a fresh database does not fail the dump.
+ *
+ * If a migration ever adds a third schema, it MUST be added here or its
+ * data is silently not backed up.
+ */
+export const DUMP_SCHEMAS = ['public', 'drizzle'] as const;
+
+export function pgDumpArgs(opts: { url: string; snapshotId: string; outFile: string }): string[] {
+  return [
+    '-Fc',
+    '--no-owner',
+    '--no-privileges',
+    ...DUMP_SCHEMAS.flatMap((s) => ['-n', s]),
+    `--snapshot=${opts.snapshotId}`,
+    '-f',
+    opts.outFile,
+    '-d',
+    opts.url,
+  ];
+}
+
 export async function runPgDump(opts: {
   url: string;
   snapshotId: string;
@@ -211,20 +243,7 @@ export async function runPgDump(opts: {
   const dumpedWith = await toolVersion('pg_dump');
   const bin = await toolPath('pg_dump');
   await new Promise<void>((resolve, reject) => {
-    const proc = spawn(
-      bin,
-      [
-        '-Fc',
-        '--no-owner',
-        '--no-privileges',
-        `--snapshot=${opts.snapshotId}`,
-        '-f',
-        opts.outFile,
-        '-d',
-        opts.url,
-      ],
-      { stdio: ['ignore', 'ignore', 'pipe'] },
-    );
+    const proc = spawn(bin, pgDumpArgs(opts), { stdio: ['ignore', 'ignore', 'pipe'] });
     let stderr = '';
     proc.stderr.on('data', (c) => (stderr += String(c)));
     proc.on('error', reject);
@@ -263,9 +282,19 @@ export async function listToc(dumpFile: string): Promise<string> {
  *   `17; 0 0 COMMENT - EXTENSION vector`
  * Creating an untrusted extension needs superuser; the destination must
  * already have it (the restore's prepare phase created it), so these
- * entries are noise that would fail a scoped role. Comment lines (';'-
- * prefixed) pass through untouched — pg_restore needs them intact.
+ * entries are noise that would fail a scoped role.
+ *
+ * The `public` SCHEMA entry (and its COMMENT) is dropped for the same
+ * reason: because the dump names its schemas with -n, pg_dump emits
+ * CREATE SCHEMA public — which every scratch database already has, and
+ * under --exit-on-error "schema public already exists" is fatal. Other
+ * schemas (drizzle) must be kept: the scratch database does NOT have them.
+ * Comment lines (';'-prefixed) pass through untouched — pg_restore needs
+ * them intact.
  */
+const SKIPPED_TOC_ENTRY =
+  /^\s*\d+;\s+\d+\s+\d+\s+(EXTENSION|COMMENT\s+-\s+EXTENSION|SCHEMA\s+(-\s+)?public|COMMENT\s+-\s+SCHEMA\s+public)\b/;
+
 export function filterToc(
   toc: string,
   onSkip?: (line: string) => void,
@@ -276,7 +305,7 @@ export function filterToc(
   const out: string[] = [];
   let kept = 0;
   for (const line of toc.split('\n')) {
-    if (/^\s*\d+;\s+\d+\s+\d+\s+(EXTENSION|COMMENT\s+-\s+EXTENSION)\b/.test(line)) {
+    if (SKIPPED_TOC_ENTRY.test(line)) {
       onSkip?.(line.trim());
       continue;
     }

@@ -3,7 +3,14 @@
 // content resembles "CREATE EXTENSION" can no longer be corrupted by a
 // regex, which was a structural risk of the v1 SQL-stream filter.
 import { describe, expect, it } from 'vitest';
-import { filterToc, parseToolMajor, dbUrlFor, maintenanceUrl, databaseUrl } from './pg.js';
+import {
+  filterToc,
+  parseToolMajor,
+  dbUrlFor,
+  maintenanceUrl,
+  databaseUrl,
+  pgDumpArgs,
+} from './pg.js';
 
 // Trimmed from a real `pg_restore -l` listing of a pgvector database.
 const TOC = `;
@@ -25,25 +32,56 @@ const TOC = `;
 `;
 
 describe('filterToc', () => {
-  it('drops EXTENSION and COMMENT-EXTENSION entries, keeps everything else', () => {
+  it('drops EXTENSION, COMMENT-EXTENSION, and public-SCHEMA entries, keeps everything else', () => {
     const skipped: string[] = [];
     const { filtered, kept } = filterToc(TOC, (l) => skipped.push(l));
     expect(skipped).toEqual([
       '16; 3079 2 EXTENSION - vector',
       '17; 0 0 COMMENT - EXTENSION vector',
+      // Scratch databases already have public; recreating it is fatal
+      // under --exit-on-error.
+      '5; 2615 2200 SCHEMA - public vibe',
     ]);
     expect(filtered).not.toMatch(/EXTENSION/);
     expect(filtered).toContain('TABLE DATA public users');
     expect(filtered).toContain('CONSTRAINT users users_pkey');
     // Comment lines pass through untouched — pg_restore needs the header.
     expect(filtered).toContain('; Selected TOC Entries:');
-    expect(kept).toBe(7);
+    expect(kept).toBe(6);
+  });
+
+  it('drops the public schema COMMENT but keeps non-public schemas', () => {
+    const toc = [
+      '6; 0 0 COMMENT - SCHEMA public postgres',
+      '7; 2615 2300 SCHEMA - drizzle vibe',
+    ].join('\n');
+    const { filtered } = filterToc(toc);
+    expect(filtered).not.toContain('SCHEMA public');
+    expect(filtered).toContain('SCHEMA - drizzle');
   });
 
   it('does not misread a COMMENT on a table as an extension comment', () => {
     const toc = `18; 0 0 COMMENT - TABLE users vibe\n`;
     const { filtered } = filterToc(toc);
     expect(filtered).toContain('COMMENT - TABLE users');
+  });
+});
+
+describe('pgDumpArgs', () => {
+  it('allowlists the app schemas so extension schemas (tiger etc.) are never walked', () => {
+    const args = pgDumpArgs({
+      url: 'postgres://u:p@h:5439/vibe_tax',
+      snapshotId: '00000003-1',
+      outFile: '/tmp/db.dump',
+    });
+    // Unscoped dumps COPY extension config tables (tiger.geocode_settings)
+    // the app role cannot read — the dump must name its schemas.
+    expect(args.join(' ')).toContain('-n public');
+    expect(args.join(' ')).toContain('-n drizzle');
+    expect(args).toContain('--snapshot=00000003-1');
+    expect(args).toContain('-Fc');
+    // Windows argv lesson: the URL rides behind -d, never positional-first.
+    expect(args[args.indexOf('-d') + 1]).toBe('postgres://u:p@h:5439/vibe_tax');
   });
 });
 
