@@ -7,6 +7,8 @@ import { useFontSize } from '../lib/font-size';
 import { useActiveClient } from '../lib/active-client';
 import { useAppConfig } from '../lib/app-config';
 import { BulkArchiveDialog } from './BulkArchiveDialog';
+import { ChangePasswordDialog } from './ChangePasswordDialog';
+import { useAuth } from './AuthProvider';
 import type { ChatDTO } from '@vibe/shared';
 
 interface ChatSidebarProps {
@@ -25,9 +27,11 @@ export function ChatSidebar({ mobileOpen = false, onClose }: ChatSidebarProps = 
   const { activeClient } = useActiveClient();
   // TP-11 — multi-select bulk archive (planning module only).
   const { config } = useAppConfig();
+  const { user, logout } = useAuth();
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showBulkArchive, setShowBulkArchive] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   const { data } = useQuery<{ chats: ChatDTO[] }>({
     queryKey: ['chats'],
@@ -150,11 +154,23 @@ export function ChatSidebar({ mobileOpen = false, onClose }: ChatSidebarProps = 
         )}
         <div className="p-3 border-t border-ink/10 text-xs text-ink/40 space-y-2">
           <FontSizeSelector />
-          <Link to="/admin" className="underline" onClick={onClose}>
-            Admin
-          </Link>
+          {user?.role === 'admin' && (
+            <Link to="/admin" className="underline block" onClick={onClose}>
+              Admin
+            </Link>
+          )}
+          <div className="break-all text-ink/50">{user?.email}</div>
+          <div className="flex gap-3">
+            <button type="button" onClick={() => setShowChangePassword(true)} className="underline">
+              Change password
+            </button>
+            <button type="button" onClick={() => void logout()} className="underline">
+              Sign out
+            </button>
+          </div>
         </div>
       </aside>
+      {showChangePassword && <ChangePasswordDialog onClose={() => setShowChangePassword(false)} />}
       {showBulkArchive && (
         <BulkArchiveDialog
           chatIds={Array.from(selected)}

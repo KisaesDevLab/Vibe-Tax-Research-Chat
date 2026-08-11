@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { Router, type Request, type Response } from 'express';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
-import { eq, and, isNull } from 'drizzle-orm';
+import { eq, and, isNull, ne } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import { users, auth_refresh_tokens, password_reset_tokens } from '@vibe/db/schema';
 import { signAccess, signRefresh, verifyRefresh, hashToken } from '../lib/jwt.js';
@@ -199,6 +199,80 @@ authRouter.get('/me', requireAuth, async (req, res) => {
     monthly_spend_cap_usd: user.monthly_spend_cap_usd ? Number(user.monthly_spend_cap_usd) : null,
     can_override_model: user.can_override_model,
   });
+});
+
+// ── Password change (logged-in self-service) ─────────────────────────────
+// Requires the CURRENT password even though the caller holds a valid
+// access token: a stolen/left-open session must not be enough to lock the
+// real owner out. All other refresh tokens are revoked on success — the
+// caller's own session survives by passing its refresh_token.
+
+const changePasswordSchema = z.object({
+  current_password: z.string().min(1),
+  new_password: z.string().min(8).max(256),
+  /** The caller's own refresh token; its session is kept alive. */
+  refresh_token: z.string().optional(),
+});
+
+authRouter.post('/change-password', requireAuth, resetPasswordLimiter, async (req, res) => {
+  const parsed = changePasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request', detail: parsed.error.flatten() });
+    return;
+  }
+  const db = getDb();
+  const [user] = await db.select().from(users).where(eq(users.id, req.auth!.user_id)).limit(1);
+  if (!user || !user.is_active || user.deleted_at) {
+    res.status(401).json({ error: 'invalid_credentials' });
+    return;
+  }
+  const ok = await bcrypt.compare(parsed.data.current_password, user.password_hash);
+  if (!ok) {
+    await audit({
+      actor_user_id: user.id,
+      action: 'auth.password_change.failure',
+      metadata: { reason: 'bad_current_password' },
+      ip: req.ip,
+    });
+    res.status(403).json({ error: 'invalid_current_password' });
+    return;
+  }
+
+  const password_hash = await bcrypt.hash(parsed.data.new_password, 12);
+  await db
+    .update(users)
+    .set({ password_hash, updated_at: new Date() })
+    .where(eq(users.id, user.id));
+
+  // Kill every OTHER session. If the caller supplied its own (valid)
+  // refresh token, that row is spared so they stay logged in here.
+  let keepJti: string | null = null;
+  if (parsed.data.refresh_token) {
+    try {
+      const claims = verifyRefresh(parsed.data.refresh_token);
+      if (claims.sub === user.id) keepJti = claims.jti;
+    } catch {
+      // Unverifiable token: revoke everything, including this session.
+    }
+  }
+  const revokeWhere = keepJti
+    ? and(
+        eq(auth_refresh_tokens.user_id, user.id),
+        isNull(auth_refresh_tokens.revoked_at),
+        ne(auth_refresh_tokens.id, keepJti),
+      )
+    : and(eq(auth_refresh_tokens.user_id, user.id), isNull(auth_refresh_tokens.revoked_at));
+  await db.update(auth_refresh_tokens).set({ revoked_at: new Date() }).where(revokeWhere);
+
+  await audit({
+    actor_user_id: user.id,
+    action: 'auth.password_change.success',
+    target_type: 'user',
+    target_id: user.id,
+    metadata: { other_sessions_revoked: true, own_session_kept: Boolean(keepJti) },
+    ip: req.ip,
+  });
+  res.json({ ok: true });
 });
 
 // ── Password reset ───────────────────────────────────────────────────────

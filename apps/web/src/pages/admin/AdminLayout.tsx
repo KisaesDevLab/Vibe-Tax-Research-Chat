@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../components/AuthProvider';
 import { FontSizeSelector } from '../../components/ChatSidebar';
+import { ChangePasswordDialog } from '../../components/ChangePasswordDialog';
 import { api } from '../../lib/api';
 
 interface BuildInfo {
@@ -44,6 +45,7 @@ export function AdminLayout() {
     staleTime: Infinity,
   });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const closeMobileNav = () => setMobileNavOpen(false);
   return (
     // h-dvh + overflow-hidden so the admin sidebar stays put and only the
@@ -102,9 +104,17 @@ export function AdminLayout() {
             Queues UI ↗
           </a>
           <div className="break-all">Signed in as {user?.email}</div>
-          <button onClick={() => void logout()} className="underline">
-            Sign out
-          </button>
+          <div className="flex gap-3">
+            <button onClick={() => setShowChangePassword(true)} className="underline">
+              Change password
+            </button>
+            <button onClick={() => void logout()} className="underline">
+              Sign out
+            </button>
+          </div>
+          {showChangePassword && (
+            <ChangePasswordDialog onClose={() => setShowChangePassword(false)} />
+          )}
           {build && (
             <div
               className="text-ink/40"
