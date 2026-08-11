@@ -523,16 +523,55 @@ async function verifyPhase(ctx: RunContext): Promise<void> {
   const scratchUrl = dbUrlFor(handle.journal.scratchDb);
 
   const results: Array<{ name: string; expected: number; actual: number }> = [];
+  const skippedExtensionTables: string[] = [];
   let adminCount = 0;
   await withDbSession(scratchUrl, async (sql) => {
+    // Manifests written before extension-owned tables were excluded from
+    // the dump (≤ v0.10.1) carry counts for tables like PostGIS's
+    // spatial_ref_sys. Their data was never loaded (TOC filter) and their
+    // rows belong to the DESTINATION's extension, so comparing counts is
+    // meaningless — skip them rather than fail the restore.
+    const extRows = await sql`
+      SELECT c.relname AS name
+      FROM pg_depend d
+      JOIN pg_class c ON c.oid = d.objid
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE d.classid = 'pg_class'::regclass
+        AND d.refclassid = 'pg_extension'::regclass
+        AND d.deptype = 'e'
+        AND n.nspname = 'public'`;
+    const extNames = new Set((extRows as unknown as Array<{ name: string }>).map((r) => r.name));
     for (const [name, expected] of Object.entries(manifest.tables)) {
-      const [row] = await sql`SELECT count(*)::bigint AS n FROM ${sql(name)}`;
-      results.push({ name, expected, actual: Number((row as { n: string | number }).n) });
+      if (extNames.has(name)) {
+        skippedExtensionTables.push(name);
+        continue;
+      }
+      try {
+        const [row] = await sql`SELECT count(*)::bigint AS n FROM ${sql(name)}`;
+        results.push({ name, expected, actual: Number((row as { n: string | number }).n) });
+      } catch (err) {
+        // undefined_table can only mean an older manifest naming an
+        // extension table the destination doesn't carry: every app table
+        // has its DDL in the archive and --exit-on-error load guarantees
+        // it was created. Anything else is a real failure.
+        if ((err as { code?: string }).code === '42P01') {
+          skippedExtensionTables.push(name);
+          continue;
+        }
+        throw err;
+      }
     }
     const [admins] = await sql`
       SELECT count(*)::int AS n FROM users WHERE role = 'admin' AND is_active = true`;
     adminCount = Number((admins as { n: number }).n);
   });
+
+  if (skippedExtensionTables.length) {
+    logger.info(
+      { tables: skippedExtensionTables },
+      'restore verify: extension-owned tables from an older manifest skipped',
+    );
+  }
 
   await handle.update((j) => {
     j.verify = { tables: results, adminCount };

@@ -65,6 +65,22 @@ describe('filterToc', () => {
     const { filtered } = filterToc(toc);
     expect(filtered).toContain('COMMENT - TABLE users');
   });
+
+  it('drops TABLE DATA with no matching TABLE definition (extension config data)', () => {
+    // spatial_ref_sys: PostGIS emits its rows (pg_extension_config_dump)
+    // but never its DDL — the orphaned data can only fail to load.
+    const toc = [
+      '215; 1259 16403 TABLE public users vibe',
+      '3502; 0 16403 TABLE DATA public users vibe',
+      '5825; 0 18002 TABLE DATA public spatial_ref_sys postgres',
+    ].join('\n');
+    const skipped: string[] = [];
+    const { filtered, kept } = filterToc(toc, (l) => skipped.push(l));
+    expect(skipped).toEqual(['5825; 0 18002 TABLE DATA public spatial_ref_sys postgres']);
+    expect(filtered).toContain('TABLE DATA public users');
+    expect(filtered).not.toContain('spatial_ref_sys');
+    expect(kept).toBe(2);
+  });
 });
 
 describe('pgDumpArgs', () => {
@@ -80,8 +96,20 @@ describe('pgDumpArgs', () => {
     expect(args.join(' ')).toContain('-n drizzle');
     expect(args).toContain('--snapshot=00000003-1');
     expect(args).toContain('-Fc');
+    expect(args.join(' ')).not.toContain('--exclude-table-data');
     // Windows argv lesson: the URL rides behind -d, never positional-first.
     expect(args[args.indexOf('-d') + 1]).toBe('postgres://u:p@h:5439/vibe_tax');
+  });
+
+  it('excludes extension-owned table data (spatial_ref_sys) from the dump', () => {
+    const args = pgDumpArgs({
+      url: 'postgres://u:p@h:5439/vibe_tax',
+      snapshotId: '00000003-1',
+      outFile: '/tmp/db.dump',
+      excludeTableData: ['public.spatial_ref_sys', 'tiger.geocode_settings'],
+    });
+    expect(args).toContain('--exclude-table-data=public.spatial_ref_sys');
+    expect(args).toContain('--exclude-table-data=tiger.geocode_settings');
   });
 });
 

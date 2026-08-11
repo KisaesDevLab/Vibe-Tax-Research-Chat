@@ -171,6 +171,7 @@ async function runBackup(
         url,
         snapshotId: snap.snapshotId,
         outFile: dumpFile,
+        excludeTableData: snap.extensionTables,
       });
 
       const mig = await pendingMigrationCount({ databaseUrl: url }).catch(() => null);

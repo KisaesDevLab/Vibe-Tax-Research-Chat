@@ -140,6 +140,15 @@ under the app role. The backup dump is therefore allowlisted to the app's schema
   which is fatal on the scratch database under `--exit-on-error` — `filterToc` now
   drops the public SCHEMA/COMMENT entries alongside EXTENSION entries (non-public
   schemas like `drizzle` are kept; the scratch DB doesn't have them).
+- Schema scoping is NOT enough: PostGIS puts `spatial_ref_sys` IN `public` and marks
+  it `pg_extension_config_dump`, so `-n public` still emits its DATA (never its DDL).
+  Loading that COPY on another server fails — permission denied where the template
+  carries PostGIS (table owned by the extension), relation-missing where it doesn't.
+  Three-layer fix: `withSnapshot` reports extension-owned tables (pg_depend deptype
+  'e') and excludes them from manifest counts; the dump passes them as
+  `--exclude-table-data`; `filterToc` drops TABLE DATA entries with no matching TABLE
+  definition (covers archives taken ≤ v0.10.1); verify skips extension-owned or
+  undefined tables named by older manifests.
 
 ### nginx upload cap vs backup restores
 

@@ -151,6 +151,15 @@ export interface SnapshotInfo {
   serverVersion: string;
   /** public-schema table -> exact row count at this snapshot. */
   tables: Record<string, number>;
+  /**
+   * schema-qualified tables that BELONG to extensions (pg_depend deptype
+   * 'e'). PostGIS drops spatial_ref_sys into `public` and flags it with
+   * pg_extension_config_dump, so a schema-scoped pg_dump still emits its
+   * DATA; restoring that COPY onto another server fails (the destination's
+   * extension owns the table). These are excluded from both the dump and
+   * the manifest counts — extension state is recreated, never restored.
+   */
+  extensionTables: string[];
 }
 
 /**
@@ -168,11 +177,31 @@ export async function withSnapshot<T>(
     return (await sql.begin('isolation level repeatable read', async (tx) => {
       const [snap] = await tx`SELECT pg_export_snapshot() AS id`;
       const [ver] = await tx`SHOW server_version`;
+      const extRows = await tx`
+        SELECT n.nspname AS schema, c.relname AS name
+        FROM pg_depend d
+        JOIN pg_class c ON c.oid = d.objid
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE d.classid = 'pg_class'::regclass
+          AND d.refclassid = 'pg_extension'::regclass
+          AND d.deptype = 'e'
+          AND c.relkind IN ('r', 'p')`;
+      const extensionTables = (extRows as unknown as Array<{ schema: string; name: string }>).map(
+        (r) => `${r.schema}.${r.name}`,
+      );
+      const extNames = new Set(
+        (extRows as unknown as Array<{ schema: string; name: string }>)
+          .filter((r) => r.schema === 'public')
+          .map((r) => r.name),
+      );
       const tabs = await tx`
         SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename`;
       const tables: Record<string, number> = {};
       for (const t of tabs) {
         const name = (t as { tablename: string }).tablename;
+        // Extension-owned tables (spatial_ref_sys etc.) are neither dumped
+        // nor verified — their counts belong to the extension, not the app.
+        if (extNames.has(name)) continue;
         const [row] = await tx`SELECT count(*)::bigint AS n FROM ${tx(name)}`;
         tables[name] = Number((row as { n: string | number }).n);
       }
@@ -180,6 +209,7 @@ export async function withSnapshot<T>(
         snapshotId: (snap as { id: string }).id,
         serverVersion: String((ver as Record<string, string>).server_version),
         tables,
+        extensionTables,
       });
     })) as T;
   } finally {
@@ -221,12 +251,23 @@ export async function withDbSession<T>(
  */
 export const DUMP_SCHEMAS = ['public', 'drizzle'] as const;
 
-export function pgDumpArgs(opts: { url: string; snapshotId: string; outFile: string }): string[] {
+export function pgDumpArgs(opts: {
+  url: string;
+  snapshotId: string;
+  outFile: string;
+  /** schema-qualified extension-owned tables whose DATA must not ride in
+   *  the archive (their DDL never does). PostGIS's public.spatial_ref_sys
+   *  is pg_extension_config_dump'd, so schema scoping alone still emits
+   *  its rows — and loading them onto another server's extension-owned
+   *  copy fails with permission denied. */
+  excludeTableData?: string[];
+}): string[] {
   return [
     '-Fc',
     '--no-owner',
     '--no-privileges',
     ...DUMP_SCHEMAS.flatMap((s) => ['-n', s]),
+    ...(opts.excludeTableData ?? []).map((t) => `--exclude-table-data=${t}`),
     `--snapshot=${opts.snapshotId}`,
     '-f',
     opts.outFile,
@@ -239,6 +280,7 @@ export async function runPgDump(opts: {
   url: string;
   snapshotId: string;
   outFile: string;
+  excludeTableData?: string[];
 }): Promise<{ dumpedWith: string }> {
   const dumpedWith = await toolVersion('pg_dump');
   const bin = await toolPath('pg_dump');
@@ -289,11 +331,25 @@ export async function listToc(dumpFile: string): Promise<string> {
  * CREATE SCHEMA public — which every scratch database already has, and
  * under --exit-on-error "schema public already exists" is fatal. Other
  * schemas (drizzle) must be kept: the scratch database does NOT have them.
+ *
+ * TABLE DATA entries whose table has no TABLE definition entry in the
+ * same archive are dropped too. That shape has exactly one cause:
+ * pg_extension_config_dump tables (PostGIS's public.spatial_ref_sys) —
+ * pg_dump emits their rows but never their DDL. Loading those rows can
+ * only fail: on a server whose template carries the extension the table
+ * exists but is owned by the extension ("permission denied"), and
+ * elsewhere the table does not exist at all. Newer archives exclude the
+ * data at dump time (--exclude-table-data); this filter covers archives
+ * taken before that.
+ *
  * Comment lines (';'-prefixed) pass through untouched — pg_restore needs
  * them intact.
  */
 const SKIPPED_TOC_ENTRY =
   /^\s*\d+;\s+\d+\s+\d+\s+(EXTENSION|COMMENT\s+-\s+EXTENSION|SCHEMA\s+(-\s+)?public|COMMENT\s+-\s+SCHEMA\s+public)\b/;
+
+const TABLE_DEF_ENTRY = /^\s*\d+;\s+\d+\s+\d+\s+TABLE\s+(?!DATA\s|ATTACH\s)(\S+)\s+(\S+)/;
+const TABLE_DATA_ENTRY = /^\s*\d+;\s+\d+\s+\d+\s+TABLE DATA\s+(\S+)\s+(\S+)/;
 
 export function filterToc(
   toc: string,
@@ -302,10 +358,21 @@ export function filterToc(
   filtered: string;
   kept: number;
 } {
+  const lines = toc.split('\n');
+  const definedTables = new Set<string>();
+  for (const line of lines) {
+    const m = TABLE_DEF_ENTRY.exec(line);
+    if (m) definedTables.add(`${m[1]}.${m[2]}`);
+  }
   const out: string[] = [];
   let kept = 0;
-  for (const line of toc.split('\n')) {
+  for (const line of lines) {
     if (SKIPPED_TOC_ENTRY.test(line)) {
+      onSkip?.(line.trim());
+      continue;
+    }
+    const data = TABLE_DATA_ENTRY.exec(line);
+    if (data && !definedTables.has(`${data[1]}.${data[2]}`)) {
       onSkip?.(line.trim());
       continue;
     }
