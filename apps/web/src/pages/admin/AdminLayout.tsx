@@ -1,8 +1,23 @@
 // Phase 4-26 — admin shell.
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../components/AuthProvider';
 import { FontSizeSelector } from '../../components/ChatSidebar';
+import { api } from '../../lib/api';
+
+interface BuildInfo {
+  version: string;
+  git_sha: string;
+  build_date: string;
+}
+
+/** "v0.10.1" on tag builds; main-push builds stamp the full commit sha
+ *  into APP_VERSION, so shorten those; local dev shows "dev". */
+export function versionLabel(info: BuildInfo): string {
+  if (/^[0-9a-f]{40}$/i.test(info.version)) return `sha-${info.version.slice(0, 7)}`;
+  return info.version;
+}
 
 const navItems = [
   { to: '/admin', label: 'Dashboard', end: true },
@@ -21,6 +36,13 @@ const navItems = [
 
 export function AdminLayout() {
   const { user, logout } = useAuth();
+  // Build provenance from the cheap health endpoint. Baked into the image
+  // at build time, so it can never change under a running session.
+  const { data: build } = useQuery<BuildInfo>({
+    queryKey: ['health', 'build'],
+    queryFn: () => api('/api/health'),
+    staleTime: Infinity,
+  });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const closeMobileNav = () => setMobileNavOpen(false);
   return (
@@ -83,6 +105,14 @@ export function AdminLayout() {
           <button onClick={() => void logout()} className="underline">
             Sign out
           </button>
+          {build && (
+            <div
+              className="text-ink/40"
+              title={`commit ${build.git_sha.slice(0, 7)} · built ${build.build_date}`}
+            >
+              {versionLabel(build)}
+            </div>
+          )}
         </div>
       </aside>
       <main className="flex-1 h-full overflow-y-auto min-w-0">
