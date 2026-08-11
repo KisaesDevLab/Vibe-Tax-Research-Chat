@@ -29,8 +29,49 @@ import type { ClaudeJobRequest, ClaudeJobResult } from './client.js';
 
 export type AiMode = 'direct' | 'router';
 
+/**
+ * DB-backed override of the VIBE_AI_MODE env default, cached in-process so
+ * aiMode() stays synchronous at the job seam. Loaded once at boot
+ * (loadAiModeOverride) and updated by the admin toggle route on write —
+ * the same process handles both, so cache and DB cannot drift. There is
+ * still no RUNTIME fallback between modes: a flip only ever happens as an
+ * explicit, audited admin action whose write path first proved the router
+ * reachable.
+ */
+let modeOverride: AiMode | null = null;
+
 export function aiMode(): AiMode {
+  if (modeOverride) return modeOverride;
   return process.env.VIBE_AI_MODE === 'router' ? 'router' : 'direct';
+}
+
+export function setAiModeOverride(mode: AiMode | null): void {
+  modeOverride = mode;
+}
+
+/** Boot: hydrate the override from the settings table (no-op when unset). */
+export async function loadAiModeOverride(): Promise<void> {
+  try {
+    const { getSetting } = await import('../settings-store.js');
+    const { SETTING_KEYS } = await import('@vibe/db/schema');
+    const v = await getSetting<string>(SETTING_KEYS.AI_MODE);
+    modeOverride = v === 'router' || v === 'direct' ? v : null;
+    if (modeOverride === 'router' && !routerEnvConfigured()) {
+      logger.warn(
+        'ai_mode=router is set but VIBE_AI_ROUTER_URL / VIBE_AI_TOKEN are missing — routable jobs will fail closed',
+      );
+    }
+  } catch (err) {
+    // Pre-migration boot or DB hiccup: fall back to the env default rather
+    // than blocking startup.
+    logger.warn({ err }, 'ai_mode setting unavailable at boot; using VIBE_AI_MODE env default');
+    modeOverride = null;
+  }
+}
+
+/** Router mode needs both env knobs (the appliance mints the token). */
+export function routerEnvConfigured(): boolean {
+  return Boolean(process.env.VIBE_AI_ROUTER_URL && process.env.VIBE_AI_TOKEN);
 }
 
 /** Boot-time validation; returns an error string or null. */
@@ -349,6 +390,94 @@ export async function callClaudeViaRouter(
 
 // ── boot registration ────────────────────────────────────────────────────
 
+/** Shared by boot registration and the admin connection test. */
+const TRC_TASK_CLASS_DECLARATIONS = [
+  // Pack class — declaration matches the reviewed pack entry.
+  {
+    key: TRC_TASK_CLASSES.MEMO_DRAFT,
+    description: 'Client memo drafting from research threads',
+    requires: {},
+    defaultMaxTokens: 8192,
+  },
+  // New classes — start local_only until the operator widens them.
+  {
+    key: TRC_TASK_CLASSES.CONTENT_META,
+    description: 'Titles, tags, and summaries over user chat content and uploads',
+    requires: {},
+    defaultMaxTokens: 600,
+  },
+  {
+    key: TRC_TASK_CLASSES.AUTHORING,
+    description: 'Admin authoring: strategy drafts, tax tables, custom skills (forced tool output)',
+    requires: { tools: true },
+    defaultMaxTokens: 16000,
+  },
+];
+
+function registerPayload(): Parameters<VibeAiClient['registerTaskClasses']>[0] {
+  return {
+    app: 'vibe-tax-research',
+    version: process.env.npm_package_version ?? 'unknown',
+    classes: TRC_TASK_CLASS_DECLARATIONS,
+  };
+}
+
+export interface RouterTestResult {
+  ok: boolean;
+  latencyMs: number;
+  /** Task classes acknowledged by the router on success. */
+  registered?: number;
+  error?: string;
+}
+
+const ROUTER_TEST_TIMEOUT_MS = 10_000;
+
+/**
+ * Admin "Test connection": one authenticated round trip to the router.
+ * registerTaskClasses is idempotent by contract, so the probe doubles as
+ * making sure this app's task classes exist — exactly what a runtime
+ * switch to router mode needs anyway. Never throws; returns a verdict.
+ */
+export async function testRouterConnection(o?: {
+  client?: VibeAiClient;
+}): Promise<RouterTestResult> {
+  if (!routerEnvConfigured()) {
+    return {
+      ok: false,
+      latencyMs: 0,
+      error:
+        'VIBE_AI_ROUTER_URL / VIBE_AI_TOKEN are not set on this server — ' +
+        'the appliance mints them during "vibe enable".',
+    };
+  }
+  const client = o?.client ?? routerClient();
+  const start = Date.now();
+  try {
+    // The SDK's registerTaskClasses takes no AbortSignal; race a timeout so
+    // an unreachable router answers in bounded time (the orphaned fetch is
+    // harmless).
+    const result = await Promise.race([
+      client.registerTaskClasses(registerPayload()),
+      new Promise<never>((_, reject) => {
+        const t = setTimeout(
+          () => reject(new Error(`router did not answer within ${ROUTER_TEST_TIMEOUT_MS / 1000}s`)),
+          ROUTER_TEST_TIMEOUT_MS,
+        );
+        t.unref?.();
+      }),
+    ]);
+    return { ok: true, latencyMs: Date.now() - start, registered: result.registered.length };
+  } catch (err) {
+    const message =
+      err instanceof VibeAiError
+        ? `router answered ${err.status} (${err.code}): ${err.message}`
+        : err instanceof Error
+          ? err.message
+          : String(err);
+    return { ok: false, latencyMs: Date.now() - start, error: message.slice(0, 500) };
+  }
+}
+
 /**
  * Declare this app's task classes on the router (idempotent). Router mode
  * only; non-blocking with backoff — requests made before registration
@@ -363,33 +492,7 @@ export function registerTrcTaskClasses(o?: { client?: VibeAiClient; maxAttempts?
   const tryRegister = async (): Promise<void> => {
     attempt++;
     try {
-      await client.registerTaskClasses({
-        app: 'vibe-tax-research',
-        version: process.env.npm_package_version ?? 'unknown',
-        classes: [
-          // Pack class — declaration matches the reviewed pack entry.
-          {
-            key: TRC_TASK_CLASSES.MEMO_DRAFT,
-            description: 'Client memo drafting from research threads',
-            requires: {},
-            defaultMaxTokens: 8192,
-          },
-          // New classes — start local_only until the operator widens them.
-          {
-            key: TRC_TASK_CLASSES.CONTENT_META,
-            description: 'Titles, tags, and summaries over user chat content and uploads',
-            requires: {},
-            defaultMaxTokens: 600,
-          },
-          {
-            key: TRC_TASK_CLASSES.AUTHORING,
-            description:
-              'Admin authoring: strategy drafts, tax tables, custom skills (forced tool output)',
-            requires: { tools: true },
-            defaultMaxTokens: 16000,
-          },
-        ],
-      });
+      await client.registerTaskClasses(registerPayload());
       logger.info({ mode: 'router' }, 'vibe-ai-router task classes registered');
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

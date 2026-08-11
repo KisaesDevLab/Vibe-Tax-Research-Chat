@@ -93,6 +93,53 @@ export function AdminModelsPage() {
     onError: (e) => setError(humanize(e)),
   });
 
+  // Inline pricing editor — one row at a time. Drafts are strings so
+  // partial input ("1.") doesn't fight the number parser while typing.
+  const [editing, setEditing] = useState<string | null>(null);
+  const [draft, setDraft] = useState<Record<string, string>>({});
+  const savePricing = useMutation({
+    mutationFn: ({ model_id, fields }: { model_id: string; fields: Record<string, number> }) =>
+      api(`/api/admin/models/${encodeURIComponent(model_id)}`, {
+        method: 'PATCH',
+        body: JSON.stringify(fields),
+      }),
+    onSuccess: () => {
+      setEditing(null);
+      qc.invalidateQueries({ queryKey: ['admin', 'models'] });
+    },
+    onError: (e) => setError(humanize(e)),
+  });
+
+  const PRICE_FIELDS = [
+    ['input_per_mtok', 'Input $/Mtok'],
+    ['output_per_mtok', 'Output $/Mtok'],
+    ['cache_write_per_mtok', 'Cache write $/Mtok'],
+    ['cache_read_per_mtok', 'Cache read $/Mtok'],
+  ] as const;
+
+  function startEdit(m: ModelRow) {
+    setEditing(m.model_id);
+    setDraft({
+      input_per_mtok: m.input_per_mtok,
+      output_per_mtok: m.output_per_mtok,
+      cache_write_per_mtok: m.cache_write_per_mtok,
+      cache_read_per_mtok: m.cache_read_per_mtok,
+    });
+  }
+
+  function submitEdit(model_id: string) {
+    const fields: Record<string, number> = {};
+    for (const [key] of PRICE_FIELDS) {
+      const n = Number(draft[key]);
+      if (!Number.isFinite(n) || n < 0) {
+        setError(`Invalid value for ${key} — enter a non-negative number.`);
+        return;
+      }
+      fields[key] = n;
+    }
+    savePricing.mutate({ model_id, fields });
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -149,9 +196,10 @@ export function AdminModelsPage() {
             </div>
           )}
           {diff.added.some((a) => a.pricing_unknown) && (
-            <div className="border border-oxblood/40 bg-oxblood/5 text-oxblood text-xs rounded p-2 mb-2">
-              <strong>Pricing required:</strong> some added models were discovered via the Anthropic
-              API but have no entry in the pricing manifest. Set pricing before applying.
+            <div className="border border-gold/40 bg-gold/5 text-ink/80 text-xs rounded p-2 mb-2">
+              <strong>New models without pricing:</strong> some added models were discovered via the
+              Anthropic API but have no entry in the pricing manifest. They will be added{' '}
+              <strong>inactive</strong> — set their pricing in the table below, then enable them.
             </div>
           )}
           <pre className="font-mono text-xs overflow-auto max-h-64">
@@ -160,13 +208,8 @@ export function AdminModelsPage() {
           <div className="flex gap-2 mt-2">
             <button
               onClick={() => apply.mutate()}
-              disabled={apply.isPending || diff.added.some((a) => a.pricing_unknown)}
+              disabled={apply.isPending}
               className="px-3 py-1.5 bg-ink text-paper rounded text-sm disabled:opacity-50"
-              title={
-                diff.added.some((a) => a.pricing_unknown)
-                  ? 'Set pricing on every added model first'
-                  : undefined
-              }
             >
               {apply.isPending ? 'Applying…' : 'Apply'}
             </button>
@@ -193,6 +236,43 @@ export function AdminModelsPage() {
         <tbody>
           {data?.models.map((m) => {
             const isDefault = defaultId === m.model_id;
+            const isEditing = editing === m.model_id;
+            if (isEditing) {
+              return (
+                <tr key={m.model_id} className="border-b border-ink/5 bg-gold/5">
+                  <td className="py-2">
+                    <span>{m.display_name}</span>
+                    <div className="font-mono text-xs text-ink/50">{m.model_id}</div>
+                  </td>
+                  {PRICE_FIELDS.map(([key, label]) => (
+                    <td key={key} className="pr-2">
+                      <input
+                        value={draft[key] ?? ''}
+                        onChange={(e) => setDraft((d) => ({ ...d, [key]: e.target.value }))}
+                        aria-label={`${m.model_id} ${label}`}
+                        className="w-20 font-mono text-xs border border-ink/20 rounded px-1.5 py-1"
+                      />
+                    </td>
+                  ))}
+                  <td className="font-mono">{m.tokenizer_factor}</td>
+                  <td>{m.is_active ? 'yes' : 'no'}</td>
+                  <td>
+                    <div className="flex gap-3 justify-end whitespace-nowrap">
+                      <button
+                        onClick={() => submitEdit(m.model_id)}
+                        disabled={savePricing.isPending}
+                        className="text-xs underline text-moss disabled:opacity-50"
+                      >
+                        {savePricing.isPending ? 'saving…' : 'save'}
+                      </button>
+                      <button onClick={() => setEditing(null)} className="text-xs underline">
+                        cancel
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            }
             return (
               <tr key={m.model_id} className="border-b border-ink/5">
                 <td className="py-2">
@@ -214,6 +294,9 @@ export function AdminModelsPage() {
                 <td>{m.is_active ? 'yes' : 'no'}</td>
                 <td>
                   <div className="flex gap-3 justify-end whitespace-nowrap">
+                    <button onClick={() => startEdit(m)} className="text-xs underline">
+                      edit pricing
+                    </button>
                     {!isDefault && m.is_active && (
                       <button
                         onClick={() => setDefault.mutate(m.model_id)}
@@ -260,6 +343,8 @@ function humanize(e: unknown): string {
       return 'That model is unknown or inactive — enable it first or pick another.';
     if (e.message === 'manifest_unavailable')
       return 'Upstream manifest unreachable; the bundled fallback also failed.';
+    if (e.message === 'pricing_required_to_activate')
+      return 'This model still has $0 pricing — use "edit pricing" to set real rates first.';
     if (e.message === 'pricing_required') {
       const detail = (e as ApiError & { body?: { detail?: string } }).body?.detail;
       return detail

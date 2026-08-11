@@ -2,13 +2,22 @@
 // resource strategy.
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../../lib/api';
+import { api, ApiError } from '../../lib/api';
 
 interface KeyStatus {
   configured: boolean;
   fingerprint?: string;
   /** MIG-4: 'router' → background jobs go through the Vibe AI Router */
   ai_mode?: 'direct' | 'router';
+  /** VIBE_AI_ROUTER_URL + VIBE_AI_TOKEN present on the server. */
+  router_env_configured?: boolean;
+}
+
+interface RouterTestResult {
+  ok: boolean;
+  latencyMs: number;
+  registered?: number;
+  error?: string;
 }
 
 type WebResourceMode = 'anthropic' | 'mcp';
@@ -38,6 +47,27 @@ export function AdminSettingsPage() {
   const { data } = useQuery<KeyStatus>({
     queryKey: ['admin', 'settings', 'anthropic-key'],
     queryFn: () => api('/api/admin/settings/anthropic-key'),
+  });
+
+  const [aiModeError, setAiModeError] = useState<string | null>(null);
+  const [routerTest, setRouterTest] = useState<RouterTestResult | null>(null);
+  const setAiMode = useMutation({
+    mutationFn: (mode: 'direct' | 'router') =>
+      api('/api/admin/settings/ai-mode', { method: 'POST', body: JSON.stringify({ mode }) }),
+    onSuccess: () => {
+      setAiModeError(null);
+      qc.invalidateQueries({ queryKey: ['admin', 'settings', 'anthropic-key'] });
+    },
+    onError: (e) => {
+      const detail =
+        e instanceof ApiError ? (e.body as { detail?: string } | null)?.detail : undefined;
+      setAiModeError(detail ?? (e as Error).message);
+    },
+  });
+  const testRouter = useMutation<RouterTestResult>({
+    mutationFn: () => api('/api/admin/settings/ai-router/test', { method: 'POST' }),
+    onSuccess: (r) => setRouterTest(r),
+    onError: (e) => setRouterTest({ ok: false, latencyMs: 0, error: (e as Error).message }),
   });
 
   const save = useMutation({
@@ -73,20 +103,77 @@ export function AdminSettingsPage() {
     <div>
       <h1 className="font-display text-3xl mb-6">Settings</h1>
 
-      {data?.ai_mode === 'router' && (
-        <section className="border border-sky-300 rounded p-4 bg-sky-50 max-w-2xl mb-6">
-          <h2 className="font-display text-lg mb-1 text-sky-900">
-            Background jobs managed by Vibe AI Router
-          </h2>
-          <p className="text-sm text-sky-800">
-            This installation routes background AI jobs (titles, summaries, memo drafts, strategy
-            and skill authoring) through the appliance&apos;s Vibe AI Router — model choice,
-            data-boundary policy, and cost tracking for those jobs live in the router console. The
-            research chat and the weekly legal-development watch still use the Anthropic key below
-            directly, so it remains required.
+      <section className="border border-ink/10 rounded p-6 bg-white max-w-2xl mb-6">
+        <h2 className="font-display text-xl mb-2">AI backend</h2>
+        <p className="text-sm text-ink/60 mb-4">
+          Where background AI jobs run (titles, summaries, memo drafts, strategy and skill
+          authoring). <strong>Direct</strong> calls Anthropic with the key below.{' '}
+          <strong>Router</strong> sends routable jobs through the appliance&apos;s Vibe AI Router —
+          model choice, data-boundary policy, and cost tracking live in the router console. The
+          research chat and the weekly legal-development watch always use the Anthropic key
+          directly, so it remains required either way.
+        </p>
+        <div className="flex items-center gap-3 mb-3">
+          <span className="text-xs uppercase tracking-wider text-ink/50">Mode</span>
+          <span className="font-mono text-sm">{data?.ai_mode ?? '…'}</span>
+          {data?.ai_mode === 'direct' && (
+            <button
+              onClick={() => setAiMode.mutate('router')}
+              disabled={setAiMode.isPending || !data.router_env_configured}
+              className="px-3 py-1.5 border border-ink/20 rounded text-sm disabled:opacity-50"
+              title={
+                data.router_env_configured
+                  ? 'Verifies the router connection before switching'
+                  : 'VIBE_AI_ROUTER_URL / VIBE_AI_TOKEN are not set on this server'
+              }
+            >
+              {setAiMode.isPending ? 'Verifying router…' : 'Switch to router'}
+            </button>
+          )}
+          {data?.ai_mode === 'router' && (
+            <button
+              onClick={() => setAiMode.mutate('direct')}
+              disabled={setAiMode.isPending}
+              className="px-3 py-1.5 border border-ink/20 rounded text-sm disabled:opacity-50"
+            >
+              {setAiMode.isPending ? 'Switching…' : 'Switch to direct'}
+            </button>
+          )}
+          {data?.router_env_configured && (
+            <button
+              onClick={() => testRouter.mutate()}
+              disabled={testRouter.isPending}
+              className="px-3 py-1.5 border border-ink/20 rounded text-sm disabled:opacity-50"
+            >
+              {testRouter.isPending ? 'Testing…' : 'Test router connection'}
+            </button>
+          )}
+        </div>
+        {data && !data.router_env_configured && (
+          <p className="text-xs text-ink/50">
+            Router mode is unavailable: VIBE_AI_ROUTER_URL / VIBE_AI_TOKEN are not set on this
+            server (the appliance mints them during <span className="font-mono">vibe enable</span>).
           </p>
-        </section>
-      )}
+        )}
+        {aiModeError && (
+          <div className="border border-oxblood/40 bg-oxblood/5 text-oxblood text-xs rounded p-2 mb-2">
+            Mode change failed: {aiModeError}
+          </div>
+        )}
+        {routerTest && (
+          <div
+            className={`text-xs rounded p-2 border ${
+              routerTest.ok
+                ? 'border-moss/40 bg-moss/5 text-moss'
+                : 'border-oxblood/40 bg-oxblood/5 text-oxblood'
+            }`}
+          >
+            {routerTest.ok
+              ? `Router reachable — ${routerTest.latencyMs} ms, ${routerTest.registered ?? 0} task classes registered.`
+              : `Router unreachable: ${routerTest.error}`}
+          </div>
+        )}
+      </section>
 
       <section className="border border-ink/10 rounded p-6 bg-white max-w-2xl">
         <h2 className="font-display text-xl mb-2">Anthropic API key</h2>

@@ -48,4 +48,9 @@ export const SETTING_KEYS = {
   // rule. On restores the full TP-8 gate. The review machinery stays in
   // place either way so a firm can turn it back on without a migration.
   PLAN_REVIEW_REQUIRED: 'plan_review_required',
+  // AI backend mode ('direct' | 'router'). DB-backed override of the
+  // VIBE_AI_MODE env default so admins can switch from the UI; the write
+  // path validates router reachability before persisting, and every
+  // change is audited (this is a data-boundary decision, never silent).
+  AI_MODE: 'ai_mode',
 } as const;

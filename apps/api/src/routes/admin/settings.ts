@@ -9,7 +9,12 @@ import { audit } from '../../lib/audit.js';
 import { getSetting, setSetting, deleteSetting } from '../../lib/settings-store.js';
 import { fingerprint } from '../../lib/crypto.js';
 import { validateKey } from '../../lib/anthropic/client.js';
-import { aiMode } from '../../lib/anthropic/router-mode.js';
+import {
+  aiMode,
+  routerEnvConfigured,
+  setAiModeOverride,
+  testRouterConnection,
+} from '../../lib/anthropic/router-mode.js';
 import { SETTING_KEYS } from '@vibe/db/schema';
 import {
   buildMailer,
@@ -39,11 +44,59 @@ const keySchema = z.object({
 
 adminSettingsRouter.get('/anthropic-key', async (_req, res) => {
   const key = await getSetting<string>(SETTING_KEYS.ANTHROPIC_API_KEY);
+  const ai = { ai_mode: aiMode(), router_env_configured: routerEnvConfigured() };
   if (!key) {
-    res.json({ configured: false, ai_mode: aiMode() });
+    res.json({ configured: false, ...ai });
     return;
   }
-  res.json({ configured: true, fingerprint: fingerprint(key), ai_mode: aiMode() });
+  res.json({ configured: true, fingerprint: fingerprint(key), ...ai });
+});
+
+// ── AI backend mode (direct ⇄ router) ────────────────────────────────────
+// The DB setting outranks the VIBE_AI_MODE env default. Switching TO
+// router mode is gated on a live connection test — a data-boundary flip
+// must never be persisted on faith. Both directions are audited.
+const aiModeSchema = z.object({ mode: z.enum(['direct', 'router']) });
+
+adminSettingsRouter.post('/ai-mode', async (req, res) => {
+  const parsed = aiModeSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request' });
+    return;
+  }
+  const { mode } = parsed.data;
+  if (mode === 'router') {
+    const probe = await testRouterConnection();
+    if (!probe.ok) {
+      res.status(400).json({ error: 'router_unreachable', detail: probe.error });
+      return;
+    }
+  }
+  const previous = aiMode();
+  await setSetting(SETTING_KEYS.AI_MODE, mode, { updated_by: req.auth!.user_id });
+  setAiModeOverride(mode);
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'admin.settings.ai_mode.set',
+    metadata: { mode, previous },
+    ip: req.ip,
+  });
+  res.json({ ok: true, ai_mode: mode });
+});
+
+adminSettingsRouter.post('/ai-router/test', async (req, res) => {
+  const result = await testRouterConnection();
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'admin.settings.ai_router.test',
+    metadata: {
+      ok: result.ok,
+      latency_ms: result.latencyMs,
+      ...(result.error ? { error: result.error } : {}),
+    },
+    ip: req.ip,
+  });
+  res.json(result);
 });
 
 adminSettingsRouter.post('/anthropic-key', async (req, res) => {

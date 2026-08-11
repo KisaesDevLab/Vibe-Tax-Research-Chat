@@ -180,6 +180,24 @@ per-job timeout is an OVERALL bound covering attempts and sleeps, not a per-atte
 Router `finish_reason: 'error'` is a failed attempt (`RouterProviderFailure`), never a
 successful empty completion.
 
+### AI mode is DB-backed with an env default
+
+`aiMode()` returns the `ai_mode` settings row (cached in-process, hydrated at boot via
+`loadAiModeOverride()` BEFORE task-class registration) falling back to `VIBE_AI_MODE`.
+The admin toggle (`POST /api/admin/settings/ai-mode`) proves router reachability with a
+live `registerTaskClasses` round trip before persisting — a data-boundary flip is never
+saved on faith, and both directions are audited. `testRouterConnection()` doubles as the
+Settings-page "Test router connection" button. There is still no runtime fallback
+between modes.
+
+### Model registry: unpriced discoveries insert as inactive
+
+The Anthropic Models API returns no pricing, so `refresh/apply` inserts
+`pricing_unknown` models with $0 rates and `is_active: false`; the PATCH handler
+refuses `is_active: true` while input+output pricing are both zero
+(`pricing_required_to_activate`). Admins set rates via the inline "edit pricing" row
+on Admin → Models, then enable.
+
 ## Open architectural decisions
 
 See `QUESTIONS.md` for ambiguities resolved with applied defaults during the autonomous build.

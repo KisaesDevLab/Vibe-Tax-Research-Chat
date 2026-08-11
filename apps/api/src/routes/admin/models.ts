@@ -62,6 +62,26 @@ adminModelsRouter.patch('/:id', async (req, res) => {
       return;
     }
   }
+  // Guard: refuse to activate a model whose pricing is still the $0
+  // placeholder (discovered via the Anthropic API with no manifest
+  // pricing) unless real pricing arrives in the same PATCH. An active
+  // $0-priced model would silently undercount every usage event.
+  if (parsed.data.is_active === true) {
+    const [row] = await getDb()
+      .select({ input: models.input_per_mtok, output: models.output_per_mtok })
+      .from(models)
+      .where(eq(models.model_id, req.params.id))
+      .limit(1);
+    const effectiveInput = parsed.data.input_per_mtok ?? Number(row?.input ?? 0);
+    const effectiveOutput = parsed.data.output_per_mtok ?? Number(row?.output ?? 0);
+    if (row && effectiveInput === 0 && effectiveOutput === 0) {
+      res.status(409).json({
+        error: 'pricing_required_to_activate',
+        detail: 'Set input/output pricing for this model before activating it.',
+      });
+      return;
+    }
+  }
   const update: Record<string, unknown> = { updated_at: new Date(), updated_by: req.auth!.user_id };
   for (const [k, v] of Object.entries(parsed.data)) {
     if (v === undefined) continue;
@@ -376,22 +396,14 @@ adminModelsRouter.post('/refresh/apply', async (req, res) => {
     return;
   }
 
-  // Refuse to insert added rows whose pricing was not supplied. The
-  // refresh endpoint emits pricing_unknown:true for models surfaced
-  // by the Anthropic Models API that have no entry in the pricing
-  // manifest. Letting them through would create a $0-priced model
-  // that silently undercounts spend until an admin notices.
+  // Models discovered via the Anthropic API with no entry in the pricing
+  // manifest (pricing_unknown) ARE inserted — but always INACTIVE, so a
+  // $0-priced model can never silently undercount spend. The PATCH
+  // handler refuses to activate an all-zero-priced model, so the row
+  // sits visible in the registry until an admin sets real pricing and
+  // enables it. (Previously these were rejected outright, which left no
+  // way to add a brand-new Anthropic model from the UI at all.)
   const addedEntries = parsed.data.added;
-  const unpriced = addedEntries.filter((m) => m.pricing_unknown);
-  if (unpriced.length > 0) {
-    res.status(400).json({
-      error: 'pricing_required',
-      detail: `Set pricing for these models before applying: ${unpriced.map((m) => m.model_id).join(', ')}`,
-      model_ids: unpriced.map((m) => m.model_id),
-    });
-    return;
-  }
-
   const db = getDb();
   for (const m of addedEntries) {
     await db
@@ -406,7 +418,7 @@ adminModelsRouter.post('/refresh/apply', async (req, res) => {
         tokenizer_factor: (m.tokenizer_factor ?? 1).toString(),
         web_fetch_unit_cost: (m.web_fetch_unit_cost ?? 0.01).toString(),
         web_search_unit_cost: (m.web_search_unit_cost ?? 0.01).toString(),
-        is_active: m.is_active ?? true,
+        is_active: m.pricing_unknown ? false : (m.is_active ?? true),
         notes: m.notes ?? null,
         updated_by: req.auth!.user_id,
       })

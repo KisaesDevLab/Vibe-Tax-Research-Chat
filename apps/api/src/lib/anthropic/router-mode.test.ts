@@ -17,6 +17,9 @@ import {
   callClaudeViaRouter,
   jobRoutable,
   registerTrcTaskClasses,
+  routerEnvConfigured,
+  setAiModeOverride,
+  testRouterConnection,
   validateAiModeEnv,
 } from './router-mode.js';
 
@@ -52,6 +55,7 @@ afterEach(() => {
     else process.env[k] = savedEnv[k];
   }
   _setRouterClientForTests(null);
+  setAiModeOverride(null);
   vi.clearAllMocks();
 });
 
@@ -62,6 +66,22 @@ describe('mode + routability', () => {
     expect(aiMode()).toBe('direct');
     delete process.env.VIBE_AI_MODE;
     expect(aiMode()).toBe('direct');
+  });
+
+  it('the admin override (DB-backed) outranks the env default', () => {
+    process.env.VIBE_AI_MODE = 'direct';
+    setAiModeOverride('router');
+    expect(aiMode()).toBe('router');
+    setAiModeOverride('direct');
+    expect(aiMode()).toBe('direct');
+    setAiModeOverride(null);
+    expect(aiMode()).toBe('direct');
+  });
+
+  it('routerEnvConfigured requires both URL and token', () => {
+    expect(routerEnvConfigured()).toBe(true);
+    delete process.env.VIBE_AI_TOKEN;
+    expect(routerEnvConfigured()).toBe(false);
   });
 
   it('validateAiModeEnv refuses router without URL+token', () => {
@@ -409,5 +429,46 @@ describe('registerTrcTaskClasses', () => {
     registerTrcTaskClasses({ client, maxAttempts: 1 });
     await new Promise((r) => setTimeout(r, 30));
     expect(calls.length).toBe(1);
+  });
+});
+
+describe('testRouterConnection', () => {
+  it('reports ok with latency and registered count on success', async () => {
+    const client = clientWithFetch(
+      (async () =>
+        new Response(
+          JSON.stringify({
+            registered: [
+              { key: 'taxresearch_memo_draft', created: false, sensitivity: 'cloud_deidentified' },
+              { key: 'taxresearch_content_meta', created: false, sensitivity: 'local_only' },
+              { key: 'taxresearch_authoring', created: false, sensitivity: 'local_only' },
+            ],
+          }),
+          { status: 200 },
+        )) as typeof fetch,
+    );
+    const result = await testRouterConnection({ client });
+    expect(result.ok).toBe(true);
+    expect(result.registered).toBe(3);
+    expect(result.latencyMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it('reports a router error verdict without throwing', async () => {
+    const client = clientWithFetch(
+      (async () =>
+        new Response(JSON.stringify({ error: { code: 'auth_error', message: 'bad token' } }), {
+          status: 401,
+        })) as typeof fetch,
+    );
+    const result = await testRouterConnection({ client });
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/401|auth/i);
+  });
+
+  it('fails fast when the router env is not configured', async () => {
+    delete process.env.VIBE_AI_ROUTER_URL;
+    const result = await testRouterConnection();
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/VIBE_AI_ROUTER_URL/);
   });
 });

@@ -6,7 +6,7 @@ import { backupDir, backupTmpDir, dataDirs } from './config/paths.js';
 import { logger } from './lib/logger.js';
 import { startWorkers } from './jobs/workers.js';
 import { recoverOrphanedStreams } from './lib/stream-recovery.js';
-import { registerTrcTaskClasses } from './lib/anthropic/router-mode.js';
+import { loadAiModeOverride, registerTrcTaskClasses } from './lib/anthropic/router-mode.js';
 import { recoverRestore, defaultEngineConfig } from './lib/backup/engine.js';
 
 // Last-line-of-defense: any promise that escapes our handlers should be
@@ -83,7 +83,10 @@ async function start(): Promise<void> {
     logger.info({ port: env.PORT, env: env.NODE_ENV }, 'api listening');
     // MIG-4: router mode only; non-blocking with retry — routable jobs fail
     // closed at the router until registration lands, which is correct.
-    registerTrcTaskClasses();
+    // The DB-backed ai_mode override must hydrate first: registration
+    // no-ops in direct mode, and the admin may have toggled router mode
+    // from the UI (which outranks the VIBE_AI_MODE env default).
+    void loadAiModeOverride().then(() => registerTrcTaskClasses());
   });
 
   if (process.env.WORKERS_ENABLED !== 'false') {
