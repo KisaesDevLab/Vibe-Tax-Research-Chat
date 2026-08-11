@@ -342,6 +342,15 @@ async function scheduleCrons() {
     { triggered_by: 'cron' },
     { repeat: { pattern: '0 6 1 10 *' }, jobId: 'cron-tables-draft-annual' },
   );
+  // Second pass mid-November: the inflation-adjustment Rev. Proc. usually
+  // publishes late Oct/early Nov, so the Oct 1 draft is mostly carryovers.
+  // The handler skips when an open table-draft review item already exists,
+  // so this only produces a fresh draft if the first one was decided.
+  await tablesDraftQueue.add(
+    'annual-november',
+    { triggered_by: 'cron' },
+    { repeat: { pattern: '0 6 15 11 *' }, jobId: 'cron-tables-draft-november' },
+  );
   await strategyWatchQueue.add(
     'weekly',
     { triggered_by: 'cron' },

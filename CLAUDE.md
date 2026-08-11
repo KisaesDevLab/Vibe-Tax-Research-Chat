@@ -198,6 +198,27 @@ refuses `is_active: true` while input+output pricing are both zero
 (`pricing_required_to_activate`). Admins set rates via the inline "edit pricing" row
 on Admin → Models, then enable.
 
+### Tables-draft is web-grounded and pinned direct
+
+`tables-draft` now carries the server-side web_search tool (max 8 uses, allow-listed to
+`WEB_ALLOWLIST_DOMAINS`) so next-year figures are verified against official sources at
+draft time — which pins it direct in router mode alongside `strategy-watch` (the router
+cannot forward server tools). Two crons (Oct 1 + Nov 15 — the Rev. Proc. usually lands
+between them) plus a manual `POST /api/admin/table-sets/draft` trigger; the handler's
+open-review-item dedupe makes all three idempotent. DRAFT table sets are editable
+(`PATCH /api/admin/table-sets/:id`, drafts only — published sets stay immutable); an
+edit recomputes the open review item's field diff against its recorded base.
+
+### Strategy drafts: machine fields are restored in code
+
+Claude sometimes "keeps" machine fields from the keep-unchanged list by emitting them
+as null — an advisory record gains an all-null `model` block (the
+"model.applyOrder: Expected number, received null" validator failure). Because the
+contract is UNCHANGED, `restoreMachineFields()` enforces it deterministically after
+every parse: null/missing machine fields are restored from the current version, and a
+fabricated model block on an advisory record is dropped. Don't relax this back to
+prompt-only.
+
 ## Open architectural decisions
 
 See `QUESTIONS.md` for ambiguities resolved with applied defaults during the autonomous build.

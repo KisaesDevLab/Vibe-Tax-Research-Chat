@@ -91,11 +91,14 @@ describe('mode + routability', () => {
     expect(validateAiModeEnv()).toBeNull();
   });
 
-  it('strategy-watch is pinned direct (server-side web_search); all other jobs route', () => {
-    expect(jobRoutable('strategy-watch')).toBe(false);
-    expect(JOB_TASK_CLASS['strategy-watch']).toBeNull();
+  it('web-search jobs are pinned direct; all other jobs route', () => {
+    const PINNED_DIRECT = ['strategy-watch', 'tables-draft'];
+    for (const job of PINNED_DIRECT) {
+      expect(jobRoutable(job as never), job).toBe(false);
+      expect(JOB_TASK_CLASS[job as never], job).toBeNull();
+    }
     for (const [job, cls] of Object.entries(JOB_TASK_CLASS)) {
-      if (job !== 'strategy-watch') expect(cls, job).toBeTruthy();
+      if (!PINNED_DIRECT.includes(job)) expect(cls, job).toBeTruthy();
     }
   });
 });

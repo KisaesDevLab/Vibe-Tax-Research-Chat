@@ -22,7 +22,7 @@ import {
 } from '@vibe/db/schema';
 import { composeScenario } from '@vibe/engine';
 import { resolveApply } from '@vibe/strategies';
-import type { BaselineProfile, TableSetPayload } from '@vibe/shared';
+import { WEB_ALLOWLIST_DOMAINS, type BaselineProfile, type TableSetPayload } from '@vibe/shared';
 import { callClaude, ClaudeDisabledError } from '../../lib/anthropic/client.js';
 import { getRedis } from '../../lib/redis.js';
 import { audit } from '../../lib/audit.js';
@@ -69,8 +69,9 @@ produce the DRAFT for the NEXT tax year as a single JSON object:
  "source_notes": [{"group": "…", "authority": "…", "url": "…", "note": "…"}]}
 Rules:
 - Keep the payload structure IDENTICAL — same keys, same nesting, numbers only where numbers are.
-- Update only figures you can ground in a primary source (Rev. Proc., SSA COLA, IRS notice,
-  statute). Give the authority AND a URL for every group you changed.
+- Use web search to VERIFY every figure against the official source (irs.gov Rev. Proc. /
+  notices, ssa.gov COLA releases, statute text). Update only figures you confirmed; the
+  authority AND URL in each source note must be the source you actually consulted.
 - Where the next year's official figure is not yet published, KEEP the current figure and say so
   in that group's note ("carryover — official figure pending").
 Return ONLY the JSON object.`;
@@ -103,6 +104,17 @@ export async function runTablesDraft(triggeredBy: string): Promise<void> {
           )}`,
         },
       ],
+      // Live grounding against the trusted-source allowlist. Server tool →
+      // this job is pinned direct (not router-routable), same as
+      // strategy-watch; the SDK seam passes the body through untyped.
+      tools: [
+        {
+          type: 'web_search_20250828',
+          name: 'web_search',
+          max_uses: 8,
+          allowed_domains: WEB_ALLOWLIST_DOMAINS,
+        },
+      ] as unknown as never,
     });
     const start = r.text.indexOf('{');
     const end = r.text.lastIndexOf('}');

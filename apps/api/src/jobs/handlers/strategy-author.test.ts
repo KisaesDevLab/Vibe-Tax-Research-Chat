@@ -114,6 +114,83 @@ describe('resolveDraftSemver', () => {
   });
 });
 
+describe('restoreMachineFields', () => {
+  it('drops a fabricated all-null model block on an advisory record', async () => {
+    // The exact production failure: "keep model.applyOrder unchanged" on a
+    // record with NO model block made Claude emit one made of nulls, and
+    // the validator reported "model.applyOrder: Expected number, received
+    // null" (+ inputs/apply/suggest/goldenTests).
+    const { restoreMachineFields } = await import('./strategy-author.js');
+    const current = { id: 's-1', modeled: false, suggest: { rule: 'always' } };
+    const draft: Record<string, unknown> = {
+      id: 's-1',
+      modeled: false,
+      model: { applyOrder: null, inputs: null, apply: null, suggest: null, goldenTests: null },
+      suggest: null,
+    };
+    restoreMachineFields(draft, current);
+    expect('model' in draft).toBe(false);
+    expect(draft.suggest).toEqual({ rule: 'always' });
+  });
+
+  it('restores nulled machine fields on a modeled record from the current version', async () => {
+    const { restoreMachineFields } = await import('./strategy-author.js');
+    const current = {
+      id: 's-2',
+      modeled: true,
+      complexity: 3,
+      model: {
+        applyOrder: 30,
+        inputs: { type: 'object' },
+        apply: { module: 's-2@1.0.0' },
+        suggest: { rule: 'x' },
+        goldenTests: [{}, {}],
+      },
+    };
+    const draft: Record<string, unknown> = {
+      id: null,
+      modeled: null,
+      complexity: null,
+      model: {
+        applyOrder: null,
+        inputs: null,
+        apply: { module: 's-2@1.0.0' },
+        suggest: { rule: 'x' },
+        goldenTests: null,
+      },
+    };
+    restoreMachineFields(draft, current);
+    expect(draft.id).toBe('s-2');
+    expect(draft.modeled).toBe(true);
+    expect(draft.complexity).toBe(3);
+    const model = draft.model as Record<string, unknown>;
+    expect(model.applyOrder).toBe(30);
+    expect(model.inputs).toEqual({ type: 'object' });
+    expect(model.goldenTests).toHaveLength(2);
+  });
+
+  it('replaces a missing model block wholesale on a modeled record', async () => {
+    const { restoreMachineFields } = await import('./strategy-author.js');
+    const current = { modeled: true, model: { applyOrder: 10 } };
+    const draft: Record<string, unknown> = { modeled: true };
+    restoreMachineFields(draft, current);
+    expect(draft.model).toEqual({ applyOrder: 10 });
+  });
+
+  it('leaves legitimate draft values untouched', async () => {
+    const { restoreMachineFields } = await import('./strategy-author.js');
+    const current = { modeled: true, riskRating: 'low', model: { applyOrder: 10 } };
+    const draft: Record<string, unknown> = {
+      modeled: true,
+      riskRating: 'moderate',
+      model: { applyOrder: 20 },
+    };
+    restoreMachineFields(draft, current);
+    expect(draft.riskRating).toBe('moderate');
+    expect((draft.model as Record<string, unknown>).applyOrder).toBe(20);
+  });
+});
+
 describe('draftStrategy dedupe + concurrency', () => {
   beforeEach(() => {
     callClaude.mockClear();

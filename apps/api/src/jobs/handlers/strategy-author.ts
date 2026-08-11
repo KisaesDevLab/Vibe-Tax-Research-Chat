@@ -60,11 +60,79 @@ IDENTICAL structure and key set. Rules:
 - Refresh prose only where the law or figures have moved; otherwise keep the existing prose.
 - Bump "version" (minor), set "status" to "draft", set "reviewedBy" to null, append a changeLog
   entry describing what changed and why.
+- If the current record has NO "model" block (an advisory strategy), do NOT add one — and never
+  output null for a machine field; copy the current value verbatim.
 - Citations must be real and correctly formatted (IRC §X / Reg. §1.X-Y / full case cite with
   reporter / Rev. Proc. N). Never invent authority.
 - Client prose: ≤ grade-9 reading level; never use "loophole", "trick", "secret", "guarantee".
 - stateNotes must address conformity, PTET interaction, and Missouri.
 Return ONLY the JSON object.`;
+
+/**
+ * Deterministically repair machine fields the model must never change.
+ * Claude sometimes "includes" fields from the keep-unchanged list by
+ * emitting them as null — an advisory record gains a model block of nulls
+ * (the exact "model.applyOrder: Expected number, received null" validator
+ * failure), or a modeled record loses its inputs. Since the contract is
+ * "unchanged", enforcing it in code beats burning a retry round-trip:
+ * any machine field that is null/missing in the draft is restored
+ * verbatim from the current record, and a fabricated model block on an
+ * advisory record is dropped. Exported for tests.
+ */
+export function restoreMachineFields(
+  draft: Record<string, unknown>,
+  current: Record<string, unknown>,
+): void {
+  const SCALAR_MACHINE_FIELDS = [
+    'id',
+    'category',
+    'modeled',
+    'entityTypes',
+    'complexity',
+    'riskRating',
+    'typicalSavingsBand',
+  ] as const;
+  for (const k of SCALAR_MACHINE_FIELDS) {
+    if (draft[k] == null && current[k] != null) draft[k] = current[k];
+  }
+
+  const curModel = current.model as Record<string, unknown> | null | undefined;
+  const draftModel = draft.model as Record<string, unknown> | null | undefined;
+  if (curModel == null) {
+    // Advisory strategy: the schema forbids a model block. Anything the
+    // draft put here is fabricated — drop it.
+    if ('model' in draft) delete draft.model;
+  } else if (draftModel == null || typeof draftModel !== 'object') {
+    draft.model = curModel;
+  } else {
+    const MODEL_FIELDS = [
+      'applyOrder',
+      'inputs',
+      'apply',
+      'suggest',
+      'goldenTests',
+      'mayIncreaseBurden',
+    ] as const;
+    for (const mk of MODEL_FIELDS) {
+      if (draftModel[mk] == null && curModel[mk] != null) draftModel[mk] = curModel[mk];
+    }
+  }
+
+  // Top-level suggest: required for advisory records, forbidden as null.
+  if (current.suggest != null && draft.suggest == null) draft.suggest = current.suggest;
+  if (current.suggest == null && 'suggest' in draft && draft.suggest == null) delete draft.suggest;
+
+  const curAdvisor = current.advisor as Record<string, unknown> | undefined;
+  const draftAdvisor = draft.advisor as Record<string, unknown> | undefined;
+  if (curAdvisor?.interactions != null && draftAdvisor && draftAdvisor.interactions == null) {
+    draftAdvisor.interactions = curAdvisor.interactions;
+  }
+  const curEng = current.engagement as Record<string, unknown> | undefined;
+  const draftEng = draft.engagement as Record<string, unknown> | undefined;
+  if (curEng?.implementationEffort != null && draftEng && draftEng.implementationEffort == null) {
+    draftEng.implementationEffort = curEng.implementationEffort;
+  }
+}
 
 export interface DraftResult {
   status: 'skipped-no-key' | 'skipped-open-review-item' | 'draft-created' | 'validation-failed';
@@ -154,7 +222,9 @@ export async function draftStrategy(strategyId: string, triggeredBy: string): Pr
         },
       ],
     });
-    return extractJson(r.text);
+    const parsed = extractJson(r.text);
+    if (parsed) restoreMachineFields(parsed, current.content as Record<string, unknown>);
+    return parsed;
   };
 
   let draft;

@@ -101,9 +101,10 @@ export const TRC_TASK_CLASSES = {
 } as const;
 
 /**
- * Job → task class. `null` = NOT routable: strategy-watch depends on Anthropic's
- * server-side web_search tool, which the router does not expose pre-R1, so it
- * stays on the direct path even in router mode.
+ * Job → task class. `null` = NOT routable: strategy-watch and tables-draft
+ * depend on Anthropic's server-side web_search tool (tables-draft grounds
+ * next-year figures against the trusted-source allowlist), which the router
+ * does not expose pre-R1, so they stay on the direct path even in router mode.
  */
 export const JOB_TASK_CLASS: Record<ClaudeJobName, string | null> = {
   'chat-title': TRC_TASK_CLASSES.CONTENT_META,
@@ -112,7 +113,7 @@ export const JOB_TASK_CLASS: Record<ClaudeJobName, string | null> = {
   'skill-author': TRC_TASK_CLASSES.AUTHORING,
   'skill-refine': TRC_TASK_CLASSES.AUTHORING,
   'strategy-author': TRC_TASK_CLASSES.AUTHORING,
-  'tables-draft': TRC_TASK_CLASSES.AUTHORING,
+  'tables-draft': null,
   'strategy-refresh': TRC_TASK_CLASSES.AUTHORING,
   'strategy-watch': null,
   'plan-memo': TRC_TASK_CLASSES.MEMO_DRAFT,

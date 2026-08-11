@@ -3,12 +3,12 @@
 // publishes here, which pins the set and kicks golden-regression.
 import { Router } from 'express';
 import { z } from 'zod';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { getDb, type Db } from '@vibe/db';
-import { table_sets, type TableSet } from '@vibe/db/schema';
+import { review_queue, table_sets, type TableSet } from '@vibe/db/schema';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
 import { requirePlanning } from '../../middleware/planning-flag.js';
-import { goldenRegressionQueue } from '../../jobs/queues.js';
+import { goldenRegressionQueue, tablesDraftQueue } from '../../jobs/queues.js';
 import { audit } from '../../lib/audit.js';
 
 const idParam = z.string().uuid();
@@ -113,4 +113,122 @@ adminTableSetsRouter.post('/:id/publish', async (req, res) => {
     },
   });
   res.json({ ok: true, golden_regression_job: job.id });
+});
+
+// Manually kick the next-year drafting job. Exists because the annual
+// Oct 1 cron predates the real Rev. Proc. cycle (figures usually publish
+// late Oct/Nov) — the admin rejects the stale draft, then redrafts here
+// once the official numbers are out. The handler itself dedupes against
+// an open table-draft review item, so double-clicks are harmless.
+adminTableSetsRouter.post('/draft', async (req, res) => {
+  const job = await tablesDraftQueue.add('manual', { triggered_by: req.auth!.user_id });
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'table_set.draft_trigger',
+    metadata: { job_id: job.id ?? null },
+    ip: req.ip,
+  });
+  res.status(202).json({ ok: true, job_id: job.id });
+});
+
+// Edit a DRAFT table set (payload figures and/or source notes) before it
+// is published. Published sets stay immutable — plans pin them. When an
+// open review item references this draft, its field diff is recomputed
+// against the same base so reviewers never see a stale diff.
+const editSchema = z.object({
+  payload: z.record(z.unknown()),
+  source_notes: z
+    .array(
+      z.object({
+        group: z.string(),
+        authority: z.string(),
+        url: z.string().optional(),
+        note: z.string().optional(),
+      }),
+    )
+    .optional(),
+});
+
+adminTableSetsRouter.patch('/:id', async (req, res) => {
+  const id = idParam.safeParse(req.params.id);
+  if (!id.success) {
+    res.status(400).json({ error: 'bad_request' });
+    return;
+  }
+  const parsed = editSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request', detail: parsed.error.flatten() });
+    return;
+  }
+  const db = getDb();
+  const [row] = await db.select().from(table_sets).where(eq(table_sets.id, id.data)).limit(1);
+  if (!row) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  if (row.status !== 'draft') {
+    res.status(409).json({
+      error: 'not_a_draft',
+      detail: 'Published table sets are immutable — draft a new version instead.',
+    });
+    return;
+  }
+
+  await db
+    .update(table_sets)
+    .set({
+      payload: parsed.data.payload as never,
+      ...(parsed.data.source_notes ? { source_notes: parsed.data.source_notes as never } : {}),
+    })
+    .where(and(eq(table_sets.id, id.data), eq(table_sets.status, 'draft')));
+
+  // Refresh the open review item's diff against its recorded base.
+  const [item] = await db
+    .select()
+    .from(review_queue)
+    .where(
+      and(
+        eq(review_queue.kind, 'table-draft'),
+        eq(review_queue.status, 'open'),
+        sql`payload->>'table_set_id' = ${id.data}`,
+      ),
+    )
+    .limit(1);
+  if (item) {
+    const itemPayload = item.payload as Record<string, unknown>;
+    const baseId =
+      typeof itemPayload.base_table_set_id === 'string' ? itemPayload.base_table_set_id : null;
+    if (baseId) {
+      const [base] = await db.select().from(table_sets).where(eq(table_sets.id, baseId)).limit(1);
+      if (base) {
+        const { diffTableFields } = await import('../../jobs/handlers/currency.js');
+        const fieldDiff = diffTableFields(base.payload, parsed.data.payload);
+        await db
+          .update(review_queue)
+          .set({
+            payload: {
+              ...itemPayload,
+              field_diff: fieldDiff.slice(0, 400),
+              ...(parsed.data.source_notes ? { source_notes: parsed.data.source_notes } : {}),
+              edited_by: req.auth!.user_id,
+            } as never,
+          })
+          .where(eq(review_queue.id, item.id));
+      }
+    }
+  }
+
+  await audit({
+    actor_user_id: req.auth!.user_id,
+    action: 'table_set.edit',
+    target_type: 'table_set',
+    target_id: id.data,
+    metadata: {
+      tax_year: row.tax_year,
+      version: row.version,
+      source_notes_updated: Boolean(parsed.data.source_notes),
+    },
+    ip: req.ip,
+  });
+  res.json({ ok: true });
 });
