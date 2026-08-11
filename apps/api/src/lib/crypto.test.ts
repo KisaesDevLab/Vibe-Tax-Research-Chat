@@ -38,6 +38,19 @@ describe('crypto', () => {
     expect(a.ciphertext).not.toBe(b.ciphertext);
   });
 
+  it('sealWith/openWith round-trip under an explicit key (restore re-key path)', async () => {
+    const { sealWith, openWith } = await import('./crypto.js');
+    const keyA = 'a'.repeat(64);
+    const keyB = 'b'.repeat(64);
+    const sealed = sealWith(keyA, 'smtp-password', 'smtp_password');
+    expect(openWith(keyA, sealed, 'smtp_password')).toBe('smtp-password');
+    // Re-key: open under the source key, seal under the destination key.
+    const resealed = sealWith(keyB, openWith(keyA, sealed, 'smtp_password'), 'smtp_password');
+    expect(openWith(keyB, resealed, 'smtp_password')).toBe('smtp-password');
+    // The wrong key never decrypts (auth-tag mismatch).
+    expect(() => openWith(keyB, sealed, 'smtp_password')).toThrow();
+  });
+
   it('fingerprint exposes only the last 4 chars', async () => {
     const { fingerprint } = await import('./crypto.js');
     const key = 'sk-ant-api03-AAAABBBBCCCCDDDDEEEEFFFF1234';

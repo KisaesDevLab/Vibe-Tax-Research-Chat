@@ -20,7 +20,8 @@ import { pendingMigrationCount, runMigrations, resetDb } from '@vibe/db';
 import { env } from '../../config/env.js';
 import { logger } from '../logger.js';
 import { audit } from '../audit.js';
-import { fingerprint, readBackup, readManifestOnly } from './archive.js';
+import { openWith, sealWith, type SealedValue } from '../crypto.js';
+import { readBackup, readManifestOnly } from './archive.js';
 import type { ManifestV2 } from './manifest.js';
 import { RestorePrerequisiteError } from './errors.js';
 import {
@@ -114,6 +115,9 @@ interface RunContext {
   handle: JournalHandle;
   manifest?: ManifestV2;
   archiveMasterKey?: string;
+  /** Set when the verify phase re-encrypted the archive's secrets to THIS
+   *  server's MASTER_KEY — the operator has nothing to do post-restore. */
+  rekeyDone?: boolean;
   dumpFile: string;
   tocFile: string;
   filesRestored: number;
@@ -593,6 +597,70 @@ async function verifyPhase(ctx: RunContext): Promise<void> {
         'The live install is untouched.',
     );
   }
+
+  await rekeySecrets(ctx, scratchUrl);
+}
+
+/**
+ * Re-encrypt the archive's sealed settings from the SOURCE server's
+ * MASTER_KEY (carried inside the archive) to THIS server's — still on the
+ * scratch database, before the swap, so a failure aborts with the live
+ * install untouched. This removes the old post-restore chore of copying
+ * the source key into the env file and recreating the container; after
+ * the swap the secrets simply work under this server's own key.
+ *
+ * A row that will not decrypt under the archive key was already dead on
+ * the source (sealed under some third key, or corrupt) — it is left
+ * untouched and reported, never allowed to sink the whole restore.
+ */
+async function rekeySecrets(ctx: RunContext, scratchUrl: string): Promise<void> {
+  const { handle, config } = ctx;
+  const archiveKey = ctx.archiveMasterKey;
+  if (!archiveKey) return; // pre-key archive: fall back to the manual report
+  if (archiveKey === config.masterKey) return;
+
+  let rekeyed = 0;
+  const failures: string[] = [];
+  await withDbSession(scratchUrl, async (sql) => {
+    let rows: Array<{ key: string; value: unknown }>;
+    try {
+      rows =
+        (await sql`SELECT key, value FROM settings WHERE is_encrypted = true`) as unknown as typeof rows;
+    } catch (err) {
+      // 42P01: the archived database has no settings table (engine runs
+      // against arbitrary databases in tests / very old archives).
+      if ((err as { code?: string }).code === '42P01') return;
+      throw err;
+    }
+    for (const row of rows) {
+      try {
+        const plain = openWith(archiveKey, row.value as SealedValue, row.key);
+        const resealed = sealWith(config.masterKey, plain, row.key);
+        await sql`UPDATE settings SET value = ${sql.json(resealed as never)} WHERE key = ${row.key}`;
+        rekeyed += 1;
+      } catch {
+        failures.push(row.key);
+      }
+    }
+  });
+
+  ctx.rekeyDone = true;
+  if (failures.length) {
+    logger.warn(
+      { settings: failures },
+      'restore rekey: settings undecryptable under the archive key were left as-is (re-enter them in Admin → Settings)',
+    );
+  }
+  logger.info(
+    { rekeyed, failed: failures.length },
+    "restore rekey: secrets re-encrypted to this server's MASTER_KEY",
+  );
+  await handle.update((j) => {
+    if (j.verify) {
+      j.verify.rekeyedSettings = rekeyed;
+      if (failures.length) j.verify.rekeyFailures = failures;
+    }
+  });
 }
 
 async function filesPhase(ctx: RunContext): Promise<void> {
@@ -792,8 +860,11 @@ async function finalizePhase(ctx: RunContext): Promise<void> {
     await sql`SELECT 1`;
   });
 
+  // Equal keys need nothing; differing keys were reconciled by the verify
+  // phase's re-key (secrets now sealed under THIS server's key). Only a
+  // pre-key archive still requires the manual MASTER_KEY hand-off.
   const keyMatches = ctx.archiveMasterKey
-    ? fingerprint(ctx.archiveMasterKey) === fingerprint(config.masterKey)
+    ? ctx.archiveMasterKey === config.masterKey || ctx.rekeyDone === true
     : false;
 
   await gcPreviousGenerations(config, handle.journal.id);

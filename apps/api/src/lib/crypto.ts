@@ -25,21 +25,23 @@ export interface SealedValue {
   purpose: string;
 }
 
-function masterKeyBytes(): Buffer {
-  const k = Buffer.from(env.MASTER_KEY, 'hex');
+function keyBytes(masterKeyHex: string): Buffer {
+  const k = Buffer.from(masterKeyHex, 'hex');
   if (k.length !== 32) throw new Error('MASTER_KEY must be 32 bytes (64 hex chars)');
   return k;
 }
 
-function deriveKey(salt: Buffer, purpose: string): Buffer {
+function deriveKey(master: Buffer, salt: Buffer, purpose: string): Buffer {
   const info = Buffer.from(`vibe:${purpose}`, 'utf8');
-  return Buffer.from(crypto.hkdfSync('sha256', masterKeyBytes(), salt, info, KEY_LEN));
+  return Buffer.from(crypto.hkdfSync('sha256', master, salt, info, KEY_LEN));
 }
 
-export function seal(plaintext: string, purpose: string): SealedValue {
+/** seal() under an explicit master key — the restore engine re-encrypts
+ *  archived secrets from the source server's key to this server's. */
+export function sealWith(masterKeyHex: string, plaintext: string, purpose: string): SealedValue {
   const iv = crypto.randomBytes(IV_LEN);
   const salt = crypto.randomBytes(SALT_LEN);
-  const key = deriveKey(salt, purpose);
+  const key = deriveKey(keyBytes(masterKeyHex), salt, purpose);
   const cipher = crypto.createCipheriv(ALG, key, iv);
   const ct = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
   const tag = cipher.getAuthTag();
@@ -53,7 +55,12 @@ export function seal(plaintext: string, purpose: string): SealedValue {
   };
 }
 
-export function open(sealed: SealedValue, expectedPurpose: string): string {
+/** open() under an explicit master key. */
+export function openWith(
+  masterKeyHex: string,
+  sealed: SealedValue,
+  expectedPurpose: string,
+): string {
   if (sealed.purpose !== expectedPurpose) {
     throw new Error(`crypto purpose mismatch: ${sealed.purpose} != ${expectedPurpose}`);
   }
@@ -61,11 +68,19 @@ export function open(sealed: SealedValue, expectedPurpose: string): string {
   const salt = Buffer.from(sealed.salt, 'base64');
   const ct = Buffer.from(sealed.ciphertext, 'base64');
   const tag = Buffer.from(sealed.tag, 'base64');
-  const key = deriveKey(salt, sealed.purpose);
+  const key = deriveKey(keyBytes(masterKeyHex), salt, sealed.purpose);
   const decipher = crypto.createDecipheriv(ALG, key, iv);
   decipher.setAuthTag(tag);
   const pt = Buffer.concat([decipher.update(ct), decipher.final()]);
   return pt.toString('utf8');
+}
+
+export function seal(plaintext: string, purpose: string): SealedValue {
+  return sealWith(env.MASTER_KEY, plaintext, purpose);
+}
+
+export function open(sealed: SealedValue, expectedPurpose: string): string {
+  return openWith(env.MASTER_KEY, sealed, expectedPurpose);
 }
 
 // For UI display only. Reveals only the final 4 characters of the key —

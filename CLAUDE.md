@@ -150,6 +150,19 @@ under the app role. The backup dump is therefore allowlisted to the app's schema
   definition (covers archives taken ≤ v0.10.1); verify skips extension-owned or
   undefined tables named by older manifests.
 
+### Restores re-key secrets automatically (no MASTER_KEY hand-off)
+
+The archive carries the source server's MASTER_KEY (inside the passphrase-encrypted
+stream). When it differs from this server's, the verify phase re-encrypts every
+`settings` row with `is_encrypted = true` from the archive key to `config.masterKey`
+(`rekeySecrets` in `lib/backup/engine.ts`) — still on the scratch DB, before the swap,
+so failure aborts with the live install untouched. `result.masterKeyMatches` is then
+true and the archive key is never surfaced. The manual "set MASTER_KEY + restart"
+report only remains for archives that carry no key. Rows undecryptable under the
+archive key were already dead on the source — they're left as-is and listed in
+`verify.rekeyFailures`, never allowed to sink the restore. Crypto primitives live in
+`lib/crypto.ts` as `sealWith`/`openWith` (explicit key; `seal`/`open` wrap env).
+
 ### nginx upload cap vs backup restores
 
 nginx defaults `client_max_body_size` to 1MB; without an override in

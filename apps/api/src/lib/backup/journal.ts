@@ -89,6 +89,12 @@ export interface RestoreJournal {
   verify?: {
     tables: Array<{ name: string; expected: number; actual: number }>;
     adminCount: number;
+    /** Sealed settings re-encrypted from the archive's MASTER_KEY to this
+     *  server's (absent when the keys already matched). */
+    rekeyedSettings?: number;
+    /** Setting keys that would not decrypt under the archive key — left
+     *  sealed as-is; the operator re-enters them in Admin → Settings. */
+    rekeyFailures?: string[];
   };
   swap?: { steps: SwapStep[] };
   dirs: Array<{ key: string; live: string; staging: string; prev: string }>;

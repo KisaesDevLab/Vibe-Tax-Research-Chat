@@ -16,6 +16,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenvConfig({ path: path.resolve(__dirname, '../../../../../.env') });
 
 import { writeBackup, fingerprint } from './archive.js';
+import { sealWith, openWith } from '../crypto.js';
 import type { ManifestV2 } from './manifest.js';
 import { beginRestore, recoverRestore, rollbackRestore, type EngineConfig } from './engine.js';
 import { readJournal, type RestoreJournal } from './journal.js';
@@ -247,6 +248,65 @@ describe('restore engine (integration)', () => {
     expect(rolled.status).toBe('rolled_back');
     expect(await markerNote(live)).toBe('existing-install');
     expect(await readFile(path.join(cfg.dataDirs.attachments!, 'old.txt'), 'utf-8')).toBe('OLD');
+  }, 120_000);
+
+  it('re-encrypts sealed settings when the archive has a different MASTER_KEY', async ({
+    skip,
+  }) => {
+    if (!available) return skip();
+    const KEY_A = 'a'.repeat(64); // source server's key, travels in the archive
+    const KEY_B = 'b'.repeat(64); // this server's key
+    const source = `vibe_dr_src_rekey_${RUN_TAG}`;
+    await seedDb(source, 'rekey-source');
+    const sealed = sealWith(KEY_A, 'sk-ant-rekey-secret', 'anthropic_api_key');
+    await psqlCommand(
+      psqlBin,
+      dbUrlFor(source),
+      `CREATE TABLE settings (key text primary key, value jsonb not null, is_encrypted boolean not null);
+       INSERT INTO settings VALUES ('anthropic_api_key', $j$${JSON.stringify(sealed)}$j$::jsonb, true);
+       INSERT INTO settings VALUES ('plain_flag', '"on"'::jsonb, false);`,
+    );
+    const live = nextLiveDb();
+    await seedDb(live, 'existing-install');
+    const cfg = testConfig(live, { masterKey: KEY_B });
+    await mkdir(cfg.dataDirs.attachments!, { recursive: true });
+
+    const archive = path.join(work, 'rekey.vtbk');
+    await makeArchive({
+      sourceDb: source,
+      file: archive,
+      passphrase: 'engine-it-passphrase',
+      masterKey: KEY_A,
+    });
+    await beginRestore(
+      { kind: 'archive', file: archive, name: 'rekey.vtbk', deleteAfter: false },
+      'engine-it-passphrase',
+      cfg,
+    );
+    const j = await waitTerminal(cfg.backupDir);
+    expect(j.error).toBeUndefined();
+    expect(j.status).toBe('succeeded');
+    expect(j.verify?.rekeyedSettings).toBe(1);
+    expect(j.verify?.rekeyFailures).toBeUndefined();
+    // No manual MASTER_KEY hand-off: the result reports a clean match and
+    // never surfaces the archive's key.
+    expect(j.result?.masterKeyMatches).toBe(true);
+    expect(j.result?.keyFromArchive).toBeNull();
+
+    // The swapped-in secret decrypts under THIS server's key.
+    const raw = await psqlQuery(
+      psqlBin,
+      dbUrlFor(live),
+      `SELECT value FROM settings WHERE key = 'anthropic_api_key'`,
+    );
+    expect(openWith(KEY_B, JSON.parse(raw), 'anthropic_api_key')).toBe('sk-ant-rekey-secret');
+    // Unencrypted rows pass through untouched.
+    const flag = await psqlQuery(
+      psqlBin,
+      dbUrlFor(live),
+      `SELECT value FROM settings WHERE key = 'plain_flag'`,
+    );
+    expect(JSON.parse(flag)).toBe('on');
   }, 120_000);
 
   it('verify failure leaves the live install untouched', async ({ skip }) => {
