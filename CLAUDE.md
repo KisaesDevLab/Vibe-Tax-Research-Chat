@@ -219,6 +219,42 @@ every parse: null/missing machine fields are restored from the current version, 
 fabricated model block on an advisory record is dropped. Don't relax this back to
 prompt-only.
 
+### One markdown/PDF renderer stack (archive export readability)
+
+The archive → PDF export used to print the frozen transcript as raw text, so
+every `##`, `**bold**`, and pipe table landed on the page as syntax. It now
+renders through the same markdown renderer the plan memo uses, and the layout
+mirrors the on-screen archive viewer (serif body, role-labelled turns hanging
+off a left rail, provenance header, footer + page numbers). The PDFKit stack
+is now:
+
+- `export/pdf-text.ts` — WinAnsi guards. `sanitizeForHelvetica` trims (block
+  text); `sanitizeRun` deliberately does NOT — a paragraph is a chain of runs
+  joined with `continued: true`, so the space separating a plain run from a
+  bold/linked one lives at the run boundary and trimming it welds words
+  together ("challenge under**Reg. §1.162-1**" → "underReg."). `sanitizeForCode`
+  preserves interior whitespace for ASCII-art alignment.
+- `export/pdf-blocks.ts` — GFM pipe tables (column water-fill, header repeat on
+  continuation pages) and tinted Courier code blocks, parameterized by font
+  family. Shared by `response-pdf.ts` (Helvetica) and `render/markdown-pdf.ts`
+  (Times). NOTE: `splitTableRow`'s escaped-pipe placeholder is a literal NUL —
+  a printable stand-in would be re-expanded into spurious pipes.
+- `render/markdown-pdf.ts` — marked-driven; owns inline runs (bold/italic/code/
+  links), headings, lists, blockquotes, and delegates tables + code to
+  pdf-blocks. `headingScale` opens the scale up for documents that own their
+  page (archive) vs. sit under a section heading (memo).
+- `export/archive-pdf.ts` — per-turn left rails are recorded as page/y spans
+  during the flow and stroked in the `bufferPages` stamping pass, so a rail
+  never paints over the footer when a turn crosses a page. Turn bodies are
+  indented by moving the margin (`withIndent`), not by an offset, because table
+  and code widths derive from the page margins; PDFKit hands new pages the
+  document's own margins object, so continuation pages keep the indent.
+
+Both the PDF and the viewer run `stripSidecars` over snapshot content
+(`web/src/lib/sidecars.ts` mirrors `api/src/lib/parsing/sidecars-strip.ts`) —
+the viewer was previously showing the raw authorities/compliance JSON that the
+live chat has always stripped.
+
 ## Open architectural decisions
 
 See `QUESTIONS.md` for ambiguities resolved with applied defaults during the autonomous build.

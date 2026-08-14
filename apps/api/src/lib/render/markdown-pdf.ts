@@ -1,15 +1,17 @@
-// Markdown → PDFKit for the plan memo.
+// Markdown → PDFKit for the plan memo and the research-archive export.
 //
 // The rest of the render pipeline draws from structured RenderData, but the
 // memo is free-form markdown authored in the WYSIWYG editor, so it needs a
 // real renderer: without one, PDFKit prints the source verbatim ("## Situation",
 // "**bold**"). marked does the tokenizing; this module owns the drawing and
-// stays deliberately narrow — it renders the subset the editor can produce
-// (headings, paragraphs, lists, blockquotes, code, rules, and inline
-// bold/italic/code/links) and degrades unknown tokens to plain text rather
-// than dropping them.
+// renders what those documents actually contain — headings, paragraphs, lists,
+// blockquotes, fenced code, GFM tables, rules, and inline bold/italic/code/
+// links — degrading unknown tokens to plain text rather than dropping them.
+// Tables and code blocks are drawn by the shared block renderers in
+// export/pdf-blocks.ts, the same ones the chat-response PDF uses.
 import { marked, type Token, type Tokens } from 'marked';
-import { sanitizeForHelvetica } from '../export/response-pdf.js';
+import { sanitizeForHelvetica, sanitizeRun } from '../export/pdf-text.js';
+import { renderCodeBlock, renderTable, type CellAlign } from '../export/pdf-blocks.js';
 
 type Doc = PDFKit.PDFDocument;
 
@@ -22,6 +24,12 @@ export interface MarkdownPdfStyle {
   link: string;
   /** Body size; headings and code derive from it. */
   size?: number;
+  /**
+   * Multiplier on the heading scale. The memo's headings sit UNDER the
+   * deliverable's own h2 and stay at 1; the archive transcript owns its page
+   * and opens them up a little.
+   */
+  headingScale?: number;
 }
 
 interface Run {
@@ -116,7 +124,13 @@ function drawRuns(
       .font(fontFor(base))
       .fontSize(run.code ? opts.size - 0.5 : opts.size)
       .fillColor(run.href ? style.link : (opts.color ?? style.ink));
-    doc.text(s(run.text), {
+    // sanitizeRun, not the trimming sanitizer: the space between a plain run
+    // and the bold/linked run that follows it belongs to the run boundary.
+    // Only the paragraph's own outer edges get trimmed.
+    let text = sanitizeRun(run.text);
+    if (i === 0) text = text.replace(/^[ \t]+/, '');
+    if (last) text = text.replace(/[ \t]+$/, '');
+    doc.text(text, {
       continued: !last,
       width,
       link: run.href,
@@ -153,9 +167,10 @@ function renderTokens(doc: Doc, tokens: Token[], style: MarkdownPdfStyle, depth 
         // Memo headings sit UNDER the section's own h2, so they start a step
         // down from it and never compete with the document's title scale.
         const sizes: Record<number, number> = { 1: 13.5, 2: 12, 3: 11, 4: 10.5, 5: 10, 6: 10 };
+        const scale = style.headingScale ?? 1;
         doc.moveDown(h.depth <= 2 ? 0.5 : 0.35);
         drawRuns(doc, toRuns(h.tokens), style, {
-          size: sizes[h.depth] ?? 11,
+          size: (sizes[h.depth] ?? 11) * scale,
           bold: true,
         });
         doc.moveDown(0.15);
@@ -225,14 +240,25 @@ function renderTokens(doc: Doc, tokens: Token[], style: MarkdownPdfStyle, depth 
       }
       case 'code': {
         const c = t as Tokens.Code;
-        doc.moveDown(0.2);
-        doc.x = doc.page.margins.left + 10;
-        doc
-          .font('Courier')
-          .fontSize(body - 1.5)
-          .fillColor(style.ink)
-          .text(s(c.text), { width: usableWidth(doc) - 20 });
-        doc.moveDown(0.35);
+        // Tinted Courier block: alignment in ASCII tables / decision trees is
+        // the whole reason a fenced block was used, so it is measured and
+        // drawn line-by-line rather than flowed as one wrapped string.
+        renderCodeBlock(doc, c.text.split('\n'), { ink: style.ink, size: body - 2 });
+        break;
+      }
+      case 'table': {
+        const tbl = t as Tokens.Table;
+        // The shared renderer works on raw cell markdown — it strips the
+        // inline syntax itself and keeps whole-cell bold.
+        const rows = [tbl.header.map((c) => c.text), ...tbl.rows.map((r) => r.map((c) => c.text))];
+        const alignments: CellAlign[] = tbl.header.map(
+          (_, i) => (tbl.align[i] ?? 'left') as CellAlign,
+        );
+        renderTable(doc, rows, alignments, {
+          family: 'Times',
+          size: Math.max(8, body - 1),
+          ink: style.ink,
+        });
         break;
       }
       case 'hr':

@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { ArchiveDetailDTO } from '@vibe/shared';
 import { api, apiFetch, downloadErrorMessage } from '../../lib/api';
+import { stripSidecars } from '../../lib/sidecars';
 import { Markdown } from '../../components/Markdown';
 
 export function ArchiveViewer() {
@@ -87,7 +88,9 @@ export function ArchiveViewer() {
               {m.role} · {new Date(m.created_at).toLocaleString()}
             </div>
             <div className="text-sm">
-              <Markdown>{m.content}</Markdown>
+              {/* Same stripping the live chat does — the frozen snapshot holds
+                  the raw turn, sidecar JSON and all. */}
+              <Markdown>{stripSidecars(m.content)}</Markdown>
             </div>
           </div>
         ))}
