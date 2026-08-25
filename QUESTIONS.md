@@ -462,3 +462,79 @@ residual defects fixed:
   invoice is discoverable in Stripe by the `plan_id` metadata stamped on every
   invoice at creation (dashboard/API metadata search) — the round-6 void-failure
   log covers the separate failed-void case only.
+
+## Fact-patterns addendum (TP-3a, TP-6a, TP-5a, TP-8a) — applied defaults
+
+Adaptations of the addendum to this deployment (no Shield service, no
+vibellm/GLM-OCR, no BGE-M3, no skills pack yet):
+
+- **Shield ≠ tokenization.** The addendum's "PII stored tokenized /
+  detokenized for display" maps to this repo's `lib/pii` detect + redact:
+  irreversible `[REDACTED-*]` placeholders applied to document text BEFORE
+  storage and BEFORE any LLM call. No detokenize exists; the fact schema
+  structurally excludes PII (age bands, initials — no names/SSNs), so
+  nothing needs revealing. Raw PDF bytes at rest follow existing storage
+  rules (not additionally encrypted).
+- **Embeddings**: voyage-3-large 1024-dim (the existing stack) for
+  `document_chunks` and retrieval queries — one client for both; not BGE-M3.
+- **OCR**: the `getOcrProvider()` null seam is kept; scanned client
+  documents fail ingest with `ocr_not_configured` (surfaced on the document
+  row; 422 on the synchronous plan-intake upload).
+- **Fact schema is in-repo** (`packages/shared/src/facts/fact-schema.json`,
+  semver 1.0.0), not a skills pack; extraction protocols live in
+  `apps/api/src/lib/facts/extraction/`; plan-mode chat carries the
+  SKILL.md-equivalent instructions in its preamble. The §5 CI schema-tag
+  check against a pinned skill is deferred to the skills-pack migration;
+  the in-repo drift guards (JSON ↔ types ↔ zod ↔ FACT_PATHS) stand in.
+- **`tb_sync`** stays in the provenance enum; no T&B integration exists, so
+  the TP-6a pre-population clause is a no-op until one ships.
+- **Provenance granularity**: `sources[]` on the nearest object node (array
+  entry / section object), not every scalar leaf — keeps `facts.*` selector
+  paths clean. `income` carries no provenance field (income.sources is data).
+- **Client delete hard-deletes** fact patterns, documents, chunks, and disk
+  files (user decision — PII discipline); the research-archive tombstone
+  rule is unchanged, and plans still block deletion entirely.
+- **Conflicts** are scalar-path-only (same path, differing values); array
+  candidates append and never conflict. Never auto-resolved.
+- **Duplicate upload** (same client + sha256) → 409 with the existing
+  document id; the plan-intake variant returns the stored anchor parse.
+- **PDF-only intake** in v1 (the parsers seam exists for other types later).
+- **Fact-version retention**: unlimited (addendum default).
+- **Chunking**: page-bounded, ~800 tokens / 100 overlap via the existing
+  char-approx chunker per page. `document_chunks.page` is NOT NULL — every
+  retrieval excerpt cites a real page.
+- **`created` snapshot upserts** on each candidate acceptance until the
+  transition into `presented` writes the once-only `review_frozen` snapshot;
+  reopening keeps snapshots (provenance). Suggest/chat use the latest by
+  `snapshot_at`.
+- **Suggest evaluation is server-side by `plan_id`** (facts never posted by
+  the client); the legacy `{profile}` body stays accepted. The published-
+  catalog cache means ≤30s staleness after an admin publish.
+- **Tri-state semantics**: missing/null facts → `unknown` (Kleene through
+  all/any/not; `not(unknown) = unknown`); a present-but-EMPTY array is a
+  known fact (false), distinct from an absent one (unknown). Profile leaves
+  stay two-valued. Without a snapshot the UI suppresses toConfirm chips to
+  avoid all-toConfirm noise.
+- **Rule enrichment = MINOR semver bump**; the seed may advance
+  `current_version_id` only over a seed-owned (`change_note='seed'`)
+  pointer to a strictly higher semver — admin publishes are never touched.
+- **`doc_citations` is its own sidecar + messages column** (not overloaded
+  into authorities — different lifecycle: grounding chip, confirm-as-fact,
+  no Eyecite). Citations are decorated `grounded` when their
+  {documentId, page} pair was among the turn's retrieved excerpts.
+- **Pending facts** live in `plan_pending_facts` (a table, not plan jsonb);
+  `promoted_fact_pattern_id` is a bare uuid (no FK) to stay decoupled.
+  Promote writes ONE new client version: pathed values apply at their path,
+  unpathed statements become ANSWERED `openQuestions` entries with their
+  document source. The §6 "auto-populate openQuestions from toConfirm"
+  default is served by this path rather than by mutating facts on read.
+- **`chats.strategy_id`** added beyond the two spec'd columns so the
+  preamble and archive prefill know the strategy under discussion.
+- **Router mode**: `fact-extract` runs under the new
+  `taxresearch_fact_extract` class (starts local_only at the router);
+  extraction failing there degrades to `extraction_error` while chunks
+  still index. `client-doc-classify` rides CONTENT_META. Plan-mode chat
+  inherits the always-direct streaming path.
+- **Milestone**: tag `planning-v1.1.0` after the four Done-When walks pass
+  against a running stack with an Anthropic key (extraction + chat legs
+  need live model calls).

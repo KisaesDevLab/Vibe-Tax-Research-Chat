@@ -22,6 +22,10 @@ Updated after each phase commit.
 | TP-14 | Currency jobs                                | done   | feat(tp-14) |
 | TP-15 | Hardening + restore drill                    | done   | feat(tp-15) |
 | TP-16 | Rollout + final verification                 | done   | feat(tp-16) |
+| TP-3a | Client fact patterns + documents intake      | done   | feat(tp3a)  |
+| TP-6a | Facts on the tie-out screen                  | done   | feat(tp6a)  |
+| TP-5a | Tri-state facts in the suggest evaluator     | done   | feat(tp5a)  |
+| TP-8a | Plan-scoped document-grounded chat           | done   | feat(tp8a)  |
 
 ## Notes
 
@@ -43,3 +47,10 @@ Updated after each phase commit.
   entitled client PDF, signed OpenSign/Stripe fixtures auto-advancing to engaged with
   name reveal, no-key job skips). Operator guide: docs/planning-module.md.
 - Build complete: TP-0…TP-16 all done.
+- Fact-patterns addendum (TP-3a/6a/5a/8a) built 2026-08-25: migrations
+  0016–0017 applied; `pnpm -r test` green (shared 54, schema 33, strategies
+  291 incl. 11 suggest goldens + legacy↔tri equivalence, db 30, api 359, web
+  33); seed advance rule verified live (enriched strategies current at
+  1.1.0/1.2.0, re-seed inserts 0). Applied defaults in QUESTIONS.md
+  ("Fact-patterns addendum"). Tag `planning-v1.1.0` after the four Done-When
+  walks pass against a running stack with an Anthropic key.

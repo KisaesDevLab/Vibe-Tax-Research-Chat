@@ -255,6 +255,49 @@ Both the PDF and the viewer run `stripSidecars` over snapshot content
 the viewer was previously showing the raw authorities/compliance JSON that the
 live chat has always stripped.
 
+### Fact patterns (TP-3a/6a/5a/8a): canonical schema, Shield gate, one Voyage stack
+
+The client-owned fact-pattern feature set (addendum sub-phases) landed with
+these invariants:
+
+- **Canonical fact schema is in-repo**: `packages/shared/src/facts/fact-schema.json`
+  (semver-tagged), mirrored by TS types (same dir), the zod gate
+  (`packages/schema/src/fact-pattern.ts`), and the evaluator path whitelist
+  (`packages/schema/src/fact-paths.ts`). Four drift guards fail `pnpm -r test`
+  if any of them diverge — bump them TOGETHER with `FACT_SCHEMA_VERSION`.
+- **Shield-before-inference is a pipeline ORDER invariant** in
+  `lib/client-documents/ingest.ts`: tokens → pages → `shieldPages` (lib/pii
+  redaction) → classify/extract/chunk/embed. No document text reaches storage
+  or any LLM un-redacted; the fact schema structurally excludes PII. Don't
+  reorder these steps.
+- **One embeddings stack.** `document_chunks` and its retrieval
+  (`lib/documents/retrieve.ts`) use the SAME `getEmbeddingsClient()` as
+  ingest — a query embedded under a different model returns garbage
+  similarities silently.
+- **Fact-pattern versioning has ONE write path**:
+  `createFactPatternVersion` (`lib/facts/versions.ts`) — supersede-current +
+  MAX+1 inside the caller's transaction; the partial unique index
+  (one current row per client) backstops races as 409 `version_conflict`.
+  Client merge repoints fact patterns/documents (superseding the source
+  current first); client delete hard-deletes them, files included.
+- **Suggest is tri-state** (`evaluateSuggestRuleTri` in @vibe/shared):
+  `facts.*` leaves resolve against the plan's snapshot, missing → `unknown`
+  (never false), Kleene composition, present-but-empty array = known false.
+  Legacy `evaluateSuggestRule` is byte-compatible and profile-only. Any
+  suggest-rule change requires a semver bump to reach existing installs; the
+  seed advances `current_version_id` ONLY over seed-owned pointers
+  (`change_note='seed'`) to a strictly higher semver.
+- **`doc_citations` is the third sidecar** — extractor in
+  `lib/parsing/doc-citations.ts`, persisted on messages, and BOTH strippers
+  (`api/src/lib/parsing/sidecars-strip.ts` ↔ `web/src/lib/sidecars.ts`)
+  carry it; any future sidecar must be added to both in one commit.
+- Plan-mode chat (`chats.mode='plan'`) assembles its preamble + client-doc
+  retrieval inside `routes/chats/messages.ts` at the `assembleSystemPrompt`
+  seam; `streamChat` itself is untouched and stays always-direct.
+- `fact-extract` runs under router class `taxresearch_fact_extract`
+  (starts local_only); ingest degrades to `extraction_error` (chunks still
+  index) when extraction fails for any reason.
+
 ## Open architectural decisions
 
 See `QUESTIONS.md` for ambiguities resolved with applied defaults during the autonomous build.
