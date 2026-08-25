@@ -410,7 +410,7 @@ describe('callClaudeViaRouter', () => {
 });
 
 describe('registerTrcTaskClasses', () => {
-  it('declares the three classes in router mode only', async () => {
+  it('declares the four classes in router mode only', async () => {
     const calls: { url: string; init: RequestInit }[] = [];
     const client = clientWithFetch((async (url: unknown, init?: RequestInit) => {
       calls.push({ url: String(url), init: init ?? {} });
@@ -425,6 +425,7 @@ describe('registerTrcTaskClasses', () => {
     expect(body.classes.map((c: { key: string }) => c.key).sort()).toEqual([
       'taxresearch_authoring',
       'taxresearch_content_meta',
+      'taxresearch_fact_extract',
       'taxresearch_memo_draft',
     ]);
 
