@@ -9,16 +9,22 @@
 //   6. On 'message_stop': persist assistant message + cost (Phase 15) + usage_event (Phase 24).
 import { Router } from 'express';
 import { z } from 'zod';
-import { eq, asc, and } from 'drizzle-orm';
+import { eq, asc, and, desc } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import {
   chats,
+  clients,
   messages,
+  plans,
+  plan_fact_snapshots,
+  plan_scenarios,
   primary_source_consultations,
   models,
   skills as skillsTable,
   custom_skills,
   chat_attachments,
+  strategies,
+  strategy_versions,
   usage_events,
   SETTING_KEYS,
 } from '@vibe/db/schema';
@@ -35,6 +41,11 @@ import {
   retrieveReferenceExcerpts,
   formatExcerptsForPrompt,
 } from '../../lib/references/retrieve.js';
+import {
+  retrieveClientDocExcerpts,
+  formatDocExcerptsForPrompt,
+} from '../../lib/documents/retrieve.js';
+import { buildPlanChatPreamble } from '../../lib/planning/plan-chat-context.js';
 import { checkSpendCap } from '../../lib/spend-cap.js';
 import { buildResponsePdf } from '../../lib/export/response-pdf.js';
 import { buildResponseDocx } from '../../lib/export/response-docx.js';
@@ -45,9 +56,10 @@ messagesRouter.use(requireAuth);
 
 // Concatenate the canonical system prompt with optional add-ons, dropping
 // empties so a chat with no attachments and no firm references still
-// produces clean output (no dangling separator lines).
-function assembleSystemPrompt(base: string, attachments: string, references: string): string {
-  return [base, attachments, references].filter((s) => s && s.trim().length > 0).join('\n\n');
+// produces clean output (no dangling separator lines). TP-8a widened this
+// to varargs for the plan-mode preamble + client-document blocks.
+function assembleSystemPrompt(...parts: string[]): string {
+  return parts.filter((s) => s && s.trim().length > 0).join('\n\n');
 }
 
 const sendSchema = z.object({
@@ -211,6 +223,73 @@ messagesRouter.post('/', async (req, res) => {
     : [];
   const referenceBlock = formatExcerptsForPrompt(referenceExcerpts);
 
+  // TP-8a — plan-mode context: fact snapshot + strategy preamble, plus
+  // retrieval over THIS client's document chunks with mandatory
+  // {documentId, page} citation instructions. Both best-effort.
+  let planPreamble = '';
+  let docBlock = '';
+  let docExcerpts: Awaited<ReturnType<typeof retrieveClientDocExcerpts>> = [];
+  if (chat.mode === 'plan' && chat.plan_id) {
+    try {
+      const [plan] = await db.select().from(plans).where(eq(plans.id, chat.plan_id)).limit(1);
+      if (plan) {
+        const [client] = await db
+          .select({ name: clients.name })
+          .from(clients)
+          .where(eq(clients.id, plan.client_id))
+          .limit(1);
+        const [snap] = await db
+          .select()
+          .from(plan_fact_snapshots)
+          .where(eq(plan_fact_snapshots.plan_id, plan.id))
+          .orderBy(desc(plan_fact_snapshots.snapshot_at))
+          .limit(1);
+        let strategyContent = null;
+        if (chat.strategy_id) {
+          const [version] = await db
+            .select({ content: strategy_versions.content })
+            .from(strategies)
+            .innerJoin(strategy_versions, eq(strategy_versions.id, strategies.current_version_id))
+            .where(eq(strategies.id, chat.strategy_id))
+            .limit(1);
+          strategyContent = (version?.content ?? null) as Parameters<
+            typeof buildPlanChatPreamble
+          >[0]['strategyContent'];
+        }
+        const [scenario] = await db
+          .select({ selections: plan_scenarios.selections })
+          .from(plan_scenarios)
+          .where(eq(plan_scenarios.plan_id, plan.id))
+          .limit(1);
+        planPreamble = buildPlanChatPreamble({
+          plan: {
+            title: plan.title,
+            status: plan.status,
+            years: plan.years,
+            growth_pct: plan.growth_pct,
+          },
+          clientName: client?.name ?? '(unknown client)',
+          snapshot: snap
+            ? {
+                facts: snap.facts,
+                fact_pattern_version: snap.fact_pattern_version,
+                snapshot_kind: snap.snapshot_kind,
+              }
+            : null,
+          strategyContent,
+          scenarioSelections: scenario?.selections ?? [],
+        });
+        docExcerpts = await retrieveClientDocExcerpts(parsed.data.content, {
+          clientId: plan.client_id,
+        });
+        docBlock = formatDocExcerptsForPrompt(docExcerpts);
+      }
+    } catch (err) {
+      logger.warn({ err, chat_id: chatId }, 'plan-mode context assembly failed — proceeding bare');
+    }
+  }
+  void docExcerpts; // grounding decoration arrives with the doc_citations sidecar
+
   // SSE setup. The X-Accel-Buffering header tells nginx (and any well-
   // behaved reverse proxy / Vite-style dev proxy) to disable response
   // buffering for this response, so each SSE write flushes immediately
@@ -324,6 +403,8 @@ messagesRouter.post('/', async (req, res) => {
         buildSystemPrompt({}),
         attachmentPreamble,
         referenceBlock,
+        planPreamble,
+        docBlock,
       ),
       model_id: modelId,
       attached_skill_ids,
