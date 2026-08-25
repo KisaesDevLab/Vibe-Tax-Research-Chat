@@ -3,7 +3,7 @@
 // the PDF / clipboard exports show only prose. The structured payloads
 // already live in m.authorities + m.compliance_check and the export
 // renders them as proper sections.
-const KEYWORD_RE = /authorities|compliance/i;
+const KEYWORD_RE = /authorities|compliance|doc_citations/i;
 
 export function stripSidecars(text: string): string {
   let out = text;
@@ -23,7 +23,7 @@ export function stripSidecars(text: string): string {
   // Pass 2: bare top-level JSON objects ending the message that hold
   // authorities/compliance keys (model sometimes drops the fence).
   out = out.replace(
-    /(^|\n\s*\n)\s*\{[\s\S]*?"(authorities|compliance|compliance_check)"\s*:[\s\S]*?\}\s*(?=\n\s*\n|\s*$)/g,
+    /(^|\n\s*\n)\s*\{[\s\S]*?"(authorities|compliance|compliance_check|doc_citations)"\s*:[\s\S]*?\}\s*(?=\n\s*\n|\s*$)/g,
     (_full, lead: string) => lead,
   );
 

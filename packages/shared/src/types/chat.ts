@@ -87,7 +87,19 @@ export interface MessageDTO {
   cost_usd?: number;
   authorities?: Authority[];
   compliance_check?: ComplianceCheck;
+  // TP-8a — plan-mode document citations ({documentId, page, claim}).
+  doc_citations?: DocCitation[];
   skills?: SkillAttribution[];
+}
+
+// TP-8a — one document-grounded claim from a plan-scoped chat turn.
+export interface DocCitation {
+  documentId: string;
+  filename?: string;
+  page: number;
+  claim: string;
+  /** Set server-side: the pair appeared in this turn's retrieved excerpts. */
+  grounded?: boolean;
 }
 
 export interface ChatDTO {
@@ -104,6 +116,10 @@ export interface ChatDTO {
   use_reference_library: boolean;
   // TP-2 — soft link to a client record (active-client chip / archival).
   client_id: string | null;
+  // TP-8a — plan-scoped chat mode: plan linkage + strategy under discussion.
+  plan_id: string | null;
+  mode: string | null; // null | 'plan'
+  strategy_id: string | null;
   archived_at: string | null;
   created_at: string;
   updated_at: string;

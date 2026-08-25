@@ -18,7 +18,7 @@
 //
 // Mirrored server-side in api/src/lib/parsing/sidecars-strip.ts (the PDF /
 // clipboard exports need the identical behavior); keep the two in step.
-const KEYWORD_RE = /authorities|compliance/i;
+const KEYWORD_RE = /authorities|compliance|doc_citations/i;
 
 export function stripSidecars(text: string): string {
   let out = text;
@@ -38,7 +38,7 @@ export function stripSidecars(text: string): string {
   // We anchor with a positive look-back for a blank line or start of
   // string to avoid eating an inline `{ "authorities": ... }` mention.
   out = out.replace(
-    /(^|\n\s*\n)\s*\{[\s\S]*?"(authorities|compliance|compliance_check)"\s*:[\s\S]*?\}\s*(?=\n\s*\n|\s*$)/g,
+    /(^|\n\s*\n)\s*\{[\s\S]*?"(authorities|compliance|compliance_check|doc_citations)"\s*:[\s\S]*?\}\s*(?=\n\s*\n|\s*$)/g,
     (_full, lead: string) => lead,
   );
 

@@ -36,6 +36,7 @@ import { getSetting } from '../../lib/settings-store.js';
 import { logger } from '../../lib/logger.js';
 import { extractAuthorities, decorateVerification } from '../../lib/parsing/authorities.js';
 import { extractCompliance } from '../../lib/parsing/compliance.js';
+import { extractDocCitations, decorateGrounding } from '../../lib/parsing/doc-citations.js';
 import { chatTitleQueue } from '../../jobs/queues.js';
 import {
   retrieveReferenceExcerpts,
@@ -288,7 +289,6 @@ messagesRouter.post('/', async (req, res) => {
       logger.warn({ err, chat_id: chatId }, 'plan-mode context assembly failed — proceeding bare');
     }
   }
-  void docExcerpts; // grounding decoration arrives with the doc_citations sidecar
 
   // SSE setup. The X-Accel-Buffering header tells nginx (and any well-
   // behaved reverse proxy / Vite-style dev proxy) to disable response
@@ -519,6 +519,12 @@ messagesRouter.post('/', async (req, res) => {
             consultations.map((c) => ({ url: c.url, domain: c.domain })),
           );
           const compliance = extractCompliance(assistantText);
+          // TP-8a — plan-mode doc citations, marked grounded when the
+          // {documentId, page} pair was among this turn's excerpts.
+          const docCitations =
+            chat.mode === 'plan'
+              ? decorateGrounding(extractDocCitations(assistantText), docExcerpts)
+              : [];
 
           const [assistantMsg] = await db
             .insert(messages)
@@ -541,6 +547,7 @@ messagesRouter.post('/', async (req, res) => {
               cost_usd: finalCost.toFixed(6),
               authorities: authorities as unknown as Record<string, unknown>[],
               compliance_check: (compliance ?? null) as Record<string, unknown> | null,
+              doc_citations: docCitations as unknown as Record<string, unknown>[],
             })
             .returning({ id: messages.id });
 
@@ -593,6 +600,7 @@ messagesRouter.post('/', async (req, res) => {
             usage: ev.usage,
             authorities,
             compliance_check: compliance,
+            doc_citations: docCitations,
           });
           res.end();
           return;
