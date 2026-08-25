@@ -12,6 +12,7 @@ import {
 import type { StrategySelection } from '@vibe/shared';
 import { api, ApiError } from '../../lib/api';
 import type { PlanDetail } from './PlanDetailPage';
+import { SuggestedStrategiesPanel } from './SuggestedStrategiesPanel';
 
 interface ParamError {
   strategyId: string;
@@ -195,9 +196,14 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
   return (
     <div className="max-w-3xl">
       {error && <div className="text-oxblood text-sm mb-3">{error}</div>}
+      <SuggestedStrategiesPanel
+        planId={plan.id}
+        suggestData={suggestData}
+        strategies={strategies.map((s) => ({ id: s.id, name: s.name, modeled: s.modeled }))}
+      />
       <div className="text-sm text-ink/60 mb-3">
         Scenario “{scenario.label}” — {localSelections.length} strategy(ies) selected. Suggested
-        strategies are badged from the profile rules.
+        strategies are badged from the profile and fact-pattern rules.
       </div>
       <ul className="space-y-2">
         {strategies.map((s) => {
