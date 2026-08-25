@@ -5,10 +5,21 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { and, desc, eq, ilike, isNull, or, sql, count } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
-import { clients, chats, audit_log, deliverables, plans, research_archives } from '@vibe/db/schema';
+import {
+  clients,
+  chats,
+  audit_log,
+  client_documents,
+  client_fact_patterns,
+  deliverables,
+  plans,
+  research_archives,
+} from '@vibe/db/schema';
 import { requireAuth } from '../../middleware/auth.js';
 import { requirePlanning } from '../../middleware/planning-flag.js';
 import { audit } from '../../lib/audit.js';
+import { deleteClientDocumentFiles } from '../../lib/client-documents/storage.js';
+import { logger } from '../../lib/logger.js';
 
 export const clientsRouter = Router();
 clientsRouter.use(requireAuth, requirePlanning);
@@ -235,6 +246,40 @@ clientsRouter.post('/:id/merge', async (req, res) => {
     // client) can never match the just-re-pointed archives again.
     // Deliverables and engagements ride along via plan_id.
     await tx.update(plans).set({ client_id: target.id }).where(eq(plans.client_id, source.id));
+    // TP-3a — fact patterns and source documents follow the survivor.
+    // If BOTH sides have a current fact pattern, the source's is superseded
+    // first — otherwise the one-current-per-client partial unique index
+    // aborts the repoint. Historical version numbers may then collide
+    // across the merged lineages; history UIs order by created_at.
+    const [targetCurrent] = await tx
+      .select({ id: client_fact_patterns.id })
+      .from(client_fact_patterns)
+      .where(
+        and(
+          eq(client_fact_patterns.client_id, target.id),
+          isNull(client_fact_patterns.superseded_at),
+        ),
+      )
+      .limit(1);
+    if (targetCurrent) {
+      await tx
+        .update(client_fact_patterns)
+        .set({ superseded_at: new Date() })
+        .where(
+          and(
+            eq(client_fact_patterns.client_id, source.id),
+            isNull(client_fact_patterns.superseded_at),
+          ),
+        );
+    }
+    await tx
+      .update(client_fact_patterns)
+      .set({ client_id: target.id })
+      .where(eq(client_fact_patterns.client_id, source.id));
+    await tx
+      .update(client_documents)
+      .set({ client_id: target.id })
+      .where(eq(client_documents.client_id, source.id));
   });
   await audit({
     actor_user_id: req.auth!.user_id,
@@ -295,6 +340,14 @@ clientsRouter.delete('/:id', async (req, res) => {
     actor_user_id: req.auth!.user_id,
     at: new Date().toISOString(),
   };
+  // TP-3a (applied default): fact patterns and source documents are client
+  // work product carrying client-derived data — they are DELETED with the
+  // client (rows cascade via FK; files removed after commit), never moved
+  // firm-level. The archives rule above is unchanged.
+  const docRows = await db
+    .select({ id: client_documents.id })
+    .from(client_documents)
+    .where(eq(client_documents.client_id, client.id));
   await db.transaction(async (tx) => {
     await tx
       .update(research_archives)
@@ -302,12 +355,19 @@ clientsRouter.delete('/:id', async (req, res) => {
       .where(eq(research_archives.client_id, client.id));
     await tx.delete(clients).where(eq(clients.id, client.id));
   });
+  for (const doc of docRows) {
+    try {
+      await deleteClientDocumentFiles(doc.id);
+    } catch (err) {
+      logger.warn({ err, document_id: doc.id }, 'client delete: document file cleanup failed');
+    }
+  }
   await audit({
     actor_user_id: req.auth!.user_id,
     action: 'client.delete',
     target_type: 'client',
     target_id: client.id,
-    metadata: { client_id: client.id, name: client.name },
+    metadata: { client_id: client.id, name: client.name, documents_deleted: docRows.length },
     ip: req.ip,
   });
   res.status(204).end();

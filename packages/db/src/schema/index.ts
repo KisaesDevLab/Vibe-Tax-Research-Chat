@@ -20,3 +20,4 @@ export * from './attachments.js';
 export * from './usage.js';
 export * from './reference.js';
 export * from './authority-cache.js';
+export * from './client-facts.js';
