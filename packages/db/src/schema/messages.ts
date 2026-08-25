@@ -1,5 +1,16 @@
 // Phase 14 + 15 + 17 + 18 + 19 — messages and primary-source consultations.
-import { pgEnum, pgTable, uuid, text, integer, numeric, jsonb, timestamp, boolean, index } from 'drizzle-orm/pg-core';
+import {
+  pgEnum,
+  pgTable,
+  uuid,
+  text,
+  integer,
+  numeric,
+  jsonb,
+  timestamp,
+  boolean,
+  index,
+} from 'drizzle-orm/pg-core';
 import { chats } from './chats.js';
 import { models } from './models.js';
 
@@ -32,6 +43,9 @@ export const messages = pgTable(
 
     authorities: jsonb('authorities').$type<unknown[]>().default([]),
     compliance_check: jsonb('compliance_check').$type<Record<string, unknown>>(),
+    // TP-8a — document-citation sidecar ({documentId, page, claim}[]),
+    // extracted like authorities/compliance and rendered as its own panel.
+    doc_citations: jsonb('doc_citations').$type<unknown[]>().default([]),
   },
   (t) => ({
     chat_idx: index('messages_chat_idx').on(t.chat_id),

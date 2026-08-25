@@ -1,8 +1,19 @@
 // Phase 13 — chats.
-import { pgTable, uuid, text, boolean, timestamp, index } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  uuid,
+  text,
+  boolean,
+  timestamp,
+  index,
+  type AnyPgColumn,
+} from 'drizzle-orm/pg-core';
 import { users } from './users.js';
 import { models } from './models.js';
 import { clients } from './clients.js';
+// Lazy circular reference (research-archives precedent): plans.ts sits in
+// this module graph, so the FK target is deferred via AnyPgColumn.
+import { plans } from './plans.js';
 
 export const chats = pgTable(
   'chats',
@@ -25,6 +36,14 @@ export const chats = pgTable(
     // the chat is created, or promoted at archive time). SET NULL so a
     // client delete never takes chats with it.
     client_id: uuid('client_id').references(() => clients.id, { onDelete: 'set null' }),
+    // TP-8a — plan-scoped chat mode. mode 'plan' switches the message
+    // pipeline to the fact-snapshot + client-document-retrieval context;
+    // strategy_id records the strategy under discussion for the preamble
+    // and archive prefill. SET NULL: a plan delete demotes the chat to an
+    // ordinary client chat rather than deleting it.
+    plan_id: uuid('plan_id').references((): AnyPgColumn => plans.id, { onDelete: 'set null' }),
+    mode: text('mode'), // null | 'plan'
+    strategy_id: text('strategy_id'),
     archived_at: timestamp('archived_at', { withTimezone: true }),
     // TP-11 — "file to a client?" nudge dismissal for ≥90-day unfiled chats.
     nudge_dismissed_at: timestamp('nudge_dismissed_at', { withTimezone: true }),
@@ -35,6 +54,7 @@ export const chats = pgTable(
     user_idx: index('chats_user_idx').on(t.user_id),
     updated_idx: index('chats_updated_idx').on(t.updated_at),
     client_idx: index('chats_client_idx').on(t.client_id),
+    plan_idx: index('chats_plan_idx').on(t.plan_id),
   }),
 );
 

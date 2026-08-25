@@ -21,3 +21,4 @@ export * from './usage.js';
 export * from './reference.js';
 export * from './authority-cache.js';
 export * from './client-facts.js';
+export * from './plan-pending-facts.js';
