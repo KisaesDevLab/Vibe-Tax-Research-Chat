@@ -98,6 +98,8 @@ export const TRC_TASK_CLASSES = {
   MEMO_DRAFT: 'taxresearch_memo_draft',
   /** Admin authoring over public tax law: strategies, tables, skills (NEW — starts local_only) */
   AUTHORING: 'taxresearch_authoring',
+  /** Fact-pattern extraction from Shield-redacted client documents (NEW — starts local_only) */
+  FACT_EXTRACT: 'taxresearch_fact_extract',
 } as const;
 
 /**
@@ -117,6 +119,8 @@ export const JOB_TASK_CLASS: Record<ClaudeJobName, string | null> = {
   'strategy-refresh': TRC_TASK_CLASSES.AUTHORING,
   'strategy-watch': null,
   'plan-memo': TRC_TASK_CLASSES.MEMO_DRAFT,
+  'client-doc-classify': TRC_TASK_CLASSES.CONTENT_META,
+  'fact-extract': TRC_TASK_CLASSES.FACT_EXTRACT,
 };
 
 export function jobRoutable(job: ClaudeJobName): boolean {
@@ -412,6 +416,13 @@ const TRC_TASK_CLASS_DECLARATIONS = [
     description: 'Admin authoring: strategy drafts, tax tables, custom skills (forced tool output)',
     requires: { tools: true },
     defaultMaxTokens: 16000,
+  },
+  {
+    key: TRC_TASK_CLASSES.FACT_EXTRACT,
+    description:
+      'Fact-pattern extraction from Shield-redacted client tax documents (forced tool output)',
+    requires: { tools: true },
+    defaultMaxTokens: 8000,
   },
 ];
 

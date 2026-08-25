@@ -51,6 +51,13 @@ export const goldenRegressionQueue = new Queue('golden-regression', {
   defaultJobOptions,
 });
 export const archiveScanQueue = new Queue('archive-scan', { connection, defaultJobOptions });
+// TP-3a — shield → classify → extract → chunk + embed a client source
+// document. Payload: { document_id, actor_user_id? }. Idempotent (chunk
+// replace; resolved candidates preserved on re-ingest).
+export const clientDocumentsIngestQueue = new Queue('client-documents-ingest', {
+  connection,
+  defaultJobOptions,
+});
 
 export const QUEUES = [
   skillsSyncQueue,
@@ -66,4 +73,5 @@ export const QUEUES = [
   strategyWatchQueue,
   goldenRegressionQueue,
   archiveScanQueue,
+  clientDocumentsIngestQueue,
 ];

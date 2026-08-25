@@ -11,6 +11,7 @@ import { getRedis } from '../lib/redis.js';
 import { logger } from '../lib/logger.js';
 import { runDryRun } from '../lib/skills/sync.js';
 import { ingestReferenceDocument } from '../lib/references/ingest.js';
+import { ingestClientDocument } from '../lib/client-documents/ingest.js';
 import {
   skillsSyncQueue,
   usageRollupQueue,
@@ -94,6 +95,15 @@ export function startWorkers(): void {
     const document_id = job.data?.document_id as string | undefined;
     if (!document_id) return;
     await ingestReferenceDocument(document_id);
+  });
+
+  // ── client-documents-ingest — TP-3a shield → classify → extract →
+  // chunk + embed a client source document. Idempotent like references.
+  createWorker('client-documents-ingest', async (job) => {
+    const document_id = job.data?.document_id as string | undefined;
+    if (!document_id) return;
+    const actor_user_id = (job.data?.actor_user_id as string | undefined) ?? null;
+    await ingestClientDocument(document_id, { actorUserId: actor_user_id });
   });
 
   // ── pdf-render — deliverable rendering via PDFKit (server-side).

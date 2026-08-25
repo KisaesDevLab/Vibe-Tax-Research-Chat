@@ -23,6 +23,10 @@ export const CLAUDE_JOBS = {
   'strategy-refresh': { model: 'claude-sonnet-4-5', maxTokens: 16_000, timeoutMs: 300_000 },
   'strategy-watch': { model: 'claude-haiku-4-5', maxTokens: 4_000, timeoutMs: 120_000 },
   'plan-memo': { model: 'claude-sonnet-4-5', maxTokens: 8_000, timeoutMs: 180_000 },
+  // TP-3a intake: docType fallback classification + fact-candidate
+  // extraction from Shield-redacted client documents.
+  'client-doc-classify': { model: 'claude-haiku-4-5', maxTokens: 256, timeoutMs: 30_000 },
+  'fact-extract': { model: 'claude-sonnet-4-5', maxTokens: 8_000, timeoutMs: 180_000 },
 } as const satisfies Record<string, ClaudeJobConfig>;
 
 export type ClaudeJobName = keyof typeof CLAUDE_JOBS;
