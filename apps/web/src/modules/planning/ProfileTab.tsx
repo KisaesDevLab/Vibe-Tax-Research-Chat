@@ -6,6 +6,7 @@ import { api } from '../../lib/api';
 import type { PlanDetail } from './PlanDetailPage';
 import { ProfileForm } from './intake/ProfileForm';
 import { IntakeReview } from './intake/IntakeReview';
+import { PendingFactsPanel } from './PendingFactsPanel';
 
 const FROZEN = ['presented', 'engaged', 'delivered', 'archived'];
 
@@ -55,6 +56,7 @@ export function ProfileTab({ detail }: { detail: PlanDetail }) {
         />
       )}
       {mode === 'json' && <JsonEditor detail={detail} frozen={frozen} />}
+      <PendingFactsPanel planId={plan.id} clientId={plan.client_id} />
     </div>
   );
 }

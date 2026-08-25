@@ -2,7 +2,7 @@
 // form) · Strategies (picker with suggest badges + schema-driven param
 // forms) · Results (baseline vs scenario compare).
 import { useState } from 'react';
-import { Link, NavLink, useParams } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useParams } from 'react-router-dom';
 import { useIsMutating, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { PlanDTO, PlanScenarioDTO, PlanResultDTO } from '@vibe/shared';
 import { api, ApiError } from '../../lib/api';
@@ -50,6 +50,7 @@ function computeErrorMessage(
 export function PlanDetailPage() {
   const { planId, tab } = useParams<{ planId: string; tab?: string }>();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const activeTab: PlanTab = TABS.includes(tab as PlanTab) ? (tab as PlanTab) : 'profile';
   const [error, setError] = useState<string | null>(null);
 
@@ -82,6 +83,17 @@ export function PlanDetailPage() {
     onError: (err) => setError(computeErrorMessage(err, strategyData?.strategies ?? [])),
   });
 
+  // TP-8a — plan-scoped research chat launcher.
+  const askAboutPlan = useMutation({
+    mutationFn: () =>
+      api<{ chat_id: string }>(`/api/planning/plans/${planId}/chat`, {
+        method: 'POST',
+        body: JSON.stringify({}),
+      }),
+    onSuccess: (res) => navigate(`/research/${res.chat_id}`),
+    onError: () => setError('Could not open a plan chat — try again.'),
+  });
+
   if (isLoading) return <div className="p-8 text-ink/50">Loading…</div>;
   if (!data) return <div className="p-8 text-ink/50">Plan not found.</div>;
   const { plan } = data;
@@ -101,25 +113,35 @@ export function PlanDetailPage() {
             {plan.years}-year window · {plan.status} · engine {plan.engine_version}
           </div>
         </div>
-        <button
-          onClick={() => {
-            // Live check, not render-time state: the click that triggers a
-            // param field's blur-save lands before this button re-renders
-            // as disabled.
-            if (
-              qc.isMutating({ mutationKey: ['scenario-save', planId] }) > 0 ||
-              qc.isMutating({ mutationKey: ['profile-save', planId] }) > 0
-            ) {
-              return;
-            }
-            compute.mutate();
-          }}
-          disabled={compute.isPending || pendingSaves > 0}
-          title={pendingSaves > 0 ? 'Saving changes…' : undefined}
-          className="shrink-0 px-3 py-1.5 bg-ink text-paper rounded text-sm disabled:opacity-50"
-        >
-          {compute.isPending ? 'Computing…' : 'Compute'}
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => askAboutPlan.mutate()}
+            disabled={askAboutPlan.isPending}
+            title="Open a research chat grounded in this plan's fact snapshot and the client's documents"
+            className="px-3 py-1.5 border border-ink/20 rounded text-sm hover:bg-ink/5 disabled:opacity-50"
+          >
+            {askAboutPlan.isPending ? 'Opening…' : 'Ask about this plan'}
+          </button>
+          <button
+            onClick={() => {
+              // Live check, not render-time state: the click that triggers a
+              // param field's blur-save lands before this button re-renders
+              // as disabled.
+              if (
+                qc.isMutating({ mutationKey: ['scenario-save', planId] }) > 0 ||
+                qc.isMutating({ mutationKey: ['profile-save', planId] }) > 0
+              ) {
+                return;
+              }
+              compute.mutate();
+            }}
+            disabled={compute.isPending || pendingSaves > 0}
+            title={pendingSaves > 0 ? 'Saving changes…' : undefined}
+            className="px-3 py-1.5 bg-ink text-paper rounded text-sm disabled:opacity-50"
+          >
+            {compute.isPending ? 'Computing…' : 'Compute'}
+          </button>
+        </div>
       </div>
       {error && <div className="text-oxblood text-sm mb-3 whitespace-pre-wrap">{error}</div>}
 

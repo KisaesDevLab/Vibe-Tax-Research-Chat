@@ -35,9 +35,11 @@ export function ArchiveDialog({ chat, onClose, onArchived }: ArchiveDialogProps)
   );
   const [acceptedIds, setAcceptedIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
-  // TP-8 — optional plan/strategy link (same-client plans only).
-  const [planId, setPlanId] = useState<string | null>(null);
-  const [strategyId, setStrategyId] = useState('');
+  // TP-8 — optional plan/strategy link (same-client plans only). TP-8a
+  // prefills both from a plan-mode chat so archiving it satisfies the
+  // elevated-risk linked-session gate without re-entry.
+  const [planId, setPlanId] = useState<string | null>(chat.plan_id ?? null);
+  const [strategyId, setStrategyId] = useState(chat.strategy_id ?? '');
   const { data: plansData } = useQuery<{ plans: PlanDTO[] }>({
     queryKey: ['plans', { client: clientId ?? 'none' }],
     queryFn: () => api(`/api/planning/plans?client_id=${clientId}`),

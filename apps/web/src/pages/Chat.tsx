@@ -1,6 +1,6 @@
 // Phase 14-20 — chat page. Composes sidebar + message list + composer + panels.
 import { useRef, useState, type FormEvent, useEffect, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChatSidebar } from '../components/ChatSidebar';
 import { Markdown } from '../components/Markdown';
@@ -16,7 +16,8 @@ import { useAppConfig } from '../lib/app-config';
 import { stripSidecars } from '../lib/sidecars';
 import { ArchiveDialog } from '../components/ArchiveDialog';
 import { NudgeBanner } from '../components/NudgeBanner';
-import type { ChatDTO, MessageDTO } from '@vibe/shared';
+import type { ChatDTO, DocCitation, MessageDTO } from '@vibe/shared';
+import { DocCitationsPanel } from '../components/panels/DocCitationsPanel';
 
 interface AttachmentDTO {
   id: string;
@@ -117,6 +118,11 @@ function ChatView({ chatId }: { chatId: string }) {
   // TP-11 — archive-to-client dialog (planning module only).
   const { config } = useAppConfig();
   const [showArchive, setShowArchive] = useState(false);
+  // TP-8a — "Confirm as fact" dialog state (plan-mode chats only).
+  const [confirmFact, setConfirmFact] = useState<{
+    citation: DocCitation;
+    messageId: string;
+  } | null>(null);
 
   const { data, refetch } = useQuery<{ chat: ChatDTO; messages: MessageDTO[] }>({
     queryKey: ['chat', chatId],
@@ -270,6 +276,15 @@ function ChatView({ chatId }: { chatId: string }) {
           </button>
           <div className="font-display text-base md:text-lg truncate flex-1 min-w-0">
             {data?.chat.title ?? 'Loading…'}
+            {data?.chat.mode === 'plan' && data.chat.plan_id && (
+              <Link
+                to={`/planning/${data.chat.plan_id}/strategies`}
+                className="ml-2 align-middle text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-moss/15 text-moss hover:bg-moss/25"
+                title="This chat is grounded in a plan's fact snapshot and the client's documents"
+              >
+                plan chat
+              </Link>
+            )}
           </div>
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {config.planning_enabled && data?.chat && (
@@ -294,6 +309,14 @@ function ChatView({ chatId }: { chatId: string }) {
         {showArchive && data?.chat && (
           <ArchiveDialog chat={data.chat} onClose={() => setShowArchive(false)} />
         )}
+        {confirmFact && data?.chat.plan_id && (
+          <ConfirmFactDialog
+            planId={data.chat.plan_id}
+            citation={confirmFact.citation}
+            messageId={confirmFact.messageId}
+            onClose={() => setConfirmFact(null)}
+          />
+        )}
 
         <main className="flex-1 min-h-0 overflow-y-auto">
           <div className="px-4 sm:px-6 md:px-7 py-6 max-w-4xl w-full">
@@ -312,9 +335,11 @@ function ChatView({ chatId }: { chatId: string }) {
                   <MessageBlock
                     key={m.id}
                     message={m}
+                    chat={data?.chat}
                     priorUserContent={priorUser}
                     onResend={(text) => void send(chatId, text)}
                     onFollowUp={(verb) => void send(chatId, verb)}
+                    onConfirmFact={(citation, messageId) => setConfirmFact({ citation, messageId })}
                   />
                 );
               });
@@ -655,14 +680,18 @@ function safeHost(url: string): string | null {
 
 function MessageBlock({
   message: m,
+  chat,
   priorUserContent,
   onResend,
   onFollowUp,
+  onConfirmFact,
 }: {
   message: MessageDTO;
+  chat?: ChatDTO;
   priorUserContent?: string | null;
   onResend?: (text: string) => void;
   onFollowUp?: (verb: FollowUpVerb) => void;
+  onConfirmFact?: (citation: DocCitation, messageId: string) => void;
 }) {
   if (m.role === 'user') {
     return (
@@ -718,6 +747,15 @@ function MessageBlock({
         <Markdown>{stripSidecars(m.content)}</Markdown>
         <AuthoritiesPanel authorities={(m.authorities as never) ?? []} />
         <CompliancePanel check={m.compliance_check} />
+        <DocCitationsPanel
+          citations={m.doc_citations ?? []}
+          clientId={chat?.client_id ?? null}
+          onConfirm={
+            chat?.mode === 'plan' && onConfirmFact
+              ? (citation) => onConfirmFact(citation, m.id)
+              : undefined
+          }
+        />
       </div>
       <SkillsPanel skills={m.skills} />
       <CostLedger usage={m.usage} cost_usd={m.cost_usd} model_id={m.model_id} />
@@ -941,4 +979,83 @@ async function downloadMessageExport(
   // Free the blob URL on the next tick — Safari needs the click to
   // complete before the URL can be revoked.
   window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
+}
+
+// TP-8a — "Confirm as fact": writes a chat-confirmed statement (with its
+// document-page source) into the plan's pending list. "Promote to client"
+// on the plan's Profile tab pushes the pending set into a new client
+// fact-pattern version.
+function ConfirmFactDialog({
+  planId,
+  citation,
+  messageId,
+  onClose,
+}: {
+  planId: string;
+  citation: DocCitation;
+  messageId: string;
+  onClose: () => void;
+}) {
+  const qc = useQueryClient();
+  const [text, setText] = useState(citation.claim);
+  const [factPath, setFactPath] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const save = useMutation({
+    mutationFn: () =>
+      api(`/api/planning/plans/${planId}/pending-facts`, {
+        method: 'POST',
+        body: JSON.stringify({
+          message_id: messageId,
+          fact_path: factPath.trim() || undefined,
+          text: text.trim(),
+          source: { documentId: citation.documentId, page: citation.page },
+        }),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['plan-pending-facts', planId] });
+      onClose();
+    },
+    onError: () => setError('Could not save — try again.'),
+  });
+
+  return (
+    <div className="fixed inset-0 bg-ink/40 flex items-center justify-center z-50 p-4">
+      <div className="bg-paper rounded shadow-lg p-5 w-full max-w-lg">
+        <h3 className="font-display text-lg mb-3">Confirm as fact</h3>
+        <div className="text-xs text-ink/50 mb-3">
+          Source: {citation.filename ?? 'document'}, p.{citation.page} — lands on the plan's pending
+          list until promoted to the client's fact pattern.
+        </div>
+        <label className="block text-xs uppercase tracking-wider text-ink/40 mb-1">Statement</label>
+        <textarea
+          className="border border-ink/20 rounded px-2 py-1.5 text-sm w-full min-h-20 mb-3 bg-white"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+        <label className="block text-xs uppercase tracking-wider text-ink/40 mb-1">
+          Fact path (optional)
+        </label>
+        <input
+          className="border border-ink/20 rounded px-2 py-1.5 text-sm w-full mb-1 bg-white font-mono"
+          placeholder="e.g. property[] or entity.type — blank files it as an answered open question"
+          value={factPath}
+          onChange={(e) => setFactPath(e.target.value)}
+        />
+        {error && <div className="text-oxblood text-sm mt-2">{error}</div>}
+        <div className="flex justify-end gap-2 mt-4">
+          <button onClick={onClose} className="px-3 py-1.5 border border-ink/20 rounded text-sm">
+            Cancel
+          </button>
+          <button
+            onClick={() => save.mutate()}
+            disabled={!text.trim() || save.isPending}
+            className="px-3 py-1.5 bg-ink text-paper rounded text-sm disabled:opacity-50"
+          >
+            {save.isPending ? 'Saving…' : 'Add to pending facts'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
