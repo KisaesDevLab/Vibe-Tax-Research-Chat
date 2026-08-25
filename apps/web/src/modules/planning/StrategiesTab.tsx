@@ -98,18 +98,19 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
     queryKey: ['planning-strategies'],
     queryFn: () => api('/api/planning/strategies'),
   });
-  const { data: suggestData } = useQuery<{
-    suggestions: Array<{ strategyId: string; reason: string }>;
-  }>({
+  const { data: suggestData } = useQuery<import('@vibe/shared').SuggestResponse>({
     queryKey: ['plan-suggestions', plan.id, plan.updated_at],
     queryFn: () =>
       api('/api/planning/strategies/suggest', {
         method: 'POST',
-        body: JSON.stringify({ profile: plan.baseline_profile }),
+        // TP-5a: server loads the profile AND the plan's fact snapshot.
+        body: JSON.stringify({ plan_id: plan.id }),
       }),
   });
   const suggestions = new Map(
-    (suggestData?.suggestions ?? []).map((s) => [s.strategyId, s.reason]),
+    (suggestData?.suggestions ?? [])
+      .filter((s) => s.status !== 'excluded')
+      .map((s) => [s.strategyId, s]),
   );
 
   const save = useMutation({
@@ -201,7 +202,7 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
       <ul className="space-y-2">
         {strategies.map((s) => {
           const isSelected = selected.has(s.id);
-          const suggestReason = suggestions.get(s.id);
+          const suggestion = suggestions.get(s.id);
           const required = new Set(s.inputsSchema?.required ?? []);
           const missingRequired = isSelected
             ? Array.from(required).filter((k) => isEmptyParam(selected.get(s.id)?.params[k]))
@@ -235,17 +236,25 @@ export function StrategiesTab({ detail }: { detail: PlanDetail }) {
                         advisory
                       </span>
                     )}
-                    {suggestReason && (
+                    {suggestion?.status === 'matched' && (
                       <span
                         className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-gold/20 text-ink/70"
-                        title={suggestReason}
+                        title={suggestion.reason}
                       >
                         suggested
                       </span>
                     )}
+                    {suggestion?.status === 'toConfirm' && (
+                      <span
+                        className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border border-gold/60 text-gold"
+                        title={suggestion.toConfirm.join('; ')}
+                      >
+                        confirm facts
+                      </span>
+                    )}
                   </div>
-                  {suggestReason && (
-                    <div className="text-xs text-ink/50 mt-0.5">{suggestReason}</div>
+                  {suggestion && suggestion.reason && (
+                    <div className="text-xs text-ink/50 mt-0.5">{suggestion.reason}</div>
                   )}
                   {isSelected && s.inputsSchema?.properties && (
                     <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">

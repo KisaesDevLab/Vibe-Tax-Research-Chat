@@ -51,9 +51,12 @@ describe('client_fact_patterns versioning', () => {
         await tx`
           UPDATE client_fact_patterns SET superseded_at = now()
           WHERE client_id = ${CLIENT_ID} AND superseded_at IS NULL`;
-        const [{ next }] = await tx`
+        const rows = (await tx`
           SELECT coalesce(max(version), 0) + 1 AS next
-          FROM client_fact_patterns WHERE client_id = ${CLIENT_ID}`;
+          FROM client_fact_patterns WHERE client_id = ${CLIENT_ID}`) as unknown as Array<{
+          next: number;
+        }>;
+        const next = rows[0]!.next;
         return tx`
           INSERT INTO client_fact_patterns (client_id, version, schema_version, facts, change_summary)
           VALUES (${CLIENT_ID}, ${next as number}, '1.0.0', ${facts}::jsonb, ${summary})

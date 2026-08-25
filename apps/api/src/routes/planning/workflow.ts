@@ -6,6 +6,7 @@ import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import {
   plans,
+  plan_fact_snapshots,
   plan_scenarios,
   plan_research_links,
   research_archives,
@@ -14,6 +15,7 @@ import {
   chats,
   messages,
 } from '@vibe/db/schema';
+import { currentFactPattern } from '../../lib/facts/versions.js';
 import type { PlanStatus, StrategySelection } from '@vibe/shared';
 import { SETTING_KEYS } from '@vibe/db/schema';
 import { audit } from '../../lib/audit.js';
@@ -230,6 +232,24 @@ planWorkflowRouter.post('/transition', async (req, res) => {
     })
     .where(eq(plans.id, plan.id))
     .returning();
+  // TP-5a — freezing results freezes the fact snapshot too (addendum §1):
+  // the transition INTO presented writes a review_frozen snapshot of the
+  // client's current fact pattern, once. Reopening keeps it (provenance).
+  if (to === 'presented') {
+    const current = await currentFactPattern(getDb(), plan.client_id);
+    if (current) {
+      await getDb()
+        .insert(plan_fact_snapshots)
+        .values({
+          plan_id: plan.id,
+          fact_pattern_id: current.id,
+          fact_pattern_version: current.version,
+          snapshot_kind: 'review_frozen',
+          facts: current.facts,
+        })
+        .onConflictDoNothing();
+    }
+  }
   await audit({
     actor_user_id: req.auth!.user_id,
     action: 'plan.transition',

@@ -22,6 +22,7 @@ import { composeScenario, ENGINE_VERSION, type ScenarioTransform } from '@vibe/e
 import { resolveApply } from '@vibe/strategies';
 import type { BaselineProfile, StrategySelection, TableSetPayload } from '@vibe/shared';
 import { audit } from '../../lib/audit.js';
+import { currentFactPattern } from '../../lib/facts/versions.js';
 import { findAttachableClient } from '../clients/index.js';
 import {
   baselineProfileSchema,
@@ -124,6 +125,22 @@ plansRouter.post('/', async (req, res) => {
   });
   // A default scenario so the picker has somewhere to land selections.
   await getDb().insert(plan_scenarios).values({ plan_id: plan!.id, label: 'Scenario A' });
+  // TP-5a — snapshot the client's current fact pattern at creation, when
+  // one exists. onConflictDoNothing keeps this idempotent alongside the
+  // TP-6a intake-accept upsert.
+  const current = await currentFactPattern(getDb(), client.id);
+  if (current) {
+    await getDb()
+      .insert(plan_fact_snapshots)
+      .values({
+        plan_id: plan!.id,
+        fact_pattern_id: current.id,
+        fact_pattern_version: current.version,
+        snapshot_kind: 'created',
+        facts: current.facts,
+      })
+      .onConflictDoNothing();
+  }
   res.status(201).json({ plan });
 });
 

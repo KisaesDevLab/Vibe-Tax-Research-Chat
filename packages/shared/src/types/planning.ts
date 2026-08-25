@@ -157,3 +157,19 @@ export interface PlanResultDTO {
   strategy_versions: Record<string, string>;
   computed_at: string;
 }
+
+// TP-5a — tri-state suggestion wire types (POST /api/planning/strategies/suggest).
+export interface StrategySuggestionDTO {
+  strategyId: string;
+  status: 'matched' | 'toConfirm' | 'excluded';
+  /** Rendered for matched AND toConfirm; '' when excluded. */
+  reason: string;
+  matched: string[];
+  toConfirm: string[];
+  excluded: string[];
+}
+
+export interface SuggestResponse {
+  suggestions: StrategySuggestionDTO[];
+  has_fact_snapshot: boolean;
+}
