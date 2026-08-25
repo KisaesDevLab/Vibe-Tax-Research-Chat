@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import type { PlanDetail } from './PlanDetailPage';
 import { ProfileForm } from './intake/ProfileForm';
-import { PdfImport } from './intake/PdfImport';
+import { IntakeReview } from './intake/IntakeReview';
 
 const FROZEN = ['presented', 'engaged', 'delivered', 'archived'];
 
@@ -25,7 +25,7 @@ export function ProfileTab({ detail }: { detail: PlanDetail }) {
         {(
           [
             ['form', 'Form'],
-            ['pdf', '1040 PDF import'],
+            ['pdf', 'Return import'],
             ['json', 'JSON (advanced)'],
           ] as const
         ).map(([key, label]) => (
@@ -47,7 +47,12 @@ export function ProfileTab({ detail }: { detail: PlanDetail }) {
         />
       )}
       {mode === 'pdf' && (
-        <PdfImport planId={plan.id} profile={plan.baseline_profile} frozen={frozen} />
+        <IntakeReview
+          planId={plan.id}
+          clientId={plan.client_id}
+          profile={plan.baseline_profile}
+          frozen={frozen}
+        />
       )}
       {mode === 'json' && <JsonEditor detail={detail} frozen={frozen} />}
     </div>

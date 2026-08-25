@@ -1,16 +1,18 @@
-// TP-7 — 1040 PDF import + tie-out review. Parse is read-only; nothing
-// touches the plan until staff confirm on the tie-out screen.
-import { useState } from 'react';
+// TP-7 — 1040 tie-out review (Numbers). TP-6a moved the upload up into
+// IntakeReview (which persists the document + runs full ingest); this
+// component receives the anchor parse as a prop and its confirm path is
+// byte-for-byte the TP-7 flow.
+import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { BaselineProfile } from '@vibe/shared';
-import { api, apiFetch } from '../../../lib/api';
+import { api } from '../../../lib/api';
 
-interface IntakeField {
+export interface IntakeField {
   field: string;
   value: number;
   source: string;
 }
-interface IntakeResult {
+export interface IntakeResult {
   vendor: string;
   fields: IntakeField[];
   filingStatus: BaselineProfile['filingStatus'] | null;
@@ -27,36 +29,22 @@ export function PdfImport({
   planId,
   profile,
   frozen,
+  result,
+  onDiscard,
 }: {
   planId: string;
   profile: BaselineProfile;
   frozen: boolean;
+  result: IntakeResult | null;
+  onDiscard: () => void;
 }) {
   const qc = useQueryClient();
-  const [result, setResult] = useState<IntakeResult | null>(null);
   const [accepted, setAccepted] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
 
-  async function upload(file: File) {
-    setUploading(true);
-    setError(null);
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await apiFetch(`/api/planning/plans/${planId}/intake/pdf`, {
-        method: 'POST',
-        body: fd,
-      });
-      const body = (await res.json()) as { intake: IntakeResult };
-      setResult(body.intake);
-      setAccepted(new Set(body.intake.fields.map((_, i) => i)));
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setUploading(false);
-    }
-  }
+  useEffect(() => {
+    setAccepted(new Set((result?.fields ?? []).map((_, i) => i)));
+  }, [result]);
 
   const confirm = useMutation({
     mutationFn: (nextProfile: BaselineProfile) =>
@@ -66,7 +54,7 @@ export function PdfImport({
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['plan', planId] });
-      setResult(null);
+      onDiscard();
     },
     onError: (err) => setError((err as Error).message),
   });
@@ -148,28 +136,10 @@ export function PdfImport({
 
   return (
     <div className="max-w-3xl space-y-4">
-      <div className="border border-dashed border-ink/25 rounded p-6 text-center">
-        <p className="text-sm text-ink/60 mb-3">
-          Upload a 1040 print (UltraTax, Lacerte, GoSystem, Axcess, Drake, ProSeries, or IRS
-          layout). Parsing is local — the file never reaches an AI model.
-        </p>
-        <label className="inline-block px-3 py-1.5 bg-ink text-paper rounded text-sm cursor-pointer">
-          {uploading ? 'Parsing…' : 'Choose PDF…'}
-          <input
-            type="file"
-            accept="application/pdf"
-            className="hidden"
-            disabled={uploading || frozen}
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) void upload(f);
-              e.target.value = '';
-            }}
-          />
-        </label>
-      </div>
       {error && <div className="text-oxblood text-sm">{error}</div>}
-
+      {!result && (
+        <div className="text-ink/50 text-sm">Upload a return above to see the tie-out.</div>
+      )}
       {result && (
         <div className="border border-ink/10 rounded p-4 bg-white">
           <div className="flex items-baseline justify-between mb-2">
@@ -239,7 +209,7 @@ export function PdfImport({
           )}
           <div className="flex justify-end gap-2">
             <button
-              onClick={() => setResult(null)}
+              onClick={onDiscard}
               className="px-3 py-1.5 border border-ink/20 rounded text-sm"
             >
               Discard
