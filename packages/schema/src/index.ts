@@ -19,6 +19,14 @@ export {
   type ValidStrategyRecord,
 } from './strategy-record.js';
 export { lintCitation, lintCitations } from './citation-lint.js';
+export {
+  factSourceSchema,
+  factPatternSchema,
+  validateFactPattern,
+  factCandidateEmitSchema,
+  factCandidateSchema,
+  type FactCandidateEmit,
+} from './fact-pattern.js';
 export { fleschKincaidGrade, checkProse, BANNED_WORDS, MAX_CLIENT_GRADE } from './prose.js';
 export { checkCompleteness } from './completeness.js';
 

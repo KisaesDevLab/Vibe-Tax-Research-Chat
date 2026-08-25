@@ -1,0 +1,278 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vibe.local/schemas/fact-pattern/1.0.0",
+  "title": "Client fact pattern",
+  "version": "1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entity",
+    "ownership",
+    "stateFootprint",
+    "income",
+    "electionsInEffect",
+    "carryforwards",
+    "property",
+    "household",
+    "lifeEvents",
+    "openQuestions",
+    "narrative"
+  ],
+  "properties": {
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "individual",
+            "sole_prop",
+            "s_corp",
+            "c_corp",
+            "partnership",
+            "smllc",
+            "trust",
+            "nonprofit",
+            "other",
+            null
+          ]
+        },
+        "formationState": { "type": ["string", "null"], "minLength": 2, "maxLength": 2 },
+        "fiscalYearEnd": { "type": ["string", "null"], "pattern": "^\\d{2}-\\d{2}$" },
+        "sCorpEffectiveDate": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "accountingMethod": { "enum": ["cash", "accrual", "hybrid", null] },
+        "notes": { "type": ["string", "null"] },
+        "sources": { "$ref": "#/$defs/FactSources" }
+      }
+    },
+    "ownership": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["owner", "pct", "role"],
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "Role label or initials only — never a full legal name or SSN."
+          },
+          "pct": { "type": "number", "minimum": 0, "maximum": 100 },
+          "role": { "enum": ["shareholder", "partner", "member", "officer", "trustee", "other"] },
+          "relatedParty": { "type": ["boolean", "null"] },
+          "sources": { "$ref": "#/$defs/FactSources" }
+        }
+      }
+    },
+    "stateFootprint": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["state", "nexusBasis"],
+        "properties": {
+          "state": { "type": "string", "minLength": 2, "maxLength": 2 },
+          "nexusBasis": {
+            "enum": ["domicile", "physical", "economic", "payroll", "property", "other"]
+          },
+          "ptetElected": { "type": ["boolean", "null"] },
+          "sources": { "$ref": "#/$defs/FactSources" }
+        }
+      }
+    },
+    "income": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["characters", "sources"],
+      "properties": {
+        "characters": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/IncomeCharacter" }
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["label", "character"],
+            "properties": {
+              "label": { "type": "string" },
+              "character": { "$ref": "#/$defs/IncomeCharacter" },
+              "approxBand": { "enum": ["under_100k", "100k_500k", "500k_1m", "over_1m", null] },
+              "sources": { "$ref": "#/$defs/FactSources" }
+            }
+          }
+        },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "electionsInEffect": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Convention: s_election, ptet_<STATE>, 475f, 1031, grouping_469, …"
+          },
+          "since": { "type": ["string", "null"], "pattern": "^\\d{4}$" },
+          "note": { "type": ["string", "null"] },
+          "sources": { "$ref": "#/$defs/FactSources" }
+        }
+      }
+    },
+    "carryforwards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "amount"],
+        "properties": {
+          "type": {
+            "enum": [
+              "nol",
+              "capital_loss",
+              "charitable",
+              "passive_loss",
+              "foreign_tax_credit",
+              "amt_credit",
+              "other"
+            ]
+          },
+          "amount": { "type": "number" },
+          "expires": { "type": ["string", "null"], "pattern": "^\\d{4}$" },
+          "sources": { "$ref": "#/$defs/FactSources" }
+        }
+      }
+    },
+    "property": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind"],
+        "properties": {
+          "kind": {
+            "enum": [
+              "real_estate",
+              "residential_rental",
+              "commercial",
+              "vehicle",
+              "equipment",
+              "intangible",
+              "other"
+            ]
+          },
+          "description": { "type": ["string", "null"] },
+          "placedInService": { "type": ["string", "null"], "pattern": "^\\d{4}(-\\d{2}-\\d{2})?$" },
+          "basis": { "type": ["number", "null"] },
+          "method": { "enum": ["macrs", "sl", "bonus", "sec179", "other", null] },
+          "sources": { "$ref": "#/$defs/FactSources" }
+        }
+      }
+    },
+    "household": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["filingStatus", "dependents"],
+      "properties": {
+        "filingStatus": { "enum": ["single", "mfj", "mfs", "hoh", null] },
+        "dependents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["relationship"],
+            "properties": {
+              "ageBand": { "enum": ["under_6", "6_12", "13_17", "18_23", "adult", null] },
+              "relationship": { "enum": ["child", "parent", "other"] }
+            },
+            "description": "Age band and relationship only — never names or birthdates."
+          }
+        },
+        "sources": { "$ref": "#/$defs/FactSources" }
+      }
+    },
+    "lifeEvents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["year", "event"],
+        "properties": {
+          "year": { "type": "integer", "minimum": 1900, "maximum": 2200 },
+          "event": {
+            "enum": [
+              "marriage",
+              "divorce",
+              "birth",
+              "death",
+              "home_purchase",
+              "home_sale",
+              "relocation",
+              "business_start",
+              "business_sale",
+              "retirement",
+              "inheritance",
+              "other"
+            ]
+          },
+          "note": { "type": ["string", "null"] },
+          "sources": { "$ref": "#/$defs/FactSources" }
+        }
+      }
+    },
+    "openQuestions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["question", "raisedBy", "status"],
+        "properties": {
+          "id": { "type": ["string", "null"] },
+          "question": { "type": "string" },
+          "raisedBy": { "enum": ["staff", "system", "client"] },
+          "status": { "enum": ["open", "answered", "dismissed"] },
+          "sources": { "$ref": "#/$defs/FactSources" }
+        }
+      }
+    },
+    "narrative": { "type": "string" }
+  },
+  "$defs": {
+    "IncomeCharacter": {
+      "enum": [
+        "w2",
+        "se",
+        "k1_active",
+        "k1_passive",
+        "rental",
+        "portfolio",
+        "capital_gain",
+        "retirement",
+        "other"
+      ]
+    },
+    "FactSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["documentId", "page", "method"],
+      "properties": {
+        "documentId": { "type": "string", "format": "uuid" },
+        "page": { "type": "integer", "minimum": 1 },
+        "span": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0 },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "method": { "enum": ["extracted", "tb_sync", "staff_entered", "chat_confirmed"] }
+      }
+    },
+    "FactSources": {
+      "type": ["array", "null"],
+      "items": { "$ref": "#/$defs/FactSource" }
+    }
+  }
+}
