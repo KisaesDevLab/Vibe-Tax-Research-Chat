@@ -1,6 +1,6 @@
 {
   "id": "s-corp-election",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -23,6 +23,11 @@
       "version": "1.1.0",
       "date": "2026-07-28",
       "note": "Corrected Watson case caption in risks to David E. Watson, P.C. v. United States (refund suit), matching the authority cite."
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-08-25",
+      "note": "Extended suggest rule with facts.* predicates (TP-5a); prose unchanged."
     }
   ],
   "name": "S Corporation Election",
@@ -206,6 +211,14 @@
           "field": "totalBusinessProfit",
           "op": "gte",
           "value": 60000
+        },
+        {
+          "not": {
+            "field": "facts.electionsInEffect[].code",
+            "op": "eq",
+            "value": "s_election",
+            "label": "No S election on file"
+          }
         }
       ],
       "reason": "Schedule C profit of ${totalBusinessProfit} — an S election with reasonable W-2 comp can cut SE tax."

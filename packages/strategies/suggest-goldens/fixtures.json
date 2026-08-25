@@ -1,0 +1,128 @@
+{
+  "note": "TP-5a suggest goldens: each fixture pairs a profile + fact pattern with expected per-strategy statuses. Run by src/suggest-goldens.test.ts against the real content rules.",
+  "fixtures": [
+    {
+      "name": "done-when: related-party ownership + dependents without age bands",
+      "profile": { "businesses": [], "rentals": [], "dependentsUnder17": 0 },
+      "facts": {
+        "entity": { "type": "s_corp" },
+        "ownership": [{ "owner": "A.B.", "pct": 60, "role": "shareholder", "relatedParty": true }],
+        "household": { "filingStatus": "mfj", "dependents": [{ "relationship": "child" }] }
+      },
+      "expect": {
+        "matched": [],
+        "toConfirm": ["hire-children"],
+        "notSuggested": []
+      },
+      "leafChecks": {
+        "hire-children": {
+          "matchedContains": ["Dependents on file in the fact pattern"],
+          "toConfirmContains": [
+            "Age band supports bona fide work — confirm reasonable comp for actual duties"
+          ]
+        }
+      }
+    },
+    {
+      "name": "no fact snapshot: facts legs go unknown, profile legs still bind",
+      "profile": {
+        "businesses": [{ "kind": "schedule-c", "netProfit": 80000, "employeeWages": 0 }],
+        "rentals": [],
+        "state": { "code": "MO", "flatRate": 0.048 }
+      },
+      "facts": null,
+      "expect": {
+        "matched": [],
+        "toConfirm": ["s-corp-election", "ptet"],
+        "notSuggested": []
+      }
+    },
+    {
+      "name": "PTET already elected: excluded",
+      "profile": { "businesses": [], "rentals": [] },
+      "facts": {
+        "entity": { "type": "s_corp" },
+        "stateFootprint": [{ "state": "MO", "nexusBasis": "domicile", "ptetElected": true }]
+      },
+      "expect": { "matched": [], "toConfirm": [], "notSuggested": ["ptet"] }
+    },
+    {
+      "name": "PTET status unrecorded on the footprint: not-over-unknown → confirm",
+      "profile": { "businesses": [], "rentals": [] },
+      "facts": {
+        "entity": { "type": "s_corp" },
+        "stateFootprint": [{ "state": "MO", "nexusBasis": "domicile" }]
+      },
+      "expect": { "matched": [], "toConfirm": ["ptet"], "notSuggested": [] }
+    },
+    {
+      "name": "NOL carryforward on file: facts-only match",
+      "profile": { "businesses": [], "rentals": [] },
+      "facts": { "carryforwards": [{ "type": "nol", "amount": 45000 }] },
+      "expect": { "matched": ["nol-planning"], "toConfirm": [], "notSuggested": [] }
+    },
+    {
+      "name": "S election already on file: s-corp-election excluded",
+      "profile": {
+        "businesses": [{ "kind": "schedule-c", "netProfit": 100000 }],
+        "rentals": []
+      },
+      "facts": { "electionsInEffect": [{ "code": "s_election", "since": "2020" }] },
+      "expect": { "matched": [], "toConfirm": [], "notSuggested": ["s-corp-election"] }
+    },
+    {
+      "name": "known-empty dependents array: excluded, not unknown",
+      "profile": { "businesses": [], "rentals": [], "dependentsUnder17": 0 },
+      "facts": {
+        "entity": { "type": "s_corp" },
+        "ownership": [{ "owner": "A.B.", "pct": 100, "role": "shareholder", "relatedParty": true }],
+        "household": { "filingStatus": "single", "dependents": [] }
+      },
+      "expect": {
+        "matched": [],
+        "toConfirm": [],
+        "notSuggested": ["hire-children", "kids-roth-ira", "family-management-company"]
+      }
+    },
+    {
+      "name": "multiple owners on file: buy-sell matched",
+      "profile": { "businesses": [], "rentals": [] },
+      "facts": {
+        "ownership": [
+          { "owner": "A.B.", "pct": 60, "role": "shareholder" },
+          { "owner": "C.D.", "pct": 40, "role": "shareholder" }
+        ]
+      },
+      "expect": { "matched": ["buy-sell-agreement"], "toConfirm": [], "notSuggested": [] }
+    },
+    {
+      "name": "capital-loss carryforward: harvesting matched with zero recognized gains",
+      "profile": {
+        "businesses": [],
+        "rentals": [],
+        "shortTermCapGain": 0,
+        "longTermCapGain": 0
+      },
+      "facts": { "carryforwards": [{ "type": "capital_loss", "amount": 20000 }] },
+      "expect": { "matched": ["gain-loss-harvesting"], "toConfirm": [], "notSuggested": [] }
+    },
+    {
+      "name": "facts-only S corp: reasonable-comp matched, FMC waits on dependents",
+      "profile": { "businesses": [], "rentals": [] },
+      "facts": { "entity": { "type": "s_corp" } },
+      "expect": {
+        "matched": ["reasonable-comp-study"],
+        "toConfirm": ["family-management-company"],
+        "notSuggested": []
+      }
+    },
+    {
+      "name": "commercial building on file: cost segregation matched",
+      "profile": { "businesses": [], "rentals": [] },
+      "facts": {
+        "property": [{ "kind": "commercial", "placedInService": "2021-06-01", "basis": 850000 }]
+      },
+      "expect": { "matched": ["cost-segregation"], "toConfirm": [], "notSuggested": [] }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "id": "cost-segregation",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -18,6 +18,11 @@
       "version": "1.0.1",
       "date": "2026-07-28",
       "note": "Editorial rewrite of advisor and client prose; substance unchanged."
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-08-25",
+      "note": "Extended suggest rule with facts.* predicates (TP-5a); prose unchanged."
     }
   ],
   "name": "Cost Segregation Study",
@@ -173,9 +178,19 @@
     "suggest": {
       "all": [
         {
-          "field": "hasRental",
-          "op": "eq",
-          "value": true
+          "any": [
+            {
+              "field": "hasRental",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "facts.property[].kind",
+              "op": "in",
+              "value": ["residential_rental", "commercial", "real_estate"],
+              "label": "Depreciable building on the books"
+            }
+          ]
         }
       ],
       "reason": "Reclassifying building components to 5/7/15-year lives front-loads depreciation — most potent with STR or REPS treatment."

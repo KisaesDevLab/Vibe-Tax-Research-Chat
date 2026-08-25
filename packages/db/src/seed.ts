@@ -22,6 +22,34 @@ import { sql } from 'drizzle-orm';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+/** Strict numeric semver comparison: a > b. Non-parsable → false (never
+ *  advance on garbage). */
+function semverGt(a: string, b: string): boolean {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  if (pa.length !== 3 || pb.length !== 3 || [...pa, ...pb].some(Number.isNaN)) return false;
+  for (let i = 0; i < 3; i++) {
+    if (pa[i]! > pb[i]!) return true;
+    if (pa[i]! < pb[i]!) return false;
+  }
+  return false;
+}
+
+/**
+ * TP-5a — may a re-seed move strategies.current_version_id to the freshly
+ * seeded version? ONLY when the currently-pointed version is itself
+ * seed-created AND the new semver is strictly higher. Exported for unit
+ * tests: the admin-publish-is-sacred guard must never regress.
+ */
+export function shouldAdvanceCurrentVersion(args: {
+  pointedChangeNote: string | null;
+  pointedSemver: string;
+  seededSemver: string;
+}): boolean {
+  if (args.pointedChangeNote !== 'seed') return false;
+  return semverGt(args.seededSemver, args.pointedSemver);
+}
 loadEnv({ path: path.resolve(__dirname, '../../../.env') });
 
 interface SeedModel {
@@ -175,6 +203,11 @@ export async function runSeed(): Promise<void> {
   // 6. TP-5 — strategy content from @vibe/strategies. Idempotent:
   // onConflictDoNothing on (strategy_id, semver); current_version_id set
   // only when NULL so an admin publish is never clobbered by a re-seed.
+  // TP-5a adds one carefully-guarded advance: when the POINTED version is
+  // itself seed-owned (change_note = 'seed') and the freshly seeded record
+  // carries a higher semver, the pointer moves — otherwise a content bump
+  // (e.g. the facts.* suggest enrichment) would be inert on existing
+  // installs. An admin publish (change_note ≠ 'seed') is never touched.
   const records = listStrategyRecords();
   let strategySeedCount = 0;
   for (const record of records) {
@@ -212,6 +245,30 @@ export async function runSeed(): Promise<void> {
         .update(strategies)
         .set({ current_version_id: versionRow.id })
         .where(and(eq(strategies.id, record.id), isNull(strategies.current_version_id)));
+      const [pointed] = await db
+        .select({
+          id: strategy_versions.id,
+          semver: strategy_versions.semver,
+          change_note: strategy_versions.change_note,
+        })
+        .from(strategies)
+        .innerJoin(strategy_versions, eq(strategy_versions.id, strategies.current_version_id))
+        .where(eq(strategies.id, record.id))
+        .limit(1);
+      if (
+        pointed &&
+        pointed.id !== versionRow.id &&
+        shouldAdvanceCurrentVersion({
+          pointedChangeNote: pointed.change_note,
+          pointedSemver: pointed.semver,
+          seededSemver: record.version,
+        })
+      ) {
+        await db
+          .update(strategies)
+          .set({ current_version_id: versionRow.id })
+          .where(eq(strategies.id, record.id));
+      }
       for (const g of record.model?.goldenTests ?? []) {
         await db
           .insert(golden_tests)

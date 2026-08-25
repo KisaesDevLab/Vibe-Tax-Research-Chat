@@ -1,6 +1,6 @@
 {
   "id": "nol-planning",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -18,6 +18,11 @@
       "version": "1.0.1",
       "date": "2026-07-28",
       "note": "Editorial rewrite of advisor and client prose; substance unchanged."
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-08-25",
+      "note": "Extended suggest rule with facts.* predicates (TP-5a); prose unchanged."
     }
   ],
   "name": "NOL Carryforward Planning",
@@ -157,9 +162,19 @@
     "suggest": {
       "all": [
         {
-          "field": "hasBusiness",
-          "op": "eq",
-          "value": true
+          "any": [
+            {
+              "field": "hasBusiness",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "facts.carryforwards[].type",
+              "op": "eq",
+              "value": "nol",
+              "label": "NOL carryforward on file"
+            }
+          ]
         }
       ],
       "reason": "A carried NOL should be burned deliberately against the right years, not by default."

@@ -1,6 +1,6 @@
 {
   "id": "hire-children",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -18,6 +18,11 @@
       "version": "1.0.1",
       "date": "2026-07-28",
       "note": "Editorial rewrite of advisor and client prose; substance unchanged."
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-08-25",
+      "note": "Extended suggest rule with facts.* predicates (TP-5a); prose unchanged."
     }
   ],
   "name": "Hiring Children Under 18",
@@ -189,14 +194,48 @@
     "suggest": {
       "all": [
         {
-          "field": "hasBusiness",
-          "op": "eq",
-          "value": true
+          "any": [
+            {
+              "field": "hasBusiness",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "facts.ownership[].relatedParty",
+              "op": "eq",
+              "value": true,
+              "label": "Related-party ownership on file — family business"
+            }
+          ]
         },
         {
-          "field": "dependentsUnder17",
-          "op": "gte",
-          "value": 1
+          "any": [
+            {
+              "field": "dependentsUnder17",
+              "op": "gte",
+              "value": 1
+            },
+            {
+              "field": "facts.household.dependents[]",
+              "op": "exists",
+              "label": "Dependents on file in the fact pattern"
+            }
+          ]
+        },
+        {
+          "any": [
+            {
+              "field": "dependentsUnder17",
+              "op": "gte",
+              "value": 1
+            },
+            {
+              "field": "facts.household.dependents[].ageBand",
+              "op": "in",
+              "value": ["6_12", "13_17"],
+              "label": "Age band supports bona fide work — confirm reasonable comp for actual duties"
+            }
+          ]
         }
       ],
       "reason": "Business owner with children — wages for real work deduct at the parent's rate and land tax-free under the child's standard deduction."

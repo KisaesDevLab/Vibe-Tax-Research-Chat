@@ -1,6 +1,6 @@
 {
   "id": "reasonable-comp-study",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -23,6 +23,11 @@
       "version": "1.1.0",
       "date": "2026-07-28",
       "note": "Corrected Watson case caption in risks to David E. Watson, P.C. v. United States (refund suit), matching the authority cite."
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-08-25",
+      "note": "Extended suggest rule with facts.* predicates (TP-5a); prose unchanged."
     }
   ],
   "name": "Reasonable Compensation Study (S-Corp)",
@@ -170,9 +175,19 @@
   "suggest": {
     "all": [
       {
-        "field": "hasSCorp",
-        "op": "eq",
-        "value": true
+        "any": [
+          {
+            "field": "hasSCorp",
+            "op": "eq",
+            "value": true
+          },
+          {
+            "field": "facts.entity.type",
+            "op": "eq",
+            "value": "s_corp",
+            "label": "S corporation on file"
+          }
+        ]
       }
     ],
     "reason": "S-corp owner compensation should be supported by a documented reasonable-comp study."

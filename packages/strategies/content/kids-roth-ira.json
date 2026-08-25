@@ -1,6 +1,6 @@
 {
   "id": "kids-roth-ira",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "status": "published",
   "effectiveTaxYears": {
     "from": 2026,
@@ -18,6 +18,11 @@
       "version": "1.0.1",
       "date": "2026-07-28",
       "note": "Editorial rewrite of advisor and client prose; substance unchanged."
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-08-25",
+      "note": "Extended suggest rule with facts.* predicates (TP-5a); prose unchanged."
     }
   ],
   "name": "Roth IRA Funded by Kids' Earned Income",
@@ -130,14 +135,33 @@
   "suggest": {
     "all": [
       {
-        "field": "hasBusiness",
-        "op": "eq",
-        "value": true
+        "any": [
+          {
+            "field": "hasBusiness",
+            "op": "eq",
+            "value": true
+          },
+          {
+            "field": "facts.ownership[].relatedParty",
+            "op": "eq",
+            "value": true,
+            "label": "Related-party ownership on file — family business"
+          }
+        ]
       },
       {
-        "field": "dependentsUnder17",
-        "op": "gt",
-        "value": 0
+        "any": [
+          {
+            "field": "dependentsUnder17",
+            "op": "gt",
+            "value": 0
+          },
+          {
+            "field": "facts.household.dependents[]",
+            "op": "exists",
+            "label": "Dependents on file"
+          }
+        ]
       }
     ],
     "reason": "Child wages already inside the standard deduction can seed decades of tax-free Roth growth."
