@@ -10,6 +10,7 @@ import {
   deliverables,
   engagements,
   plans,
+  plan_fact_snapshots,
   plan_scenarios,
   plan_results,
   research_archives,
@@ -140,6 +141,33 @@ plansRouter.get('/', async (req, res) => {
     .orderBy(desc(plans.updated_at))
     .limit(200);
   res.json({ plans: rows });
+});
+
+// TP-6a — the plan's fact snapshots (created / review_frozen), without the
+// denormalized facts payload (fetch the client's version for detail).
+plansRouter.get('/:id/fact-snapshots', async (req, res) => {
+  if (!uuidSchema.safeParse(req.params.id).success) {
+    res.status(400).json({ error: 'bad_request', detail: 'invalid id' });
+    return;
+  }
+  const [plan] = await getDb().select().from(plans).where(eq(plans.id, req.params.id)).limit(1);
+  if (!plan) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  const rows = await getDb()
+    .select({
+      id: plan_fact_snapshots.id,
+      plan_id: plan_fact_snapshots.plan_id,
+      fact_pattern_id: plan_fact_snapshots.fact_pattern_id,
+      fact_pattern_version: plan_fact_snapshots.fact_pattern_version,
+      snapshot_kind: plan_fact_snapshots.snapshot_kind,
+      snapshot_at: plan_fact_snapshots.snapshot_at,
+    })
+    .from(plan_fact_snapshots)
+    .where(eq(plan_fact_snapshots.plan_id, req.params.id))
+    .orderBy(desc(plan_fact_snapshots.snapshot_at));
+  res.json({ snapshots: rows });
 });
 
 plansRouter.get('/:id', async (req, res) => {

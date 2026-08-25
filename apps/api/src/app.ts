@@ -29,6 +29,8 @@ import { adminBackupRouter } from './routes/admin/backup.js';
 import { chatsRouter } from './routes/chats/index.js';
 import { configRouter } from './routes/config.js';
 import { clientsRouter } from './routes/clients/index.js';
+import { clientFactsRouter } from './routes/clients/facts.js';
+import { clientDocumentsRouter } from './routes/clients/documents.js';
 import { archivesRouter } from './routes/archives.js';
 import { adminTableSetsRouter } from './routes/admin/table-sets.js';
 import { adminReviewQueueRouter, adminStrategyDraftRouter } from './routes/admin/review-queue.js';
@@ -126,6 +128,9 @@ export function createApp(): Express {
   // client Documents tab feed.
   app.use('/api/dl', dlRouter);
   app.use('/api/clients/:id/deliverables', requireAuth, requirePlanning, clientDeliverablesRouter);
+  // TP-3a — client fact patterns + source documents.
+  app.use('/api/clients/:id/facts', requireAuth, requirePlanning, clientFactsRouter);
+  app.use('/api/clients/:id/documents', requireAuth, requirePlanning, clientDocumentsRouter);
 
   // 404
   app.use((req, res) => {
