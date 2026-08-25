@@ -42,6 +42,8 @@ const predicateLeaf = z.object({
   field: nonEmpty,
   op: z.enum(['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'exists']),
   value: z.unknown().optional(),
+  // TP-5a — English rendering for matched/toConfirm/excluded lists.
+  label: nonEmpty.optional(),
 });
 
 type PredicateNode =

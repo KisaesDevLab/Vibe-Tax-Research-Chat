@@ -117,6 +117,30 @@ describe('validateStrategyRecord', () => {
     expect(validateStrategyRecord(r).ok).toBe(true);
   });
 
+  it('field-whitelist gate: a typo`d facts path is rejected, a valid one accepted', () => {
+    const r = baseRecord();
+    const model = r.model as unknown as Record<string, unknown>;
+    model.suggest = {
+      all: [
+        { field: 'hasBusiness', op: 'eq', value: true },
+        { field: 'facts.household.dependants[]', op: 'exists' }, // typo: dependAnts
+      ],
+      reason: 'Business with dependents.',
+    };
+    const bad = validateStrategyRecord(r);
+    expect(bad.ok).toBe(false);
+    expect(bad.errors.some((e) => e.message.includes('facts.household.dependants[]'))).toBe(true);
+
+    model.suggest = {
+      all: [
+        { field: 'hasBusiness', op: 'eq', value: true },
+        { field: 'facts.household.dependents[]', op: 'exists', label: 'Dependents on file' },
+      ],
+      reason: 'Business with dependents.',
+    };
+    expect(validateStrategyRecord(r).ok).toBe(true);
+  });
+
   it('schema gate: module id must match record id', () => {
     const r = baseRecord();
     r.model.apply.module = 'other-strategy@1.0.0';
