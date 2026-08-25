@@ -13,13 +13,14 @@ import { ActivityTab } from './tabs/ActivityTab';
 import { ResearchTab } from './tabs/ResearchTab';
 import { PlansTab } from './tabs/PlansTab';
 import { DocumentsTab } from './tabs/DocumentsTab';
+import { FactsTab } from './tabs/FactsTab';
 
 export interface ClientDetail {
   client: ClientDTO;
   counts: { chats: number; plans: number; archives: number; documents: number };
 }
 
-const TABS = ['overview', 'plans', 'research', 'documents', 'activity'] as const;
+const TABS = ['overview', 'facts', 'plans', 'research', 'documents', 'activity'] as const;
 export type ClientTab = (typeof TABS)[number];
 
 export function ClientDetailPage() {
@@ -110,6 +111,7 @@ export function ClientDetailPage() {
       </nav>
 
       {activeTab === 'overview' && <OverviewTab detail={data} />}
+      {activeTab === 'facts' && <FactsTab client={client} />}
       {activeTab === 'plans' && <PlansTab client={client} />}
       {activeTab === 'research' && <ResearchTab client={client} counts={counts} />}
       {activeTab === 'documents' && <DocumentsTab client={client} />}
