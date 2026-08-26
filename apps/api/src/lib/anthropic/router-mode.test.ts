@@ -12,6 +12,7 @@ import { audit } from '../audit.js';
 import {
   JOB_TASK_CLASS,
   TRC_TASK_CLASSES,
+  TRC_TASK_CLASS_DECLARATIONS,
   _setRouterClientForTests,
   aiMode,
   callClaudeViaRouter,
@@ -99,6 +100,58 @@ describe('mode + routability', () => {
     }
     for (const [job, cls] of Object.entries(JOB_TASK_CLASS)) {
       if (!PINNED_DIRECT.includes(job)) expect(cls, job).toBeTruthy();
+    }
+  });
+
+  it('every mapped task class is actually declared to the router', () => {
+    // An unregistered class does not fall back — the job fails closed at the
+    // router, and only in router mode, so a typo here is invisible in dev.
+    const declared = new Set(TRC_TASK_CLASS_DECLARATIONS.map((d) => d.key));
+    for (const [job, cls] of Object.entries(JOB_TASK_CLASS)) {
+      if (cls !== null) expect(declared, `${job} → ${cls}`).toContain(cls);
+    }
+  });
+
+  it('declares requires.tools for every class whose jobs force a tool', () => {
+    // The router picks a provider from `requires`. A tool-forcing job declared
+    // tool-free can be handed to a backend that cannot make the call.
+    const TOOL_FORCING_JOBS = [
+      'skill-author',
+      'skill-refine',
+      'strategy-author',
+      'strategy-refresh',
+      'client-doc-classify',
+      'fact-extract',
+    ];
+    for (const job of TOOL_FORCING_JOBS) {
+      const cls = JOB_TASK_CLASS[job as never] as string | null;
+      expect(cls, job).toBeTruthy();
+      const decl = TRC_TASK_CLASS_DECLARATIONS.find((d) => d.key === cls);
+      expect(decl?.requires, `${job} → ${cls}`).toMatchObject({ tools: true });
+    }
+  });
+
+  it('never shares a task class across unrelated corpora', () => {
+    // A task class is the unit an operator sets local_only / cloud_deidentified
+    // on. Client-document jobs sharing a class with chat-content jobs meant
+    // widening the policy for chat titles silently widened it for client
+    // document pages too.
+    const CORPUS: Record<string, string[]> = {
+      chat_content: ['chat-title', 'attachment-summarize', 'archive-title-tags'],
+      client_documents: ['client-doc-classify', 'fact-extract'],
+      public_tax_law: ['skill-author', 'skill-refine', 'strategy-author', 'strategy-refresh'],
+    };
+    const classToCorpora = new Map<string, Set<string>>();
+    for (const [corpus, jobs] of Object.entries(CORPUS)) {
+      for (const job of jobs) {
+        const cls = JOB_TASK_CLASS[job as never] as string | null;
+        if (!cls) continue;
+        if (!classToCorpora.has(cls)) classToCorpora.set(cls, new Set());
+        classToCorpora.get(cls)!.add(corpus);
+      }
+    }
+    for (const [cls, corpora] of classToCorpora) {
+      expect([...corpora], `${cls} spans corpora`).toHaveLength(1);
     }
   });
 });
@@ -410,7 +463,7 @@ describe('callClaudeViaRouter', () => {
 });
 
 describe('registerTrcTaskClasses', () => {
-  it('declares the four classes in router mode only', async () => {
+  it('declares every task class in router mode only', async () => {
     const calls: { url: string; init: RequestInit }[] = [];
     const client = clientWithFetch((async (url: unknown, init?: RequestInit) => {
       calls.push({ url: String(url), init: init ?? {} });
@@ -424,10 +477,16 @@ describe('registerTrcTaskClasses', () => {
     expect(body.app).toBe('vibe-tax-research');
     expect(body.classes.map((c: { key: string }) => c.key).sort()).toEqual([
       'taxresearch_authoring',
+      'taxresearch_client_doc_meta',
       'taxresearch_content_meta',
       'taxresearch_fact_extract',
       'taxresearch_memo_draft',
     ]);
+    // Registration must cover every class the job map can name, or that job
+    // fails closed at the router.
+    expect(body.classes.map((c: { key: string }) => c.key).sort()).toEqual(
+      Object.values(TRC_TASK_CLASSES).sort(),
+    );
 
     process.env.VIBE_AI_MODE = 'direct';
     registerTrcTaskClasses({ client, maxAttempts: 1 });

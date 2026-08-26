@@ -91,6 +91,14 @@ export function validateAiModeEnv(): string | null {
 
 // ── task classes ─────────────────────────────────────────────────────────
 
+/**
+ * A task class is the unit the operator sets a DATA POLICY on (local_only vs
+ * cloud_deidentified). Two jobs may share a class only if an operator widening
+ * the policy for one would knowingly be widening it for the other. Corpus is
+ * what separates them, not token size or model: chat content, admin authoring
+ * over public tax law, and client-owned documents are three different consent
+ * and retention stories, so they never share a class.
+ */
 export const TRC_TASK_CLASSES = {
   /** Titles/tags/summaries derived from user chat content and uploads (NEW — starts local_only) */
   CONTENT_META: 'taxresearch_content_meta',
@@ -100,6 +108,18 @@ export const TRC_TASK_CLASSES = {
   AUTHORING: 'taxresearch_authoring',
   /** Fact-pattern extraction from Shield-redacted client documents (NEW — starts local_only) */
   FACT_EXTRACT: 'taxresearch_fact_extract',
+  /**
+   * docType/tax-year classification over Shield-redacted client documents
+   * (NEW — starts local_only).
+   *
+   * Deliberately NOT CONTENT_META. It reads client document text, not chat
+   * content: grouping it with chat titles meant an operator widening
+   * CONTENT_META to get titles off-box would have silently carried client
+   * document pages across the same boundary. Kept separate from FACT_EXTRACT
+   * too — same corpus, but a 256-token classification and an 8k structured
+   * extraction are worth governing independently.
+   */
+  CLIENT_DOC_META: 'taxresearch_client_doc_meta',
 } as const;
 
 /**
@@ -119,7 +139,7 @@ export const JOB_TASK_CLASS: Record<ClaudeJobName, string | null> = {
   'strategy-refresh': TRC_TASK_CLASSES.AUTHORING,
   'strategy-watch': null,
   'plan-memo': TRC_TASK_CLASSES.MEMO_DRAFT,
-  'client-doc-classify': TRC_TASK_CLASSES.CONTENT_META,
+  'client-doc-classify': TRC_TASK_CLASSES.CLIENT_DOC_META,
   'fact-extract': TRC_TASK_CLASSES.FACT_EXTRACT,
 };
 
@@ -395,8 +415,17 @@ export async function callClaudeViaRouter(
 
 // ── boot registration ────────────────────────────────────────────────────
 
-/** Shared by boot registration and the admin connection test. */
-const TRC_TASK_CLASS_DECLARATIONS = [
+/**
+ * Shared by boot registration and the admin connection test.
+ *
+ * `requires.tools` must match what the job actually sends: the router uses it
+ * to pick a capable provider, so a tool-forcing job declared tool-free can be
+ * handed to a backend that cannot make the call at all.
+ *
+ * Exported for the invariant tests — every class named in JOB_TASK_CLASS has to
+ * appear here, or requests for that job fail closed at an unregistered class.
+ */
+export const TRC_TASK_CLASS_DECLARATIONS = [
   // Pack class — declaration matches the reviewed pack entry.
   {
     key: TRC_TASK_CLASSES.MEMO_DRAFT,
@@ -423,6 +452,13 @@ const TRC_TASK_CLASS_DECLARATIONS = [
       'Fact-pattern extraction from Shield-redacted client tax documents (forced tool output)',
     requires: { tools: true },
     defaultMaxTokens: 8000,
+  },
+  {
+    key: TRC_TASK_CLASSES.CLIENT_DOC_META,
+    description:
+      'docType and tax-year classification of Shield-redacted client tax documents (forced tool output)',
+    requires: { tools: true },
+    defaultMaxTokens: 256,
   },
 ];
 

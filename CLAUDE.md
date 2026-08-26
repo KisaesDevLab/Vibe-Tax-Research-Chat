@@ -190,6 +190,32 @@ saved on faith, and both directions are audited. `testRouterConnection()` double
 Settings-page "Test router connection" button. There is still no runtime fallback
 between modes.
 
+### Task classes are per-CORPUS, and the chat path is never routable
+
+A router task class is the unit an operator sets a data policy on (local_only vs
+cloud_deidentified). Two jobs may share one **only if widening the policy for one is
+knowingly widening it for the other** — so the axis is the corpus, not the token budget or
+the model. The three corpora are chat content, admin authoring over public tax law, and
+client-owned documents; they never share a class.
+
+`client-doc-classify` violated this: it ships up to 6 KB of Shield-redacted client document
+text, but sat in `CONTENT_META` next to chat titles. Since CONTENT_META starts local_only,
+an operator widening it to get titles off-box would have silently carried client document
+pages across the same boundary. It now has its own `CLIENT_DOC_META`
+(`taxresearch_client_doc_meta`). That also fixed a second latent bug: CONTENT_META declares
+`requires: {}`, but `client-doc-classify` forces a tool — and the router picks a provider
+from `requires`, so a tool-forcing job under a tool-free class can be handed to a backend
+that cannot make the call. Three invariants in `router-mode.test.ts` now hold the line
+(every mapped class is declared; tool-forcing jobs sit in `requires.tools` classes; no
+class spans two corpora).
+
+Separately: **the streaming chat path is always direct and structurally cannot route.**
+`callClaude` is the only router entry point (`client.ts:129`); `streamChat` never touches
+it, and `toRequestOptions` throws on any tool without an `input_schema`, which is exactly
+what Anthropic's server tools are. So the web-tool caps (`max_uses`) and router mode are
+disjoint concerns — the caps only ever apply on the direct path. `tables-draft` and
+`strategy-watch` are pinned `null` in `JOB_TASK_CLASS` for the same reason.
+
 ### Model registry: unpriced discoveries insert as inactive
 
 The Anthropic Models API returns no pricing, so `refresh/apply` inserts
@@ -208,6 +234,54 @@ between them) plus a manual `POST /api/admin/table-sets/draft` trigger; the hand
 open-review-item dedupe makes all three idempotent. DRAFT table sets are editable
 (`PATCH /api/admin/table-sets/:id`, drafts only — published sets stay immutable); an
 edit recomputes the open review item's field diff against its recorded base.
+
+### The web allowlist is compile-time, and silence is its failure mode
+
+`packages/shared/src/web-allowlist.ts` is a plain constant compiled into the tool
+definitions (`lib/anthropic/chat.ts`, `jobs/handlers/currency.ts`). Despite what its
+header comment used to claim, there is no admin route and no settings row behind it —
+extending coverage means editing the file, rebuilding `@vibe/shared`, and redeploying.
+
+The failure mode is what makes this dangerous: `allowed_domains` constrains `web_search`
+itself, not just `web_fetch`, and out-of-list results are **silently omitted** rather than
+erroring. When the list held only the top-10 states' DORs, a Missouri question searched a
+universe containing no Missouri, got nothing back, and the model reported the search tool
+as "rate-limited" — a confabulated cause — then answered from parametric memory with the
+citations self-flagged for verification. Coverage now spans all 50 states + DC (90
+entries).
+
+Rules that shape the list, enforced where mechanical by `web-allowlist.test.ts`:
+
+- A listed domain covers its subdomains, so `mo.gov` reaches `dor.mo.gov` AND
+  `revisor.mo.gov` in one entry; a listed subdomain covers only itself. Widen an existing
+  entry rather than appending — `web_search` returns `request_too_large` on long domain
+  filter lists.
+- A cross-domain redirect needs BOTH sides listed (the filter re-applies to the target).
+  Live case: `marylandtaxes.gov` → `marylandcomptroller.gov`.
+- Entries are plain ASCII hostnames — no scheme, port, path, or wildcard. `web_fetch`
+  matches on domain only, so a path entry never matches a fetch URL.
+- Request-level `allowed_domains` must be a SUBSET of any org-level allowlist set in the
+  Claude Console, or the whole request 400s naming the conflict.
+
+Three follow-ons landed with the expansion:
+
+- **The system prompt states reachability, rendered FROM the list.**
+  `describeReachableSources()` (@vibe/shared) emits the federal domains, the jurisdiction
+  count, and — the part that actually does the work — the categories that are _never_
+  reachable (CCH/Checkpoint/BNA/Westlaw/Lexis, practitioner commentary, municipal, non-US).
+  Without it the model cannot tell "no results" from "out of scope", which is exactly how
+  it arrived at a confabulated "rate-limited". Do NOT restate this coverage by hand
+  anywhere: a prompt claiming coverage the list lacks is worse than no prompt, and the
+  guard test asserts the rendered text against the list.
+- **Empty results may not degrade into memory.** `buildSystemPrompt` forbids asserting
+  that a tool is rate-limited/unavailable (the model cannot observe that) and forbids the
+  answer-from-memory-with-flagged-cites pattern. A self-flagged cite reads identically to a
+  verified one, so it is treated as worse than an explicit gap, not better.
+- **Per-turn web budget raised 8/4 → 12/10** (`DEFAULT_WEB_BUDGET`, the `models` column
+  defaults, `seeds/models.json`, and migration 0018). The budget is per-MODEL in the DB, so
+  the constant is only a fallback — changing it alone would have left every existing
+  install on 4 searches. 0018 matches the old `8 AND 4` pair specifically, so admin-tuned
+  rows and the intentional 0/0 Haiku row are untouched.
 
 ### Strategy drafts: machine fields are restored in code
 
