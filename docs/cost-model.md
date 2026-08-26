@@ -60,14 +60,15 @@ attached skill manifest. A typical second turn saves ~$0.045 vs the first turn.
 Admin → Users → set `monthly_spend_cap_usd`. The cap is checked before each new turn:
 
 - If MTD spend by the user exceeds the cap → return 402 with `{ error: 'spend_cap_exceeded',
-  cap_usd, mtd_usd }`.
+cap_usd, mtd_usd }`.
 - The check uses the materialized `usage_daily` rollup for speed; admin can increase the cap
   and the next turn is unblocked immediately.
 
 ## Per-model web budget
 
 The `models` table's `fetches_per_turn` and `searches_per_turn` cap how many web-tool calls a
-single turn can make. Defaults: 8 fetches, 4 searches for Sonnet 4.6 / Opus; 0 / 0 for Haiku.
+single turn can make. Defaults: 12 fetches, 10 searches for Sonnet 4.6 / Opus; 0 / 0 for Haiku (raised from
+8 / 4 in migration 0018, alongside the 50-state allowlist expansion).
 The cap is enforced by Anthropic's `max_uses` parameter on `web_fetch` / `web_search`.
 
 ## Reference turn (§199A QBI)
@@ -77,8 +78,8 @@ should land near **$0.092 (~$0.10) end-to-end**:
 
 | Component             | Estimate |
 | --------------------- | -------: |
-| 4 `web_fetch` calls   | $0.040   |
-| Input tokens          | $0.012   |
-| Output tokens         | $0.040   |
-| Cache reads (turn 2+) | $0.000   |
-| **Total**             | $0.092   |
+| 4 `web_fetch` calls   |   $0.040 |
+| Input tokens          |   $0.012 |
+| Output tokens         |   $0.040 |
+| Cache reads (turn 2+) |   $0.000 |
+| **Total**             |   $0.092 |

@@ -12,7 +12,7 @@
 
 import type Anthropic from '@anthropic-ai/sdk';
 import { getAnthropic } from './client.js';
-import { WEB_ALLOWLIST_DOMAINS, DEFAULT_WEB_BUDGET } from '@vibe/shared';
+import { WEB_ALLOWLIST_DOMAINS, DEFAULT_WEB_BUDGET, describeReachableSources } from '@vibe/shared';
 
 export type ChatEvent =
   | { type: 'text_delta'; delta: string }
@@ -279,13 +279,30 @@ You have the Vibe Tax Research Skills pack attached. The dispatcher (cpa-pack-in
 selected up to 8 skills for this turn. Always honor the compliance-ssts-circular230 skill's
 checklist for every assistant message.
 
+${describeReachableSources()}
+
+When a search or fetch comes back empty:
+  - An empty result means the source is outside the list above, or the material genuinely
+    is not there. It does NOT mean the tool is broken, rate-limited, throttled, or
+    degraded. Never tell the user a tool is rate-limited or unavailable — you cannot
+    observe that, and asserting it misrepresents why the answer is thin.
+  - Say plainly which authority you could not reach and why you believe that, then either
+    ask the user for the source or answer only the part you did verify.
+  - Do NOT fall back to reciting statutes, section numbers, regulation cites, or dollar
+    figures from memory and marking them for the user to verify. A confident-looking cite
+    the reader has to check is worse than an explicit gap: it reads exactly like a
+    verified one. An unverified citation is not a citation.
+
 Citation discipline:
   - When a skill instructs you to verify a citation, use web_fetch against the canonical
     source named by the skill rather than relying on memory.
   - Cite only authorities you have fetched in this turn, except where the skill explicitly
     permits secondary recall.
   - If a fetch fails, emit "[CITATION NEEDED — search: <query>]" rather than paraphrasing
-    from memory.
+    from memory. Use the same marker when a search returns nothing.
+  - You have a per-turn budget for both tools. Spend it on the authorities that carry the
+    answer. If you exhaust it, say which questions remain unverified — do not close the
+    gap from memory.
 
 Sidecar JSON:
   - At the end of every research answer, emit a fenced JSON block tagged "authorities"

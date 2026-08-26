@@ -8,12 +8,20 @@ export const models = pgTable('models', {
   output_per_mtok: numeric('output_per_mtok', { precision: 10, scale: 4 }).notNull(),
   cache_write_per_mtok: numeric('cache_write_per_mtok', { precision: 10, scale: 4 }).notNull(),
   cache_read_per_mtok: numeric('cache_read_per_mtok', { precision: 10, scale: 4 }).notNull(),
-  tokenizer_factor: numeric('tokenizer_factor', { precision: 6, scale: 3 }).notNull().default('1.000'),
-  web_fetch_unit_cost: numeric('web_fetch_unit_cost', { precision: 10, scale: 4 }).notNull().default('0.0100'),
-  web_search_unit_cost: numeric('web_search_unit_cost', { precision: 10, scale: 4 }).notNull().default('0.0100'),
+  tokenizer_factor: numeric('tokenizer_factor', { precision: 6, scale: 3 })
+    .notNull()
+    .default('1.000'),
+  web_fetch_unit_cost: numeric('web_fetch_unit_cost', { precision: 10, scale: 4 })
+    .notNull()
+    .default('0.0100'),
+  web_search_unit_cost: numeric('web_search_unit_cost', { precision: 10, scale: 4 })
+    .notNull()
+    .default('0.0100'),
   web_tools_enabled: boolean('web_tools_enabled').notNull().default(true),
-  fetches_per_turn: numeric('fetches_per_turn', { precision: 4, scale: 0 }).notNull().default('8'),
-  searches_per_turn: numeric('searches_per_turn', { precision: 4, scale: 0 }).notNull().default('4'),
+  fetches_per_turn: numeric('fetches_per_turn', { precision: 4, scale: 0 }).notNull().default('12'),
+  searches_per_turn: numeric('searches_per_turn', { precision: 4, scale: 0 })
+    .notNull()
+    .default('10'),
   is_active: boolean('is_active').notNull().default(true),
   retired_at: timestamp('retired_at', { withTimezone: true }),
   notes: text('notes'),
