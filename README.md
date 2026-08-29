@@ -9,7 +9,9 @@
 **Status:** scaffolding pass. See `BUILD_PLAN.md` for the v1.0.0 spec and `QUESTIONS.md` for the
 applied defaults during the build.
 
-**License:** MIT. See `LICENSE`.
+**License:** PolyForm Internal Use 1.0.0 — source-available, not open source:
+internal business use is permitted, distribution is not. See `LICENSE`. The
+bundled Vibe CPA Skills pack is licensed separately under BSL 1.1.
 
 ## Quick start (dev)
 

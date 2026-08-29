@@ -5,7 +5,7 @@
 **Author:** Kurt Kohrumel, CPA — Kisaes LLC
 **Version:** v1.0 (merged) — supersedes v0.1, v0.2, v0.3
 **Last updated:** April 27, 2026
-**License:** BSL 1.1 with 4-year change to Apache 2.0
+**License:** PolyForm Internal Use 1.0.0 (source-available; internal business use, no distribution)
 **Status:** ready for autonomous build — see `KICKOFF_PROMPT.md`
 
 ---

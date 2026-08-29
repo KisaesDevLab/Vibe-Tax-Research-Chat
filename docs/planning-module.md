@@ -89,8 +89,9 @@ draft → in-review → presented → engaged → delivered → archived
   dependency — stored content-addressed under `DELIVERABLES_DIR`. The staff
   slideshow "present" mode is a live HTML view, not an artifact.
 - Client-facing kinds require plan ≥ presented. There is no licensing or
-  entitlement gate — the project is MIT-licensed and self-hosted, so plan status
-  is the only condition on client-facing rendering.
+  entitlement gate — the appliance is single-tenant and self-hosted, and the
+  PolyForm Internal Use license already scopes who may run it, so plan status is
+  the only condition on client-facing rendering.
 - Delivery: staff-manual plus HMAC-signed links (`POST …/deliverables/:id/links`
   → `/api/dl/:token`, ≤ 14 days, revocable, downloads audited). Advisory
   strategies render qualitatively — never as $0 rows.
