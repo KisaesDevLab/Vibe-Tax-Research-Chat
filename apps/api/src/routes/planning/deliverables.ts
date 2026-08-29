@@ -5,9 +5,9 @@
 // identity exists) get staff-manual delivery; signed links remain
 // available for firms that accept link delivery.
 //
-// There is no licensing/entitlement gate: the project is MIT-licensed and
-// this appliance is self-hosted, so client-facing rendering is limited by
-// plan status alone.
+// There is no licensing/entitlement gate: the appliance is single-tenant and
+// self-hosted, and the PolyForm Internal Use license already scopes who may
+// run it, so client-facing rendering is limited by plan status alone.
 import { Router } from 'express';
 import { z } from 'zod';
 import { and, desc, eq, inArray } from 'drizzle-orm';
