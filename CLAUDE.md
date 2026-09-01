@@ -410,6 +410,23 @@ options?, summary?, plan?}`): extractor `lib/parsing/clarify.ts`, persisted on
   user + assistant rows persisted since the send as the turn being over. Both exist
   because the card's controls only render on the latest turn with no stream in flight.
 
+### Chat history search is ILIKE, per-user, and uncached server-side
+
+`GET /api/chats/search?q=` (registered BEFORE `/:id` so "search" is never parsed as a
+chat id) matches titles and user/assistant message content with ILIKE substring
+patterns — deliberately not FTS, because researchers search for cites like `199A` or
+`1.263(a)-3` that stemming mangles. One row per chat via two LATERAL subqueries (newest
+matching turn for the excerpt, match count; system*notes excluded);
+`lib/search/snippet.ts` builds the excerpt AFTER `stripSidecars` so JSON never surfaces,
+and `likePattern` escapes `%`, `*`, and backslash.
+
+Scope is `chats.user_id = caller` (admins may pass `user_id`, as on the list route), so
+two users typing the same query never see each other's chats. There is no server-side
+result cache; the only cache is React Query's per-browser-tab memory (30 s stale time,
+keyed by query text), which never leaves the tab. Trigger: sidebar magnifier or ⌘/Ctrl+K,
+`components/ChatSearchDialog.tsx`. No index backs the ILIKE scan — fine at appliance
+scale; add pg_trgm GIN indexes on `messages.content` / `chats.title` if a firm outgrows it.
+
 ## Open architectural decisions
 
 See `QUESTIONS.md` for ambiguities resolved with applied defaults during the autonomous build.
