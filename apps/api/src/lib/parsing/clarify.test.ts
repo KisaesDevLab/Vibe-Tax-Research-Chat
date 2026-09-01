@@ -84,6 +84,18 @@ describe('stripSidecars removes clarify (api side)', () => {
     expect(stripped).not.toContain('clarify');
   });
 
+  it('strips an untagged ```json fence and a bare object by their status value', () => {
+    // The live failure: the model dropped the "clarify" tag and the card
+    // rendered as a JSON wall under the prose.
+    const untagged = `What type of mileage rate?\n\n\`\`\`json\n${JSON.stringify(ASKING, null, 2)}\n\`\`\``;
+    expect(stripSidecars(untagged)).toBe('What type of mileage rate?');
+    const bare = `Prose stays.\n\n${JSON.stringify(READY)}`;
+    expect(stripSidecars(bare)).toBe('Prose stays.');
+    // An unrelated status object is NOT a sidecar.
+    const other = 'See:\n\n```json\n{"status": "ok", "id": 1}\n```';
+    expect(stripSidecars(other)).toContain('"status": "ok"');
+  });
+
   it('strips the wrapped bare-object form', () => {
     const bare = `Prose stays.\n\n{"clarify": ${JSON.stringify(READY)}}`;
     expect(stripSidecars(bare)).toBe('Prose stays.');

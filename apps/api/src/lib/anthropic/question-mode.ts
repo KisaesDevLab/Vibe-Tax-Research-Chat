@@ -35,7 +35,8 @@ export function buildQuestionModePrompt(): string {
      The interview is over for this matter: follow-ups on the same matter stay in this
      state. A materially new question restarts at state 1.
 
-  In states 1 and 2, end your message with a fenced JSON block tagged "clarify":
+  In states 1 and 2, end your message with a fenced JSON block tagged "clarify" — open the
+  fence exactly as \`\`\`clarify (not \`\`\`json):
     state 1: {"status": "asking", "confidence": 0.6, "question": "<the one question>",
               "options": ["<short choice>", "..."]}
              "confidence" is your current confidence as a fraction from 0 to 1. "options"

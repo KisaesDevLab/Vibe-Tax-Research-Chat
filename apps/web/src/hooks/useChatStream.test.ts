@@ -10,6 +10,52 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+describe('useChatStream reset() vs straggling events', () => {
+  it('does not resurrect a phantom in-flight turn after reset()', async () => {
+    // A body that yields `done`, then keeps the socket open long enough
+    // for the page to reset(), then delivers one more event.
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const enc = new TextEncoder();
+    const body = new ReadableStream<Uint8Array>({
+      async start(controller) {
+        controller.enqueue(enc.encode('event: text\ndata: {"delta":"hi"}\n\n'));
+        controller.enqueue(
+          enc.encode('event: done\ndata: {"cost":0.01,"usage":{"output_tokens":3}}\n\n'),
+        );
+        await gate;
+        controller.enqueue(enc.encode('event: usage\ndata: {"input_tokens":9}\n\n'));
+        controller.close();
+      },
+    });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(body, { status: 200 })),
+    );
+
+    const { result } = renderHook(() => useChatStream());
+    let sending!: Promise<void>;
+    await act(async () => {
+      sending = result.current.send('chat-1', 'hello');
+      // Let the first two events land.
+      await new Promise((r) => setTimeout(r, 20));
+    });
+    expect(result.current.streaming?.done).toBe(true);
+
+    await act(async () => {
+      result.current.reset();
+    });
+    expect(result.current.streaming).toBeNull();
+
+    await act(async () => {
+      release();
+      await sending;
+    });
+    // The straggling usage event must not bring the turn back to life.
+    expect(result.current.streaming).toBeNull();
+  });
+});
+
 describe('useChatStream send() error paths', () => {
   it('finishes with a user-facing error when the initial fetch rejects', async () => {
     vi.stubGlobal(

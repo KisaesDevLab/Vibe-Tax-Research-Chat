@@ -67,6 +67,16 @@ function assembleSystemPrompt(...parts: string[]): string {
 const sendSchema = z.object({
   content: z.string().min(1),
   model_id: z.string().optional(),
+  // Question mode — present when the message was sent from an interview
+  // card. Stored on the user row so the transcript can show which
+  // question was answered and how (option pick / typed / proceed).
+  clarify_answer: z
+    .object({
+      message_id: z.string().uuid(),
+      kind: z.enum(['option', 'freeform', 'proceed']),
+      question: z.string().max(2000).optional(),
+    })
+    .optional(),
 });
 
 interface MergedParams {
@@ -153,9 +163,31 @@ messagesRouter.post('/', async (req, res) => {
 
   // 4. Persist the new user message. ID is captured so the lifecycle
   // log + final 'done' SSE event can reference it.
+  // Question mode — only honour the answer link when it names an assistant
+  // turn in THIS chat; anything else is dropped rather than stored.
+  let clarifyAnswer: Record<string, unknown> | null = null;
+  if (parsed.data.clarify_answer) {
+    const [target] = await db
+      .select({ id: messages.id })
+      .from(messages)
+      .where(
+        and(
+          eq(messages.id, parsed.data.clarify_answer.message_id),
+          eq(messages.chat_id, chatId),
+          eq(messages.role, 'assistant'),
+        ),
+      )
+      .limit(1);
+    if (target) clarifyAnswer = parsed.data.clarify_answer;
+  }
   const [userMsg] = await db
     .insert(messages)
-    .values({ chat_id: chatId, role: 'user', content: parsed.data.content })
+    .values({
+      chat_id: chatId,
+      role: 'user',
+      content: parsed.data.content,
+      clarify_answer: clarifyAnswer,
+    })
     .returning({ id: messages.id });
 
   // 4b. Attachment context. Pull the chat's attachments and build a

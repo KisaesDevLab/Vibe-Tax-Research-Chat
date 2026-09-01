@@ -9,12 +9,43 @@
 // cards collapse to a read-only chip so a stale question can't be answered
 // out of order.
 import { useState, type FormEvent } from 'react';
-import type { Clarification } from '@vibe/shared';
+import type { Clarification, ClarifyAnswer } from '@vibe/shared';
 
 export const PROCEED_SIGNAL = 'Proceed.';
 
 function pct(confidence: number): number {
   return Math.round(Math.min(1, Math.max(0, confidence)) * 100);
+}
+
+// The "how the user responded" line above a user turn that came from the
+// card: names the question it answers and whether the answer was a pick,
+// a typed reply, or the go-ahead. Renders nothing for ordinary messages.
+export function ClarifyAnswerLabel({ answer }: { answer: ClarifyAnswer | null | undefined }) {
+  if (!answer) return null;
+  if (answer.kind === 'proceed') {
+    return (
+      <span
+        className="normal-case tracking-normal text-moss"
+        title="Gave the go-ahead on a ready card"
+      >
+        · gave the go-ahead
+      </span>
+    );
+  }
+  return (
+    <span
+      className="normal-case tracking-normal text-ink/60"
+      title={answer.kind === 'option' ? 'Picked one of the suggested choices' : 'Typed a reply'}
+    >
+      · {answer.kind === 'option' ? 'picked' : 'answered'}
+      {answer.question ? (
+        <>
+          {' '}
+          for <q className="italic">{answer.question}</q>
+        </>
+      ) : null}
+    </span>
+  );
 }
 
 export function ClarifyPanel({
@@ -25,7 +56,7 @@ export function ClarifyPanel({
   clarification: Clarification | null | undefined;
   /** True only for the latest assistant turn — enables the reply controls. */
   active: boolean;
-  onAnswer?: (text: string) => void;
+  onAnswer?: (text: string, kind: ClarifyAnswer['kind']) => void;
 }) {
   const [reply, setReply] = useState('');
   if (!c) return null;
@@ -37,7 +68,7 @@ export function ClarifyPanel({
     const text = reply.trim();
     if (!text || !onAnswer) return;
     setReply('');
-    onAnswer(text);
+    onAnswer(text, 'freeform');
   }
 
   if (!interactive) {
@@ -77,7 +108,7 @@ export function ClarifyPanel({
                 <button
                   key={o}
                   type="button"
-                  onClick={() => onAnswer!(o)}
+                  onClick={() => onAnswer!(o, 'option')}
                   className="text-sm px-3 py-1.5 border border-ink/20 rounded bg-paper hover:border-moss hover:text-moss"
                 >
                   {o}
@@ -115,7 +146,7 @@ export function ClarifyPanel({
           <div className="flex items-center gap-3 flex-wrap">
             <button
               type="button"
-              onClick={() => onAnswer!(PROCEED_SIGNAL)}
+              onClick={() => onAnswer!(PROCEED_SIGNAL, 'proceed')}
               className="text-sm px-4 py-1.5 bg-moss text-paper rounded hover:bg-moss/90"
             >
               Proceed
