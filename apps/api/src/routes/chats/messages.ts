@@ -37,6 +37,7 @@ import { logger } from '../../lib/logger.js';
 import { extractAuthorities, decorateVerification } from '../../lib/parsing/authorities.js';
 import { extractCompliance } from '../../lib/parsing/compliance.js';
 import { extractDocCitations, decorateGrounding } from '../../lib/parsing/doc-citations.js';
+import { extractClarification } from '../../lib/parsing/clarify.js';
 import { chatTitleQueue } from '../../jobs/queues.js';
 import {
   retrieveReferenceExcerpts,
@@ -400,7 +401,7 @@ messagesRouter.post('/', async (req, res) => {
       chat_id: chatId,
       user_message: parsed.data.content,
       system_prompt: assembleSystemPrompt(
-        buildSystemPrompt({}),
+        buildSystemPrompt({ question_mode: chat.question_mode }),
         attachmentPreamble,
         referenceBlock,
         planPreamble,
@@ -525,6 +526,10 @@ messagesRouter.post('/', async (req, res) => {
             chat.mode === 'plan'
               ? decorateGrounding(extractDocCitations(assistantText), docExcerpts)
               : [];
+          // Question mode — the interview card. Extracted regardless of the
+          // flag so a turn answered while the chip was on still renders its
+          // card after the researcher switches the mode off.
+          const clarification = extractClarification(assistantText);
 
           const [assistantMsg] = await db
             .insert(messages)
@@ -548,6 +553,7 @@ messagesRouter.post('/', async (req, res) => {
               authorities: authorities as unknown as Record<string, unknown>[],
               compliance_check: (compliance ?? null) as Record<string, unknown> | null,
               doc_citations: docCitations as unknown as Record<string, unknown>[],
+              clarification: (clarification ?? null) as Record<string, unknown> | null,
             })
             .returning({ id: messages.id });
 

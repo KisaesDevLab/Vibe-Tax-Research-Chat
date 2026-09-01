@@ -89,7 +89,22 @@ export interface MessageDTO {
   compliance_check?: ComplianceCheck;
   // TP-8a — plan-mode document citations ({documentId, page, claim}).
   doc_citations?: DocCitation[];
+  // Question mode — the `clarify` sidecar from an interviewing / ready turn.
+  clarification?: Clarification | null;
   skills?: SkillAttribution[];
+}
+
+// Question mode — one turn of the pre-research interview. `asking` carries
+// the single question (optionally a short pick-list); `ready` carries the
+// model's confidence summary and the two-line plan it is waiting to run.
+export interface Clarification {
+  status: 'asking' | 'ready';
+  /** 0–1 fraction (the prompt asks for a fraction; "95" / "95%" are normalized). */
+  confidence: number;
+  question?: string;
+  options?: string[];
+  summary?: string;
+  plan?: string[];
 }
 
 // TP-8a — one document-grounded claim from a plan-scoped chat turn.
@@ -114,6 +129,9 @@ export interface ChatDTO {
   // this off for memo-writing turns where they want primary-authority
   // citations only.
   use_reference_library: boolean;
+  // Question mode — when true the model interviews the researcher one
+  // question at a time and waits for a "proceed" before researching.
+  question_mode: boolean;
   // TP-2 — soft link to a client record (active-client chip / archival).
   client_id: string | null;
   // TP-8a — plan-scoped chat mode: plan linkage + strategy under discussion.

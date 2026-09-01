@@ -46,6 +46,10 @@ export const messages = pgTable(
     // TP-8a — document-citation sidecar ({documentId, page, claim}[]),
     // extracted like authorities/compliance and rendered as its own panel.
     doc_citations: jsonb('doc_citations').$type<unknown[]>().default([]),
+    // Question mode — the `clarify` sidecar ({status:'asking'|'ready', ...})
+    // the model emits while interviewing the researcher. Null on ordinary
+    // research turns; the UI renders it as the answer card.
+    clarification: jsonb('clarification').$type<Record<string, unknown>>(),
   },
   (t) => ({
     chat_idx: index('messages_chat_idx').on(t.chat_id),

@@ -1,11 +1,32 @@
 import { describe, it, expect } from 'vitest';
 import { buildSystemPrompt } from './chat.js';
+import { QUESTION_MODE_INSTRUCTION } from './question-mode.js';
 import { WEB_ALLOWLIST, WEB_ALLOWLIST_JURISDICTIONS } from '@vibe/shared';
 
 // These two rules are the whole reason the 50-state allowlist expansion is safe.
 // Without them the model cannot tell an out-of-scope source from a broken tool,
 // and a zero-result search degrades into a memory answer whose self-flagged
 // citations are indistinguishable from verified ones.
+describe('buildSystemPrompt — question mode', () => {
+  it('is absent unless the chat flag is on', () => {
+    expect(buildSystemPrompt({})).not.toMatch(/Question mode/);
+    expect(buildSystemPrompt({ question_mode: false })).not.toMatch(/Question mode/);
+  });
+
+  it('quotes the operator instruction verbatim and names the three states', () => {
+    const prompt = buildSystemPrompt({ question_mode: true });
+    expect(prompt).toContain(QUESTION_MODE_INSTRUCTION);
+    expect(prompt).toMatch(/ask exactly ONE\s+question/i);
+    expect(prompt).toMatch(/95% confidence/);
+    for (const state of ['Interviewing', 'Ready', 'Proceeding']) {
+      expect(prompt).toContain(state);
+    }
+    expect(prompt).toMatch(/tagged "clarify"/);
+    // The interview rules come last so "before you do any work" is the final word.
+    expect(prompt.trim().endsWith('above it.')).toBe(true);
+  });
+});
+
 describe('buildSystemPrompt — web grounding', () => {
   const prompt = buildSystemPrompt({ firm_name: 'Acme CPA' });
 
