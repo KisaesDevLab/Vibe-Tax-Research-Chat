@@ -416,9 +416,9 @@ options?, summary?, plan?}`): extractor `lib/parsing/clarify.ts`, persisted on
 chat id) matches titles and user/assistant message content with ILIKE substring
 patterns — deliberately not FTS, because researchers search for cites like `199A` or
 `1.263(a)-3` that stemming mangles. One row per chat via two LATERAL subqueries (newest
-matching turn for the excerpt, match count; system*notes excluded);
+matching turn for the excerpt, match count; `system_note` rows excluded);
 `lib/search/snippet.ts` builds the excerpt AFTER `stripSidecars` so JSON never surfaces,
-and `likePattern` escapes `%`, `*`, and backslash.
+and `likePattern` escapes the percent sign, the underscore, and the backslash.
 
 Scope is `chats.user_id = caller` (admins may pass `user_id`, as on the list route), so
 two users typing the same query never see each other's chats. There is no server-side
