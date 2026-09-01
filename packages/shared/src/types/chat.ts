@@ -132,6 +132,28 @@ export interface DocCitation {
   grounded?: boolean;
 }
 
+// Chat history search — one hit per chat. `matched_title` means the query
+// hit the chat title; `message` (when present) is the newest matching turn
+// with a prose excerpt around the hit, and `match_count` is how many turns
+// in the chat contain the query.
+export interface ChatSearchResult {
+  chat: {
+    id: string;
+    title: string;
+    updated_at: string;
+    archived_at: string | null;
+    client_id: string | null;
+  };
+  matched_title: boolean;
+  match_count: number;
+  message: {
+    id: string;
+    role: MessageRole;
+    created_at: string;
+    snippet: string;
+  } | null;
+}
+
 export interface ChatDTO {
   id: string;
   user_id: string;

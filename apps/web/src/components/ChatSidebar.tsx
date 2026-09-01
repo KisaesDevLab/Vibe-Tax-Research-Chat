@@ -1,8 +1,9 @@
 // Phase 13 — chat list sidebar grouped by Today / Yesterday / Earlier.
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { api } from '../lib/api';
+import { ChatSearchDialog } from './ChatSearchDialog';
 import { useFontSize } from '../lib/font-size';
 import { useActiveClient } from '../lib/active-client';
 import { useAppConfig } from '../lib/app-config';
@@ -32,6 +33,19 @@ export function ChatSidebar({ mobileOpen = false, onClose }: ChatSidebarProps = 
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showBulkArchive, setShowBulkArchive] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  // Chat history search — magnifier button or ⌘/Ctrl+K anywhere in the
+  // research module (the sidebar is mounted on every research route).
+  const [showSearch, setShowSearch] = useState(false);
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setShowSearch(true);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   const { data } = useQuery<{ chats: ChatDTO[] }>({
     queryKey: ['chats'],
@@ -74,12 +88,36 @@ export function ChatSidebar({ mobileOpen = false, onClose }: ChatSidebarProps = 
           <Link to="/research" className="font-display tracking-tight" onClick={onClose}>
             Vibe
           </Link>
-          <button
-            onClick={() => create.mutate()}
-            className="text-xs px-2 py-1 bg-ink text-paper rounded"
-          >
-            + New
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setShowSearch(true)}
+              className="w-7 h-7 grid place-items-center rounded text-ink/60 hover:text-ink hover:bg-ink/5"
+              title="Search chat history (⌘/Ctrl+K)"
+              aria-label="Search chat history"
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <circle cx="11" cy="11" r="7" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </button>
+            <button
+              onClick={() => create.mutate()}
+              className="text-xs px-2 py-1 bg-ink text-paper rounded"
+            >
+              + New
+            </button>
+          </div>
         </div>
         <div className="overflow-y-auto flex-1">
           {(['Today', 'Yesterday', 'Earlier'] as const).map((g) => {
@@ -170,6 +208,14 @@ export function ChatSidebar({ mobileOpen = false, onClose }: ChatSidebarProps = 
           </div>
         </div>
       </aside>
+      {showSearch && (
+        <ChatSearchDialog
+          onClose={() => {
+            setShowSearch(false);
+            onClose?.();
+          }}
+        />
+      )}
       {showChangePassword && <ChangePasswordDialog onClose={() => setShowChangePassword(false)} />}
       {showBulkArchive && (
         <BulkArchiveDialog

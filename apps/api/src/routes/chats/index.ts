@@ -1,7 +1,8 @@
 // Phase 13 — chat CRUD; messages router mounted under /:id/messages.
 import { Router } from 'express';
 import { z } from 'zod';
-import { eq, and, desc, asc, inArray } from 'drizzle-orm';
+import { eq, and, desc, asc, inArray, sql } from 'drizzle-orm';
+import { buildSnippet, likePattern } from '../../lib/search/snippet.js';
 import { getDb } from '@vibe/db';
 import { chats, messages, skills as skillsTable, custom_skills } from '@vibe/db/schema';
 import { requireAuth } from '../../middleware/auth.js';
@@ -10,7 +11,7 @@ import { messagesRouter } from './messages.js';
 import { attachmentsRouter } from './attachments.js';
 import { findAttachableClient } from '../clients/index.js';
 import { chatArchiveRouter } from '../archives.js';
-import type { SkillAttribution } from '@vibe/shared';
+import type { ChatSearchResult, SkillAttribution } from '@vibe/shared';
 
 // Identifiers the SPA's SkillsPanel uses to colour the chip — kept here
 // rather than on the row because they're routing/role markers, not
@@ -77,6 +78,102 @@ function ownerOrAdminFilter(chatId: string, userId: string, isAdmin: boolean) {
   if (isAdmin) return eq(chats.id, chatId);
   return and(eq(chats.id, chatId), eq(chats.user_id, userId));
 }
+
+// Chat history search — titles + message content, scoped to the caller's
+// own chats (admins may pass user_id like the list route). One row per
+// chat: whether the title hit, the newest matching turn (for the excerpt),
+// and how many turns hit. ILIKE substring match on purpose — researchers
+// search for cites like "199A" or "1.263(a)-3" that FTS stemming mangles.
+// Registered BEFORE '/:id' so 'search' is never parsed as a chat id.
+const searchSchema = z.object({
+  q: z.string().trim().min(2).max(200),
+  limit: z.coerce.number().int().min(1).max(50).default(25),
+  user_id: z.string().uuid().optional(),
+});
+
+chatsRouter.get('/search', async (req, res) => {
+  const parsed = searchSchema.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request', detail: 'q must be 2–200 characters' });
+    return;
+  }
+  const isAdmin = req.auth!.role === 'admin';
+  const targetUserId = isAdmin && parsed.data.user_id ? parsed.data.user_id : req.auth!.user_id;
+  const pattern = likePattern(parsed.data.q);
+
+  const rows = (await getDb().execute(sql`
+    SELECT
+      c.id            AS chat_id,
+      c.title         AS title,
+      c.updated_at    AS updated_at,
+      c.archived_at   AS archived_at,
+      c.client_id     AS client_id,
+      (c.title ILIKE ${pattern}) AS matched_title,
+      m.id            AS message_id,
+      m.role          AS role,
+      m.content       AS content,
+      m.created_at    AS message_created_at,
+      COALESCE(mc.n, 0)::int AS match_count
+    FROM chats c
+    LEFT JOIN LATERAL (
+      SELECT id, role, content, created_at
+        FROM messages
+       WHERE chat_id = c.id
+         AND role IN ('user', 'assistant')
+         AND content ILIKE ${pattern}
+       ORDER BY created_at DESC
+       LIMIT 1
+    ) m ON true
+    LEFT JOIN LATERAL (
+      SELECT count(*) AS n
+        FROM messages
+       WHERE chat_id = c.id
+         AND role IN ('user', 'assistant')
+         AND content ILIKE ${pattern}
+    ) mc ON true
+    WHERE c.user_id = ${targetUserId}
+      AND (c.title ILIKE ${pattern} OR m.id IS NOT NULL)
+    ORDER BY (c.title ILIKE ${pattern}) DESC, c.updated_at DESC
+    LIMIT ${parsed.data.limit}
+  `)) as unknown as Array<{
+    chat_id: string;
+    title: string;
+    updated_at: Date | string;
+    archived_at: Date | string | null;
+    client_id: string | null;
+    matched_title: boolean;
+    message_id: string | null;
+    role: string | null;
+    content: string | null;
+    message_created_at: Date | string | null;
+    match_count: number;
+  }>;
+
+  const iso = (v: Date | string | null): string | null =>
+    v == null ? null : v instanceof Date ? v.toISOString() : String(v);
+
+  const results: ChatSearchResult[] = rows.map((r) => ({
+    chat: {
+      id: r.chat_id,
+      title: r.title,
+      updated_at: iso(r.updated_at)!,
+      archived_at: iso(r.archived_at),
+      client_id: r.client_id,
+    },
+    matched_title: Boolean(r.matched_title),
+    match_count: Number(r.match_count),
+    message:
+      r.message_id && r.content != null
+        ? {
+            id: r.message_id,
+            role: r.role === 'user' ? 'user' : 'assistant',
+            created_at: iso(r.message_created_at)!,
+            snippet: buildSnippet(r.content, parsed.data.q),
+          }
+        : null,
+  }));
+  res.json({ results, q: parsed.data.q });
+});
 
 chatsRouter.get('/:id', async (req, res) => {
   if (!uuidSchema.safeParse(req.params.id).success) {
