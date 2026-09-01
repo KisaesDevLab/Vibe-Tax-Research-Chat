@@ -19,6 +19,15 @@
 // Mirrored server-side in api/src/lib/parsing/sidecars-strip.ts (the PDF /
 // clipboard exports need the identical behavior); keep the two in step.
 const KEYWORD_RE = /authorities|compliance|doc_citations|clarify/i;
+// The clarify sidecar's body carries no tag word when the model drops the
+// info string (a plain ```json fence, or no fence) — recognise it by its
+// status value instead. Seen live: the interview card rendered as a JSON
+// wall because only the tag word was matched.
+const CLARIFY_BODY_RE = /"status"\s*:\s*"(?:asking|ready)"/i;
+
+function isSidecarBody(head: string): boolean {
+  return KEYWORD_RE.test(head) || CLARIFY_BODY_RE.test(head);
+}
 
 export function stripSidecars(text: string): string {
   let out = text;
@@ -29,7 +38,7 @@ export function stripSidecars(text: string): string {
   // (matches end-of-string for in-flight streams).
   out = out.replace(/```([^\n]*)\n([\s\S]*?)(?:```|$)/g, (full, info: string, body: string) => {
     if (KEYWORD_RE.test(info)) return '';
-    if (/^[a-z0-9]*$/i.test(info.trim()) && KEYWORD_RE.test(body.slice(0, 200))) return '';
+    if (/^[a-z0-9]*$/i.test(info.trim()) && isSidecarBody(body.slice(0, 200))) return '';
     return full;
   });
 
@@ -38,7 +47,7 @@ export function stripSidecars(text: string): string {
   // We anchor with a positive look-back for a blank line or start of
   // string to avoid eating an inline `{ "authorities": ... }` mention.
   out = out.replace(
-    /(^|\n\s*\n)\s*\{[\s\S]*?"(authorities|compliance|compliance_check|doc_citations|clarify)"\s*:[\s\S]*?\}\s*(?=\n\s*\n|\s*$)/g,
+    /(^|\n\s*\n)\s*\{[\s\S]*?(?:"(?:authorities|compliance|compliance_check|doc_citations|clarify)"\s*:|"status"\s*:\s*"(?:asking|ready)")[\s\S]*?\}\s*(?=\n\s*\n|\s*$)/g,
     (_full, lead: string) => lead,
   );
 

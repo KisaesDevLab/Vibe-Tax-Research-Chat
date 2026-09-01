@@ -9,16 +9,16 @@ import { AuthoritiesPanel } from '../components/panels/AuthoritiesPanel';
 import { CompliancePanel } from '../components/panels/CompliancePanel';
 import { SkillsPanel } from '../components/panels/SkillsPanel';
 import { FollowUpActions } from '../components/panels/FollowUpActions';
-import { useChatStream, type StreamingMessage } from '../hooks/useChatStream';
+import { useChatStream, type SendExtras, type StreamingMessage } from '../hooks/useChatStream';
 import { api, apiFetch, ApiError } from '../lib/api';
 import { extractFollowUpActions, type FollowUpVerb } from '../lib/follow-up';
 import { useAppConfig } from '../lib/app-config';
 import { stripSidecars } from '../lib/sidecars';
 import { ArchiveDialog } from '../components/ArchiveDialog';
 import { NudgeBanner } from '../components/NudgeBanner';
-import type { ChatDTO, DocCitation, MessageDTO } from '@vibe/shared';
+import type { ChatDTO, ClarifyAnswer, DocCitation, MessageDTO } from '@vibe/shared';
 import { DocCitationsPanel } from '../components/panels/DocCitationsPanel';
-import { ClarifyPanel } from '../components/panels/ClarifyPanel';
+import { ClarifyAnswerLabel, ClarifyPanel } from '../components/panels/ClarifyPanel';
 
 interface AttachmentDTO {
   id: string;
@@ -145,6 +145,29 @@ function ChatView({ chatId }: { chatId: string }) {
     }
   }, [streaming?.done, refetch, reset]);
 
+  // Every send goes through here so we know how many rows the chat had
+  // when the turn started. The server persists the user row at stream
+  // start and the assistant (or system_note) row at the end — so if a
+  // refetch (window focus, sidebar invalidation, the title job landing)
+  // ever shows two new rows while the SSE stream still says "in flight",
+  // the server has finished and the `done` event was lost in transit.
+  // Without this the page pins "Working on it…" and the newest answer
+  // never counts as the latest turn, which is what left the question-mode
+  // card read-only in the field.
+  const rowsAtSendRef = useRef<number | null>(null);
+  const sendMessage = (text: string, extra?: SendExtras) => {
+    rowsAtSendRef.current = data?.messages.length ?? 0;
+    return send(chatId, text, undefined, extra);
+  };
+  const rowCount = data?.messages.length ?? 0;
+  useEffect(() => {
+    if (!streaming || streaming.done || rowsAtSendRef.current === null) return;
+    if (rowCount >= rowsAtSendRef.current + 2) {
+      rowsAtSendRef.current = null;
+      reset();
+    }
+  }, [rowCount, streaming, reset]);
+
   async function uploadOne(file: File): Promise<void> {
     const tempId =
       typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -202,7 +225,7 @@ function ChatView({ chatId }: { chatId: string }) {
     if (!draft.trim()) return;
     const text = draft;
     setDraft('');
-    await send(chatId, text);
+    await sendMessage(text);
   }
 
   const provisionalCost = useMemo(() => {
@@ -342,10 +365,12 @@ function ChatView({ chatId }: { chatId: string }) {
                     message={m}
                     chat={data?.chat}
                     priorUserContent={priorUser}
-                    isLatestAssistant={m.id === latestAssistantId && !streaming}
-                    onResend={(text) => void send(chatId, text)}
-                    onFollowUp={(verb) => void send(chatId, verb)}
-                    onAnswer={(text) => void send(chatId, text)}
+                    isLatestAssistant={
+                      m.id === latestAssistantId && !(streaming && !streaming.done)
+                    }
+                    onResend={(text) => void sendMessage(text)}
+                    onFollowUp={(verb) => void sendMessage(verb)}
+                    onAnswer={(text, answer) => void sendMessage(text, { clarify_answer: answer })}
                     onConfirmFact={(citation, messageId) => setConfirmFact({ citation, messageId })}
                   />
                 );
@@ -362,7 +387,9 @@ function ChatView({ chatId }: { chatId: string }) {
                 */}
                 {streaming.user_message && (
                   <div className="mb-4">
-                    <div className="text-xs uppercase tracking-wider text-ink/50 mb-1">You</div>
+                    <div className="text-xs uppercase tracking-wider text-ink/50 mb-1">
+                      You <ClarifyAnswerLabel answer={streaming.clarify_answer} />
+                    </div>
                     <div className="bg-ink/5 rounded p-3 font-body whitespace-pre-wrap">
                       {streaming.user_message}
                     </div>
@@ -401,7 +428,7 @@ function ChatView({ chatId }: { chatId: string }) {
                         <FollowUpActions
                           verbs={actions.verbs}
                           conclusionEcho={actions.conclusionEcho}
-                          onPick={(verb) => void send(chatId, verb)}
+                          onPick={(verb) => void sendMessage(verb)}
                         />
                       );
                     })()}
@@ -752,13 +779,15 @@ function MessageBlock({
   isLatestAssistant?: boolean;
   onResend?: (text: string) => void;
   onFollowUp?: (verb: FollowUpVerb) => void;
-  onAnswer?: (text: string) => void;
+  onAnswer?: (text: string, answer: ClarifyAnswer) => void;
   onConfirmFact?: (citation: DocCitation, messageId: string) => void;
 }) {
   if (m.role === 'user') {
     return (
       <div className="mb-4">
-        <div className="text-xs uppercase tracking-wider text-ink/50 mb-1">You</div>
+        <div className="text-xs uppercase tracking-wider text-ink/50 mb-1">
+          You <ClarifyAnswerLabel answer={m.clarify_answer} />
+        </div>
         <div className="bg-ink/5 rounded p-3 font-body">{m.content}</div>
       </div>
     );
@@ -822,7 +851,18 @@ function MessageBlock({
       <ClarifyPanel
         clarification={m.clarification}
         active={isLatestAssistant}
-        onAnswer={onAnswer}
+        onAnswer={
+          onAnswer
+            ? (text, kind) =>
+                onAnswer(text, {
+                  message_id: m.id,
+                  kind,
+                  ...(kind !== 'proceed' && m.clarification?.question
+                    ? { question: m.clarification.question }
+                    : {}),
+                })
+            : undefined
+        }
       />
       <SkillsPanel skills={m.skills} />
       <CostLedger usage={m.usage} cost_usd={m.cost_usd} model_id={m.model_id} />

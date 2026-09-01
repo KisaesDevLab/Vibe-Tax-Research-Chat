@@ -50,6 +50,9 @@ export const messages = pgTable(
     // the model emits while interviewing the researcher. Null on ordinary
     // research turns; the UI renders it as the answer card.
     clarification: jsonb('clarification').$type<Record<string, unknown>>(),
+    // Question mode — user rows only: {message_id, kind, question?} naming
+    // the interview card this message answered (option / freeform / proceed).
+    clarify_answer: jsonb('clarify_answer').$type<Record<string, unknown>>(),
   },
   (t) => ({
     chat_idx: index('messages_chat_idx').on(t.chat_id),

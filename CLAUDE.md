@@ -396,7 +396,19 @@ options?, summary?, plan?}`): extractor `lib/parsing/clarify.ts`, persisted on
   the "Proceed" button post ordinary user messages, so the transcript stays a plain chat.
 - Confidence is normalized to a 0–1 fraction ("95" / "95%" accepted); a generic JSON
   fence only counts as a card when its `status` is `asking`/`ready`, so a quoted API
-  response with a `status` key is not mistaken for one.
+  response with a `status` key is not mistaken for one. The strippers key on that same
+  status value too — live, the model opened the fence as plain ```json and the card
+  rendered as a JSON wall when only the tag word was matched.
+- **Answers are linked back to the card.** A message sent from the card carries
+  `clarify_answer: {message_id, kind: option|freeform|proceed, question?}` (POST body →
+  `messages.clarify_answer`, user rows only; the route drops links that don't name an
+  assistant turn in the same chat). The "You" label renders it as "picked / answered for
+  ‹question›" or "gave the go-ahead". The model sees only the plain answer text — the
+  question is the previous turn, so the link is display metadata, not prompt input.
+- **A lost SSE `done` must not pin the page.** `useChatStream` ignores events after
+  `reset()` (no phantom in-flight turn), and `Chat.tsx` treats a refetch that shows
+  user + assistant rows persisted since the send as the turn being over. Both exist
+  because the card's controls only render on the latest turn with no stream in flight.
 
 ## Open architectural decisions
 

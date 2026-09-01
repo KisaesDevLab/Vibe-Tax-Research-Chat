@@ -91,7 +91,22 @@ export interface MessageDTO {
   doc_citations?: DocCitation[];
   // Question mode — the `clarify` sidecar from an interviewing / ready turn.
   clarification?: Clarification | null;
+  // Question mode — user-only: set when this message was sent from the
+  // interview card, so the transcript can show WHICH question it answers.
+  clarify_answer?: ClarifyAnswer | null;
   skills?: SkillAttribution[];
+}
+
+// Question mode — how a user message answered the interview card.
+//   option   → picked one of the model's suggested choices
+//   freeform → typed a reply in the card's answer box
+//   proceed  → pressed "Proceed" on a ready card (the go-ahead signal)
+export interface ClarifyAnswer {
+  /** The assistant message whose card was answered. */
+  message_id: string;
+  kind: 'option' | 'freeform' | 'proceed';
+  /** The question text as shown at answer time (absent for `proceed`). */
+  question?: string;
 }
 
 // Question mode — one turn of the pre-research interview. `asking` carries
