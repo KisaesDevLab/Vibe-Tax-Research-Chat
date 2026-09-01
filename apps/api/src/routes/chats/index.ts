@@ -196,6 +196,7 @@ const patchSchema = z.object({
   default_model_id: z.string().nullable().optional(),
   pii_disclosure_acknowledged: z.boolean().optional(),
   use_reference_library: z.boolean().optional(),
+  question_mode: z.boolean().optional(),
   // TP-2 — set/clear the soft client link.
   client_id: z.string().uuid().nullable().optional(),
 });
@@ -223,6 +224,7 @@ chatsRouter.patch('/:id', async (req, res) => {
     update.pii_disclosure_acknowledged = parsed.data.pii_disclosure_acknowledged;
   if (parsed.data.use_reference_library !== undefined)
     update.use_reference_library = parsed.data.use_reference_library;
+  if (parsed.data.question_mode !== undefined) update.question_mode = parsed.data.question_mode;
   if (parsed.data.client_id !== undefined) {
     if (parsed.data.client_id !== null) {
       const client = await findAttachableClient(parsed.data.client_id);

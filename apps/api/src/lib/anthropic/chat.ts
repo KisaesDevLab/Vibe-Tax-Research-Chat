@@ -12,6 +12,7 @@
 
 import type Anthropic from '@anthropic-ai/sdk';
 import { getAnthropic } from './client.js';
+import { buildQuestionModePrompt } from './question-mode.js';
 import { WEB_ALLOWLIST_DOMAINS, DEFAULT_WEB_BUDGET, describeReachableSources } from '@vibe/shared';
 
 export type ChatEvent =
@@ -270,9 +271,13 @@ export async function* streamChat(opts: StreamChatOpts): AsyncIterable<ChatEvent
   }
 }
 
-export function buildSystemPrompt(opts: { firm_name?: string }): string {
+export function buildSystemPrompt(opts: { firm_name?: string; question_mode?: boolean }): string {
   const date = new Date().toISOString().slice(0, 10);
   const firm = opts.firm_name ?? 'this firm';
+  // Question mode sits at the END of the prompt: the interview rules say
+  // "before you answer or do any work", so they must be the last thing the
+  // model reads after the research and sidecar rules above.
+  const questionMode = opts.question_mode ? `\n${buildQuestionModePrompt()}\n` : '';
   return `You are the AI research assistant for ${firm}, a U.S. CPA firm. Today's date is ${date}.
 
 You have the Vibe Tax Research Skills pack attached. The dispatcher (cpa-pack-index) has
@@ -328,7 +333,7 @@ Output medium:
   - Do not use code execution to write documents. If the user needs a formatted,
     firm-branded deliverable, tell them to build it in the Planning module's
     deliverables, which renders the PDF and issues a signed download link.
-`;
+${questionMode}`;
 }
 
 export const ANTHROPIC_BETAS = [...BETAS];

@@ -18,6 +18,7 @@ import { ArchiveDialog } from '../components/ArchiveDialog';
 import { NudgeBanner } from '../components/NudgeBanner';
 import type { ChatDTO, DocCitation, MessageDTO } from '@vibe/shared';
 import { DocCitationsPanel } from '../components/panels/DocCitationsPanel';
+import { ClarifyPanel } from '../components/panels/ClarifyPanel';
 
 interface AttachmentDTO {
   id: string;
@@ -297,6 +298,7 @@ function ChatView({ chatId }: { chatId: string }) {
                 Archive…
               </button>
             )}
+            <QuestionModeToggle chat={data?.chat} onChange={() => void refetch()} />
             <ReferenceLibraryToggle chat={data?.chat} onChange={() => void refetch()} />
             <div className="font-mono text-xs text-ink/50 hidden sm:block">
               {data?.messages.length ?? 0} messages
@@ -327,6 +329,9 @@ function ChatView({ chatId }: { chatId: string }) {
               // for the recovery / abort / error system_notes the server
               // emits at the bottom of broken turns.
               const msgs = data?.messages ?? [];
+              // Question mode — only the last assistant turn's interview
+              // card is answerable; earlier ones collapse to a chip.
+              const latestAssistantId = [...msgs].reverse().find((m) => m.role === 'assistant')?.id;
               let lastUserContent: string | null = null;
               return msgs.map((m) => {
                 if (m.role === 'user') lastUserContent = m.content;
@@ -337,8 +342,10 @@ function ChatView({ chatId }: { chatId: string }) {
                     message={m}
                     chat={data?.chat}
                     priorUserContent={priorUser}
+                    isLatestAssistant={m.id === latestAssistantId && !streaming}
                     onResend={(text) => void send(chatId, text)}
                     onFollowUp={(verb) => void send(chatId, verb)}
+                    onAnswer={(text) => void send(chatId, text)}
                     onConfirmFact={(citation, messageId) => setConfirmFact({ citation, messageId })}
                   />
                 );
@@ -481,7 +488,11 @@ function ChatView({ chatId }: { chatId: string }) {
               <textarea
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                placeholder="Ask a tax research question…"
+                placeholder={
+                  data?.chat.question_mode
+                    ? 'Ask a question — the assistant will interview you before researching…'
+                    : 'Ask a tax research question…'
+                }
                 rows={3}
                 className="flex-1 px-3 py-2 border border-ink/20 rounded font-body resize-none"
                 onKeyDown={(e) => {
@@ -554,6 +565,51 @@ function ReferenceLibraryToggle({
     >
       <span className="font-mono mr-1">{on ? '●' : '○'}</span>
       Reference library
+    </button>
+  );
+}
+
+// Question mode — per-chat toggle. When on, the system prompt carries the
+// interview instruction: the model asks one question per turn until it is
+// 95% confident, summarizes, and waits for "Proceed" before researching.
+// Same shape as ReferenceLibraryToggle (PATCH + invalidate); off by default.
+function QuestionModeToggle({
+  chat,
+  onChange,
+}: {
+  chat: ChatDTO | undefined;
+  onChange: () => void;
+}) {
+  const qc = useQueryClient();
+  const mutate = useMutation({
+    mutationFn: (next: boolean) =>
+      api(`/api/chats/${chat!.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ question_mode: next }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['chat', chat!.id] });
+      onChange();
+    },
+  });
+  if (!chat) return null;
+  const on = chat.question_mode;
+  return (
+    <button
+      type="button"
+      onClick={() => mutate.mutate(!on)}
+      disabled={mutate.isPending}
+      title={
+        on
+          ? 'Question mode is ON: the assistant interviews you one question at a time until it is 95% confident, then waits for "Proceed" before researching. Click to disable.'
+          : 'Question mode is OFF: the assistant answers directly. Click to have it ask clarifying questions before researching.'
+      }
+      className={`text-xs px-2 py-1 rounded border transition-colors ${
+        on ? 'border-moss/50 bg-moss/10 text-moss' : 'border-ink/20 text-ink/40 hover:text-ink/60'
+      }`}
+    >
+      <span className="font-mono mr-1">{on ? '●' : '○'}</span>
+      Question mode
     </button>
   );
 }
@@ -682,15 +738,21 @@ function MessageBlock({
   message: m,
   chat,
   priorUserContent,
+  isLatestAssistant = false,
   onResend,
   onFollowUp,
+  onAnswer,
   onConfirmFact,
 }: {
   message: MessageDTO;
   chat?: ChatDTO;
   priorUserContent?: string | null;
+  // Question mode — true for the newest assistant turn while nothing is
+  // streaming, which is the only turn whose interview card is answerable.
+  isLatestAssistant?: boolean;
   onResend?: (text: string) => void;
   onFollowUp?: (verb: FollowUpVerb) => void;
+  onAnswer?: (text: string) => void;
   onConfirmFact?: (citation: DocCitation, messageId: string) => void;
 }) {
   if (m.role === 'user') {
@@ -757,6 +819,11 @@ function MessageBlock({
           }
         />
       </div>
+      <ClarifyPanel
+        clarification={m.clarification}
+        active={isLatestAssistant}
+        onAnswer={onAnswer}
+      />
       <SkillsPanel skills={m.skills} />
       <CostLedger usage={m.usage} cost_usd={m.cost_usd} model_id={m.model_id} />
       {(() => {

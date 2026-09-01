@@ -372,6 +372,32 @@ these invariants:
   (starts local_only); ingest degrades to `extraction_error` (chunks still
   index) when extraction fails for any reason.
 
+### Question mode: a prompt block plus a fourth sidecar, not an uploaded skill
+
+`chats.question_mode` (default false; header chip, PATCH field, same shape as the
+reference-library toggle) makes the model interview the researcher before it spends any
+research budget. The operator's instruction ("ask me questions one at a time … until you
+reach 95% confidence … wait for my signal") is quoted VERBATIM in
+`lib/anthropic/question-mode.ts` and appended as the LAST block of `buildSystemPrompt`
+(the rules say "before you do any work", so they must be the final thing the model reads).
+
+- It is a **prompt block, not a pack skill**: the skills pack is synced from the separate
+  skills repo, and a per-chat toggle has to switch the behaviour without a pack release.
+- The framing turns the instruction into three explicit states (Interviewing / Ready /
+  Proceeding) because the pipeline is stateless per turn — the model re-derives which
+  state it is in from the transcript on every call. Follow-ups on the same matter stay in
+  Proceeding; a materially new question restarts the interview. Web tools stay enabled
+  on interviewing turns (the state is not known before the call); the prompt forbids
+  using them.
+- **`clarify` is the fourth sidecar** (`{status:'asking'|'ready', confidence, question,
+options?, summary?, plan?}`): extractor `lib/parsing/clarify.ts`, persisted on
+  `messages.clarification`, rendered by `components/panels/ClarifyPanel.tsx`, and carried
+  by BOTH strippers. Only the latest assistant turn's card is interactive; answers and
+  the "Proceed" button post ordinary user messages, so the transcript stays a plain chat.
+- Confidence is normalized to a 0–1 fraction ("95" / "95%" accepted); a generic JSON
+  fence only counts as a card when its `status` is `asking`/`ready`, so a quoted API
+  response with a `status` key is not mistaken for one.
+
 ## Open architectural decisions
 
 See `QUESTIONS.md` for ambiguities resolved with applied defaults during the autonomous build.
