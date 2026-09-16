@@ -599,7 +599,7 @@ function ReferenceLibraryToggle({
 // Question mode — per-chat toggle. When on, the system prompt carries the
 // interview instruction: the model asks one question per turn until it is
 // 95% confident, summarizes, and waits for "Proceed" before researching.
-// Same shape as ReferenceLibraryToggle (PATCH + invalidate); off by default.
+// Same shape as ReferenceLibraryToggle (PATCH + invalidate); on by default.
 function QuestionModeToggle({
   chat,
   onChange,

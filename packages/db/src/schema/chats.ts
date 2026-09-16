@@ -35,9 +35,10 @@ export const chats = pgTable(
     // Question mode — when on, the system prompt carries the interview
     // instruction (lib/anthropic/question-mode.ts): the model asks one
     // question per turn until it reaches 95% confidence, summarizes, and
-    // waits for the researcher's signal before doing any research. Off by
-    // default; researchers flip it per chat from the header chip.
-    question_mode: boolean('question_mode').notNull().default(false),
+    // waits for the researcher's signal before doing any research. On by
+    // default (migration 0021 flipped it from off); researchers flip it off
+    // per chat from the header chip.
+    question_mode: boolean('question_mode').notNull().default(true),
     // TP-2 — soft link to a client (set from the active-client chip when
     // the chat is created, or promoted at archive time). SET NULL so a
     // client delete never takes chats with it.

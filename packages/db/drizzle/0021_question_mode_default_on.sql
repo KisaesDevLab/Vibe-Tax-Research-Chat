@@ -1,0 +1,1 @@
+ALTER TABLE "chats" ALTER COLUMN "question_mode" SET DEFAULT true;

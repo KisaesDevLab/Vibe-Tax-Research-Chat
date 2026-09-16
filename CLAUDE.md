@@ -374,7 +374,7 @@ these invariants:
 
 ### Question mode: a prompt block plus a fourth sidecar, not an uploaded skill
 
-`chats.question_mode` (default false; header chip, PATCH field, same shape as the
+`chats.question_mode` (default true since migration 0021; header chip, PATCH field, same shape as the
 reference-library toggle) makes the model interview the researcher before it spends any
 research budget. The operator's instruction ("ask me questions one at a time … until you
 reach 95% confidence … wait for my signal") is quoted VERBATIM in
