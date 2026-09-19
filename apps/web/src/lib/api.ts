@@ -24,6 +24,13 @@ export class ApiError extends Error {
 // Exported because useChatStream.ts and any future direct-fetch
 // callers must use it too; never write a raw `fetch('/api/...')`
 // in this codebase.
+/**
+ * The SPA prefix without its trailing slash: `` in single-app mode, `/tax`
+ * in multi-app mode. React Router's basename and the Vibe Auth components'
+ * `basePath` both want this exact shape; derive it once here.
+ */
+export const SPA_BASE_PATH = import.meta.env.BASE_URL.replace(/\/$/, '');
+
 export function apiUrl(path: string): string {
   // Absolute URLs pass through untouched (e.g. preconnect probes).
   if (/^[a-z]+:\/\//i.test(path) || path.startsWith('//')) return path;

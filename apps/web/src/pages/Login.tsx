@@ -14,10 +14,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { Navigate, useLocation, Link, useSearchParams } from 'react-router-dom';
 import { LoginPanel } from '@kisaesdevlab/vibe-auth/react';
 import { useAuth, type LoginResponse } from '../components/AuthProvider';
-import { api, apiUrl } from '../lib/api';
-
-/** The SPA prefix the Vibe Auth components build their URLs with ('' or e.g. '/tax'). */
-export const AUTH_BASE_PATH = import.meta.env.BASE_URL.replace(/\/$/, '');
+import { api, apiUrl, SPA_BASE_PATH } from '../lib/api';
 
 /** Pure so the parsing is tested; the page clears the fragment as soon as it has read it. */
 export function parseSsoCode(hash: string): string | null {
@@ -25,6 +22,25 @@ export function parseSsoCode(hash: string): string | null {
   if (!raw) return null;
   const code = new URLSearchParams(raw).get('sso_code')?.trim();
   return code ? code : null;
+}
+
+// The code is single-use and React.StrictMode runs effects twice in
+// development (mount → simulated unmount → mount): a second POST would race
+// the first for the same code, and the winner's result would be thrown away
+// by the first effect's cleanup. Memoising the exchange per code, outside the
+// component, makes both mounts share ONE request and its result.
+const exchanges = new Map<string, Promise<LoginResponse>>();
+function exchangeOnce(code: string): Promise<LoginResponse> {
+  let p = exchanges.get(code);
+  if (!p) {
+    p = api<LoginResponse>('/api/auth/sso/exchange', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+      skipRefresh: true,
+    });
+    exchanges.set(code, p);
+  }
+  return p;
 }
 
 export function LoginPage({ breakglass = false }: { breakglass?: boolean } = {}) {
@@ -66,17 +82,12 @@ export function LoginPage({ breakglass = false }: { breakglass?: boolean } = {})
   // ── single sign-on landing ──────────────────────────────────────────
   useEffect(() => {
     if (!ssoCode) return;
-    let alive = true;
-    api<LoginResponse>('/api/auth/sso/exchange', {
-      method: 'POST',
-      body: JSON.stringify({ code: ssoCode }),
-      skipRefresh: true,
-    })
-      .then((r) => {
-        if (alive) completeLogin(r);
-      })
+    // No "alive" guard on purpose: completeLogin writes the provider's state,
+    // not this component's, and must land even if StrictMode unmounted the
+    // instance that started the exchange.
+    exchangeOnce(ssoCode)
+      .then((r) => completeLogin(r))
       .catch((err: Error) => {
-        if (!alive) return;
         setSsoPending(false);
         setError(
           err.message === 'invalid_or_expired_code'
@@ -84,10 +95,7 @@ export function LoginPage({ breakglass = false }: { breakglass?: boolean } = {})
             : `Single sign-on failed (${err.message}).`,
         );
       });
-    return () => {
-      alive = false;
-    };
-  }, [ssoCode]);
+  }, [ssoCode, completeLogin]);
 
   if (user) {
     const from =
@@ -136,7 +144,7 @@ export function LoginPage({ breakglass = false }: { breakglass?: boolean } = {})
           <p className="text-sm text-ink/60">Signing you in with your identity provider.</p>
         ) : (
           <LoginPanel
-            basePath={AUTH_BASE_PATH}
+            basePath={SPA_BASE_PATH}
             returnTo={apiUrl('login')}
             breakglass={breakglass}
             classNames={{

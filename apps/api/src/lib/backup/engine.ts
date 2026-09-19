@@ -21,6 +21,7 @@ import { env } from '../../config/env.js';
 import { logger } from '../logger.js';
 import { audit } from '../audit.js';
 import { openWith, sealWith, type SealedValue } from '../crypto.js';
+import { unwrapClientSecretWith, wrapClientSecretWith } from '../vibeAuthSecret.js';
 import { readBackup, readManifestOnly } from './archive.js';
 import type { ManifestV2 } from './manifest.js';
 import { RestorePrerequisiteError } from './errors.js';
@@ -640,6 +641,35 @@ async function rekeySecrets(ctx: RunContext, scratchUrl: string): Promise<void> 
         rekeyed += 1;
       } catch {
         failures.push(row.key);
+      }
+    }
+
+    // SSO (Vibe Auth): the OIDC client secret saved on Admin → Authentication
+    // lives in auth_settings.value.clientSecretWrapped, sealed the same way
+    // (lib/vibeAuthSecret.ts). Without this, a restore under a new MASTER_KEY
+    // leaves every SSO login failing at the code exchange with nothing in the
+    // report to say why.
+    let authRows: Array<{ key: string; value: Record<string, unknown> }>;
+    try {
+      authRows = (await sql`SELECT key, value FROM auth_settings`) as unknown as typeof authRows;
+    } catch (err) {
+      if ((err as { code?: string }).code === '42P01') return; // archive predates SSO
+      throw err;
+    }
+    for (const row of authRows) {
+      const wrapped = row.value?.clientSecretWrapped;
+      if (typeof wrapped !== 'string' || !wrapped) continue;
+      const label = `auth_settings:${row.key}`;
+      try {
+        const plain = unwrapClientSecretWith(archiveKey, wrapped);
+        const next = {
+          ...row.value,
+          clientSecretWrapped: wrapClientSecretWith(config.masterKey, plain),
+        };
+        await sql`UPDATE auth_settings SET value = ${sql.json(next as never)}, updated_at = now() WHERE key = ${row.key}`;
+        rekeyed += 1;
+      } catch {
+        failures.push(label);
       }
     }
   });

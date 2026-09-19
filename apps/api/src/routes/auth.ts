@@ -5,7 +5,7 @@ import crypto from 'node:crypto';
 import { Router, type Request, type Response } from 'express';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
-import { eq, and, isNull, ne, sql } from 'drizzle-orm';
+import { eq, and, isNull, sql } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import {
   users,
@@ -15,7 +15,7 @@ import {
   type User,
 } from '@vibe/db/schema';
 import { verifyRefresh, hashToken } from '../lib/jwt.js';
-import { issueTokens } from '../lib/sessions.js';
+import { issueTokens, revokeRefreshByUser } from '../lib/sessions.js';
 import {
   loginLimiter,
   forgotPasswordLimiter,
@@ -332,14 +332,7 @@ authRouter.post('/change-password', requireAuth, resetPasswordLimiter, async (re
       // Unverifiable token: revoke everything, including this session.
     }
   }
-  const revokeWhere = keepJti
-    ? and(
-        eq(auth_refresh_tokens.user_id, user.id),
-        isNull(auth_refresh_tokens.revoked_at),
-        ne(auth_refresh_tokens.id, keepJti),
-      )
-    : and(eq(auth_refresh_tokens.user_id, user.id), isNull(auth_refresh_tokens.revoked_at));
-  await db.update(auth_refresh_tokens).set({ revoked_at: new Date() }).where(revokeWhere);
+  await revokeRefreshByUser(db, user.id, { exceptJti: keepJti });
 
   await audit({
     actor_user_id: user.id,
@@ -453,10 +446,7 @@ authRouter.post('/reset-password', resetPasswordLimiter, async (req, res) => {
   // Revoke every active refresh token for this user. If their account was
   // compromised, the attacker's existing sessions are killed; if they
   // simply forgot the password, this is a minor inconvenience.
-  await db
-    .update(auth_refresh_tokens)
-    .set({ revoked_at: new Date() })
-    .where(and(eq(auth_refresh_tokens.user_id, user.id), isNull(auth_refresh_tokens.revoked_at)));
+  await revokeRefreshByUser(db, user.id);
   await audit({
     actor_user_id: user.id,
     action: 'auth.password_reset.complete',

@@ -25,7 +25,7 @@
 // the post-login return and the test-connection popup.
 import crypto from 'node:crypto';
 import type { Request, RequestHandler, Response } from 'express';
-import { and, eq, lt, or, sql } from 'drizzle-orm';
+import { and, eq, gt, isNull, lt, notExists, or, sql } from 'drizzle-orm';
 import {
   createPgStores,
   createVibeAuth,
@@ -39,14 +39,14 @@ import {
   type VibeUser,
 } from '@kisaesdevlab/vibe-auth';
 import { getDb, getPool } from '@vibe/db';
-import { auth_sessions_oidc, users, SETTING_KEYS } from '@vibe/db/schema';
+import { auth_refresh_tokens, auth_sessions_oidc, users, SETTING_KEYS } from '@vibe/db/schema';
 import { env } from '../config/env.js';
 import { ACCESS_COOKIE_NAME, accessCookieOptions } from './cookies.js';
-import { open, seal, type SealedValue } from './crypto.js';
 import { verifyAccess, type VerifiedAccess } from './jwt.js';
 import { logger } from './logger.js';
 import { ssoLimiter } from './rate-limit.js';
-import { REFRESH_ROW_TTL_MS, revokeRefreshBySid, revokeRefreshByUser } from './sessions.js';
+import { revokeRefreshBySid, revokeRefreshByUser } from './sessions.js';
+import { unwrapClientSecretWith, wrapClientSecretWith } from './vibeAuthSecret.js';
 import { getSetting } from './settings-store.js';
 import { isTokenRevoked, setRevocationCheck } from '../middleware/auth.js';
 import {
@@ -60,9 +60,6 @@ export { BREAKGLASS_USERNAME, breakglassEmailFor, localLoginIdentifier } from '.
 
 /** Server-side prefix of the engine's routes. Always '/auth/...' — see the header comment. */
 const AUTH_PREFIX = '/auth';
-
-/** HKDF purpose for the wrapped OIDC client secret (D24). */
-const SECRET_PURPOSE = 'vibe_auth.client_secret';
 
 /** The one-time hand-off code lives this long after the callback. */
 export const HANDOFF_TTL_MS = 60 * 1000;
@@ -126,13 +123,12 @@ const pgStores = createPgStores({
 });
 
 /**
- * auth_sessions_oidc rows created before this instant belong to refresh
- * chains that have expired (the row lives as long as the session can — the
- * refresh TTL, not the 15-minute access token) plus an hour of clock-skew
- * grace. Each SSO login sweeps them; the table is small, no scheduler needed.
+ * A session row younger than this is never swept, however its chain looks:
+ * the hand-off code may not have been exchanged yet (no refresh row exists
+ * until it is), and clocks may disagree by a little.
  */
-export function staleSessionCutoff(nowMs: number): Date {
-  return new Date(nowMs - REFRESH_ROW_TTL_MS - 60 * 60 * 1000);
+export function sweepGraceCutoff(nowMs: number): Date {
+  return new Date(nowMs - 60 * 60 * 1000);
 }
 
 /** Ends one SSO-born session everywhere it lives: the identity row, its refresh
@@ -164,19 +160,29 @@ const sessions: SessionAdapter = {
       handoff_expires_at: new Date(now + HANDOFF_TTL_MS),
     });
     res.locals.vibeSsoCode = code;
-    // Sweep: sessions past any possible refresh lifetime, and hand-offs the
-    // SPA never claimed (a closed tab between callback and exchange).
-    await db
-      .delete(auth_sessions_oidc)
-      .where(
-        or(
-          lt(auth_sessions_oidc.created_at, staleSessionCutoff(now)),
-          and(
-            sql`${auth_sessions_oidc.handoff_claimed_at} IS NULL`,
-            lt(auth_sessions_oidc.handoff_expires_at, new Date(now - 60 * 60 * 1000)),
-          ),
+    // Sweep rows whose session can no longer be used: no live refresh row
+    // carries their sid (the chain expired, was revoked, or the hand-off was
+    // never exchanged), past the grace hour. Keyed on chain liveness rather
+    // than the row's age — every rotation pushes expires_at out another 30
+    // days, so an actively used session must keep its identity row for as
+    // long as it lives. The table is small; no scheduler needed.
+    await db.delete(auth_sessions_oidc).where(
+      and(
+        lt(auth_sessions_oidc.created_at, sweepGraceCutoff(now)),
+        notExists(
+          db
+            .select({ one: sql`1` })
+            .from(auth_refresh_tokens)
+            .where(
+              and(
+                eq(auth_refresh_tokens.sid, auth_sessions_oidc.sid),
+                isNull(auth_refresh_tokens.revoked_at),
+                gt(auth_refresh_tokens.expires_at, new Date(now)),
+              ),
+            ),
         ),
-      );
+      ),
+    );
   },
 
   async destroy(req: Request, res: Response) {
@@ -312,8 +318,8 @@ export async function initVibeAuth(opts: { publicUrl?: string } = {}): Promise<V
     settings: pgStores.settings,
     revocations: pgStores.revocations,
     secretWrap: {
-      wrap: async (plaintext) => JSON.stringify(seal(plaintext, SECRET_PURPOSE)),
-      unwrap: async (wrapped) => open(JSON.parse(wrapped) as SealedValue, SECRET_PURPOSE),
+      wrap: async (plaintext) => wrapClientSecretWith(env.MASTER_KEY, plaintext),
+      unwrap: async (wrapped) => unwrapClientSecretWith(env.MASTER_KEY, wrapped),
     },
     audit: vibeAuditSink,
     basePath: '',

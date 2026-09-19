@@ -38,6 +38,11 @@ services:
       context: .
       dockerfile: apps/api/Dockerfile
       target: runtime
+      # @kisaesdevlab/vibe-auth (SSO) comes from GitHub Packages; the Dockerfile
+      # reads the token from this BuildKit secret (see docs/sso.md "Building
+      # from source"). Pulling the published images needs nothing.
+      secrets:
+        - NODE_AUTH_TOKEN
     restart: unless-stopped
     env_file: .env
     environment:
@@ -70,6 +75,8 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
       target: runtime
+      secrets:
+        - NODE_AUTH_TOKEN
     restart: unless-stopped
     depends_on:
       - api
@@ -108,3 +115,9 @@ volumes:
   attachments:
   deliverables:
   backups:
+
+# Build-time secret for the private @kisaesdevlab/vibe-auth package (never a
+# runtime secret). Sourced from the NODE_AUTH_TOKEN environment variable.
+secrets:
+  NODE_AUTH_TOKEN:
+    environment: NODE_AUTH_TOKEN

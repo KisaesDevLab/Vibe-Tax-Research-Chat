@@ -148,6 +148,10 @@ register the redirect URI `<public URL>/auth/oidc/callback` and the back-channel
   `auth_revocations` (the package's tables; `user_id` is a real FK onto `users` here) and this
   app's `auth_sessions_oidc`, and adds `auth_refresh_tokens.sid`. Applied on boot with
   `MIGRATIONS_AUTO=true` like every migration.
+- A DR restore onto a server with a different `MASTER_KEY` re-keys the wrapped client secret in
+  `auth_settings` alongside the `settings` rows (`rekeySecrets`, `lib/backup/engine.ts`), so SSO
+  keeps working after the swap; a secret that will not unwrap under the archive key is reported as
+  `auth_settings:<key>` in `verify.rekeyFailures` and must be re-entered on Admin → Authentication.
 - Every package event is one `audit_log` row: `action = vibe.auth.*` (login success/failure, user
   provisioned/linked, role changed, logout, mode/settings changed, break-glass used/rotated),
   `target_type = 'auth'`, the user id in `target_id`, the payload as `metadata`.

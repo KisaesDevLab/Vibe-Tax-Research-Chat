@@ -161,7 +161,10 @@ true and the archive key is never surfaced. The manual "set MASTER_KEY + restart
 report only remains for archives that carry no key. Rows undecryptable under the
 archive key were already dead on the source — they're left as-is and listed in
 `verify.rekeyFailures`, never allowed to sink the restore. Crypto primitives live in
-`lib/crypto.ts` as `sealWith`/`openWith` (explicit key; `seal`/`open` wrap env).
+`lib/crypto.ts` as `sealWith`/`openWith` (explicit key; `seal`/`open` wrap env). Any NEW
+table that seals a value under MASTER_KEY must be added to `rekeySecrets` or a restore
+silently breaks it — the SSO client secret (`auth_settings.value.clientSecretWrapped`,
+`lib/vibeAuthSecret.ts`) is the second such place.
 
 ### nginx upload cap vs backup restores
 

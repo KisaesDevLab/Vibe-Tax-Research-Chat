@@ -70,7 +70,7 @@ import {
   localLoginRefusal,
   resetVibeAuthForTests,
   sessionFor,
-  staleSessionCutoff,
+  sweepGraceCutoff,
   withSsoCode,
 } from './vibeAuth.js';
 import { signAccess } from './jwt.js';
@@ -159,10 +159,10 @@ describe('rate-limited path set', () => {
   });
 });
 
-describe('stale session sweep', () => {
-  it('cuts at one refresh lifetime plus an hour of skew', () => {
+describe('session sweep grace', () => {
+  it('never sweeps a row younger than an hour (unexchanged hand-off, clock skew)', () => {
     const now = Date.UTC(2026, 8, 19, 12, 0, 0);
-    expect(staleSessionCutoff(now).getTime()).toBe(now - 30 * 24 * 60 * 60 * 1000 - 60 * 60 * 1000);
+    expect(sweepGraceCutoff(now).getTime()).toBe(now - 60 * 60 * 1000);
   });
 });
 

@@ -4,8 +4,7 @@
 // the session (the package speaks to GET/PUT /auth/settings with same-origin
 // cookies, and our sessions are bearer tokens) and the Tailwind classes.
 import { AuthSettingsPage } from '@kisaesdevlab/vibe-auth/react';
-import { authedFetch } from '../../lib/api';
-import { AUTH_BASE_PATH } from '../Login';
+import { authedFetch, SPA_BASE_PATH } from '../../lib/api';
 
 const inputCls = 'w-full px-3 py-2 border border-ink/20 rounded font-mono text-sm';
 const btnCls =
@@ -26,7 +25,7 @@ export function AdminAuthenticationPage() {
           <code className="text-xs">docs/sso.md</code>.
         </p>
         <AuthSettingsPage
-          basePath={AUTH_BASE_PATH}
+          basePath={SPA_BASE_PATH}
           productName="Vibe Tax Research Chat"
           fetch={authedFetch}
           classNames={{

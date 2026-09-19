@@ -8,7 +8,7 @@
 // rows carried 'pending' at the same instant. Minting the jti up front with
 // randomUUID() lets the row land with its real hash the first time.
 import crypto from 'node:crypto';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, isNull, ne } from 'drizzle-orm';
 import type { Db } from '@vibe/db';
 import { auth_refresh_tokens } from '@vibe/db/schema';
 import { signAccess, signRefresh, hashToken, type AccessClaims } from './jwt.js';
@@ -55,10 +55,16 @@ export async function revokeRefreshBySid(db: Db, sid: string): Promise<void> {
     .where(and(eq(auth_refresh_tokens.sid, sid), isNull(auth_refresh_tokens.revoked_at)));
 }
 
-/** Ends every live refresh chain of a user (local and SSO alike). */
-export async function revokeRefreshByUser(db: Db, userId: string): Promise<void> {
+/** Ends every live refresh chain of a user (local and SSO alike), optionally
+ *  sparing one row — the caller's own session on a password change. */
+export async function revokeRefreshByUser(
+  db: Db,
+  userId: string,
+  opts: { exceptJti?: string | null } = {},
+): Promise<void> {
+  const live = and(eq(auth_refresh_tokens.user_id, userId), isNull(auth_refresh_tokens.revoked_at));
   await db
     .update(auth_refresh_tokens)
     .set({ revoked_at: new Date() })
-    .where(and(eq(auth_refresh_tokens.user_id, userId), isNull(auth_refresh_tokens.revoked_at)));
+    .where(opts.exceptJti ? and(live, ne(auth_refresh_tokens.id, opts.exceptJti)) : live);
 }

@@ -13,12 +13,17 @@ export function getDb(url?: string): PostgresJsDatabase<typeof schema> {
     pool = postgres(connStr, {
       max: 10,
       idle_timeout: 20,
-      // DB_DEBUG=1 prints every statement + its parameters to stderr. Dev
-      // aid only (parameters may carry user data) — never set in production.
+      // DB_DEBUG=1 prints every statement's TEXT to stderr — never its
+      // parameters, which carry password hashes, ID tokens and hand-off
+      // hashes that the Pino redaction would otherwise keep out of the logs.
       ...(process.env.DB_DEBUG === '1'
         ? {
             debug: (_conn: number, query: string, params: unknown[]) =>
-              console.error('[pg]', query.replace(/\s+/g, ' ').slice(0, 300), params),
+              console.error(
+                '[pg]',
+                query.replace(/\s+/g, ' ').slice(0, 300),
+                `(${params.length} params)`,
+              ),
           }
         : {}),
     });

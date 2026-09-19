@@ -10,6 +10,7 @@ vi.mock('../lib/api', () => ({
   apiFetch: vi.fn(),
   apiUrl: (p: string) => `/${p.replace(/^\//, '')}`,
   authedFetch: vi.fn(),
+  SPA_BASE_PATH: '',
 }));
 
 const completeLogin = vi.fn();
