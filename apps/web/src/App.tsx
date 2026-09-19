@@ -13,6 +13,7 @@ import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminDashboard } from './pages/admin/Dashboard';
 import { AdminUsersPage } from './pages/admin/Users';
 import { AdminSettingsPage } from './pages/admin/Settings';
+import { AdminAuthenticationPage } from './pages/admin/Authentication';
 import { AdminModelsPage } from './pages/admin/Models';
 import { AdminSkillsPage } from './pages/admin/Skills';
 import { AdminCustomSkillsPage } from './pages/admin/CustomSkills';
@@ -37,6 +38,8 @@ export function App() {
     <Routes>
       <Route path="/setup" element={<SetupPage />} />
       <Route path="/login" element={<LoginPage />} />
+      {/* SSO break-glass: the password form even when the firm is SSO-only. */}
+      <Route path="/login/local" element={<LoginPage breakglass />} />
       <Route path="/forgot" element={<ForgotPasswordPage />} />
       <Route path="/reset" element={<ResetPasswordPage />} />
 
@@ -66,6 +69,7 @@ export function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
+            <Route path="authentication" element={<AdminAuthenticationPage />} />
             <Route path="models" element={<AdminModelsPage />} />
             <Route path="skills" element={<AdminSkillsPage />} />
             <Route path="custom-skills" element={<AdminCustomSkillsPage />} />

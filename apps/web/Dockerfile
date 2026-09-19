@@ -6,10 +6,16 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 
 FROM base AS deps
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* .npmrc ./
 COPY apps/web/package.json apps/web/
 COPY packages/shared/package.json packages/shared/
-RUN pnpm install --frozen-lockfile=false
+# @kisaesdevlab/vibe-auth (the SSO login panel + settings page) comes from
+# GitHub Packages, which needs a token even for reads — a BuildKit secret
+# written to a throwaway npmrc that never lands in a layer (see apps/api/Dockerfile).
+RUN --mount=type=secret,id=NODE_AUTH_TOKEN,required=true \
+    printf '//npm.pkg.github.com/:_authToken=%s\n' "$(cat /run/secrets/NODE_AUTH_TOKEN)" > /root/.npmrc \
+ && pnpm install --frozen-lockfile=false \
+ && rm -f /root/.npmrc
 
 FROM deps AS dev
 COPY . .

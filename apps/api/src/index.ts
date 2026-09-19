@@ -8,6 +8,7 @@ import { startWorkers } from './jobs/workers.js';
 import { recoverOrphanedStreams } from './lib/stream-recovery.js';
 import { loadAiModeOverride, registerTrcTaskClasses } from './lib/anthropic/router-mode.js';
 import { recoverRestore, defaultEngineConfig } from './lib/backup/engine.js';
+import { initVibeAuth, startVibeAuth } from './lib/vibeAuth.js';
 
 // Last-line-of-defense: any promise that escapes our handlers should be
 // logged, not abort the process. BullMQ workers + their per-queue 'error'
@@ -77,6 +78,13 @@ async function start(): Promise<void> {
       );
     }
   }
+
+  // SSO (Vibe Auth): build the engine (reads the public URL setting, so
+  // after migrations) and resolve its config. The only throw is the
+  // package's startup refusal — oidc_only without an active break-glass
+  // admin — which must be fatal: booting would lock every operator out.
+  await initVibeAuth();
+  await startVibeAuth();
 
   const app = createApp();
   const server = app.listen(env.PORT, () => {

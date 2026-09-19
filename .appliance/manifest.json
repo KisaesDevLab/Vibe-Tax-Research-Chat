@@ -2,14 +2,17 @@
   "schemaVersion": 1,
   "slug": "vibe-tax-research",
   "displayName": "Vibe Tax Research Chat",
-  "description": "AI-augmented tax research with Claude — citations, SSTS / Circular 230 disclosures, and per-firm cost visibility behind one Anthropic API key.",
+  "description": "AI-augmented tax research with Claude \u2014 citations, SSTS / Circular 230 disclosures, and per-firm cost visibility behind one Anthropic API key.",
   "userFacing": true,
   "image": {
     "server": "ghcr.io/kisaesdevlab/vibe-tax-api",
     "client": "ghcr.io/kisaesdevlab/vibe-tax-web",
     "defaultTag": "latest"
   },
-  "ports": { "server": 4000, "client": 80 },
+  "ports": {
+    "server": 4000,
+    "client": 80
+  },
   "subdomains": [
     {
       "name": "tax",
@@ -18,15 +21,75 @@
       "emergencyPort": 5191
     }
   ],
+  "routing": {
+    "default_upstream": "vibe-tax-web:80",
+    "matchers": [
+      {
+        "name": "api",
+        "path": "/api/*",
+        "upstream": "vibe-tax-api:4000",
+        "streaming": true
+      },
+      {
+        "name": "queues",
+        "path": "/admin/queues/*",
+        "upstream": "vibe-tax-api:4000"
+      },
+      {
+        "name": "auth",
+        "path": "/auth/*",
+        "upstream": "vibe-tax-api:4000"
+      }
+    ]
+  },
+  "sso": {
+    "capable": true,
+    "redirectPaths": ["/auth/oidc/callback"],
+    "logoutPaths": ["/auth/oidc/backchannel"],
+    "publicPaths": [
+      "/api/health",
+      "/api/health/deep",
+      "/api/ping",
+      "/api/setup/*",
+      "/api/webhooks/*",
+      "/api/dl/*",
+      "/api/auth/login",
+      "/api/auth/refresh",
+      "/api/auth/sso/exchange",
+      "/api/auth/forgot-password",
+      "/api/auth/reset-password",
+      "/login/local"
+    ],
+    "edgeGate": false,
+    "internalUrl": "http://vibe-tax-api:4000",
+    "breakglassService": "vibe-tax-api",
+    "breakglassCommand": [
+      "node",
+      "apps/api/node_modules/@kisaesdevlab/vibe-auth/dist/cli.js",
+      "breakglass",
+      "ensure",
+      "--json"
+    ]
+  },
   "depends": ["postgres", "redis"],
+  "requires": ["identity"],
   "postgresExtensions": ["vector"],
   "websocket": false,
   "streaming": "sse",
   "env": {
     "required": [
-      { "name": "JWT_SECRET", "generate": "hex64" },
-      { "name": "JWT_REFRESH_SECRET", "generate": "hex64" },
-      { "name": "MASTER_KEY", "generate": "hex32" },
+      {
+        "name": "JWT_SECRET",
+        "generate": "hex64"
+      },
+      {
+        "name": "JWT_REFRESH_SECRET",
+        "generate": "hex64"
+      },
+      {
+        "name": "MASTER_KEY",
+        "generate": "hex32"
+      },
       {
         "name": "DATABASE_URL",
         "from": "shared-postgres-url",
@@ -38,21 +101,53 @@
         "from": "shared-redis-url",
         "namespace": "tax-research"
       },
-      { "name": "ALLOWED_ORIGIN", "from": "subdomain-url-list" }
+      {
+        "name": "ALLOWED_ORIGIN",
+        "from": "subdomain-url-list"
+      }
     ],
     "optional": [
-      { "name": "MIGRATIONS_AUTO", "default": "true" },
-      { "name": "COOKIE_SECURE", "default": "auto" },
-      { "name": "TRUST_PROXY", "default": "1" },
-      { "name": "LOG_LEVEL", "default": "info" },
-      { "name": "GITHUB_WEBHOOK_SECRET", "generate": "hex32", "secret": true }
+      {
+        "name": "MIGRATIONS_AUTO",
+        "default": "true"
+      },
+      {
+        "name": "COOKIE_SECURE",
+        "default": "auto"
+      },
+      {
+        "name": "TRUST_PROXY",
+        "default": "1"
+      },
+      {
+        "name": "LOG_LEVEL",
+        "default": "info"
+      },
+      {
+        "name": "GITHUB_WEBHOOK_SECRET",
+        "generate": "hex32",
+        "secret": true
+      },
+      {
+        "name": "VIBE_AUTH_MODE",
+        "default": "local",
+        "doc": "Single sign-on mode: local | both | oidc_only. Flipped from Admin -> Authentication or the console Identity panel; registration writes the VIBE_OIDC_* block but never the mode. See docs/sso.md."
+      },
+      {
+        "name": "VIBE_OIDC_REQUIRE_MFA_AMR",
+        "default": "false",
+        "doc": "Refuse SSO logins whose ID token carries no MFA amr claim."
+      }
     ]
   },
-  "database": { "name": "vibe_tax", "user": "vibetax" },
+  "database": {
+    "name": "vibe_tax",
+    "user": "vibetax"
+  },
   "firstLogin": {
     "type": "self-register-first-user-becomes-admin",
     "url": "/setup",
-    "note": "First registered user becomes the firm admin. After login, paste the firm's Anthropic API key in Admin → Settings before researchers start using the app."
+    "note": "First registered user becomes the firm admin. After login, paste the firm's Anthropic API key in Admin \u2192 Settings before researchers start using the app."
   },
   "health": "/api/health/deep",
   "ping": "/api/ping",

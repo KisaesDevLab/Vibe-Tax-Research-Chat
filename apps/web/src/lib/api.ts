@@ -102,6 +102,27 @@ export async function api<T = unknown>(
   return body as T;
 }
 
+/**
+ * A `fetch` for the @kisaesdevlab/vibe-auth React components (their `fetch`
+ * prop). They build their own URLs (`${basePath}/auth/...`, already carrying
+ * the SPA prefix) and read the JSON themselves, so this adds only what they
+ * cannot: the bearer and the single-flight refresh-on-401 retry. Never
+ * throws on a non-2xx response — the component renders the error body.
+ */
+export const authedFetch: typeof fetch = async (input, init) => {
+  const withBearer = (): Headers => {
+    const headers = new Headers(init?.headers);
+    const access = tokenStore.getAccess();
+    if (access) headers.set('authorization', `Bearer ${access}`);
+    return headers;
+  };
+  let res = await fetch(input, { ...init, headers: withBearer() });
+  if (res.status === 401 && (await refreshOnce())) {
+    res = await fetch(input, { ...init, headers: withBearer() });
+  }
+  return res;
+};
+
 // Same auth + refresh-on-401 flow as api(), but returns the raw Response
 // so callers can pull a Blob / stream / non-JSON body (PDF download is
 // the canonical case). Throws ApiError on non-2xx responses, mirroring
