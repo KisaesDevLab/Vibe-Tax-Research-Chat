@@ -56,7 +56,14 @@ import {
   vibeAuditSink,
 } from './vibeAuthUsers.js';
 
-export { BREAKGLASS_USERNAME, breakglassEmailFor, localLoginIdentifier } from './vibeAuthUsers.js';
+export {
+  BREAKGLASS_USERNAME,
+  breakglassEmailFor,
+  isBreakglassEmail,
+  isSsoOnlyAccount,
+  localLoginIdentifier,
+  loginEmailFor,
+} from './vibeAuthUsers.js';
 
 /** Server-side prefix of the engine's routes. Always '/auth/...' — see the header comment. */
 const AUTH_PREFIX = '/auth';

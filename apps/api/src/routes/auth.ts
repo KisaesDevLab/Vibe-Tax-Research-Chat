@@ -29,10 +29,14 @@ import { ACCESS_COOKIE_NAME, accessCookieOptions } from '../lib/cookies.js';
 import { buildMailer } from '../lib/email/index.js';
 import { notificationsEmailQueue } from '../jobs/queues.js';
 import {
+  BREAKGLASS_USERNAME,
   endSsoSession,
   getVibeAuth,
+  isBreakglassEmail,
+  isSsoOnlyAccount,
   localLoginIdentifier,
   localLoginRefusal,
+  loginEmailFor,
 } from '../lib/vibeAuth.js';
 
 function setAccessCookie(req: Request, res: Response, token: string) {
@@ -68,8 +72,17 @@ function publicUser(
   };
 }
 
+// The break-glass admin may sign in with its literal USERNAME as well as the
+// address it implies: the Appliance prints only `username: vibe-breakglass`.
 const loginSchema = z.object({
-  email: z.string().email().toLowerCase(),
+  email: z.union([
+    z.string().email().toLowerCase(),
+    z
+      .string()
+      .trim()
+      .toLowerCase()
+      .refine((v) => v === BREAKGLASS_USERNAME.toLowerCase()),
+  ]),
   password: z.string().min(1),
 });
 
@@ -79,7 +92,8 @@ authRouter.post('/login', loginLimiter, async (req, res) => {
     res.status(400).json({ error: 'bad_request' });
     return;
   }
-  const { email, password } = parsed.data;
+  const { password } = parsed.data;
+  const email = loginEmailFor(parsed.data.email);
   // SSO policy (I5): in oidc_only mode only the break-glass admin may use a
   // password. Inline rather than the package's guardLocalLogin so the
   // product's error envelope is kept.
@@ -367,12 +381,25 @@ authRouter.post('/forgot-password', forgotPasswordLimiter, async (req, res) => {
   const { email } = parsed.data;
   const db = getDb();
   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
-  const eligible = Boolean(user && user.is_active && !user.deleted_at);
+  // Two accounts never get a self-service reset, and the answer is the same
+  // `{ ok: true }` an unknown address gets (the audit row says why):
+  //  - the break-glass admin — its password is provisioned and rotated by the
+  //    CLI / Appliance, and its address is not a mailbox;
+  //  - an SSO-only account (JIT-provisioned, never held a local password) —
+  //    the mailbox alone must not mint a local credential for it (I7).
+  const refused = !user
+    ? null
+    : isBreakglassEmail(user.email)
+      ? 'breakglass'
+      : isSsoOnlyAccount(user)
+        ? 'sso_only'
+        : null;
+  const eligible = Boolean(user && user.is_active && !user.deleted_at && !refused);
 
   await audit({
     actor_user_id: user?.id ?? null,
     action: 'auth.forgot_password.request',
-    metadata: { email, eligible },
+    metadata: { email, eligible, ...(refused ? { refused } : {}) },
     ip: req.ip,
   });
 
@@ -433,11 +460,32 @@ authRouter.post('/reset-password', resetPasswordLimiter, async (req, res) => {
     res.status(400).json({ error: 'invalid_or_expired_token' });
     return;
   }
+  // Belt and braces for the refusals in /forgot-password: a self-service
+  // token minted before they existed must not be redeemable either. An
+  // admin-sent token for an SSO-only account is the admin's decision and works.
+  if (
+    isBreakglassEmail(user.email) ||
+    (row.created_via === 'self_service' && isSsoOnlyAccount(user))
+  ) {
+    await audit({
+      actor_user_id: user.id,
+      action: 'auth.password_reset.refused',
+      target_type: 'user',
+      target_id: user.id,
+      metadata: {
+        reset_token_id: row.id,
+        refused: isBreakglassEmail(user.email) ? 'breakglass' : 'sso_only',
+      },
+      ip: req.ip,
+    });
+    res.status(400).json({ error: 'invalid_or_expired_token' });
+    return;
+  }
 
   const password_hash = await bcrypt.hash(new_password, 12);
   await db
     .update(users)
-    .set({ password_hash, updated_at: new Date() })
+    .set({ password_hash, has_local_password: true, updated_at: new Date() })
     .where(eq(users.id, user.id));
   await db
     .update(password_reset_tokens)

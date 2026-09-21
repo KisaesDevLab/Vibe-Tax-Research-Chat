@@ -1,5 +1,14 @@
 // Phase 2 — identity tables.
-import { pgEnum, pgTable, uuid, text, boolean, numeric, timestamp, index } from 'drizzle-orm/pg-core';
+import {
+  pgEnum,
+  pgTable,
+  uuid,
+  text,
+  boolean,
+  numeric,
+  timestamp,
+  index,
+} from 'drizzle-orm/pg-core';
 
 export const roleEnum = pgEnum('user_role', ['admin', 'user', 'viewer']);
 
@@ -9,6 +18,12 @@ export const users = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     email: text('email').notNull().unique(),
     password_hash: text('password_hash').notNull(),
+    // SSO (Vibe Auth): false ONLY for an account provisioned just-in-time by a
+    // single sign-on login — its password_hash is random bytes nobody knows.
+    // Self-service password reset is refused while false (the mailbox alone
+    // must not mint a local credential for an IdP-governed account); an admin
+    // setting a password, or an admin-sent reset being completed, flips it on.
+    has_local_password: boolean('has_local_password').notNull().default(true),
     role: roleEnum('role').notNull().default('user'),
     display_name: text('display_name').notNull(),
     is_active: boolean('is_active').notNull().default(true),

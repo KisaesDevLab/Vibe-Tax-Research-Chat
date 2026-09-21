@@ -190,6 +190,8 @@ function humanizeError(e: unknown): string {
   if (e instanceof ApiError) {
     if (e.message === 'last_admin_protected')
       return 'Cannot remove the last active admin — promote another user to admin first.';
+    if (e.message === 'breakglass_protected')
+      return 'The break-glass admin cannot be disabled, demoted, deleted or emailed a reset — it is the emergency sign-in when single sign-on is down. Rotate its password with the vibe-auth CLI.';
     if (e.message === 'cannot_delete_self') return 'Cannot delete your own account.';
     if (e.message === 'cannot_demote_self') return 'Cannot demote your own admin role.';
     if (e.message === 'cannot_disable_self') return 'Cannot disable your own account.';

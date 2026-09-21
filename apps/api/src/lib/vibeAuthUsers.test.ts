@@ -7,8 +7,15 @@ import { users } from '@vibe/db/schema';
 vi.mock('./audit.js', () => ({ audit: vi.fn(async () => undefined) }));
 
 type Row = Record<string, unknown>;
-const state: { rows: Row[]; inserts: Row[]; updates: Row[]; wheres: unknown[] } = {
+const state: {
+  rows: Row[];
+  otherAdmins: number;
+  inserts: Row[];
+  updates: Row[];
+  wheres: unknown[];
+} = {
   rows: [],
+  otherAdmins: 0,
   inserts: [],
   updates: [],
   wheres: [],
@@ -18,9 +25,12 @@ vi.mock('@vibe/db', () => ({
   getDb: () => ({
     select: () => ({
       from: () => ({
+        // `.limit()` ends a row lookup; awaited bare it is the admin count.
         where: (cond: unknown) => {
           state.wheres.push(cond);
-          return { limit: async () => state.rows };
+          return Object.assign(Promise.resolve([{ value: state.otherAdmins }]), {
+            limit: async () => state.rows,
+          });
         },
       }),
     }),
@@ -42,7 +52,9 @@ vi.mock('@vibe/db', () => ({
 import {
   breakglassEmailFor,
   createVibeUsers,
+  isSsoOnlyAccount,
   localLoginIdentifier,
+  loginEmailFor,
   toVibeUser,
   vibeAuditSink,
   VIBE_TRC_ROLES,
@@ -56,6 +68,7 @@ const baseRow = {
   id: '11111111-1111-4111-8111-111111111111',
   email: 'pat@firm.test',
   password_hash: '$2b$12$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012345678',
+  has_local_password: true,
   role: 'user',
   display_name: 'Pat',
   is_active: true,
@@ -69,6 +82,7 @@ const baseRow = {
 
 beforeEach(() => {
   state.rows = [];
+  state.otherAdmins = 0;
   state.inserts = [];
   state.updates = [];
   state.wheres = [];
@@ -82,6 +96,13 @@ describe('break-glass addressing', () => {
     expect(localLoginIdentifier('Pat@Firm.test')).toBe('pat@firm.test');
   });
 
+  it('the login identifier may be the bare username; anything else is already an email', () => {
+    expect(loginEmailFor('vibe-breakglass')).toBe('vibe-breakglass@vibe-tax.local');
+    expect(loginEmailFor(' Vibe-Breakglass ')).toBe('vibe-breakglass@vibe-tax.local');
+    expect(loginEmailFor('vibe-breakglass@vibe-tax.local')).toBe('vibe-breakglass@vibe-tax.local');
+    expect(loginEmailFor('Pat@Firm.test')).toBe('pat@firm.test');
+  });
+
   it('findByUsername queries the implied email; an email passes through', async () => {
     const u = createVibeUsers();
     await u.findByUsername('vibe-breakglass');
@@ -93,8 +114,17 @@ describe('break-glass addressing', () => {
   it('roles vocabulary is most-privileged-first with admin as the break-glass role', () => {
     expect(VIBE_TRC_ROLES.roles[0]).toBe('admin');
     expect(VIBE_TRC_ROLES.adminRole).toBe('admin');
-    expect(VIBE_TRC_ROLES.defaultRoleMap).toMatchObject({
+  });
+
+  // I8: explicit, never the package's guess (`defaultRoleMapFor` falls back to
+  // the LEAST privileged role — `viewer` here — for a group it cannot match).
+  it('pins the explicit defaultRoleMap for all five Vibe groups', () => {
+    expect(VIBE_TRC_ROLES.roles).toEqual(['admin', 'user', 'viewer']);
+    expect(VIBE_TRC_ROLES.defaultRoleMap).toEqual({
+      'vibe-admin': 'admin',
+      'vibe-it': 'admin',
       'vibe-partner': 'admin',
+      'vibe-manager': 'user',
       'vibe-staff': 'user',
     });
   });
@@ -138,6 +168,10 @@ describe('provisioning', () => {
     expect(String(row.password_hash)).toMatch(/^\$2[aby]\$12\$/);
     expect(await bcrypt.compare('', String(row.password_hash))).toBe(false);
     expect(created.email).toBe('new@firm.test');
+    // SSO-only until an admin gives it a password: self-service reset is refused.
+    expect(row.has_local_password).toBe(false);
+    expect(isSsoOnlyAccount(row as never)).toBe(true);
+    expect(isSsoOnlyAccount(baseRow as never)).toBe(false);
   });
 
   it('createLocalUser derives the email from the username and ignores the CLI default', async () => {
@@ -154,6 +188,7 @@ describe('provisioning', () => {
     expect(row.role).toBe('admin');
     expect(row.is_active).toBe(true);
     expect(row.deleted_at).toBeNull();
+    expect(row.has_local_password).toBe(true);
     expect(await bcrypt.compare('Sup3r-secret!', String(row.password_hash))).toBe(true);
   });
 
@@ -170,6 +205,73 @@ describe('provisioning', () => {
     const u = createVibeUsers();
     await u.setLocalPassword(baseRow.id, 'n3w-pass-word');
     expect(String(state.updates[0]!.password_hash)).toMatch(/^\$2[aby]\$12\$/);
+    expect(state.updates[0]!.has_local_password).toBe(true);
+  });
+});
+
+describe('role sync guards (I8)', () => {
+  const admin = { ...baseRow, role: 'admin' };
+  const roleChanged = (to: string) =>
+    vibeAuditSink.emit({
+      type: 'vibe.auth.role.changed',
+      at: 'now',
+      user_id: baseRow.id,
+      from: 'admin',
+      to,
+      source: 'groups',
+    });
+
+  it('never demotes the last active admin: no write, no throw, the engine event is stamped refused', async () => {
+    state.rows = [admin];
+    state.otherAdmins = 0;
+    await expect(createVibeUsers().setRole(baseRow.id, 'user')).resolves.toBeUndefined();
+    expect(state.updates).toHaveLength(0);
+    // The count ignores the break-glass row — it is not "another admin".
+    expect(paramsOf(state.wheres[1])).toContain('vibe-breakglass@vibe-tax.local');
+    expect(paramsOf(state.wheres[1])).toContain(baseRow.id);
+
+    await roleChanged('user');
+    expect(vi.mocked(audit).mock.calls[0]![0]).toMatchObject({
+      action: 'vibe.auth.role.changed',
+      target_id: baseRow.id,
+      metadata: { from: 'admin', to: 'user', refused: true, reason: 'last_admin' },
+    });
+    // One refusal stamps one event; a later genuine change is recorded as is.
+    await roleChanged('user');
+    expect(vi.mocked(audit).mock.calls[1]![0].metadata).not.toHaveProperty('refused');
+  });
+
+  it('demotes an admin when another active admin remains', async () => {
+    state.rows = [admin];
+    state.otherAdmins = 1;
+    await createVibeUsers().setRole(baseRow.id, 'user');
+    expect(state.updates[0]).toMatchObject({ role: 'user' });
+    await roleChanged('user');
+    expect(vi.mocked(audit).mock.calls[0]![0].metadata).not.toHaveProperty('refused');
+  });
+
+  it('promotions and non-admin changes never consult the admin count', async () => {
+    state.rows = [baseRow];
+    await createVibeUsers().setRole(baseRow.id, 'admin');
+    expect(state.updates[0]).toMatchObject({ role: 'admin' });
+    expect(state.wheres).toHaveLength(1);
+  });
+
+  it('the break-glass row never changes role, however many admins exist', async () => {
+    state.rows = [{ ...admin, email: 'vibe-breakglass@vibe-tax.local' }];
+    state.otherAdmins = 3;
+    await createVibeUsers().setRole(baseRow.id, 'viewer');
+    expect(state.updates).toHaveLength(0);
+    await roleChanged('viewer');
+    expect(vi.mocked(audit).mock.calls[0]![0].metadata).toMatchObject({
+      refused: true,
+      reason: 'breakglass',
+    });
+  });
+
+  it('exposes countOtherActiveAdmins for package versions that ask before syncing', async () => {
+    state.otherAdmins = 2;
+    expect(await createVibeUsers().countOtherActiveAdmins(baseRow.id)).toBe(2);
   });
 });
 

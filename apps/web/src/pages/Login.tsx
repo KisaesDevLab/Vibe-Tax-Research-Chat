@@ -111,10 +111,13 @@ export function LoginPage({ breakglass = false }: { breakglass?: boolean } = {})
     try {
       await login(email, password);
     } catch (err) {
+      const code = (err as Error).message;
       setError(
-        (err as Error).message === 'local_login_disabled'
+        code === 'local_login_disabled'
           ? 'Password sign-in is disabled for this firm. Use single sign-on.'
-          : ((err as Error).message ?? 'Login failed'),
+          : code === 'bad_request'
+            ? 'Enter your email address and password.'
+            : (code ?? 'Login failed'),
       );
     } finally {
       setBusy(false);
@@ -157,14 +160,23 @@ export function LoginPage({ breakglass = false }: { breakglass?: boolean } = {})
           >
             <form onSubmit={onSubmit} className="space-y-4">
               <label className="block">
-                <div className="text-xs uppercase tracking-wider text-ink/60 mb-1">Email</div>
+                <div className="text-xs uppercase tracking-wider text-ink/60 mb-1">
+                  {breakglass ? 'Email or username' : 'Email'}
+                </div>
+                {/* type="text", not "email": the break-glass admin signs in as
+                    the bare username `vibe-breakglass` (all the Appliance
+                    prints), which a browser's email validation would block
+                    before the request is ever sent. The server validates. */}
                 <input
-                  type="email"
+                  type="text"
+                  inputMode="email"
+                  autoCapitalize="none"
+                  spellCheck={false}
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-3 py-2 border border-ink/20 rounded font-mono text-sm"
-                  autoComplete="email"
+                  autoComplete="username"
                 />
               </label>
               <label className="block">

@@ -1,7 +1,7 @@
 // SSO hand-off on the login page: a `#sso_code` fragment is read once,
 // scrubbed from the URL, exchanged for a session, and never rendered.
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 const apiMock = vi.fn();
@@ -14,11 +14,12 @@ vi.mock('../lib/api', () => ({
 }));
 
 const completeLogin = vi.fn();
+const login = vi.fn();
 vi.mock('../components/AuthProvider', () => ({
   useAuth: () => ({
     user: null,
     loading: false,
-    login: vi.fn(),
+    login,
     completeLogin,
     logout: vi.fn(),
     refresh: vi.fn(),
@@ -34,10 +35,10 @@ vi.mock('@kisaesdevlab/vibe-auth/react', () => ({
 
 import { LoginPage, parseSsoCode } from './Login';
 
-function renderLogin() {
+function renderLogin(props: { breakglass?: boolean } = {}) {
   return render(
     <MemoryRouter>
-      <LoginPage />
+      <LoginPage {...props} />
     </MemoryRouter>,
   );
 }
@@ -45,6 +46,7 @@ function renderLogin() {
 beforeEach(() => {
   apiMock.mockReset();
   completeLogin.mockReset();
+  login.mockReset();
   window.history.replaceState(null, '', '/login');
 });
 
@@ -106,5 +108,27 @@ describe('LoginPage SSO landing', () => {
       expect(apiMock).toHaveBeenCalledWith('/api/setup/status', { skipRefresh: true }),
     );
     expect(apiMock).not.toHaveBeenCalledWith('/api/auth/sso/exchange', expect.anything());
+  });
+});
+
+// The Appliance prints only "username: vibe-breakglass". An <input type="email">
+// would make the browser refuse that before any request is sent.
+describe('LoginPage break-glass identifier', () => {
+  it('the identifier field takes the bare username and submits it as typed', async () => {
+    apiMock.mockResolvedValue({ admin_exists: true });
+    login.mockResolvedValue(undefined);
+    const { container } = renderLogin({ breakglass: true });
+    expect(screen.getByText('Email or username')).toBeInTheDocument();
+    const id = container.querySelector('input[autocomplete="username"]') as HTMLInputElement;
+    expect(id.type).toBe('text');
+    expect(container.querySelector('input[type="email"]')).toBeNull();
+
+    fireEvent.change(id, { target: { value: 'vibe-breakglass' } });
+    fireEvent.change(container.querySelector('input[type="password"]')!, {
+      target: { value: 'emergency-pass' },
+    });
+    expect(container.querySelector('form')!.checkValidity()).toBe(true);
+    fireEvent.submit(container.querySelector('form')!);
+    await waitFor(() => expect(login).toHaveBeenCalledWith('vibe-breakglass', 'emergency-pass'));
   });
 });

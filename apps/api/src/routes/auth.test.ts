@@ -1,12 +1,18 @@
 // routes/auth — the SSO touch points on the existing session routes:
 // the oidc_only policy on /login, sid + revocation on /refresh, an SSO-born
-// /logout ending its session, and the one-time-code /sso/exchange.
+// /logout ending its session, the one-time-code /sso/exchange, the bare
+// break-glass username on /login, and the self-service reset refusals.
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import bcrypt from 'bcrypt';
 import { PgDialect } from 'drizzle-orm/pg-core';
-import { auth_refresh_tokens, auth_sessions_oidc, users } from '@vibe/db/schema';
+import {
+  auth_refresh_tokens,
+  auth_sessions_oidc,
+  password_reset_tokens,
+  users,
+} from '@vibe/db/schema';
 
 vi.mock('../config/env.js', () => ({
   env: {
@@ -53,22 +59,31 @@ vi.mock('../middleware/auth.js', () => ({
 const refusal = vi.fn((_email: string): null | { error: string } => null);
 const afterLocalLogin = vi.fn(async (_i: unknown) => undefined);
 const endSsoSession = vi.fn(async (_sid: string) => undefined);
-vi.mock('../lib/vibeAuth.js', () => ({
-  localLoginRefusal: (email: string) => refusal(email),
-  localLoginIdentifier: (email: string) =>
-    email === 'vibe-breakglass@vibe-tax.local' ? 'vibe-breakglass' : email,
-  getVibeAuth: () => ({ afterLocalLogin }),
-  endSsoSession: (sid: string) => endSsoSession(sid),
-}));
+vi.mock('../lib/vibeAuth.js', async () => {
+  // The addressing / account-kind helpers are pure: use the real ones.
+  const real =
+    await vi.importActual<typeof import('../lib/vibeAuthUsers.js')>('../lib/vibeAuthUsers.js');
+  return {
+    BREAKGLASS_USERNAME: real.BREAKGLASS_USERNAME,
+    isBreakglassEmail: real.isBreakglassEmail,
+    isSsoOnlyAccount: real.isSsoOnlyAccount,
+    localLoginIdentifier: real.localLoginIdentifier,
+    loginEmailFor: real.loginEmailFor,
+    localLoginRefusal: (email: string) => refusal(email),
+    getVibeAuth: () => ({ afterLocalLogin }),
+    endSsoSession: (sid: string) => endSsoSession(sid),
+  };
+});
 
 type Row = Record<string, unknown>;
 const state: {
   user: Row | null;
   refreshRow: Row | null;
+  resetRow: Row | null;
   claimed: Row[];
   inserts: Array<{ table: unknown; values: Row }>;
   updates: Array<{ table: unknown; set: Row; where: unknown }>;
-} = { user: null, refreshRow: null, claimed: [], inserts: [], updates: [] };
+} = { user: null, refreshRow: null, resetRow: null, claimed: [], inserts: [], updates: [] };
 
 vi.mock('@vibe/db', () => ({
   getDb: () => ({
@@ -78,6 +93,7 @@ vi.mock('@vibe/db', () => ({
           limit: async () => {
             if (table === users) return state.user ? [state.user] : [];
             if (table === auth_refresh_tokens) return state.refreshRow ? [state.refreshRow] : [];
+            if (table === password_reset_tokens) return state.resetRow ? [state.resetRow] : [];
             return [];
           },
         }),
@@ -105,6 +121,9 @@ vi.mock('@vibe/db', () => ({
 
 import { authRouter } from './auth.js';
 import { signRefresh, verifyAccess, verifyRefresh, hashToken } from '../lib/jwt.js';
+import { audit } from '../lib/audit.js';
+import { buildMailer } from '../lib/email/index.js';
+import { notificationsEmailQueue } from '../jobs/queues.js';
 
 const USER = '11111111-1111-4111-8111-111111111111';
 const dialect = new PgDialect();
@@ -124,6 +143,7 @@ beforeEach(() => {
     id: USER,
     email: 'pat@firm.test',
     password_hash: passwordHash,
+    has_local_password: true,
     role: 'user',
     display_name: 'Pat',
     is_active: true,
@@ -132,6 +152,7 @@ beforeEach(() => {
     deleted_at: null,
   };
   state.refreshRow = null;
+  state.resetRow = null;
   state.claimed = [];
   state.inserts = [];
   state.updates = [];
@@ -139,6 +160,9 @@ beforeEach(() => {
   refusal.mockReset().mockReturnValue(null);
   afterLocalLogin.mockClear();
   endSsoSession.mockClear();
+  vi.mocked(audit).mockClear();
+  vi.mocked(buildMailer).mockReset().mockResolvedValue(null);
+  vi.mocked(notificationsEmailQueue.add).mockClear();
 });
 
 describe('POST /api/auth/login (SSO policy)', () => {
@@ -176,6 +200,124 @@ describe('POST /api/auth/login (SSO policy)', () => {
       .send({ email: 'vibe-breakglass@vibe-tax.local', password: 'Correct-horse-1' });
     expect(r.status).toBe(200);
     expect(afterLocalLogin.mock.calls[0]![0]).toMatchObject({ username: 'vibe-breakglass' });
+  });
+
+  // The Appliance prints only "username: vibe-breakglass" — that literal must sign in.
+  it('accepts the bare break-glass username: policy, lookup and audit all see the account', async () => {
+    state.user = { ...state.user!, email: 'vibe-breakglass@vibe-tax.local', role: 'admin' };
+    const r = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'Vibe-Breakglass', password: 'Correct-horse-1' });
+    expect(r.status).toBe(200);
+    expect(refusal).toHaveBeenCalledWith('vibe-breakglass@vibe-tax.local');
+    expect(afterLocalLogin.mock.calls[0]![0]).toMatchObject({
+      username: 'vibe-breakglass',
+      email: 'vibe-breakglass@vibe-tax.local',
+    });
+  });
+
+  it('any other bare word is still a 400, before the policy or the database', async () => {
+    const r = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'administrator', password: 'Correct-horse-1' });
+    expect(r.status).toBe(400);
+    expect(refusal).not.toHaveBeenCalled();
+  });
+});
+
+describe('POST /api/auth/forgot-password (break-glass and SSO-only refusals)', () => {
+  const mailer = { send: vi.fn() } as never;
+  const forgot = (email: string) => request(app).post('/api/auth/forgot-password').send({ email });
+  const requestAudits = () =>
+    vi
+      .mocked(audit)
+      .mock.calls.map((c) => c[0])
+      .filter((e) => e.action === 'auth.forgot_password.request');
+
+  it('an ordinary local account gets a token and an email', async () => {
+    vi.mocked(buildMailer).mockResolvedValue(mailer);
+    const r = await forgot('pat@firm.test');
+    expect(r.body).toEqual({ ok: true });
+    expect(state.inserts.map((i) => i.table)).toContain(password_reset_tokens);
+    expect(notificationsEmailQueue.add).toHaveBeenCalledTimes(1);
+    expect(requestAudits()[0]!.metadata).toEqual({ email: 'pat@firm.test', eligible: true });
+  });
+
+  it('refuses the break-glass admin exactly like an unknown address, and audits why', async () => {
+    vi.mocked(buildMailer).mockResolvedValue(mailer);
+    state.user = null;
+    const unknown = await forgot('nobody@firm.test');
+
+    state.user = {
+      id: USER,
+      email: 'vibe-breakglass@vibe-tax.local',
+      role: 'admin',
+      is_active: true,
+      has_local_password: true,
+      deleted_at: null,
+    };
+    const r = await forgot('vibe-breakglass@vibe-tax.local');
+    expect([r.status, r.body]).toEqual([unknown.status, unknown.body]);
+    expect(state.inserts).toHaveLength(0);
+    expect(notificationsEmailQueue.add).not.toHaveBeenCalled();
+    expect(requestAudits()[1]).toMatchObject({
+      actor_user_id: USER,
+      metadata: { eligible: false, refused: 'breakglass' },
+    });
+  });
+
+  it('refuses an SSO-only (JIT, never had a local password) account the same way', async () => {
+    vi.mocked(buildMailer).mockResolvedValue(mailer);
+    state.user = { ...state.user!, has_local_password: false };
+    const r = await forgot('pat@firm.test');
+    expect([r.status, r.body]).toEqual([200, { ok: true }]);
+    expect(state.inserts).toHaveLength(0);
+    expect(notificationsEmailQueue.add).not.toHaveBeenCalled();
+    expect(requestAudits()[0]!.metadata).toEqual({
+      email: 'pat@firm.test',
+      eligible: false,
+      refused: 'sso_only',
+    });
+  });
+});
+
+describe('POST /api/auth/reset-password (refusals hold at redemption too)', () => {
+  const token = 't'.repeat(43);
+  const redeem = () =>
+    request(app).post('/api/auth/reset-password').send({ token, new_password: 'New-password-1' });
+  const resetRow = (created_via: string) => ({
+    id: '33333333-3333-4333-8333-333333333333',
+    user_id: USER,
+    claimed_at: null,
+    expires_at: new Date(Date.now() + 60_000),
+    created_via,
+  });
+
+  it('a self-service token cannot give an SSO-only account a password', async () => {
+    state.user = { ...state.user!, has_local_password: false };
+    state.resetRow = resetRow('self_service');
+    const r = await redeem();
+    expect([r.status, r.body]).toEqual([400, { error: 'invalid_or_expired_token' }]);
+    expect(state.updates).toHaveLength(0);
+    expect(vi.mocked(audit).mock.calls[0]![0]).toMatchObject({
+      action: 'auth.password_reset.refused',
+      metadata: { refused: 'sso_only' },
+    });
+  });
+
+  it('an ADMIN-sent token does, and the account stops being SSO-only', async () => {
+    state.user = { ...state.user!, has_local_password: false };
+    state.resetRow = resetRow('admin');
+    expect((await redeem()).status).toBe(200);
+    const write = state.updates.find((u) => u.table === users)!;
+    expect(write.set.has_local_password).toBe(true);
+  });
+
+  it('no token of any kind resets the break-glass admin', async () => {
+    state.user = { ...state.user!, email: 'vibe-breakglass@vibe-tax.local', role: 'admin' };
+    state.resetRow = resetRow('admin');
+    expect((await redeem()).status).toBe(400);
+    expect(state.updates).toHaveLength(0);
   });
 });
 
