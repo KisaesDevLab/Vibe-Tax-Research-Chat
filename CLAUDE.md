@@ -466,7 +466,22 @@ import, the break-glass CLI loads it) and `src/vibeAuthAdapter.ts` (CLI entry; t
 - **Break-glass is `vibe-breakglass@vibe-tax.local`** (`users` has no username column; zod
   `.email()` rejects `@localhost`) and signs in at `/login/local`. `localLoginRefusal(email)` maps
   the email back to the package's username before `localLoginAllowed`. `createLocalUser` derives
-  the email from the username and ignores the CLI's `input.email`.
+  the email from the username and ignores the CLI's `input.email`. `POST /api/auth/login` also
+  admits the literal username (`loginEmailFor`) — the Appliance prints nothing else — and the login
+  form's identifier is `type="text"` for the same reason. Password only: the product has no MFA.
+- **Break-glass is protected in every mode.** Admin → Users answers `409 breakglass_protected` to
+  disable / demote / delete / send-reset on it and to creating an account on its address;
+  `countOtherActiveAdmins` (`lib/vibeAuthUsers.ts`, shared by Admin → Users and role sync) never
+  counts it as "another admin".
+- **`users.has_local_password`** (0023) is `false` only for JIT-provisioned accounts. Self-service
+  forgot/reset is refused for those and for break-glass with the unknown-account response (audit
+  metadata `refused`); admin set-password / an admin-sent reset flips it to `true`. Any NEW code
+  path that writes `password_hash` for a user-chosen password must set it too.
+- **Role sync cannot demote the last active admin or re-role break-glass.** Package ≤1.0.x treats
+  `UserAdapter.setRole` as infallible and audits `vibe.auth.role.changed` right after, so `setRole`
+  skips the write silently and `vibeAuditSink` stamps that one event `refused: true` + `reason`
+  (the shape the package adopts once it asks `countOtherActiveAdmins` itself). Sessions are minted
+  from the DB row at `/sso/exchange`, so the engine's in-memory "new role" never reaches a token.
 - **`.appliance/manifest.json` is not what the appliance reads** — the vendored
   `Vibe-Appliance/console/manifests/vibe-tax-research.json` is, and its shape already diverged
   (`subdomain` + `routing` vs this copy's `subdomains[]`). The SSO block for it is in `docs/sso.md`.
