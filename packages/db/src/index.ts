@@ -10,10 +10,34 @@ export function getDb(url?: string): PostgresJsDatabase<typeof schema> {
   if (!db) {
     const connStr = url ?? process.env.DATABASE_URL;
     if (!connStr) throw new Error('DATABASE_URL is not set');
-    pool = postgres(connStr, { max: 10, idle_timeout: 20 });
+    pool = postgres(connStr, {
+      max: 10,
+      idle_timeout: 20,
+      // DB_DEBUG=1 prints every statement's TEXT to stderr — never its
+      // parameters, which carry password hashes, ID tokens and hand-off
+      // hashes that the Pino redaction would otherwise keep out of the logs.
+      ...(process.env.DB_DEBUG === '1'
+        ? {
+            debug: (_conn: number, query: string, params: unknown[]) =>
+              console.error(
+                '[pg]',
+                query.replace(/\s+/g, ' ').slice(0, 300),
+                `(${params.length} params)`,
+              ),
+          }
+        : {}),
+    });
     db = drizzle(pool, { schema });
   }
   return db;
+}
+
+/** The raw postgres.js client behind drizzle. @kisaesdevlab/vibe-auth's stores
+ *  speak parameterised SQL with $1..$n placeholders, which `sql.unsafe` runs
+ *  directly; drizzle's `sql.raw` cannot bind params. Same lifecycle as getDb(). */
+export function getPool(): ReturnType<typeof postgres> {
+  getDb();
+  return pool!;
 }
 
 export async function closeDb(): Promise<void> {

@@ -121,6 +121,13 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # @kisaesdevlab/vibe-auth (single sign-on) is served from GitHub
+          # Packages, which needs a token even for reads. GITHUB_TOKEN works
+          # once the package grants this repository Actions access
+          # (Vibe-Auth -> Packages -> vibe-auth -> Manage Actions access).
+          # See docs/sso.md "Building from source".
+          secrets: |
+            NODE_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
           build-args: |
             APP_VERSION=${{ github.ref_type == 'tag' && github.ref_name || github.sha }}
             GIT_SHA=${{ github.sha }}

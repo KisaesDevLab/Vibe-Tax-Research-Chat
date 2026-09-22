@@ -155,6 +155,20 @@
       "when": 1789596171939,
       "tag": "0021_question_mode_default_on",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1789829967478,
+      "tag": "0022_vibe_auth",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1789954048117,
+      "tag": "0023_sso_local_password",
+      "breakpoints": true
     }
   ]
 }

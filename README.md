@@ -78,6 +78,7 @@ and `CLAUDE.md` for the running architecture log.
 
 - `docs/install.md` — production install on Ubuntu 24.04 (NUC / mini-PC)
 - `docs/admin-guide.md` — API key rotation, user lifecycle, backup/restore
+- `docs/sso.md` — single sign-on through Vibe Auth: modes, break-glass admin, registration, revocation
 - `docs/cost-model.md` — token costs → dollar costs (Opus 4.7 tokenizer caveat)
 - `docs/skills-routing.md` — how the dispatcher chooses skills per turn
 - `docs/web-resources.md` — domain allowlist + audit trail

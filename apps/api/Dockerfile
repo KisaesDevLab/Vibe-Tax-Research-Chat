@@ -1,4 +1,6 @@
 # syntax=docker/dockerfile:1.7
+# check=skip=SecretsUsedInArgOrEnv
+# (the ENV near the end is a module PATH for the vibe-auth CLI, not a secret; the linter keys on "AUTH")
 # Multi-stage build for the API. Phase 28.
 
 FROM node:24-alpine AS base
@@ -14,14 +16,22 @@ FROM base AS deps
 # skills sync job (simple-git spawns the `git` binary to fetch the
 # skills repo).
 RUN apk add --no-cache python3 make g++ git
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* .npmrc ./
 COPY apps/api/package.json apps/api/
 COPY packages/db/package.json packages/db/
 COPY packages/shared/package.json packages/shared/
 COPY packages/schema/package.json packages/schema/
 COPY packages/engine/package.json packages/engine/
 COPY packages/strategies/package.json packages/strategies/
-RUN pnpm install --frozen-lockfile=false
+# @kisaesdevlab/vibe-auth (single sign-on) comes from GitHub Packages, which
+# needs a token even for reads. It arrives as a BuildKit secret and is written
+# to a throwaway user npmrc that never lands in a layer:
+#   docker build --secret id=NODE_AUTH_TOKEN,env=NODE_AUTH_TOKEN …
+# (release.yml passes GITHUB_TOKEN; developers use `gh auth token`.)
+RUN --mount=type=secret,id=NODE_AUTH_TOKEN,required=true \
+    printf '//npm.pkg.github.com/:_authToken=%s\n' "$(cat /run/secrets/NODE_AUTH_TOKEN)" > /root/.npmrc \
+ && pnpm install --frozen-lockfile=false \
+ && rm -f /root/.npmrc
 
 # ── dev stage ───────────────────────────────────────────────────────────
 FROM deps AS dev
@@ -104,6 +114,12 @@ ENV APP_VERSION=$APP_VERSION GIT_SHA=$GIT_SHA BUILD_DATE=$BUILD_DATE
 # failure is fatal before the listener binds. Override with
 # `-e MIGRATIONS_AUTO=false` to keep migrations a manual step.
 ENV MIGRATIONS_AUTO=true
+
+# The Vibe Auth break-glass CLI is exec'd by the appliance console from this
+# WORKDIR (/app), so it cannot find the adapter through apps/api/package.json;
+# point it at the compiled module directly:
+#   node apps/api/node_modules/@kisaesdevlab/vibe-auth/dist/cli.js breakglass ensure --json
+ENV VIBE_AUTH_ADAPTER=/app/apps/api/dist/vibeAuthAdapter.js
 
 # Runtime write paths, created and owned by `node` BEFORE dropping
 # privileges. Everything COPYed above lands root-owned, so without this the

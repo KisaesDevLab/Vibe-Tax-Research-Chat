@@ -7,6 +7,10 @@ export interface AccessClaims {
   sub: string; // user id
   role: 'admin' | 'user' | 'viewer';
   email: string;
+  /** SSO (Vibe Auth): internal session id of an SSO-born session. Absent
+   *  for password logins. Carried across refresh rotation from the refresh
+   *  ROW (never the refresh JWT), and consulted by the revocation list. */
+  sid?: string;
 }
 
 export interface RefreshClaims {
@@ -14,12 +18,19 @@ export interface RefreshClaims {
   jti: string; // refresh-token id (matches auth_refresh_tokens.id)
 }
 
+/** What verify() hands back: the claims plus the registered timestamps
+ *  jsonwebtoken always stamps. `iat` is the revocation-list comparison key. */
+export type VerifiedAccess = AccessClaims & { iat: number; exp: number };
+export type VerifiedRefresh = RefreshClaims & { iat: number; exp: number };
+
 export function signAccess(claims: AccessClaims): string {
-  return jwt.sign(claims, env.JWT_SECRET, { expiresIn: env.JWT_ACCESS_TTL as jwt.SignOptions['expiresIn'] });
+  return jwt.sign(claims, env.JWT_SECRET, {
+    expiresIn: env.JWT_ACCESS_TTL as jwt.SignOptions['expiresIn'],
+  });
 }
 
-export function verifyAccess(token: string): AccessClaims {
-  return jwt.verify(token, env.JWT_SECRET) as AccessClaims;
+export function verifyAccess(token: string): VerifiedAccess {
+  return jwt.verify(token, env.JWT_SECRET) as VerifiedAccess;
 }
 
 export function signRefresh(claims: RefreshClaims): string {
@@ -28,8 +39,8 @@ export function signRefresh(claims: RefreshClaims): string {
   });
 }
 
-export function verifyRefresh(token: string): RefreshClaims {
-  return jwt.verify(token, env.JWT_REFRESH_SECRET) as RefreshClaims;
+export function verifyRefresh(token: string): VerifiedRefresh {
+  return jwt.verify(token, env.JWT_REFRESH_SECRET) as VerifiedRefresh;
 }
 
 export function hashToken(token: string): string {

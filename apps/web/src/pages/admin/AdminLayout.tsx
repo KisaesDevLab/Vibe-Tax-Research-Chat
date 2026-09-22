@@ -24,6 +24,7 @@ const navItems = [
   { to: '/admin', label: 'Dashboard', end: true },
   { to: '/admin/users', label: 'Users' },
   { to: '/admin/settings', label: 'Settings' },
+  { to: '/admin/authentication', label: 'Authentication' },
   { to: '/admin/models', label: 'Models' },
   { to: '/admin/skills', label: 'Skills' },
   { to: '/admin/custom-skills', label: 'Custom skills' },

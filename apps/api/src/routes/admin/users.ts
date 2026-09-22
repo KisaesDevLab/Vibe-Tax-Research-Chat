@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
-import { eq, ilike, or, isNull, and, ne, count } from 'drizzle-orm';
+import { eq, ilike, or, isNull, and } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
 import { users, password_reset_tokens } from '@vibe/db/schema';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
@@ -11,6 +11,20 @@ import { audit } from '../../lib/audit.js';
 import { hashToken } from '../../lib/jwt.js';
 import { buildMailer } from '../../lib/email/index.js';
 import { notificationsEmailQueue } from '../../jobs/queues.js';
+import { countOtherActiveAdmins, isBreakglassEmail } from '../../lib/vibeAuthUsers.js';
+
+// SSO (Vibe Auth): the break-glass admin is the one way into the product when
+// the identity provider is down, and in `oidc_only` the API refuses to boot
+// without it. Admin → Users therefore cannot disable, demote, delete or
+// re-address it — in EVERY sign-in mode, because the mode can be flipped
+// later and the account must still be there. Its password is provisioned and
+// rotated by the vibe-auth CLI / the Appliance, never mailed.
+const BREAKGLASS_PROTECTED = {
+  error: 'breakglass_protected',
+  message:
+    'The break-glass admin cannot be disabled, demoted, deleted or re-addressed. ' +
+    'Rotate its password with `vibe-auth breakglass rotate`.',
+} as const;
 
 export const adminUsersRouter = Router();
 
@@ -72,6 +86,12 @@ adminUsersRouter.post('/', async (req, res) => {
     res.status(400).json({ error: 'bad_request', detail: parsed.error.flatten() });
     return;
   }
+  // The break-glass address is reserved: an ordinary account created on it
+  // would be what `breakglass ensure` finds, with whatever role it was given.
+  if (isBreakglassEmail(parsed.data.email)) {
+    res.status(409).json(BREAKGLASS_PROTECTED);
+    return;
+  }
   const password_hash = await bcrypt.hash(parsed.data.password, 12);
   const inserted = await getDb()
     .insert(users)
@@ -105,22 +125,9 @@ const patchSchema = z.object({
 
 // Count of active admins NOT including the supplied user-id. Used to guard
 // against demoting / disabling / deleting the last remaining admin which
-// would lock the appliance out of its own admin surface.
-async function otherActiveAdminCount(excludeId: string): Promise<number> {
-  const db = getDb();
-  const rows = await db
-    .select({ value: count() })
-    .from(users)
-    .where(
-      and(
-        eq(users.role, 'admin'),
-        eq(users.is_active, true),
-        isNull(users.deleted_at),
-        ne(users.id, excludeId),
-      ),
-    );
-  return Number(rows[0]?.value ?? 0);
-}
+// would lock the appliance out of its own admin surface. The break-glass row
+// is not counted as "another admin" (shared with the SSO role sync guard).
+const otherActiveAdminCount = countOtherActiveAdmins;
 
 adminUsersRouter.patch('/:id', async (req, res) => {
   if (!uuidSchema.safeParse(req.params.id).success) {
@@ -136,6 +143,23 @@ adminUsersRouter.patch('/:id', async (req, res) => {
   const [target] = await db.select().from(users).where(eq(users.id, req.params.id)).limit(1);
   if (!target || target.deleted_at) {
     res.status(404).json({ error: 'not_found' });
+    return;
+  }
+
+  if (
+    isBreakglassEmail(target.email) &&
+    ((parsed.data.role !== undefined && parsed.data.role !== 'admin') ||
+      parsed.data.is_active === false)
+  ) {
+    await audit({
+      actor_user_id: req.auth!.user_id,
+      action: 'admin.user.breakglass_protected',
+      target_type: 'user',
+      target_id: target.id,
+      metadata: { attempted: parsed.data },
+      ip: req.ip,
+    });
+    res.status(409).json(BREAKGLASS_PROTECTED);
     return;
   }
 
@@ -214,7 +238,7 @@ adminUsersRouter.post('/:id/set-password', async (req, res) => {
   const password_hash = await bcrypt.hash(parsed.data.password, 12);
   await db
     .update(users)
-    .set({ password_hash, updated_at: new Date() })
+    .set({ password_hash, has_local_password: true, updated_at: new Date() })
     .where(eq(users.id, target.id));
   await audit({
     actor_user_id: req.auth!.user_id,
@@ -240,6 +264,10 @@ adminUsersRouter.post('/:id/send-reset', async (req, res) => {
   const [target] = await db.select().from(users).where(eq(users.id, req.params.id)).limit(1);
   if (!target || target.deleted_at) {
     res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  if (isBreakglassEmail(target.email)) {
+    res.status(409).json(BREAKGLASS_PROTECTED);
     return;
   }
   if (!target.is_active) {
@@ -287,6 +315,18 @@ adminUsersRouter.delete('/:id', async (req, res) => {
   const [target] = await db.select().from(users).where(eq(users.id, req.params.id)).limit(1);
   if (!target || target.deleted_at) {
     res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  if (isBreakglassEmail(target.email)) {
+    await audit({
+      actor_user_id: req.auth!.user_id,
+      action: 'admin.user.breakglass_protected',
+      target_type: 'user',
+      target_id: target.id,
+      metadata: { attempted: 'delete' },
+      ip: req.ip,
+    });
+    res.status(409).json(BREAKGLASS_PROTECTED);
     return;
   }
   if (target.id === req.auth!.user_id) {

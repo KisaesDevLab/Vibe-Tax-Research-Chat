@@ -42,6 +42,12 @@ export default defineConfig(({ command }) => {
           target: process.env.VITE_API_BASE_URL ?? 'http://localhost:4000',
           changeOrigin: true,
         },
+        // SSO (Vibe Auth): the api serves /auth/* outside /api/ — status,
+        // OIDC start / callback, Settings -> Authentication API.
+        '/auth': {
+          target: process.env.VITE_API_BASE_URL ?? 'http://localhost:4000',
+          changeOrigin: true,
+        },
       },
     },
     build: {

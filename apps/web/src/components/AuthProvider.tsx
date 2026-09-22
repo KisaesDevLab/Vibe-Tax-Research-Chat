@@ -4,10 +4,19 @@ import type { AuthUser } from '@vibe/shared';
 import { api, ApiError } from '../lib/api';
 import { tokenStore } from '../lib/token-store';
 
+/** What POST /api/auth/login and POST /api/auth/sso/exchange both return. */
+export interface LoginResponse {
+  access_token: string;
+  refresh_token: string;
+  user: AuthUser;
+}
+
 interface AuthCtx {
   user: AuthUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  /** Store a session some other call already minted (the SSO hand-off). */
+  completeLogin: (r: LoginResponse) => void;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -41,14 +50,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refresh();
   }, [refresh]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const r = await api<{ access_token: string; refresh_token: string; user: AuthUser }>(
-      '/api/auth/login',
-      { method: 'POST', body: JSON.stringify({ email, password }), skipRefresh: true },
-    );
+  const completeLogin = useCallback((r: LoginResponse) => {
     tokenStore.set(r.access_token, r.refresh_token);
     setUser(r.user);
   }, []);
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const r = await api<LoginResponse>('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+        skipRefresh: true,
+      });
+      completeLogin(r);
+    },
+    [completeLogin],
+  );
 
   const logout = useCallback(async () => {
     try {
@@ -63,7 +80,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
-  return <Ctx.Provider value={{ user, loading, login, logout, refresh }}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={{ user, loading, login, completeLogin, logout, refresh }}>
+      {children}
+    </Ctx.Provider>
+  );
 }
 
 export function useAuth(): AuthCtx {

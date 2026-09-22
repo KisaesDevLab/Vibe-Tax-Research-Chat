@@ -43,6 +43,7 @@ import { setupRouter } from './routes/setup.js';
 import { mountBullBoard } from './routes/admin/bull-board.js';
 import { requireAuth, requireRole } from './middleware/auth.js';
 import { corsOptions } from './lib/cors.js';
+import { vibeAuthMiddleware } from './lib/vibeAuth.js';
 
 export function createApp(): Express {
   const app = express();
@@ -102,6 +103,13 @@ export function createApp(): Express {
       },
     }),
   );
+
+  // SSO (Vibe Auth): the engine's /auth/* routes — status, OIDC start /
+  // callback / back-channel logout, Settings → Authentication API. After
+  // the body parsers and cookie-parser (the back-channel posts a form, the
+  // settings API JSON), after the raw-body webhooks, before every router
+  // that applies requireAuth. Everything outside /auth/* passes through.
+  app.use(vibeAuthMiddleware());
 
   app.use('/api/health', healthRouter);
   app.use('/api/ping', pingRouter);

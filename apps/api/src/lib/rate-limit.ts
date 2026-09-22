@@ -8,6 +8,11 @@
 //     /api/auth/reset-password endpoint from token brute-forcing (the token
 //     itself is 256 bits so brute-force is intractable; the limiter is
 //     belt-and-braces against scripted attempts).
+//   ssoLimiter: 100 / 15 min / IP — the browser-driven Vibe Auth steps
+//     (/auth/oidc/start|callback|exchange, /auth/settings/test and the
+//     product's /api/auth/sso/exchange hand-off). NOT the
+//     back-channel logout endpoint: the identity provider posts those from
+//     ONE address for every user.
 import rateLimit from 'express-rate-limit';
 import { RedisStore, type RedisReply } from 'rate-limit-redis';
 import { getRedis } from './redis.js';
@@ -53,4 +58,13 @@ export const resetPasswordLimiter = rateLimit({
   legacyHeaders: false,
   store: new RedisStore({ sendCommand, prefix: 'rl:reset-password:' }),
   message: { error: 'too_many_reset_password_attempts', retry_after_seconds: 3600 },
+});
+
+export const ssoLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: new RedisStore({ sendCommand, prefix: 'rl:sso:' }),
+  message: { error: 'too_many_sso_attempts', retry_after_seconds: 900 },
 });

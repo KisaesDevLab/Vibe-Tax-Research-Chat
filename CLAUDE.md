@@ -161,7 +161,10 @@ true and the archive key is never surfaced. The manual "set MASTER_KEY + restart
 report only remains for archives that carry no key. Rows undecryptable under the
 archive key were already dead on the source — they're left as-is and listed in
 `verify.rekeyFailures`, never allowed to sink the restore. Crypto primitives live in
-`lib/crypto.ts` as `sealWith`/`openWith` (explicit key; `seal`/`open` wrap env).
+`lib/crypto.ts` as `sealWith`/`openWith` (explicit key; `seal`/`open` wrap env). Any NEW
+table that seals a value under MASTER_KEY must be added to `rekeySecrets` or a restore
+silently breaks it — the SSO client secret (`auth_settings.value.clientSecretWrapped`,
+`lib/vibeAuthSecret.ts`) is the second such place.
 
 ### nginx upload cap vs backup restores
 
@@ -426,6 +429,62 @@ result cache; the only cache is React Query's per-browser-tab memory (30 s stale
 keyed by query text), which never leaves the tab. Trigger: sidebar magnifier or ⌘/Ctrl+K,
 `components/ChatSearchDialog.tsx`. No index backs the ILIKE scan — fine at appliance
 scale; add pg_trgm GIN indexes on `messages.content` / `chats.title` if a firm outgrows it.
+
+### SSO (Vibe Auth): a one-time code on the fragment, `sid` on the refresh row, revocation by internal sid
+
+Single sign-on is `@kisaesdevlab/vibe-auth` (GitHub Packages — `~/.npmrc` needs a `read:packages`
+token; both Dockerfiles take it as the `NODE_AUTH_TOKEN` BuildKit secret; `release.yml` passes
+`GITHUB_TOKEN`, which works only after the Vibe-Auth package grants this repo Actions access).
+Operator note: `docs/sso.md`. The product side is `lib/vibeAuth.ts` (engine, session adapter,
+`/auth/*` middleware, login policy), `lib/vibeAuthUsers.ts` (user adapter + audit sink; no Express
+import, the break-glass CLI loads it) and `src/vibeAuthAdapter.ts` (CLI entry; the image bakes
+`VIBE_AUTH_ADAPTER` because the CLI resolves package.json from `/app`). Invariants:
+
+- **Tokens never ride a URL.** The callback lands on `/login#sso_code=<code>` (single use, 60 s,
+  sha256 on `auth_sessions_oidc.handoff_hash`); `POST /api/auth/sso/exchange` claims it with ONE
+  atomic UPDATE and returns the login JSON. The Vibe-Auth plan's `#sso_token=…&sso_refresh=…`
+  hand-off was rejected: a 30-day refresh token in browser history.
+- **`sid` lives on `auth_refresh_tokens.sid`, not in the refresh JWT.** `/refresh` copies it into
+  the new row and the new access token, so a whole 30-day chain is revocable by session. Every
+  session is minted by `lib/sessions.ts` `issueTokens` (jti = `randomUUID()` up front) — the old
+  insert-`'pending'`-then-update dance collided on the UNIQUE `token_hash` under concurrent logins.
+- **Revocation keys.** The engine's back-channel writes `s:<IdP sid>`, which can never match our
+  tokens (their `sid` is our own id). `destroyByIdentity` therefore revokes `s:<internal sid>` for
+  every row it deletes (+ `u:<user>` and every refresh row for sub/user-level logout — the person is
+  out, local-password sessions included). `POST /api/auth/logout` on an SSO session revokes its sid
+  too, so the access token dies now, not in ≤15 min. `requireAuth` is async and consults the list on
+  EVERY request (one indexed read; no read when no hook is registered, i.e. unit tests); a hook error
+  fails closed (503). Local login sets no sid and pays only that read.
+- **Cookie acceptance on `/auth/*` is exactly one route**: `GET /auth/oidc/start?test=1` (the
+  settings page's test-connection popup is a plain navigation, so `POST /auth/settings/test` re-sets
+  `vibe_at` from the bearer first). Everything else is bearer-only — a Lax cookie honoured on
+  `/auth/oidc/logout` is a logout-CSRF.
+- **`/auth/*` must be proxied everywhere `/api/*` is** (`apps/web/nginx.conf`, `vite.config.ts`,
+  the appliance manifest's `auth` matcher). The engine runs with `basePath: ''` because every proxy
+  strips the SPA prefix; browser-facing paths get `spaPrefix` (from `VIBE_OIDC_PUBLIC_URL` →
+  `APP_BASE_URL` setting → `PUBLIC_BASE_URL`) added back in `handleAuthRequest`.
+- **Break-glass is `vibe-breakglass@vibe-tax.local`** (`users` has no username column; zod
+  `.email()` rejects `@localhost`) and signs in at `/login/local`. `localLoginRefusal(email)` maps
+  the email back to the package's username before `localLoginAllowed`. `createLocalUser` derives
+  the email from the username and ignores the CLI's `input.email`. `POST /api/auth/login` also
+  admits the literal username (`loginEmailFor`) — the Appliance prints nothing else — and the login
+  form's identifier is `type="text"` for the same reason. Password only: the product has no MFA.
+- **Break-glass is protected in every mode.** Admin → Users answers `409 breakglass_protected` to
+  disable / demote / delete / send-reset on it and to creating an account on its address;
+  `countOtherActiveAdmins` (`lib/vibeAuthUsers.ts`, shared by Admin → Users and role sync) never
+  counts it as "another admin".
+- **`users.has_local_password`** (0023) is `false` only for JIT-provisioned accounts. Self-service
+  forgot/reset is refused for those and for break-glass with the unknown-account response (audit
+  metadata `refused`); admin set-password / an admin-sent reset flips it to `true`. Any NEW code
+  path that writes `password_hash` for a user-chosen password must set it too.
+- **Role sync cannot demote the last active admin or re-role break-glass.** Package ≤1.0.x treats
+  `UserAdapter.setRole` as infallible and audits `vibe.auth.role.changed` right after, so `setRole`
+  skips the write silently and `vibeAuditSink` stamps that one event `refused: true` + `reason`
+  (the shape the package adopts once it asks `countOtherActiveAdmins` itself). Sessions are minted
+  from the DB row at `/sso/exchange`, so the engine's in-memory "new role" never reaches a token.
+- **`.appliance/manifest.json` is not what the appliance reads** — the vendored
+  `Vibe-Appliance/console/manifests/vibe-tax-research.json` is, and its shape already diverged
+  (`subdomain` + `routing` vs this copy's `subdomains[]`). The SSO block for it is in `docs/sso.md`.
 
 ## Open architectural decisions
 

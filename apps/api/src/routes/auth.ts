@@ -1,20 +1,43 @@
 // Phase 3 — auth routes: /login, /refresh, /logout.
 // Phase XX — /forgot-password, /reset-password.
+// SSO — /sso/exchange (Vibe Auth hand-off), local-login policy, revocation.
 import crypto from 'node:crypto';
 import { Router, type Request, type Response } from 'express';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
-import { eq, and, isNull, ne } from 'drizzle-orm';
+import { eq, and, isNull, sql } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
-import { users, auth_refresh_tokens, password_reset_tokens } from '@vibe/db/schema';
-import { signAccess, signRefresh, verifyRefresh, hashToken } from '../lib/jwt.js';
-import { loginLimiter, forgotPasswordLimiter, resetPasswordLimiter } from '../lib/rate-limit.js';
+import {
+  users,
+  auth_refresh_tokens,
+  auth_sessions_oidc,
+  password_reset_tokens,
+  type User,
+} from '@vibe/db/schema';
+import { verifyRefresh, hashToken } from '../lib/jwt.js';
+import { issueTokens, revokeRefreshByUser } from '../lib/sessions.js';
+import {
+  loginLimiter,
+  forgotPasswordLimiter,
+  resetPasswordLimiter,
+  ssoLimiter,
+} from '../lib/rate-limit.js';
 import { audit } from '../lib/audit.js';
 import { logger } from '../lib/logger.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, isTokenRevoked } from '../middleware/auth.js';
 import { ACCESS_COOKIE_NAME, accessCookieOptions } from '../lib/cookies.js';
 import { buildMailer } from '../lib/email/index.js';
 import { notificationsEmailQueue } from '../jobs/queues.js';
+import {
+  BREAKGLASS_USERNAME,
+  endSsoSession,
+  getVibeAuth,
+  isBreakglassEmail,
+  isSsoOnlyAccount,
+  localLoginIdentifier,
+  localLoginRefusal,
+  loginEmailFor,
+} from '../lib/vibeAuth.js';
 
 function setAccessCookie(req: Request, res: Response, token: string) {
   res.cookie(ACCESS_COOKIE_NAME, token, accessCookieOptions(req));
@@ -25,8 +48,41 @@ function clearAccessCookie(req: Request, res: Response) {
 
 export const authRouter = Router();
 
+/** The user shape every session-minting response carries (login, SSO exchange, /me). */
+function publicUser(
+  user: Pick<
+    User,
+    | 'id'
+    | 'email'
+    | 'display_name'
+    | 'role'
+    | 'is_active'
+    | 'monthly_spend_cap_usd'
+    | 'can_override_model'
+  >,
+) {
+  return {
+    id: user.id,
+    email: user.email,
+    display_name: user.display_name,
+    role: user.role,
+    is_active: user.is_active,
+    monthly_spend_cap_usd: user.monthly_spend_cap_usd ? Number(user.monthly_spend_cap_usd) : null,
+    can_override_model: user.can_override_model,
+  };
+}
+
+// The break-glass admin may sign in with its literal USERNAME as well as the
+// address it implies: the Appliance prints only `username: vibe-breakglass`.
 const loginSchema = z.object({
-  email: z.string().email().toLowerCase(),
+  email: z.union([
+    z.string().email().toLowerCase(),
+    z
+      .string()
+      .trim()
+      .toLowerCase()
+      .refine((v) => v === BREAKGLASS_USERNAME.toLowerCase()),
+  ]),
   password: z.string().min(1),
 });
 
@@ -36,7 +92,16 @@ authRouter.post('/login', loginLimiter, async (req, res) => {
     res.status(400).json({ error: 'bad_request' });
     return;
   }
-  const { email, password } = parsed.data;
+  const { password } = parsed.data;
+  const email = loginEmailFor(parsed.data.email);
+  // SSO policy (I5): in oidc_only mode only the break-glass admin may use a
+  // password. Inline rather than the package's guardLocalLogin so the
+  // product's error envelope is kept.
+  const refusal = localLoginRefusal(email);
+  if (refusal) {
+    res.status(403).json(refusal);
+    return;
+  }
   const db = getDb();
   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
@@ -61,43 +126,79 @@ authRouter.post('/login', loginLimiter, async (req, res) => {
     return;
   }
 
-  // Issue refresh
-  const refreshRow = await db
-    .insert(auth_refresh_tokens)
-    .values({
-      user_id: user.id,
-      token_hash: 'pending',
-      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      user_agent: req.headers['user-agent'] ?? null,
-      ip: req.ip ?? null,
-    })
-    .returning({ id: auth_refresh_tokens.id });
-  const jti = refreshRow[0]!.id;
-  const refresh_token = signRefresh({ sub: user.id, jti });
-  await db
-    .update(auth_refresh_tokens)
-    .set({ token_hash: hashToken(refresh_token) })
-    .where(eq(auth_refresh_tokens.id, jti));
-
+  const { access_token, refresh_token } = await issueTokens(db, user, {
+    user_agent: req.headers['user-agent'],
+    ip: req.ip,
+  });
   await db.update(users).set({ last_login_at: new Date() }).where(eq(users.id, user.id));
 
-  const access_token = signAccess({ sub: user.id, role: user.role, email: user.email });
   setAccessCookie(req, res, access_token);
   await audit({ actor_user_id: user.id, action: 'auth.login.success', ip: req.ip });
-
-  res.json({
-    access_token,
-    refresh_token,
-    user: {
-      id: user.id,
-      email: user.email,
-      display_name: user.display_name,
-      role: user.role,
-      is_active: user.is_active,
-      monthly_spend_cap_usd: user.monthly_spend_cap_usd ? Number(user.monthly_spend_cap_usd) : null,
-      can_override_model: user.can_override_model,
-    },
+  // vibe.auth.breakglass.used when this was the break-glass admin (D12 audit).
+  await getVibeAuth().afterLocalLogin({
+    userId: user.id,
+    username: localLoginIdentifier(email),
+    email: user.email,
+    ip: req.ip,
   });
+
+  res.json({ access_token, refresh_token, user: publicUser(user) });
+});
+
+// ── SSO hand-off ─────────────────────────────────────────────────────────
+// The Vibe Auth callback (lib/vibeAuth.ts) parks the identity under a fresh
+// `sid` and lands the SPA on /login#sso_code=<code>. The code is single-use
+// and lives 60 s; claiming it here is one atomic UPDATE, so a replay (or two
+// tabs racing) gets exactly one session. The response is the login shape,
+// so the SPA stores it exactly as a password login. Rate-limited with the
+// other browser-driven SSO steps (not the 5-per-window password limiter: the
+// code is 256 random bits and single-use, and every SSO sign-in lands here).
+
+const ssoExchangeSchema = z.object({ code: z.string().min(20).max(256) });
+
+authRouter.post('/sso/exchange', ssoLimiter, async (req, res) => {
+  const parsed = ssoExchangeSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'bad_request' });
+    return;
+  }
+  const db = getDb();
+  const handoffHash = hashToken(parsed.data.code);
+  const [claimed] = await db
+    .update(auth_sessions_oidc)
+    .set({ handoff_claimed_at: new Date() })
+    .where(
+      and(
+        eq(auth_sessions_oidc.handoff_hash, handoffHash),
+        isNull(auth_sessions_oidc.handoff_claimed_at),
+        sql`${auth_sessions_oidc.handoff_expires_at} > now()`,
+      ),
+    )
+    .returning({ sid: auth_sessions_oidc.sid, user_id: auth_sessions_oidc.user_id });
+  if (!claimed) {
+    res.status(400).json({ error: 'invalid_or_expired_code' });
+    return;
+  }
+  const [user] = await db.select().from(users).where(eq(users.id, claimed.user_id)).limit(1);
+  if (!user || !user.is_active || user.deleted_at) {
+    res.status(401).json({ error: 'invalid_credentials' });
+    return;
+  }
+
+  const { access_token, refresh_token } = await issueTokens(db, user, {
+    user_agent: req.headers['user-agent'],
+    ip: req.ip,
+    sid: claimed.sid,
+  });
+  await db.update(users).set({ last_login_at: new Date() }).where(eq(users.id, user.id));
+  setAccessCookie(req, res, access_token);
+  await audit({
+    actor_user_id: user.id,
+    action: 'auth.login.success',
+    metadata: { method: 'oidc', sid: claimed.sid },
+    ip: req.ip,
+  });
+  res.json({ access_token, refresh_token, user: publicUser(user) });
 });
 
 const refreshSchema = z.object({ refresh_token: z.string() });
@@ -108,7 +209,7 @@ authRouter.post('/refresh', async (req, res) => {
     res.status(400).json({ error: 'bad_request' });
     return;
   }
-  let claims: { sub: string; jti: string };
+  let claims;
   try {
     claims = verifyRefresh(parsed.data.refresh_token);
   } catch {
@@ -131,36 +232,31 @@ authRouter.post('/refresh', async (req, res) => {
     res.status(401).json({ error: 'invalid_refresh' });
     return;
   }
+  // Revocation list (SSO back-channel logout / sign-out): a refresh token
+  // issued at or before the user's (or session's) revocation moment must
+  // not mint a fresh pair — that is exactly how the SPA would otherwise
+  // silently re-establish a session the identity provider ended.
+  if (await isTokenRevoked({ sub: claims.sub, sid: row.sid ?? undefined, iat: claims.iat })) {
+    res.status(401).json({ error: 'invalid_refresh' });
+    return;
+  }
   const [user] = await db.select().from(users).where(eq(users.id, claims.sub)).limit(1);
-  if (!user || !user.is_active) {
+  if (!user || !user.is_active || user.deleted_at) {
     res.status(401).json({ error: 'invalid_refresh' });
     return;
   }
 
-  // Rotate
+  // Rotate. An SSO-born chain keeps its sid so every later token stays
+  // revocable by session.
   await db
     .update(auth_refresh_tokens)
     .set({ revoked_at: new Date(), rotated_at: new Date() })
     .where(eq(auth_refresh_tokens.id, row.id));
-
-  const newRow = await db
-    .insert(auth_refresh_tokens)
-    .values({
-      user_id: user.id,
-      token_hash: 'pending',
-      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      user_agent: req.headers['user-agent'] ?? null,
-      ip: req.ip ?? null,
-    })
-    .returning({ id: auth_refresh_tokens.id });
-  const newJti = newRow[0]!.id;
-  const refresh_token = signRefresh({ sub: user.id, jti: newJti });
-  await db
-    .update(auth_refresh_tokens)
-    .set({ token_hash: hashToken(refresh_token) })
-    .where(eq(auth_refresh_tokens.id, newJti));
-
-  const access_token = signAccess({ sub: user.id, role: user.role, email: user.email });
+  const { access_token, refresh_token } = await issueTokens(db, user, {
+    user_agent: req.headers['user-agent'],
+    ip: req.ip,
+    sid: row.sid,
+  });
   setAccessCookie(req, res, access_token);
   await audit({ actor_user_id: user.id, action: 'auth.refresh', ip: req.ip });
   res.json({ access_token, refresh_token });
@@ -179,6 +275,9 @@ authRouter.post('/logout', requireAuth, async (req, res) => {
       // ignore
     }
   }
+  // An SSO-born session is also ended server-side: identity row, the whole
+  // refresh chain by sid, and the access token via the revocation list.
+  if (req.auth?.sid) await endSsoSession(req.auth.sid);
   clearAccessCookie(req, res);
   await audit({ actor_user_id: req.auth?.user_id, action: 'auth.logout', ip: req.ip });
   res.status(204).end();
@@ -190,15 +289,7 @@ authRouter.get('/me', requireAuth, async (req, res) => {
     res.status(404).json({ error: 'not_found' });
     return;
   }
-  res.json({
-    id: user.id,
-    email: user.email,
-    display_name: user.display_name,
-    role: user.role,
-    is_active: user.is_active,
-    monthly_spend_cap_usd: user.monthly_spend_cap_usd ? Number(user.monthly_spend_cap_usd) : null,
-    can_override_model: user.can_override_model,
-  });
+  res.json(publicUser(user));
 });
 
 // ── Password change (logged-in self-service) ─────────────────────────────
@@ -255,14 +346,7 @@ authRouter.post('/change-password', requireAuth, resetPasswordLimiter, async (re
       // Unverifiable token: revoke everything, including this session.
     }
   }
-  const revokeWhere = keepJti
-    ? and(
-        eq(auth_refresh_tokens.user_id, user.id),
-        isNull(auth_refresh_tokens.revoked_at),
-        ne(auth_refresh_tokens.id, keepJti),
-      )
-    : and(eq(auth_refresh_tokens.user_id, user.id), isNull(auth_refresh_tokens.revoked_at));
-  await db.update(auth_refresh_tokens).set({ revoked_at: new Date() }).where(revokeWhere);
+  await revokeRefreshByUser(db, user.id, { exceptJti: keepJti });
 
   await audit({
     actor_user_id: user.id,
@@ -297,12 +381,25 @@ authRouter.post('/forgot-password', forgotPasswordLimiter, async (req, res) => {
   const { email } = parsed.data;
   const db = getDb();
   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
-  const eligible = Boolean(user && user.is_active && !user.deleted_at);
+  // Two accounts never get a self-service reset, and the answer is the same
+  // `{ ok: true }` an unknown address gets (the audit row says why):
+  //  - the break-glass admin — its password is provisioned and rotated by the
+  //    CLI / Appliance, and its address is not a mailbox;
+  //  - an SSO-only account (JIT-provisioned, never held a local password) —
+  //    the mailbox alone must not mint a local credential for it (I7).
+  const refused = !user
+    ? null
+    : isBreakglassEmail(user.email)
+      ? 'breakglass'
+      : isSsoOnlyAccount(user)
+        ? 'sso_only'
+        : null;
+  const eligible = Boolean(user && user.is_active && !user.deleted_at && !refused);
 
   await audit({
     actor_user_id: user?.id ?? null,
     action: 'auth.forgot_password.request',
-    metadata: { email, eligible },
+    metadata: { email, eligible, ...(refused ? { refused } : {}) },
     ip: req.ip,
   });
 
@@ -363,11 +460,32 @@ authRouter.post('/reset-password', resetPasswordLimiter, async (req, res) => {
     res.status(400).json({ error: 'invalid_or_expired_token' });
     return;
   }
+  // Belt and braces for the refusals in /forgot-password: a self-service
+  // token minted before they existed must not be redeemable either. An
+  // admin-sent token for an SSO-only account is the admin's decision and works.
+  if (
+    isBreakglassEmail(user.email) ||
+    (row.created_via === 'self_service' && isSsoOnlyAccount(user))
+  ) {
+    await audit({
+      actor_user_id: user.id,
+      action: 'auth.password_reset.refused',
+      target_type: 'user',
+      target_id: user.id,
+      metadata: {
+        reset_token_id: row.id,
+        refused: isBreakglassEmail(user.email) ? 'breakglass' : 'sso_only',
+      },
+      ip: req.ip,
+    });
+    res.status(400).json({ error: 'invalid_or_expired_token' });
+    return;
+  }
 
   const password_hash = await bcrypt.hash(new_password, 12);
   await db
     .update(users)
-    .set({ password_hash, updated_at: new Date() })
+    .set({ password_hash, has_local_password: true, updated_at: new Date() })
     .where(eq(users.id, user.id));
   await db
     .update(password_reset_tokens)
@@ -376,10 +494,7 @@ authRouter.post('/reset-password', resetPasswordLimiter, async (req, res) => {
   // Revoke every active refresh token for this user. If their account was
   // compromised, the attacker's existing sessions are killed; if they
   // simply forgot the password, this is a minor inconvenience.
-  await db
-    .update(auth_refresh_tokens)
-    .set({ revoked_at: new Date() })
-    .where(and(eq(auth_refresh_tokens.user_id, user.id), isNull(auth_refresh_tokens.revoked_at)));
+  await revokeRefreshByUser(db, user.id);
   await audit({
     actor_user_id: user.id,
     action: 'auth.password_reset.complete',

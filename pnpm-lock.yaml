@@ -56,6 +56,9 @@ importers:
       '@kisaes/vibe-ai-client':
         specifier: github:KisaesDevLab/Vibe-AI-Router#sdk-v0.2.0&path:packages/sdk
         version: https://codeload.github.com/KisaesDevLab/Vibe-AI-Router/tar.gz/68d3e4be867eea5f12856ed2a1132911e5de1ac9#path:packages/sdk
+      '@kisaesdevlab/vibe-auth':
+        specifier: ^1.0.3
+        version: 1.0.4(drizzle-orm@0.38.4(@types/react@18.3.28)(postgres@3.4.9)(react@18.3.1))(express@4.22.1)(react@18.3.1)
       '@types/adm-zip':
         specifier: ^0.5.8
         version: 0.5.8
@@ -280,6 +283,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@kisaesdevlab/vibe-auth':
+        specifier: ^1.0.3
+        version: 1.0.4(drizzle-orm@0.38.4(@types/react@18.3.28)(postgres@3.4.9)(react@18.3.1))(express@5.2.1)(react@18.3.1)
       '@monaco-editor/react':
         specifier: ^4.6.0
         version: 4.7.0(monaco-editor@0.55.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1509,6 +1515,15 @@ packages:
     resolution: {path: packages/sdk, tarball: https://codeload.github.com/KisaesDevLab/Vibe-AI-Router/tar.gz/68d3e4be867eea5f12856ed2a1132911e5de1ac9}
     version: 0.2.0
     engines: {node: '>=20'}
+
+  '@kisaesdevlab/vibe-auth@1.0.4':
+    resolution: {integrity: sha512-C5pF2zSPMss+yxmHD9StdwoZqqY3kDvMt9+OYOjp0Ze/SuUZCiiPqfClORVmSbenz9v+29BAcrjGhYmppXCD6g==, tarball: https://npm.pkg.github.com/download/@kisaesdevlab/vibe-auth/1.0.4/d3355144cbc9613b1b4b3c2e5bb87e08a3d17ba0}
+    engines: {node: '>=20'}
+    hasBin: true
+    peerDependencies:
+      drizzle-orm: '>=0.34'
+      express: '>=4.18'
+      react: '>=18'
 
   '@kwsites/file-exists@1.1.1':
     resolution: {integrity: sha512-m9/5YGR18lIwxSFDwfE3oA7bWuq9kdau6ugN4H2rJeyhFQZcG9AgSHkQtSD15a8WvTgfz9aikZMrKPHvbpqFiw==}
@@ -3180,6 +3195,7 @@ packages:
   eslint@9.39.4:
     resolution: {integrity: sha512-XoMjdBOwe/esVgEvLmNsD3IRHkm7fbKIUGvrleloJXUZgDHig2IPWNniv+GwjyJXzuNqVjlr5+4yVUZjycJwfQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -3691,6 +3707,9 @@ packages:
   jiti@2.6.1:
     resolution: {integrity: sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ==}
     hasBin: true
+
+  jose@5.10.0:
+    resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
 
   js-md5@0.8.3:
     resolution: {integrity: sha512-qR0HB5uP6wCuRMrWPTrkMaev7MJZwJuuw4fnwAzRgP4J4/F8RwtodOKpGp4XpqsLBFzzgqIO42efFAyz2Et6KQ==}
@@ -6322,6 +6341,22 @@ snapshots:
 
   '@kisaes/vibe-ai-client@https://codeload.github.com/KisaesDevLab/Vibe-AI-Router/tar.gz/68d3e4be867eea5f12856ed2a1132911e5de1ac9#path:packages/sdk': {}
 
+  '@kisaesdevlab/vibe-auth@1.0.4(drizzle-orm@0.38.4(@types/react@18.3.28)(postgres@3.4.9)(react@18.3.1))(express@4.22.1)(react@18.3.1)':
+    dependencies:
+      drizzle-orm: 0.38.4(@types/react@18.3.28)(postgres@3.4.9)(react@18.3.1)
+      express: 4.22.1
+      jose: 5.10.0
+      react: 18.3.1
+      zod: 3.25.76
+
+  '@kisaesdevlab/vibe-auth@1.0.4(drizzle-orm@0.38.4(@types/react@18.3.28)(postgres@3.4.9)(react@18.3.1))(express@5.2.1)(react@18.3.1)':
+    dependencies:
+      drizzle-orm: 0.38.4(@types/react@18.3.28)(postgres@3.4.9)(react@18.3.1)
+      express: 5.2.1
+      jose: 5.10.0
+      react: 18.3.1
+      zod: 3.25.76
+
   '@kwsites/file-exists@1.1.1':
     dependencies:
       debug: 4.4.3
@@ -8641,6 +8676,8 @@ snapshots:
   jiti@1.21.7: {}
 
   jiti@2.6.1: {}
+
+  jose@5.10.0: {}
 
   js-md5@0.8.3: {}
 

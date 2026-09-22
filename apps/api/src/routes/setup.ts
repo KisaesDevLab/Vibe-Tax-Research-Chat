@@ -9,9 +9,9 @@ import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { eq, count, sql } from 'drizzle-orm';
 import { getDb } from '@vibe/db';
-import { users, auth_refresh_tokens } from '@vibe/db/schema';
+import { users } from '@vibe/db/schema';
 import { audit } from '../lib/audit.js';
-import { signAccess, signRefresh, hashToken } from '../lib/jwt.js';
+import { issueTokens } from '../lib/sessions.js';
 import { setupBootstrapLimiter } from '../lib/rate-limit.js';
 import multer from 'multer';
 import { mkdir, rm } from 'node:fs/promises';
@@ -79,27 +79,11 @@ setupRouter.post('/bootstrap', setupBootstrapLimiter, async (req, res) => {
 
   // Issue an access + refresh token immediately so the wizard can call the
   // admin endpoints (key save, default model, sync) without a separate login.
-  const refreshRow = await db
-    .insert(auth_refresh_tokens)
-    .values({
-      user_id: inserted.id,
-      token_hash: 'pending',
-      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      user_agent: req.headers['user-agent'] ?? null,
-      ip: req.ip ?? null,
-    })
-    .returning({ id: auth_refresh_tokens.id });
-  const jti = refreshRow[0]!.id;
-  const refresh_token = signRefresh({ sub: inserted.id, jti });
-  await db
-    .update(auth_refresh_tokens)
-    .set({ token_hash: hashToken(refresh_token) })
-    .where(eq(auth_refresh_tokens.id, jti));
-  const access_token = signAccess({
-    sub: inserted.id,
-    role: 'admin',
-    email: parsed.data.email,
-  });
+  const { access_token, refresh_token } = await issueTokens(
+    db,
+    { id: inserted.id, role: 'admin', email: parsed.data.email },
+    { user_agent: req.headers['user-agent'], ip: req.ip },
+  );
   // Mirror into a cookie too, so /admin/queues (Bull Board) is reachable
   // immediately after bootstrap without a separate login.
   res.cookie(ACCESS_COOKIE_NAME, access_token, accessCookieOptions(req));
