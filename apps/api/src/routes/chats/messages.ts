@@ -30,6 +30,7 @@ import {
 } from '@vibe/db/schema';
 import { requireAuth } from '../../middleware/auth.js';
 import { streamChat, buildSystemPrompt } from '../../lib/anthropic/chat.js';
+import { describeStreamError, streamErrorNote } from '../../lib/anthropic/stream-errors.js';
 import { selectSkills } from '@vibe/shared';
 import { computeCost } from '../../lib/cost/calc.js';
 import { getSetting } from '../../lib/settings-store.js';
@@ -701,13 +702,21 @@ messagesRouter.post('/', async (req, res) => {
     // system_note so the failure surfaces in the chat instead of being
     // silently dropped on next refetch.
     completed = true;
-    logger.error({ err, chatId }, 'streamChat failed');
-    send('error', { error: (err as Error).message });
+    // The raw upstream payload goes to the log only; the transcript gets a
+    // plain-language cause and, when re-sending can help, the wording the
+    // web client keys its "Re-send question" button on.
+    const info = describeStreamError(err);
+    logger.error(
+      { err, chatId, kind: info.kind, request_id: info.requestId, retryable: info.retryable },
+      'streamChat failed',
+    );
+    const note = streamErrorNote(info);
+    send('error', { error: note, kind: info.kind, retryable: info.retryable });
     try {
       await db.insert(messages).values({
         chat_id: chatId,
         role: 'system_note',
-        content: `⚠ The assistant could not complete this turn: ${(err as Error).message.slice(0, 400)}`,
+        content: note,
       });
     } catch (writeErr) {
       logger.error({ err: writeErr, chatId }, 'failed to persist stream-error system_note');
