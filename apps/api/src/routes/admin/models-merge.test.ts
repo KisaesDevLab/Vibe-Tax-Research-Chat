@@ -6,7 +6,7 @@
 // active default as "removed" or zeroing out live pricing on apply.
 
 import { describe, expect, it } from 'vitest';
-import { mergeDiscoveryWithPricing, normalizeModelId } from './models.js';
+import { mergeDiscoveryWithPricing, normalizeModelId, overlayLivePricing } from './models.js';
 
 const PRICING_SEED = {
   models: [
@@ -182,5 +182,69 @@ describe('mergeDiscoveryWithPricing', () => {
       null,
     );
     expect(out[0]!.pricing_unknown).toBe(true);
+  });
+});
+
+describe('overlayLivePricing', () => {
+  const LIVE = [
+    {
+      model_id: 'claude-opus-4-7',
+      display_name: 'Claude Opus 4.7',
+      input_per_mtok: 5,
+      output_per_mtok: 25,
+      cache_write_per_mtok: 10,
+      cache_read_per_mtok: 0.5,
+    },
+    {
+      model_id: 'claude-opus-5-5',
+      display_name: 'Claude Opus 5.5',
+      input_per_mtok: 4,
+      output_per_mtok: 20,
+      cache_write_per_mtok: 8,
+      cache_read_per_mtok: 0.2,
+    },
+  ];
+
+  it('overwrites the four token rates and keeps everything else from the manifest', () => {
+    const { manifest } = overlayLivePricing(PRICING_SEED, LIVE);
+    const opus = manifest.models.find((m) => m.model_id === 'claude-opus-4-7')!;
+    expect(opus.cache_write_per_mtok).toBe(10);
+    expect(opus.tokenizer_factor).toBe(1.18);
+    expect(opus.is_active).toBe(true);
+    // Not on the live list → manifest pricing stands.
+    const haiku = manifest.models.find((m) => m.model_id === 'claude-haiku-4-5')!;
+    expect(haiku.cache_write_per_mtok).toBe(1.25);
+  });
+
+  it('never adds a model to the manifest — page-only models are returned apart', () => {
+    // On the discovery-failed path the manifest IS the diff source; a model
+    // this API key may not even have access to must not appear there.
+    const { manifest, liveOnly } = overlayLivePricing(PRICING_SEED, LIVE);
+    expect(manifest.models.map((m) => m.model_id)).toEqual(
+      PRICING_SEED.models.map((m) => m.model_id),
+    );
+    expect(liveOnly.map((m) => m.model_id)).toEqual(['claude-opus-5-5']);
+    expect(liveOnly[0]).toMatchObject({ is_active: false, pricing_only: true });
+  });
+
+  it('prices a newly discovered model that the manifest has never heard of', () => {
+    const { manifest, liveOnly } = overlayLivePricing(PRICING_SEED, LIVE);
+    const out = mergeDiscoveryWithPricing(
+      [{ id: 'claude-opus-5-5', display_name: 'Claude Opus 5.5', created_at: '2026-08-01' }],
+      { models: [...manifest.models, ...liveOnly] },
+    );
+    expect(out[0]).toMatchObject({
+      model_id: 'claude-opus-5-5',
+      input_per_mtok: 4,
+      output_per_mtok: 20,
+      is_active: false,
+    });
+    expect(out[0]!.pricing_unknown).toBeUndefined();
+  });
+
+  it('works with no manifest at all', () => {
+    const { manifest, liveOnly } = overlayLivePricing(null, LIVE);
+    expect(manifest.models).toEqual([]);
+    expect(liveOnly).toHaveLength(2);
   });
 });

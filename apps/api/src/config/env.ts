@@ -86,6 +86,12 @@ const schema = z
       .string()
       .url()
       .default('https://vibemb.com/manifests/anthropic-models.json'),
+    // Anthropic's published pricing table (markdown). Read by Admin → Models
+    // → "Check Anthropic…" so discovered models arrive priced.
+    MODELS_PRICING_URL: z
+      .string()
+      .url()
+      .default('https://platform.claude.com/docs/en/about-claude/pricing.md'),
 
     // Phase 32 — firm reference library embeddings.
     //   voyage     — Voyage AI (default; voyage-3-large is 1024-dim cosine).

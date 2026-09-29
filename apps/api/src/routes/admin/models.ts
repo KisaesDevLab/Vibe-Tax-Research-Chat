@@ -17,6 +17,7 @@ import {
   discoverAnthropicModels,
   type DiscoveredModel,
 } from '../../lib/anthropic/models-discovery.js';
+import { fetchLivePricing, type LivePrice } from '../../lib/anthropic/pricing-page.js';
 
 export const adminModelsRouter = Router();
 adminModelsRouter.use(requireAuth, requireRole('admin'));
@@ -115,6 +116,9 @@ interface ManifestEntry {
   // API discovery for which no pricing manifest entry exists. Admin
   // must edit pricing before this row can be applied.
   pricing_unknown?: boolean;
+  // Set true when the entry carries token rates from the Anthropic pricing
+  // page and nothing else — no manifest row stands behind it.
+  pricing_only?: boolean;
 }
 
 // Validate the structural shape of a pricing manifest. Defensive
@@ -229,15 +233,60 @@ export function mergeDiscoveryWithPricing(
   return out;
 }
 
+// Lay Anthropic's published prices over the manifest. The manifest stays the
+// source for everything the pricing page does not state (tokenizer factor,
+// web-tool unit costs, notes, default active flag); only the four token
+// rates are overwritten.
+//
+// Models priced on the page but absent from the manifest are returned
+// separately: they may only ever reach the diff by being DISCOVERED for this
+// API key. Folding them into the manifest would, on the discovery-failed
+// path, offer every model Anthropic has ever priced as an addition.
+export function overlayLivePricing(
+  base: { models: ManifestEntry[] } | null,
+  live: LivePrice[],
+): { manifest: { models: ManifestEntry[] }; liveOnly: ManifestEntry[] } {
+  const liveById = new Map(live.map((p) => [p.model_id, p]));
+  const baseIds = new Set((base?.models ?? []).map((m) => m.model_id));
+  const models = (base?.models ?? []).map((m) => {
+    const p = liveById.get(m.model_id);
+    if (!p) return m;
+    return {
+      ...m,
+      input_per_mtok: p.input_per_mtok,
+      output_per_mtok: p.output_per_mtok,
+      cache_write_per_mtok: p.cache_write_per_mtok,
+      cache_read_per_mtok: p.cache_read_per_mtok,
+    };
+  });
+  const liveOnly = live
+    .filter((p) => !baseIds.has(p.model_id))
+    .map((p) => ({
+      model_id: p.model_id,
+      display_name: p.display_name,
+      input_per_mtok: p.input_per_mtok,
+      output_per_mtok: p.output_per_mtok,
+      cache_write_per_mtok: p.cache_write_per_mtok,
+      cache_read_per_mtok: p.cache_read_per_mtok,
+      // Priced, but never chatted with on this install — the admin enables it.
+      is_active: false,
+      notes: 'Priced from the Anthropic pricing page. Added inactive — enable after a test chat.',
+      pricing_only: true,
+    }));
+  return { manifest: { models }, liveOnly };
+}
+
 adminModelsRouter.post('/refresh', async (_req, res) => {
   // Source-of-truth ladder:
   //   1. Anthropic Models API (admin's key) — authoritative for which
   //      models the appliance can invoke today. Returns id /
   //      display_name / capabilities but NOT pricing.
-  //   2. Upstream manifest URL — pricing reference (currently a
+  //   2. Anthropic's published pricing page — authoritative for the four
+  //      token rates. Overlaid on whichever manifest was loaded.
+  //   3. Upstream manifest URL — pricing reference (currently a
   //      placeholder CDN; the 404 fallback was the only path until
   //      Anthropic discovery landed).
-  //   3. Bundled seed at packages/db/seeds/models.json — pricing
+  //   4. Bundled seed at packages/db/seeds/models.json — pricing
   //      reference shipped inside @vibe/db. Always present.
   //
   // The Anthropic API call uses the encrypted admin-stored key. When
@@ -267,13 +316,33 @@ adminModelsRouter.post('/refresh', async (_req, res) => {
     pricingManifest = isManifestShape(bundled) ? bundled : null;
   }
 
+  let pricing_source: 'anthropic_pricing_page' | 'upstream' | 'bundled' = upstream_error
+    ? 'bundled'
+    : 'upstream';
+  let pricing_error: string | undefined;
+  let liveOnly: ManifestEntry[] = [];
+  const live = await fetchLivePricing(env.MODELS_PRICING_URL);
+  if (live.ok) {
+    const overlaid = overlayLivePricing(pricingManifest, live.prices);
+    pricingManifest = overlaid.manifest;
+    liveOnly = overlaid.liveOnly;
+    pricing_source = 'anthropic_pricing_page';
+  } else {
+    pricing_error = live.error;
+    logger.warn({ pricing_error }, 'live pricing unavailable; using manifest pricing');
+  }
+
   let manifest: { models: ManifestEntry[] } | null = null;
   let source: 'anthropic' | 'upstream' | 'bundled' = 'bundled';
   let discovery_error: string | undefined;
 
   const discovery = await discoverAnthropicModels();
   if (discovery.ok) {
-    manifest = { models: mergeDiscoveryWithPricing(discovery.models, pricingManifest) };
+    manifest = {
+      models: mergeDiscoveryWithPricing(discovery.models, {
+        models: [...(pricingManifest?.models ?? []), ...liveOnly],
+      }),
+    };
     source = 'anthropic';
   } else {
     discovery_error = discovery.error;
@@ -334,7 +403,17 @@ adminModelsRouter.post('/refresh', async (_req, res) => {
       changedFields.display_name = [cur.display_name, m.display_name];
     }
     if (Object.keys(changedFields).length > 0) {
-      updated.push({ model_id: m.model_id, before: changedFields, after: m });
+      // apply writes every column of `after`. An entry that carries prices
+      // only (pricing page, no manifest row) must not reset what the admin
+      // already has on the row to the insert defaults.
+      const after: ManifestEntry = {
+        ...m,
+        tokenizer_factor: m.tokenizer_factor ?? Number(cur.tokenizer_factor),
+        web_fetch_unit_cost: m.web_fetch_unit_cost ?? Number(cur.web_fetch_unit_cost),
+        web_search_unit_cost: m.web_search_unit_cost ?? Number(cur.web_search_unit_cost),
+        notes: m.pricing_only ? (cur.notes ?? undefined) : m.notes,
+      };
+      updated.push({ model_id: m.model_id, before: changedFields, after });
     }
   }
 
@@ -351,6 +430,8 @@ adminModelsRouter.post('/refresh', async (_req, res) => {
 
   res.json({
     source,
+    pricing_source,
+    pricing_error,
     upstream_error,
     discovery_error,
     added,

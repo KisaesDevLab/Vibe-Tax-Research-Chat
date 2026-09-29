@@ -219,13 +219,49 @@ what Anthropic's server tools are. So the web-tool caps (`max_uses`) and router 
 disjoint concerns — the caps only ever apply on the direct path. `tables-draft` and
 `strategy-watch` are pinned `null` in `JOB_TASK_CLASS` for the same reason.
 
-### Model registry: unpriced discoveries insert as inactive
+### Streaming chat: transient upstream failures retry, and the transcript never shows raw JSON
 
-The Anthropic Models API returns no pricing, so `refresh/apply` inserts
-`pricing_unknown` models with $0 rates and `is_active: false`; the PATCH handler
-refuses `is_active: true` while input+output pricing are both zero
-(`pricing_required_to_activate`). Admins set rates via the inline "edit pricing" row
-on Admin → Models, then enable.
+A failure AFTER the API has answered 200 arrives as a mid-stream SSE `error` event. SDK
+0.40.1 raises that as an `APIConnectionError` with **no status** and the raw event JSON as
+its message — so the SDK's own `maxRetries` never sees it, and `err.status` cannot classify
+it. Live case: `overloaded_error` / "Code execution container setup is temporarily
+unavailable" (the sandbox the skills run in), which was printed verbatim into the chat.
+
+- `lib/anthropic/stream-errors.ts` `describeStreamError` recovers the type by parsing the
+  message and maps it to a kind + plain-language text + `retryable`. The raw payload goes to
+  the log only; the note keeps the Anthropic `request_id` as a reference.
+- `streamChat` retries (3 attempts, jittered, 1.5 s base) **only while nothing has been
+  yielded** — once a delta has reached the caller a second attempt would duplicate text.
+  Rate limits are deliberately NOT auto-retried (user-retryable after a wait only).
+- The web "Re-send question" button keys on the note's WORDING
+  (`/re-?send|…|retry|try again/`). Any new system_note that a re-send can fix must contain
+  one of those words; notes for failures a re-send cannot fix (bad key, kill switch,
+  oversized conversation) must not — `stream-errors.test.ts` asserts both directions.
+
+### Model registry: pricing comes from Anthropic's published table, cache writes at the 1h rate
+
+The Anthropic Models API returns no pricing. `POST /api/admin/models/refresh` therefore
+also reads the pricing page as markdown (`MODELS_PRICING_URL`,
+`lib/anthropic/pricing-page.ts`) and overlays the four token rates on the manifest
+(`overlayLivePricing`). Rules:
+
+- It is a docs page, not an API: columns are located by header text, a row is kept only if
+  all four prices parse and are mutually plausible (read < input < write, input < output),
+  and fewer than 5 surviving rows rejects the page. Failure degrades to manifest pricing and
+  is reported as `pricing_error` — it never produces a diff.
+- Models priced on the page but absent from the manifest reach the diff ONLY via discovery
+  for this API key (`liveOnly`); on the discovery-failed path the manifest is the diff
+  source and must not grow.
+- **`cache_write_per_mtok` is the 1-HOUR rate (2x input).** Every breakpoint in
+  `streamChat` sets `ttl: '1h'`; the registry used to hold the 5-minute rate (1.25x) and
+  under-reported every cache write. The seed and the live overlay must agree or the diff
+  flaps between them. If a 5-minute cache is ever introduced, one column is no longer
+  enough.
+- Still unpriced after all that → `pricing_unknown`, inserted with $0 rates and
+  `is_active: false`; the PATCH handler refuses `is_active: true` while input+output
+  pricing are both zero (`pricing_required_to_activate`).
+- New models always arrive INACTIVE. Fable-tier models additionally require 30-day data
+  retention on the Anthropic org and 400 under zero data retention.
 
 ### Tables-draft is web-grounded and pinned direct
 
