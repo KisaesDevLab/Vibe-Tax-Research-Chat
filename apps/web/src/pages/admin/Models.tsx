@@ -41,6 +41,8 @@ export function AdminModelsPage() {
   // 'anthropic' — the bundled / upstream paths can't say what's missing).
   interface RefreshDiff {
     source: 'anthropic' | 'upstream' | 'bundled';
+    pricing_source?: 'anthropic_pricing_page' | 'upstream' | 'bundled';
+    pricing_error?: string;
     upstream_error?: string;
     discovery_error?: string;
     added: Array<{
@@ -148,9 +150,9 @@ export function AdminModelsPage() {
           onClick={() => refresh.mutate()}
           disabled={refresh.isPending}
           className="px-3 py-1.5 border border-ink/20 rounded text-sm disabled:opacity-50"
-          title="Calls Anthropic /v1/models with your stored API key; falls back to the bundled pricing seed if the call fails"
+          title="Lists models via Anthropic /v1/models with your stored API key and reads current prices from Anthropic's published price list; falls back to the bundled pricing seed if either fails. Nothing changes until you click Apply."
         >
-          {refresh.isPending ? 'Checking Anthropic…' : 'Check Anthropic for new models'}
+          {refresh.isPending ? 'Checking Anthropic…' : 'Check Anthropic for new models & pricing'}
         </button>
       </div>
 
@@ -194,6 +196,29 @@ export function AdminModelsPage() {
                 </>
               )}
             </div>
+          )}
+          <div className="text-xs text-ink/70 mb-2">
+            {diff.pricing_source === 'anthropic_pricing_page' ? (
+              <>
+                Pricing checked against Anthropic&apos;s published price list. Cache writes use the
+                1-hour rate, which is what chat is billed at.
+              </>
+            ) : (
+              <>
+                Could not read Anthropic&apos;s published price list
+                {diff.pricing_error && (
+                  <>
+                    {' '}
+                    (<span className="font-mono">{diff.pricing_error}</span>)
+                  </>
+                )}{' '}
+                — pricing below comes from the manifest shipped with this release and may be out of
+                date.
+              </>
+            )}
+          </div>
+          {diff.added.length === 0 && diff.updated.length === 0 && diff.removed.length === 0 && (
+            <div className="text-sm mb-2">No new models and no price changes.</div>
           )}
           {diff.added.some((a) => a.pricing_unknown) && (
             <div className="border border-gold/40 bg-gold/5 text-ink/80 text-xs rounded p-2 mb-2">

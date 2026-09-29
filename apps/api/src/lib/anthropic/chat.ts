@@ -13,6 +13,8 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { getAnthropic } from './client.js';
 import { buildQuestionModePrompt } from './question-mode.js';
+import { describeStreamError, isAutoRetryable } from './stream-errors.js';
+import { logger } from '../logger.js';
 import { WEB_ALLOWLIST_DOMAINS, DEFAULT_WEB_BUDGET, describeReachableSources } from '@vibe/shared';
 
 export type ChatEvent =
@@ -195,6 +197,56 @@ export async function* streamChat(opts: StreamChatOpts): AsyncIterable<ChatEvent
       : {}),
   } as unknown as Anthropic.Beta.Messages.MessageCreateParams;
 
+  // A transient upstream failure (overload, code-execution container setup,
+  // connection reset) usually arrives as a mid-stream SSE `error` event, which
+  // the SDK's own HTTP retry never sees — the response was already 200. Retry
+  // here, but ONLY while nothing has been yielded: once the caller has seen a
+  // delta, a second attempt would duplicate text in the transcript.
+  let yielded = false;
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      for await (const ev of streamOnce(client, body, usage)) {
+        yielded = true;
+        yield ev;
+      }
+      return;
+    } catch (err) {
+      const info = describeStreamError(err);
+      if (yielded || attempt >= STREAM_MAX_ATTEMPTS || !isAutoRetryable(info)) throw err;
+      const backoff = STREAM_BASE_BACKOFF_MS * 2 ** (attempt - 1) * (0.5 + Math.random());
+      logger.warn(
+        {
+          chat_id: opts.chat_id,
+          attempt,
+          kind: info.kind,
+          request_id: info.requestId,
+          backoff_ms: Math.round(backoff),
+        },
+        'claude.stream retrying',
+      );
+      Object.assign(usage, EMPTY_USAGE);
+      await new Promise((r) => setTimeout(r, backoff));
+    }
+  }
+}
+
+export const STREAM_MAX_ATTEMPTS = 3;
+export const STREAM_BASE_BACKOFF_MS = 1500;
+
+const EMPTY_USAGE: UsageSnapshot = {
+  input_tokens: 0,
+  output_tokens: 0,
+  cache_creation_input_tokens: 0,
+  cache_read_input_tokens: 0,
+  web_fetch_calls: 0,
+  web_search_calls: 0,
+};
+
+async function* streamOnce(
+  client: Anthropic,
+  body: Anthropic.Beta.Messages.MessageCreateParams,
+  usage: UsageSnapshot,
+): AsyncIterable<ChatEvent> {
   const stream = client.beta.messages.stream(body);
 
   // tool_use blocks stream their JSON input as input_json_delta chunks; we

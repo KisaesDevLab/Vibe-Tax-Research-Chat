@@ -797,8 +797,10 @@ function MessageBlock({
     // re-send the question. When we have the immediately-preceding user
     // message in hand, surface a one-click "Re-send question" button so
     // the admin doesn't have to hunt for or retype it.
+    // "try again" covers notes persisted before the server started writing
+    // its own wording — those quoted the upstream error verbatim.
     const looksRecoverable =
-      /re-?send|connection lost|server restart|retry/i.test(m.content) &&
+      /re-?send|connection lost|server restart|retry|try again/i.test(m.content) &&
       typeof priorUserContent === 'string' &&
       priorUserContent.length > 0 &&
       typeof onResend === 'function';
