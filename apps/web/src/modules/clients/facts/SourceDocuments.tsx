@@ -137,82 +137,86 @@ export function SourceDocuments({ clientId }: { clientId: string }) {
           research.
         </div>
       ) : (
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
-              <th className="py-2 pr-3">File</th>
-              <th className="py-2 pr-3">Type</th>
-              <th className="py-2 pr-3">Year</th>
-              <th className="py-2 pr-3">Pages</th>
-              <th className="py-2 pr-3">Status</th>
-              <th className="py-2 pr-3">Facts</th>
-              <th className="py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((d) => (
-              <tr key={d.id} className="border-b border-ink/5 align-top">
-                <td className="py-2 pr-3">
-                  <button
-                    onClick={() => void openDocumentAtPage(clientId, d.id, 1)}
-                    className="underline underline-offset-2 hover:text-moss text-left"
-                  >
-                    {d.filename}
-                  </button>
-                </td>
-                <td className="py-2 pr-3 text-ink/60">{d.doc_type}</td>
-                <td className="py-2 pr-3 text-ink/60">{d.tax_year ?? '—'}</td>
-                <td className="py-2 pr-3 text-ink/60">{d.page_count ?? '—'}</td>
-                <td className="py-2 pr-3">
-                  <span
-                    className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                      STATUS_STYLE[d.status] ?? 'bg-ink/10 text-ink/60'
-                    }`}
-                    title={d.error_message ?? d.extraction_error ?? undefined}
-                  >
-                    {d.status}
-                  </span>
-                  {d.status === 'failed' && d.error_message && (
-                    <div className="text-xs text-oxblood mt-1 max-w-56">
-                      {d.error_message.startsWith('This PDF has no text layer')
-                        ? 'Scanned PDF — no OCR provider configured.'
-                        : d.error_message}
-                    </div>
-                  )}
-                  {d.extraction_error && d.status === 'indexed' && (
-                    <div className="text-xs text-gold mt-1 max-w-56">
-                      Indexed, but fact extraction failed.
-                    </div>
-                  )}
-                </td>
-                <td className="py-2 pr-3 text-ink/60">
-                  {d.pending_candidate_count > 0 ? `${d.pending_candidate_count} pending` : '—'}
-                </td>
-                <td className="py-2 text-right space-x-2 whitespace-nowrap">
-                  {d.status === 'failed' && (
-                    <button
-                      onClick={() => reingest.mutate(d.id)}
-                      className="underline text-xs"
-                      disabled={reingest.isPending}
-                    >
-                      Re-ingest
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      if (window.confirm(`Delete “${d.filename}”? Extracted chunks go with it.`)) {
-                        remove.mutate(d.id);
-                      }
-                    }}
-                    className="underline text-xs text-oxblood"
-                  >
-                    Delete
-                  </button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
+                <th className="py-2 pr-3">File</th>
+                <th className="py-2 pr-3">Type</th>
+                <th className="py-2 pr-3">Year</th>
+                <th className="py-2 pr-3">Pages</th>
+                <th className="py-2 pr-3">Status</th>
+                <th className="py-2 pr-3">Facts</th>
+                <th className="py-2"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((d) => (
+                <tr key={d.id} className="border-b border-ink/5 align-top">
+                  <td className="py-2 pr-3">
+                    <button
+                      onClick={() => void openDocumentAtPage(clientId, d.id, 1)}
+                      className="underline underline-offset-2 hover:text-moss text-left"
+                    >
+                      {d.filename}
+                    </button>
+                  </td>
+                  <td className="py-2 pr-3 text-ink/60">{d.doc_type}</td>
+                  <td className="py-2 pr-3 text-ink/60">{d.tax_year ?? '—'}</td>
+                  <td className="py-2 pr-3 text-ink/60">{d.page_count ?? '—'}</td>
+                  <td className="py-2 pr-3">
+                    <span
+                      className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                        STATUS_STYLE[d.status] ?? 'bg-ink/10 text-ink/60'
+                      }`}
+                      title={d.error_message ?? d.extraction_error ?? undefined}
+                    >
+                      {d.status}
+                    </span>
+                    {d.status === 'failed' && d.error_message && (
+                      <div className="text-xs text-oxblood mt-1 max-w-56">
+                        {d.error_message.startsWith('This PDF has no text layer')
+                          ? 'Scanned PDF — no OCR provider configured.'
+                          : d.error_message}
+                      </div>
+                    )}
+                    {d.extraction_error && d.status === 'indexed' && (
+                      <div className="text-xs text-gold mt-1 max-w-56">
+                        Indexed, but fact extraction failed.
+                      </div>
+                    )}
+                  </td>
+                  <td className="py-2 pr-3 text-ink/60">
+                    {d.pending_candidate_count > 0 ? `${d.pending_candidate_count} pending` : '—'}
+                  </td>
+                  <td className="py-2 text-right space-x-2 whitespace-nowrap">
+                    {d.status === 'failed' && (
+                      <button
+                        onClick={() => reingest.mutate(d.id)}
+                        className="underline text-xs"
+                        disabled={reingest.isPending}
+                      >
+                        Re-ingest
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        if (
+                          window.confirm(`Delete “${d.filename}”? Extracted chunks go with it.`)
+                        ) {
+                          remove.mutate(d.id);
+                        }
+                      }}
+                      className="underline text-xs text-oxblood"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

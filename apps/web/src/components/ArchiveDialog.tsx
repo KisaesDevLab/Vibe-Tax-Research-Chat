@@ -186,7 +186,7 @@ export function ArchiveDialog({ chat, onClose, onArchived }: ArchiveDialogProps)
             </label>
 
             {!firmArchive && (plansData?.plans.length ?? 0) > 0 && (
-              <div className="mb-3 grid grid-cols-2 gap-2">
+              <div className="mb-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <label className="block text-sm">
                   <span className="text-ink/60">Link to plan (optional)</span>
                   <select

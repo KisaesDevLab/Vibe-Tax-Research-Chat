@@ -40,7 +40,7 @@ export function AdminUsagePage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="font-display text-3xl">Usage</h1>
         <a
           href={apiUrl('/api/admin/usage?format=csv')}
@@ -58,24 +58,26 @@ export function AdminUsagePage() {
 
       <section className="mb-8">
         <h2 className="font-display text-xl mb-3">Per-model totals</h2>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wider text-ink/50 border-b border-ink/10">
-              <th className="py-2">Model</th>
-              <th>Messages</th>
-              <th>Total est. cost</th>
-            </tr>
-          </thead>
-          <tbody>
-            {totals?.totals.map((t) => (
-              <tr key={t.model_id} className="border-b border-ink/5">
-                <td className="py-2 font-mono text-xs">{t.model_id}</td>
-                <td>{t.messages}</td>
-                <td className="font-mono">${Number(t.total_cost ?? 0).toFixed(4)}</td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs uppercase tracking-wider text-ink/50 border-b border-ink/10">
+                <th className="py-2">Model</th>
+                <th>Messages</th>
+                <th>Total est. cost</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {totals?.totals.map((t) => (
+                <tr key={t.model_id} className="border-b border-ink/5">
+                  <td className="py-2 font-mono text-xs">{t.model_id}</td>
+                  <td>{t.messages}</td>
+                  <td className="font-mono">${Number(t.total_cost ?? 0).toFixed(4)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section>

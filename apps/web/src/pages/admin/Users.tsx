@@ -57,7 +57,7 @@ export function AdminUsersPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="font-display text-3xl">Users</h1>
         <div className="flex items-center gap-2">
           <button
@@ -94,80 +94,82 @@ export function AdminUsersPage() {
         <div className="text-sm text-ink/50">No users yet — invite the first one.</div>
       )}
       {data && data.users.length > 0 && (
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wider text-ink/50 border-b border-ink/10">
-              <th className="py-2">Email</th>
-              <th>Name</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Cap (USD/mo)</th>
-              <th>Last login</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.users.map((u) => (
-              <tr key={u.id} className="border-b border-ink/5">
-                <td className="py-2 font-mono text-xs">{u.email}</td>
-                <td>{u.display_name}</td>
-                <td>{u.role}</td>
-                <td>{u.is_active ? 'active' : 'disabled'}</td>
-                <td className="font-mono text-xs">{u.monthly_spend_cap_usd ?? '—'}</td>
-                <td className="font-mono text-xs">
-                  {u.last_login_at ? new Date(u.last_login_at).toLocaleString() : '—'}
-                </td>
-                <td>
-                  <div className="flex gap-3 justify-end whitespace-nowrap">
-                    <button onClick={() => setEditing(u)} className="text-xs underline">
-                      edit
-                    </button>
-                    <button
-                      onClick={() => sendReset.mutate(u.id)}
-                      disabled={sendReset.isPending || !u.is_active}
-                      className="text-xs underline disabled:opacity-40 disabled:no-underline"
-                      title={u.is_active ? 'Email a reset link to this user' : 'User is disabled'}
-                    >
-                      send reset
-                    </button>
-                    <button onClick={() => setSetPwFor(u)} className="text-xs underline">
-                      set password
-                    </button>
-                    {u.is_active ? (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="text-left text-xs uppercase tracking-wider text-ink/50 border-b border-ink/10">
+                <th className="py-2">Email</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Cap (USD/mo)</th>
+                <th>Last login</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.users.map((u) => (
+                <tr key={u.id} className="border-b border-ink/5">
+                  <td className="py-2 font-mono text-xs">{u.email}</td>
+                  <td>{u.display_name}</td>
+                  <td>{u.role}</td>
+                  <td>{u.is_active ? 'active' : 'disabled'}</td>
+                  <td className="font-mono text-xs">{u.monthly_spend_cap_usd ?? '—'}</td>
+                  <td className="font-mono text-xs">
+                    {u.last_login_at ? new Date(u.last_login_at).toLocaleString() : '—'}
+                  </td>
+                  <td>
+                    <div className="flex gap-3 justify-end whitespace-nowrap">
+                      <button onClick={() => setEditing(u)} className="text-xs underline">
+                        edit
+                      </button>
                       <button
-                        onClick={() => patch.mutate({ id: u.id, body: { is_active: false } })}
+                        onClick={() => sendReset.mutate(u.id)}
+                        disabled={sendReset.isPending || !u.is_active}
+                        className="text-xs underline disabled:opacity-40 disabled:no-underline"
+                        title={u.is_active ? 'Email a reset link to this user' : 'User is disabled'}
+                      >
+                        send reset
+                      </button>
+                      <button onClick={() => setSetPwFor(u)} className="text-xs underline">
+                        set password
+                      </button>
+                      {u.is_active ? (
+                        <button
+                          onClick={() => patch.mutate({ id: u.id, body: { is_active: false } })}
+                          className="text-xs underline text-oxblood"
+                        >
+                          disable
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => patch.mutate({ id: u.id, body: { is_active: true } })}
+                          className="text-xs underline text-moss"
+                        >
+                          enable
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          if (
+                            confirm(
+                              `Delete ${u.email}? This soft-deletes the user and revokes their access.`,
+                            )
+                          ) {
+                            remove.mutate(u.id);
+                          }
+                        }}
                         className="text-xs underline text-oxblood"
                       >
-                        disable
+                        delete
                       </button>
-                    ) : (
-                      <button
-                        onClick={() => patch.mutate({ id: u.id, body: { is_active: true } })}
-                        className="text-xs underline text-moss"
-                      >
-                        enable
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        if (
-                          confirm(
-                            `Delete ${u.email}? This soft-deletes the user and revokes their access.`,
-                          )
-                        ) {
-                          remove.mutate(u.id);
-                        }
-                      }}
-                      className="text-xs underline text-oxblood"
-                    >
-                      delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {showInvite && <InviteModal onClose={() => setShowInvite(false)} onError={setError} />}
@@ -231,8 +233,8 @@ function InviteModal({
   });
 
   return (
-    <div className="fixed inset-0 bg-ink/40 grid place-items-center">
-      <div className="bg-paper p-6 rounded w-[420px] border border-ink/10">
+    <div className="fixed inset-0 z-40 bg-ink/40 grid place-items-center p-4">
+      <div className="bg-paper p-6 rounded w-full max-w-[420px] border border-ink/10">
         <h2 className="font-display text-xl mb-4">Invite user</h2>
         <div className="space-y-3">
           <input
@@ -317,8 +319,8 @@ function EditModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-ink/40 grid place-items-center">
-      <div className="bg-paper p-6 rounded w-[420px] border border-ink/10">
+    <div className="fixed inset-0 z-40 bg-ink/40 grid place-items-center p-4">
+      <div className="bg-paper p-6 rounded w-full max-w-[420px] border border-ink/10">
         <h2 className="font-display text-xl mb-1">Edit user</h2>
         <div className="text-xs text-ink/50 font-mono mb-4">{user.email}</div>
         <div className="space-y-3">
@@ -395,8 +397,8 @@ function SetPasswordModal({
   const ok = pw.length >= 8 && pw === pw2;
 
   return (
-    <div className="fixed inset-0 bg-ink/40 grid place-items-center">
-      <div className="bg-paper p-6 rounded w-[420px] border border-ink/10">
+    <div className="fixed inset-0 z-40 bg-ink/40 grid place-items-center p-4">
+      <div className="bg-paper p-6 rounded w-full max-w-[420px] border border-ink/10">
         <h2 className="font-display text-xl mb-1">Set password</h2>
         <div className="text-xs text-ink/50 font-mono mb-4">{user.email}</div>
         <div className="space-y-3">

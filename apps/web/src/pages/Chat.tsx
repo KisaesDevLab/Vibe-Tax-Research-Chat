@@ -269,13 +269,13 @@ function ChatView({ chatId }: { chatId: string }) {
       }}
     >
       <ChatSidebar mobileOpen={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)} />
-      <div className="flex-1 flex flex-col min-h-0 relative">
+      <div className="flex-1 flex flex-col min-h-0 min-w-0 relative">
         {dragOver && (
           <div className="absolute inset-0 z-20 bg-gold/10 border-2 border-dashed border-gold rounded-md grid place-items-center pointer-events-none">
             <div className="font-display text-xl text-ink/70">Drop to attach to this chat</div>
           </div>
         )}
-        <header className="shrink-0 px-4 sm:px-6 md:px-7 py-3 md:py-4 border-b border-ink/10 flex items-center gap-3">
+        <header className="shrink-0 px-4 sm:px-6 md:px-7 py-3 md:py-4 border-b border-ink/10 flex flex-wrap md:flex-nowrap items-center gap-x-3 gap-y-2">
           <button
             type="button"
             onClick={() => setMobileSidebarOpen(true)}
@@ -310,7 +310,7 @@ function ChatView({ chatId }: { chatId: string }) {
               </Link>
             )}
           </div>
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          <div className="w-full md:w-auto md:shrink-0 flex flex-wrap items-center gap-2 md:gap-4">
             {config.planning_enabled && data?.chat && (
               <button
                 type="button"
@@ -390,7 +390,7 @@ function ChatView({ chatId }: { chatId: string }) {
                     <div className="text-xs uppercase tracking-wider text-ink/50 mb-1">
                       You <ClarifyAnswerLabel answer={streaming.clarify_answer} />
                     </div>
-                    <div className="bg-ink/5 rounded p-3 font-body whitespace-pre-wrap">
+                    <div className="bg-ink/5 rounded p-3 font-body whitespace-pre-wrap break-words">
                       {streaming.user_message}
                     </div>
                   </div>
@@ -788,7 +788,7 @@ function MessageBlock({
         <div className="text-xs uppercase tracking-wider text-ink/50 mb-1">
           You <ClarifyAnswerLabel answer={m.clarify_answer} />
         </div>
-        <div className="bg-ink/5 rounded p-3 font-body">{m.content}</div>
+        <div className="bg-ink/5 rounded p-3 font-body break-words">{m.content}</div>
       </div>
     );
   }
@@ -832,7 +832,7 @@ function MessageBlock({
     // `data-message-id` lets the exporter scope the query to the right
     // message when a chat has many turns.
     <div className="mb-6 space-y-3" data-message-id={m.id}>
-      <div className="flex items-baseline justify-between gap-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <div className="text-xs uppercase tracking-wider text-ink/50">Assistant</div>
         <MessageActions message={m} />
       </div>
@@ -964,11 +964,11 @@ function MessageActions({ message: m }: { message: MessageDTO }) {
   void exportMd;
 
   return (
-    <div className="text-xs flex items-center gap-3">
+    <div className="text-xs flex flex-wrap items-center gap-x-3 gap-y-1">
       <button
         type="button"
         onClick={onCopy}
-        className="text-ink/50 hover:text-ink underline-offset-2 hover:underline"
+        className="text-ink/50 hover:text-ink underline-offset-2 hover:underline whitespace-nowrap"
       >
         {copied ? 'Copied ✓' : 'Copy'}
       </button>
@@ -976,7 +976,7 @@ function MessageActions({ message: m }: { message: MessageDTO }) {
         type="button"
         onClick={onPdf}
         disabled={pdfBusy}
-        className="text-ink/50 hover:text-ink underline-offset-2 hover:underline disabled:opacity-50"
+        className="text-ink/50 hover:text-ink underline-offset-2 hover:underline whitespace-nowrap disabled:opacity-50"
         title="Download a formatted PDF of this response"
       >
         {pdfBusy ? 'Building PDF…' : 'Download PDF'}
@@ -985,7 +985,7 @@ function MessageActions({ message: m }: { message: MessageDTO }) {
         type="button"
         onClick={onDocx}
         disabled={docxBusy}
-        className="text-ink/50 hover:text-ink underline-offset-2 hover:underline disabled:opacity-50"
+        className="text-ink/50 hover:text-ink underline-offset-2 hover:underline whitespace-nowrap disabled:opacity-50"
         title="Download an editable Word document of this response"
       >
         {docxBusy ? 'Building DOCX…' : 'Download DOCX'}
@@ -994,7 +994,7 @@ function MessageActions({ message: m }: { message: MessageDTO }) {
         type="button"
         onClick={onXlsx}
         disabled={xlsxBusy}
-        className="text-ink/50 hover:text-ink underline-offset-2 hover:underline disabled:opacity-50"
+        className="text-ink/50 hover:text-ink underline-offset-2 hover:underline whitespace-nowrap disabled:opacity-50"
         title="Download an Excel workpaper of this response (calculation worksheet when produced by excel-workpaper-builder; otherwise a prose dump)"
       >
         {xlsxBusy ? 'Building XLSX…' : 'Download XLSX'}

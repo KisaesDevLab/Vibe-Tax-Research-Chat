@@ -522,6 +522,31 @@ import, the break-glass CLI loads it) and `src/vibeAuthAdapter.ts` (CLI entry; t
   `Vibe-Appliance/console/manifests/vibe-tax-research.json` is, and its shape already diverged
   (`subdomain` + `routing` vs this copy's `subdomains[]`). The SSO block for it is in `docs/sso.md`.
 
+### Mobile layout invariants (the "right side is cut off" bug)
+
+The chat column is a flex-row child (`ChatSidebar` + column). A flex item's default
+`min-width: auto` lets wide descendants (a markdown table, a long URL, the header's
+`shrink-0` toolbar) push the item wider than the viewport, and the row's
+`overflow-hidden` then clips the right edge — on a 390px phone the column measured
+1237px and the Question-mode / Reference-library toggles sat at x≈970–1221. Rules that
+hold the line, verified in headless Chrome at 320px and 390px:
+
+- Every `flex-1` column that hosts arbitrary content carries `min-w-0` (chat column,
+  admin `<main>`). Markdown roots and user bubbles carry `break-words`.
+- Header toolbars wrap onto their own row below `md` (`flex-wrap` + `w-full md:w-auto`),
+  never `shrink-0` against a `truncate` title — the title shrinks to 0 first.
+- Every data `<table>` sits inside an `overflow-x-auto` wrapper, so a wide table scrolls
+  in place instead of widening the page. Dialogs are `w-full max-w-[…]` with `p-4` on
+  the overlay; fixed-width drawers are `w-full max-w-[…]`; multi-column grids declare
+  a 1- or 2-column base and widen at `sm`/`lg`.
+- `styles/index.css` forces text fields to ≥16px below 768px — iOS Safari zooms the
+  page on focus otherwise and leaves it scrolled sideways.
+- Headless-Chrome audit harness (CDP over Node's built-in WebSocket, no puppeteer):
+  logs in via `/api/auth/login`, stores `vibe.access`/`vibe.refresh` in localStorage,
+  walks routes at a phone viewport, and lists elements whose bounding box exceeds the
+  viewport. Run it from Git Bash with `MSYS_NO_PATHCONV=1` or every `/route` argument
+  is rewritten to `C:/Program Files/Git/route`.
+
 ## Open architectural decisions
 
 See `QUESTIONS.md` for ambiguities resolved with applied defaults during the autonomous build.

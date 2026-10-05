@@ -39,7 +39,7 @@ export function ArchiveViewer() {
   }
 
   return (
-    <div className="h-full overflow-y-auto p-6 md:p-8 max-w-4xl">
+    <div className="h-full overflow-y-auto p-4 sm:p-6 md:p-8 max-w-4xl">
       <div className="text-xs text-ink/40 mb-1">
         <Link to="/clients" className="hover:underline">
           Clients
@@ -50,7 +50,7 @@ export function ArchiveViewer() {
         </Link>{' '}
         / {archive.title}
       </div>
-      <div className="flex items-start justify-between gap-4 mb-2">
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
         <h1 className="font-display text-2xl">{archive.title}</h1>
         <button
           onClick={() => void downloadPdf()}

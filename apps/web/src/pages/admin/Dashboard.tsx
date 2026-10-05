@@ -89,7 +89,7 @@ export function AdminDashboard() {
     <div>
       <h1 className="font-display text-3xl mb-6">Dashboard</h1>
 
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Stat
           label="Today"
           value={usage ? fmtUsd(todayCost) : '…'}

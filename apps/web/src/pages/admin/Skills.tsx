@@ -273,12 +273,12 @@ export function AdminSkillsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="font-display text-3xl">Skills</h1>
       </div>
 
       <section className="border border-ink/10 rounded p-4 bg-white mb-6">
-        <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div className="font-display text-lg">Source</div>
           <div className="font-mono text-xs text-ink/50">
             github.com/KisaesDevLab/Vibe-Claude-Tax-Research-Skills
@@ -349,7 +349,7 @@ export function AdminSkillsPage() {
               {diff.diff.removed.length} removed · {diff.diff.unchanged_count} unchanged
             </div>
           </div>
-          <div className="mt-3 grid grid-cols-3 gap-3 text-xs font-mono">
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
             <DiffList title="added" items={diff.diff.added.map((a) => a.slug)} cls="text-moss" />
             <DiffList
               title="updated"
@@ -473,48 +473,50 @@ export function AdminSkillsPage() {
         </div>
       )}
 
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-xs uppercase tracking-wider text-ink/50 border-b border-ink/10">
-            <th className="py-2">Skill</th>
-            <th>Version</th>
-            <th>Status</th>
-            <th>Always-attached</th>
-            <th>Active</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {data?.skills.length === 0 && (
-            <tr>
-              <td colSpan={6} className="py-6 text-center text-ink/50 text-sm">
-                No skills yet. Run a sync above to ingest the pack from upstream.
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs uppercase tracking-wider text-ink/50 border-b border-ink/10">
+              <th className="py-2">Skill</th>
+              <th>Version</th>
+              <th>Status</th>
+              <th>Always-attached</th>
+              <th>Active</th>
+              <th></th>
             </tr>
-          )}
-          {data?.skills.map((s) => (
-            <tr key={s.skill_id} className="border-b border-ink/5">
-              <td className="py-2">
-                <div>{s.display_name}</div>
-                <div className="font-mono text-xs text-ink/50">{s.local_slug}</div>
-              </td>
-              <td className="font-mono text-xs">{s.current_version}</td>
-              <td>{s.status_field}</td>
-              <td>{s.is_always_attached ? 'yes' : 'no'}</td>
-              <td>{s.is_active ? 'yes' : 'no'}</td>
-              <td className="text-right">
-                <button
-                  onClick={() => void openView(s)}
-                  disabled={viewBusy === (s.local_slug ?? s.skill_id)}
-                  className="text-xs underline disabled:opacity-50"
-                >
-                  {viewBusy === (s.local_slug ?? s.skill_id) ? 'loading…' : 'view'}
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data?.skills.length === 0 && (
+              <tr>
+                <td colSpan={6} className="py-6 text-center text-ink/50 text-sm">
+                  No skills yet. Run a sync above to ingest the pack from upstream.
+                </td>
+              </tr>
+            )}
+            {data?.skills.map((s) => (
+              <tr key={s.skill_id} className="border-b border-ink/5">
+                <td className="py-2">
+                  <div>{s.display_name}</div>
+                  <div className="font-mono text-xs text-ink/50">{s.local_slug}</div>
+                </td>
+                <td className="font-mono text-xs">{s.current_version}</td>
+                <td>{s.status_field}</td>
+                <td>{s.is_always_attached ? 'yes' : 'no'}</td>
+                <td>{s.is_active ? 'yes' : 'no'}</td>
+                <td className="text-right">
+                  <button
+                    onClick={() => void openView(s)}
+                    disabled={viewBusy === (s.local_slug ?? s.skill_id)}
+                    className="text-xs underline disabled:opacity-50"
+                  >
+                    {viewBusy === (s.local_slug ?? s.skill_id) ? 'loading…' : 'view'}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {viewing && <SkillContentDrawer data={viewing} onClose={() => setViewing(null)} />}
     </div>
@@ -546,7 +548,7 @@ function SkillContentDrawer({
 
   return (
     <div className="fixed inset-0 bg-ink/40 z-30">
-      <div className="absolute right-0 top-0 bottom-0 w-[820px] bg-paper p-6 overflow-y-auto shadow-2xl">
+      <div className="absolute right-0 top-0 bottom-0 w-full max-w-[820px] bg-paper p-4 sm:p-6 overflow-y-auto shadow-2xl">
         <div className="flex items-baseline justify-between mb-1">
           <h2 className="font-display text-xl">{data.skill.display_name}</h2>
           <button onClick={onClose} className="text-sm text-ink/50 hover:text-ink">

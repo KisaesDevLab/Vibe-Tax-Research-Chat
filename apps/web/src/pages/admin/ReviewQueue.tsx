@@ -73,54 +73,58 @@ export function AdminReviewQueuePage() {
           Nothing {status} — the pipeline queues drafts here when jobs run.
         </div>
       ) : (
-        <table className="w-full max-w-3xl text-sm border-collapse mb-6">
-          <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
-              <th className="py-2 pr-4">Kind</th>
-              <th className="py-2 pr-4">Subject</th>
-              <th className="py-2 pr-4">Validation</th>
-              <th className="py-2">Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item) => {
-              const validation = item.payload.validation as ValidationPayload | undefined;
-              return (
-                <tr
-                  key={item.id}
-                  onClick={() => setSelectedId(item.id === selectedId ? null : item.id)}
-                  className={`border-b border-ink/5 cursor-pointer hover:bg-ink/5 ${
-                    selectedId === item.id ? 'bg-ink/10' : ''
-                  }`}
-                >
-                  <td className="py-2 pr-4">
-                    <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-ink/10">
-                      {item.kind}
-                    </span>
-                  </td>
-                  <td className="py-2 pr-4 font-mono text-xs">
-                    {String(item.payload.strategy_id ?? item.payload.subject ?? '—')}
-                    {typeof item.payload.semver === 'string' && ` @ ${item.payload.semver}`}
-                  </td>
-                  <td className="py-2 pr-4">
-                    {validation ? (
-                      validation.ok ? (
-                        <span className="text-moss text-xs">passes gates</span>
+        <div className="overflow-x-auto">
+          <table className="w-full max-w-3xl text-sm border-collapse mb-6">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
+                <th className="py-2 pr-4">Kind</th>
+                <th className="py-2 pr-4">Subject</th>
+                <th className="py-2 pr-4">Validation</th>
+                <th className="py-2">Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => {
+                const validation = item.payload.validation as ValidationPayload | undefined;
+                return (
+                  <tr
+                    key={item.id}
+                    onClick={() => setSelectedId(item.id === selectedId ? null : item.id)}
+                    className={`border-b border-ink/5 cursor-pointer hover:bg-ink/5 ${
+                      selectedId === item.id ? 'bg-ink/10' : ''
+                    }`}
+                  >
+                    <td className="py-2 pr-4">
+                      <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-ink/10">
+                        {item.kind}
+                      </span>
+                    </td>
+                    <td className="py-2 pr-4 font-mono text-xs">
+                      {String(item.payload.strategy_id ?? item.payload.subject ?? '—')}
+                      {typeof item.payload.semver === 'string' && ` @ ${item.payload.semver}`}
+                    </td>
+                    <td className="py-2 pr-4">
+                      {validation ? (
+                        validation.ok ? (
+                          <span className="text-moss text-xs">passes gates</span>
+                        ) : (
+                          <span className="text-oxblood text-xs">
+                            {validation.errors.length} gate failure(s)
+                          </span>
+                        )
                       ) : (
-                        <span className="text-oxblood text-xs">
-                          {validation.errors.length} gate failure(s)
-                        </span>
-                      )
-                    ) : (
-                      <span className="text-ink/40 text-xs">—</span>
-                    )}
-                  </td>
-                  <td className="py-2 text-ink/60">{new Date(item.created_at).toLocaleString()}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                        <span className="text-ink/40 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="py-2 text-ink/60">
+                      {new Date(item.created_at).toLocaleString()}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
       {selectedId && <QueueItemDetail id={selectedId} onDecided={() => setSelectedId(null)} />}
     </div>

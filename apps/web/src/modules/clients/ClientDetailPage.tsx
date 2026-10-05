@@ -52,19 +52,19 @@ export function ClientDetailPage() {
   const { client, counts } = data;
 
   return (
-    <div className="h-full overflow-y-auto p-6 md:p-8 max-w-4xl">
+    <div className="h-full overflow-y-auto p-4 sm:p-6 md:p-8 max-w-4xl">
       <div className="text-xs text-ink/40 mb-1">
         <Link to="/clients" className="hover:underline">
           Clients
         </Link>{' '}
         / {client.name}
       </div>
-      <div className="flex items-start justify-between gap-4 mb-4">
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
         <div>
-          <h1 className="font-display text-3xl">{client.name}</h1>
+          <h1 className="font-display text-2xl md:text-3xl break-words">{client.name}</h1>
           <div className="text-sm text-ink/60">{client.entity_type}</div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setActiveClient({ id: client.id, name: client.name })}
             disabled={activeClient?.id === client.id}
@@ -91,14 +91,14 @@ export function ClientDetailPage() {
         </div>
       </div>
 
-      <nav className="flex gap-1 border-b border-ink/10 mb-4 text-sm">
+      <nav className="flex gap-1 border-b border-ink/10 mb-4 text-sm overflow-x-auto">
         {TABS.map((t) => (
           <NavLink
             key={t}
             to={`/clients/${client.id}/${t}`}
             replace
             className={() =>
-              `px-3 py-1.5 capitalize border-b-2 -mb-px ${
+              `px-3 py-1.5 capitalize border-b-2 -mb-px whitespace-nowrap ${
                 activeTab === t
                   ? 'border-ink font-medium'
                   : 'border-transparent text-ink/50 hover:text-ink'

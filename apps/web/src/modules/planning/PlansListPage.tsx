@@ -48,7 +48,7 @@ export function PlansListPage() {
   const rows = data?.plans ?? [];
 
   return (
-    <div className="h-full overflow-y-auto p-6 md:p-8 max-w-5xl">
+    <div className="h-full overflow-y-auto p-4 sm:p-6 md:p-8 max-w-5xl">
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-display text-3xl">Planning</h1>
         <button
@@ -68,38 +68,42 @@ export function PlansListPage() {
           No plans yet. Set an active client (top right) and create the first one.
         </div>
       ) : (
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
-              <th className="py-2 pr-4">Plan</th>
-              <th className="py-2 pr-4">Client</th>
-              <th className="py-2 pr-4">Status</th>
-              <th className="py-2 pr-4">Years</th>
-              <th className="py-2">Updated</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((p) => (
-              <tr key={p.id} className="border-b border-ink/5 hover:bg-ink/5">
-                <td className="py-2 pr-4">
-                  <Link to={`/planning/${p.id}`} className="hover:underline">
-                    {p.title}
-                  </Link>
-                </td>
-                <td className="py-2 pr-4 text-ink/60">{clientName.get(p.client_id) ?? '—'}</td>
-                <td className="py-2 pr-4">
-                  <span
-                    className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded ${STATUS_CLASSES[p.status] ?? ''}`}
-                  >
-                    {p.status}
-                  </span>
-                </td>
-                <td className="py-2 pr-4 text-ink/60">{p.years}</td>
-                <td className="py-2 text-ink/60">{new Date(p.updated_at).toLocaleDateString()}</td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
+                <th className="py-2 pr-4">Plan</th>
+                <th className="py-2 pr-4">Client</th>
+                <th className="py-2 pr-4">Status</th>
+                <th className="py-2 pr-4">Years</th>
+                <th className="py-2">Updated</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((p) => (
+                <tr key={p.id} className="border-b border-ink/5 hover:bg-ink/5">
+                  <td className="py-2 pr-4">
+                    <Link to={`/planning/${p.id}`} className="hover:underline">
+                      {p.title}
+                    </Link>
+                  </td>
+                  <td className="py-2 pr-4 text-ink/60">{clientName.get(p.client_id) ?? '—'}</td>
+                  <td className="py-2 pr-4">
+                    <span
+                      className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded ${STATUS_CLASSES[p.status] ?? ''}`}
+                    >
+                      {p.status}
+                    </span>
+                  </td>
+                  <td className="py-2 pr-4 text-ink/60">{p.years}</td>
+                  <td className="py-2 text-ink/60">
+                    {new Date(p.updated_at).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

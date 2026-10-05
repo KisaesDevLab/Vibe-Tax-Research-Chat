@@ -27,7 +27,7 @@ export function NudgeBanner({
   if (!isNudged) return null;
 
   return (
-    <div className="shrink-0 px-4 sm:px-6 md:px-7 py-2 bg-gold/10 border-b border-gold/30 flex items-center gap-3 text-sm">
+    <div className="shrink-0 px-4 sm:px-6 md:px-7 py-2 bg-gold/10 border-b border-gold/30 flex flex-wrap items-center gap-3 text-sm">
       <span className="text-ink/70">
         This research session is over 90 days old and not filed to a client.
       </span>

@@ -207,7 +207,7 @@ export function AdminCustomSkillsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="font-display text-3xl">Custom skills</h1>
         <div className="flex gap-2">
           <button
@@ -258,76 +258,78 @@ export function AdminCustomSkillsPage() {
         </div>
       )}
       {data && data.custom_skills.length > 0 && (
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wider text-ink/50 border-b border-ink/10">
-              <th className="py-2">Name</th>
-              <th>Description</th>
-              <th>Status</th>
-              <th>Anthropic id</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.custom_skills.map((s) => (
-              <tr key={s.id} className="border-b border-ink/5">
-                <td className="py-2 font-mono text-xs">{s.name}</td>
-                <td className="max-w-md truncate" title={s.description}>
-                  {s.description}
-                </td>
-                <td>{s.is_active ? 'published' : 'draft'}</td>
-                <td className="font-mono text-xs text-ink/50">
-                  {s.anthropic_skill_id ? `${s.anthropic_skill_id.slice(0, 16)}…` : '—'}
-                </td>
-                <td>
-                  <div className="flex gap-3 justify-end whitespace-nowrap">
-                    <button
-                      onClick={() => void openEdit(s.id)}
-                      disabled={busyId === s.id}
-                      className="text-xs underline disabled:opacity-50"
-                    >
-                      edit
-                    </button>
-                    {!s.is_active ? (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs uppercase tracking-wider text-ink/50 border-b border-ink/10">
+                <th className="py-2">Name</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Anthropic id</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.custom_skills.map((s) => (
+                <tr key={s.id} className="border-b border-ink/5">
+                  <td className="py-2 font-mono text-xs">{s.name}</td>
+                  <td className="max-w-md truncate" title={s.description}>
+                    {s.description}
+                  </td>
+                  <td>{s.is_active ? 'published' : 'draft'}</td>
+                  <td className="font-mono text-xs text-ink/50">
+                    {s.anthropic_skill_id ? `${s.anthropic_skill_id.slice(0, 16)}…` : '—'}
+                  </td>
+                  <td>
+                    <div className="flex gap-3 justify-end whitespace-nowrap">
                       <button
-                        onClick={() => void publish(s.id)}
+                        onClick={() => void openEdit(s.id)}
                         disabled={busyId === s.id}
                         className="text-xs underline disabled:opacity-50"
                       >
-                        {busyId === s.id ? 'publishing…' : 'publish'}
+                        edit
                       </button>
-                    ) : (
+                      {!s.is_active ? (
+                        <button
+                          onClick={() => void publish(s.id)}
+                          disabled={busyId === s.id}
+                          className="text-xs underline disabled:opacity-50"
+                        >
+                          {busyId === s.id ? 'publishing…' : 'publish'}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => void publish(s.id)}
+                          disabled={busyId === s.id}
+                          className="text-xs underline disabled:opacity-50"
+                          title="Re-upload current content to Anthropic"
+                        >
+                          {busyId === s.id ? 'publishing…' : 'republish'}
+                        </button>
+                      )}
+                      {s.is_active && (
+                        <button
+                          onClick={() => void unpublish(s.id)}
+                          disabled={busyId === s.id}
+                          className="text-xs underline text-oxblood disabled:opacity-50"
+                        >
+                          {busyId === s.id ? 'unpublishing…' : 'unpublish'}
+                        </button>
+                      )}
                       <button
-                        onClick={() => void publish(s.id)}
-                        disabled={busyId === s.id}
-                        className="text-xs underline disabled:opacity-50"
-                        title="Re-upload current content to Anthropic"
-                      >
-                        {busyId === s.id ? 'publishing…' : 'republish'}
-                      </button>
-                    )}
-                    {s.is_active && (
-                      <button
-                        onClick={() => void unpublish(s.id)}
+                        onClick={() => void remove(s.id, s.name)}
                         disabled={busyId === s.id}
                         className="text-xs underline text-oxblood disabled:opacity-50"
                       >
-                        {busyId === s.id ? 'unpublishing…' : 'unpublish'}
+                        delete
                       </button>
-                    )}
-                    <button
-                      onClick={() => void remove(s.id, s.name)}
-                      disabled={busyId === s.id}
-                      className="text-xs underline text-oxblood disabled:opacity-50"
-                    >
-                      delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {drawer && (

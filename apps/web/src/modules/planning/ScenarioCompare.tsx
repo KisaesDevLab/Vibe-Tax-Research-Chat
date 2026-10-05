@@ -29,75 +29,79 @@ export function ScenarioCompare({ detail }: { detail: PlanDetail }) {
 
   return (
     <div className="max-w-4xl space-y-6">
-      <table className="w-full text-sm border-collapse">
-        <thead>
-          <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
-            <th className="py-2 pr-4">Year</th>
-            <th className="py-2 pr-4 text-right">Baseline burden</th>
-            {Array.from(byScenario.keys()).map((id) => (
-              <th key={id} className="py-2 pr-4 text-right">
-                {scenarioLabel.get(id) ?? 'Scenario'}
-              </th>
-            ))}
-            {Array.from(byScenario.keys()).map((id) => (
-              <th key={`${id}-d`} className="py-2 text-right">
-                Δ {scenarioLabel.get(id) ?? ''}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {years.map((year, i) => {
-            const base = baseline[i]!;
-            return (
-              <tr key={year} className="border-b border-ink/5">
-                <td className="py-2 pr-4 font-mono">{year}</td>
-                <td className="py-2 pr-4 text-right font-mono">{money(base.result.totalBurden)}</td>
-                {Array.from(byScenario.entries()).map(([id, rows]) => (
-                  <td key={id} className="py-2 pr-4 text-right font-mono">
-                    {money(rows[i]?.result.totalBurden ?? 0)}
-                  </td>
-                ))}
-                {Array.from(byScenario.entries()).map(([id, rows]) => {
-                  const delta = (rows[i]?.result.totalBurden ?? 0) - base.result.totalBurden;
-                  return (
-                    <td
-                      key={`${id}-d`}
-                      className={`py-2 text-right font-mono ${delta < 0 ? 'text-moss' : delta > 0 ? 'text-oxblood' : 'text-ink/40'}`}
-                    >
-                      {delta === 0 ? '—' : money(delta)}
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-          <tr className="font-medium">
-            <td className="py-2 pr-4">Cumulative</td>
-            <td className="py-2 pr-4 text-right font-mono">
-              {money(baseline.reduce((a, r) => a + r.result.totalBurden, 0))}
-            </td>
-            {Array.from(byScenario.entries()).map(([id, rows]) => (
-              <td key={id} className="py-2 pr-4 text-right font-mono">
-                {money(rows.reduce((a, r) => a + r.result.totalBurden, 0))}
-              </td>
-            ))}
-            {Array.from(byScenario.entries()).map(([id, rows]) => {
-              const delta =
-                rows.reduce((a, r) => a + r.result.totalBurden, 0) -
-                baseline.reduce((a, r) => a + r.result.totalBurden, 0);
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
+              <th className="py-2 pr-4">Year</th>
+              <th className="py-2 pr-4 text-right">Baseline burden</th>
+              {Array.from(byScenario.keys()).map((id) => (
+                <th key={id} className="py-2 pr-4 text-right">
+                  {scenarioLabel.get(id) ?? 'Scenario'}
+                </th>
+              ))}
+              {Array.from(byScenario.keys()).map((id) => (
+                <th key={`${id}-d`} className="py-2 text-right">
+                  Δ {scenarioLabel.get(id) ?? ''}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {years.map((year, i) => {
+              const base = baseline[i]!;
               return (
-                <td
-                  key={`${id}-d`}
-                  className={`py-2 text-right font-mono ${delta < 0 ? 'text-moss' : 'text-oxblood'}`}
-                >
-                  {money(delta)}
-                </td>
+                <tr key={year} className="border-b border-ink/5">
+                  <td className="py-2 pr-4 font-mono">{year}</td>
+                  <td className="py-2 pr-4 text-right font-mono">
+                    {money(base.result.totalBurden)}
+                  </td>
+                  {Array.from(byScenario.entries()).map(([id, rows]) => (
+                    <td key={id} className="py-2 pr-4 text-right font-mono">
+                      {money(rows[i]?.result.totalBurden ?? 0)}
+                    </td>
+                  ))}
+                  {Array.from(byScenario.entries()).map(([id, rows]) => {
+                    const delta = (rows[i]?.result.totalBurden ?? 0) - base.result.totalBurden;
+                    return (
+                      <td
+                        key={`${id}-d`}
+                        className={`py-2 text-right font-mono ${delta < 0 ? 'text-moss' : delta > 0 ? 'text-oxblood' : 'text-ink/40'}`}
+                      >
+                        {delta === 0 ? '—' : money(delta)}
+                      </td>
+                    );
+                  })}
+                </tr>
               );
             })}
-          </tr>
-        </tbody>
-      </table>
+            <tr className="font-medium">
+              <td className="py-2 pr-4">Cumulative</td>
+              <td className="py-2 pr-4 text-right font-mono">
+                {money(baseline.reduce((a, r) => a + r.result.totalBurden, 0))}
+              </td>
+              {Array.from(byScenario.entries()).map(([id, rows]) => (
+                <td key={id} className="py-2 pr-4 text-right font-mono">
+                  {money(rows.reduce((a, r) => a + r.result.totalBurden, 0))}
+                </td>
+              ))}
+              {Array.from(byScenario.entries()).map(([id, rows]) => {
+                const delta =
+                  rows.reduce((a, r) => a + r.result.totalBurden, 0) -
+                  baseline.reduce((a, r) => a + r.result.totalBurden, 0);
+                return (
+                  <td
+                    key={`${id}-d`}
+                    className={`py-2 text-right font-mono ${delta < 0 ? 'text-moss' : 'text-oxblood'}`}
+                  >
+                    {money(delta)}
+                  </td>
+                );
+              })}
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <BurdenDetail baseline={baseline} />
     </div>
   );
@@ -120,34 +124,36 @@ function BurdenDetail({ baseline }: { baseline: PlanResultDTO[] }) {
   return (
     <section className="border border-ink/10 rounded p-4 bg-white max-w-md">
       <h2 className="font-display text-lg mb-2">Year-1 baseline burden detail</h2>
-      <table className="w-full text-sm">
-        <tbody>
-          {rows
-            .filter(([, v]) => v !== 0)
-            .map(([label, v]) => (
-              <tr key={label}>
-                <td className="py-1 text-ink/60">{label}</td>
-                <td className="py-1 text-right font-mono">
-                  {v.toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                    maximumFractionDigits: 0,
-                  })}
-                </td>
-              </tr>
-            ))}
-          <tr className="font-medium border-t border-ink/10">
-            <td className="py-1">Total burden</td>
-            <td className="py-1 text-right font-mono">
-              {r.totalBurden.toLocaleString('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                maximumFractionDigits: 0,
-              })}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <tbody>
+            {rows
+              .filter(([, v]) => v !== 0)
+              .map(([label, v]) => (
+                <tr key={label}>
+                  <td className="py-1 text-ink/60">{label}</td>
+                  <td className="py-1 text-right font-mono">
+                    {v.toLocaleString('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                      maximumFractionDigits: 0,
+                    })}
+                  </td>
+                </tr>
+              ))}
+            <tr className="font-medium border-t border-ink/10">
+              <td className="py-1">Total burden</td>
+              <td className="py-1 text-right font-mono">
+                {r.totalBurden.toLocaleString('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  maximumFractionDigits: 0,
+                })}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }

@@ -41,7 +41,7 @@ export function AdminTableSetsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
         <h1 className="font-display text-3xl">Table sets</h1>
         <button
           onClick={() => draftNow.mutate()}
@@ -72,42 +72,44 @@ export function AdminTableSetsPage() {
           No table sets. Enable the planning module and re-run the seed.
         </div>
       ) : (
-        <table className="w-full max-w-2xl text-sm border-collapse mb-6">
-          <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
-              <th className="py-2 pr-4">Tax year</th>
-              <th className="py-2 pr-4">Version</th>
-              <th className="py-2 pr-4">Status</th>
-              <th className="py-2">Published</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr
-                key={r.id}
-                onClick={() => setSelectedId(r.id === selectedId ? null : r.id)}
-                className={`border-b border-ink/5 cursor-pointer hover:bg-ink/5 ${
-                  selectedId === r.id ? 'bg-ink/10' : ''
-                }`}
-              >
-                <td className="py-2 pr-4 font-mono">{r.tax_year}</td>
-                <td className="py-2 pr-4 font-mono">v{r.version}</td>
-                <td className="py-2 pr-4">
-                  <span
-                    className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                      r.status === 'published' ? 'bg-moss/15 text-moss' : 'bg-gold/15 text-ink/60'
-                    }`}
-                  >
-                    {r.status}
-                  </span>
-                </td>
-                <td className="py-2 text-ink/60">
-                  {r.published_at ? new Date(r.published_at).toLocaleDateString() : '—'}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full max-w-2xl text-sm border-collapse mb-6">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
+                <th className="py-2 pr-4">Tax year</th>
+                <th className="py-2 pr-4">Version</th>
+                <th className="py-2 pr-4">Status</th>
+                <th className="py-2">Published</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr
+                  key={r.id}
+                  onClick={() => setSelectedId(r.id === selectedId ? null : r.id)}
+                  className={`border-b border-ink/5 cursor-pointer hover:bg-ink/5 ${
+                    selectedId === r.id ? 'bg-ink/10' : ''
+                  }`}
+                >
+                  <td className="py-2 pr-4 font-mono">{r.tax_year}</td>
+                  <td className="py-2 pr-4 font-mono">v{r.version}</td>
+                  <td className="py-2 pr-4">
+                    <span
+                      className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                        r.status === 'published' ? 'bg-moss/15 text-moss' : 'bg-gold/15 text-ink/60'
+                      }`}
+                    >
+                      {r.status}
+                    </span>
+                  </td>
+                  <td className="py-2 text-ink/60">
+                    {r.published_at ? new Date(r.published_at).toLocaleDateString() : '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       {selectedId && <TableSetDetail key={selectedId} id={selectedId} />}
     </div>

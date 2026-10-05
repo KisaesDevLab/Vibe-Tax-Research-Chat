@@ -160,7 +160,7 @@ export function AdminReferencesPage() {
               they'll fail ingest with "parsed text is empty".
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs uppercase tracking-wider text-ink/60 mb-1">
                 Title (optional)
@@ -211,7 +211,7 @@ export function AdminReferencesPage() {
             No references yet. Upload one above to get started.
           </div>
         ) : (
-          <div className="border border-ink/10 rounded-lg overflow-hidden">
+          <div className="border border-ink/10 rounded-lg overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-ink/5 text-left text-xs uppercase tracking-wider text-ink/70">
                 <tr>

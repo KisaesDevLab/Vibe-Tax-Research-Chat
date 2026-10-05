@@ -74,7 +74,7 @@ export function CustomSkillDrawer({
   const [keywordDraft, setKeywordDraft] = useState('');
 
   const isEdit = Boolean(state.id);
-  const drawerWidth = chatOpen ? 'w-[1180px]' : 'w-[680px]';
+  const drawerWidth = chatOpen ? 'w-full max-w-[1180px]' : 'w-full max-w-[680px]';
 
   function patch(p: Partial<DrawerState>) {
     onChange({ ...state, ...p });
@@ -153,7 +153,7 @@ export function CustomSkillDrawer({
   return (
     <div className="fixed inset-0 bg-ink/40 z-30">
       <div
-        className={`absolute right-0 top-0 bottom-0 ${drawerWidth} bg-paper p-6 overflow-y-auto shadow-2xl flex flex-col`}
+        className={`absolute right-0 top-0 bottom-0 ${drawerWidth} bg-paper p-4 sm:p-6 overflow-y-auto shadow-2xl flex flex-col`}
       >
         <header className="flex items-baseline justify-between mb-4 shrink-0">
           <h2 className="font-display text-xl">
@@ -173,10 +173,7 @@ export function CustomSkillDrawer({
           </div>
         </header>
 
-        <div
-          className="flex-1 grid gap-6 min-h-0"
-          style={{ gridTemplateColumns: chatOpen ? '1fr 1fr' : '1fr' }}
-        >
+        <div className={`flex-1 grid gap-6 min-h-0 ${chatOpen ? 'lg:grid-cols-2' : ''}`}>
           {/* ── Fields pane ───────────────────────────────────────────────── */}
           <div className="flex flex-col gap-3 min-h-0 overflow-y-auto pr-1">
             {state.source && (
@@ -285,7 +282,7 @@ export function CustomSkillDrawer({
 
           {/* ── Chat pane ─────────────────────────────────────────────────── */}
           {chatOpen && (
-            <div className="flex flex-col min-h-0 border-l border-ink/10 pl-6">
+            <div className="flex flex-col min-h-0 border-t border-ink/10 pt-6 lg:border-t-0 lg:pt-0 lg:border-l lg:pl-6">
               <div className="text-xs uppercase tracking-wider text-ink/50 mb-2">
                 Chat with Claude about this skill
               </div>

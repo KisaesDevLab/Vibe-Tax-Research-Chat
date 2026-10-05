@@ -74,7 +74,7 @@ const components: Components = {
 
 export function Markdown({ children }: { children: string }) {
   return (
-    <div className="text-sm font-body leading-relaxed">
+    <div className="text-sm font-body leading-relaxed min-w-0 break-words">
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
         {children}
       </ReactMarkdown>

@@ -111,7 +111,7 @@ function ClientPicker({
   return (
     <div
       ref={rootRef}
-      className="absolute right-0 top-full mt-1 z-40 w-72 bg-white border border-ink/15 rounded shadow-lg p-2"
+      className="absolute right-0 top-full mt-1 z-40 w-72 max-w-[calc(100vw-1.5rem)] bg-white border border-ink/15 rounded shadow-lg p-2"
     >
       <input
         autoFocus

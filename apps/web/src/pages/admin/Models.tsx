@@ -144,7 +144,7 @@ export function AdminModelsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="font-display text-3xl">Models</h1>
         <button
           onClick={() => refresh.mutate()}
@@ -245,117 +245,119 @@ export function AdminModelsPage() {
         </div>
       )}
 
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-xs uppercase tracking-wider text-ink/50 border-b border-ink/10">
-            <th className="py-2">Model</th>
-            <th>Input $/Mtok</th>
-            <th>Output $/Mtok</th>
-            <th>Cache W</th>
-            <th>Cache R</th>
-            <th>Tokenizer</th>
-            <th>Active</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {data?.models.map((m) => {
-            const isDefault = defaultId === m.model_id;
-            const isEditing = editing === m.model_id;
-            if (isEditing) {
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs uppercase tracking-wider text-ink/50 border-b border-ink/10">
+              <th className="py-2">Model</th>
+              <th>Input $/Mtok</th>
+              <th>Output $/Mtok</th>
+              <th>Cache W</th>
+              <th>Cache R</th>
+              <th>Tokenizer</th>
+              <th>Active</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {data?.models.map((m) => {
+              const isDefault = defaultId === m.model_id;
+              const isEditing = editing === m.model_id;
+              if (isEditing) {
+                return (
+                  <tr key={m.model_id} className="border-b border-ink/5 bg-gold/5">
+                    <td className="py-2">
+                      <span>{m.display_name}</span>
+                      <div className="font-mono text-xs text-ink/50">{m.model_id}</div>
+                    </td>
+                    {PRICE_FIELDS.map(([key, label]) => (
+                      <td key={key} className="pr-2">
+                        <input
+                          value={draft[key] ?? ''}
+                          onChange={(e) => setDraft((d) => ({ ...d, [key]: e.target.value }))}
+                          aria-label={`${m.model_id} ${label}`}
+                          className="w-20 font-mono text-xs border border-ink/20 rounded px-1.5 py-1"
+                        />
+                      </td>
+                    ))}
+                    <td className="font-mono">{m.tokenizer_factor}</td>
+                    <td>{m.is_active ? 'yes' : 'no'}</td>
+                    <td>
+                      <div className="flex gap-3 justify-end whitespace-nowrap">
+                        <button
+                          onClick={() => submitEdit(m.model_id)}
+                          disabled={savePricing.isPending}
+                          className="text-xs underline text-moss disabled:opacity-50"
+                        >
+                          {savePricing.isPending ? 'saving…' : 'save'}
+                        </button>
+                        <button onClick={() => setEditing(null)} className="text-xs underline">
+                          cancel
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              }
               return (
-                <tr key={m.model_id} className="border-b border-ink/5 bg-gold/5">
+                <tr key={m.model_id} className="border-b border-ink/5">
                   <td className="py-2">
-                    <span>{m.display_name}</span>
+                    <div className="flex items-center gap-2">
+                      <span>{m.display_name}</span>
+                      {isDefault && (
+                        <span className="text-[10px] uppercase tracking-wider bg-moss/15 text-moss px-1.5 py-0.5 rounded">
+                          default
+                        </span>
+                      )}
+                    </div>
                     <div className="font-mono text-xs text-ink/50">{m.model_id}</div>
                   </td>
-                  {PRICE_FIELDS.map(([key, label]) => (
-                    <td key={key} className="pr-2">
-                      <input
-                        value={draft[key] ?? ''}
-                        onChange={(e) => setDraft((d) => ({ ...d, [key]: e.target.value }))}
-                        aria-label={`${m.model_id} ${label}`}
-                        className="w-20 font-mono text-xs border border-ink/20 rounded px-1.5 py-1"
-                      />
-                    </td>
-                  ))}
+                  <td className="font-mono">{m.input_per_mtok}</td>
+                  <td className="font-mono">{m.output_per_mtok}</td>
+                  <td className="font-mono">{m.cache_write_per_mtok}</td>
+                  <td className="font-mono">{m.cache_read_per_mtok}</td>
                   <td className="font-mono">{m.tokenizer_factor}</td>
                   <td>{m.is_active ? 'yes' : 'no'}</td>
                   <td>
                     <div className="flex gap-3 justify-end whitespace-nowrap">
-                      <button
-                        onClick={() => submitEdit(m.model_id)}
-                        disabled={savePricing.isPending}
-                        className="text-xs underline text-moss disabled:opacity-50"
-                      >
-                        {savePricing.isPending ? 'saving…' : 'save'}
+                      <button onClick={() => startEdit(m)} className="text-xs underline">
+                        edit pricing
                       </button>
-                      <button onClick={() => setEditing(null)} className="text-xs underline">
-                        cancel
-                      </button>
+                      {!isDefault && m.is_active && (
+                        <button
+                          onClick={() => setDefault.mutate(m.model_id)}
+                          className="text-xs underline"
+                        >
+                          set default
+                        </button>
+                      )}
+                      {m.is_active ? (
+                        <button
+                          onClick={() =>
+                            toggleActive.mutate({ model_id: m.model_id, is_active: false })
+                          }
+                          className="text-xs underline text-oxblood"
+                        >
+                          disable
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            toggleActive.mutate({ model_id: m.model_id, is_active: true })
+                          }
+                          className="text-xs underline text-moss"
+                        >
+                          enable
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
               );
-            }
-            return (
-              <tr key={m.model_id} className="border-b border-ink/5">
-                <td className="py-2">
-                  <div className="flex items-center gap-2">
-                    <span>{m.display_name}</span>
-                    {isDefault && (
-                      <span className="text-[10px] uppercase tracking-wider bg-moss/15 text-moss px-1.5 py-0.5 rounded">
-                        default
-                      </span>
-                    )}
-                  </div>
-                  <div className="font-mono text-xs text-ink/50">{m.model_id}</div>
-                </td>
-                <td className="font-mono">{m.input_per_mtok}</td>
-                <td className="font-mono">{m.output_per_mtok}</td>
-                <td className="font-mono">{m.cache_write_per_mtok}</td>
-                <td className="font-mono">{m.cache_read_per_mtok}</td>
-                <td className="font-mono">{m.tokenizer_factor}</td>
-                <td>{m.is_active ? 'yes' : 'no'}</td>
-                <td>
-                  <div className="flex gap-3 justify-end whitespace-nowrap">
-                    <button onClick={() => startEdit(m)} className="text-xs underline">
-                      edit pricing
-                    </button>
-                    {!isDefault && m.is_active && (
-                      <button
-                        onClick={() => setDefault.mutate(m.model_id)}
-                        className="text-xs underline"
-                      >
-                        set default
-                      </button>
-                    )}
-                    {m.is_active ? (
-                      <button
-                        onClick={() =>
-                          toggleActive.mutate({ model_id: m.model_id, is_active: false })
-                        }
-                        className="text-xs underline text-oxblood"
-                      >
-                        disable
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() =>
-                          toggleActive.mutate({ model_id: m.model_id, is_active: true })
-                        }
-                        className="text-xs underline text-moss"
-                      >
-                        enable
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

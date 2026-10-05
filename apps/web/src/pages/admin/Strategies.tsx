@@ -74,7 +74,7 @@ export function AdminStrategiesPage() {
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4 mb-2">
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
         <h1 className="font-display text-3xl">Strategies</h1>
         <button
           onClick={() => sweep.mutate()}
@@ -92,12 +92,12 @@ export function AdminStrategiesPage() {
       </p>
       {error && <div className="text-oxblood text-sm mb-3">{error}</div>}
       {notice && !error && <div className="text-moss text-sm mb-3">{notice}</div>}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex flex-wrap items-center gap-3 mb-4">
         <input
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           placeholder="Filter by name, id, or category…"
-          className="border border-ink/20 rounded px-3 py-1.5 text-sm w-72 bg-paper"
+          className="border border-ink/20 rounded px-3 py-1.5 text-sm w-full sm:w-72 bg-paper"
         />
         <span className="text-xs text-ink/40">
           {data?.strategies.length ?? 0} strategies · {retiredCount} retired
@@ -110,86 +110,88 @@ export function AdminStrategiesPage() {
           {filter ? 'No strategies match the filter.' : 'No strategies — re-run the seed.'}
         </div>
       ) : (
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
-              <th className="py-2 pr-4">Strategy</th>
-              <th className="py-2 pr-4">Category</th>
-              <th className="py-2 pr-4">Risk</th>
-              <th className="py-2 pr-4">Type</th>
-              <th className="py-2 pr-4">Version</th>
-              <th className="py-2 pr-4">Status</th>
-              <th className="py-2 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr
-                key={r.id}
-                className={`border-b border-ink/5 ${r.retired_at ? 'opacity-50' : ''}`}
-              >
-                <td className="py-2 pr-4">
-                  <div className="font-medium">{r.name}</div>
-                  <div className="text-[11px] text-ink/40">{r.id}</div>
-                </td>
-                <td className="py-2 pr-4">{r.category ?? '—'}</td>
-                <td className="py-2 pr-4 capitalize">{r.riskRating ?? '—'}</td>
-                <td className="py-2 pr-4">{r.modeled ? 'Modeled' : 'Advisory'}</td>
-                <td className="py-2 pr-4">{r.semver ?? '—'}</td>
-                <td className="py-2 pr-4">
-                  {r.retired_at ? (
-                    <span className="text-oxblood">retired</span>
-                  ) : r.open_draft ? (
-                    <span className="text-gold">draft in review</span>
-                  ) : (
-                    <span className="text-moss">active</span>
-                  )}
-                </td>
-                <td className="py-2 text-right whitespace-nowrap">
-                  {!r.retired_at && (
-                    <button
-                      onClick={() => redraft.mutate(r.id)}
-                      disabled={redraft.isPending || r.open_draft}
-                      title={
-                        r.open_draft
-                          ? 'A draft is already open in the Review queue'
-                          : 'Queue a Claude redraft (needs an API key configured)'
-                      }
-                      className="px-2 py-1 text-xs border border-ink/20 rounded hover:bg-ink/5 disabled:opacity-40 mr-2"
-                    >
-                      Redraft
-                    </button>
-                  )}
-                  {r.retired_at ? (
-                    <button
-                      onClick={() => act.mutate({ id: r.id, action: 'reactivate' })}
-                      disabled={act.isPending}
-                      className="px-2 py-1 text-xs border border-ink/20 rounded hover:bg-ink/5 disabled:opacity-40"
-                    >
-                      Reactivate
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            `Retire “${r.name}”? It disappears from the picker and suggestions; existing plans keep computing.`,
-                          )
-                        ) {
-                          act.mutate({ id: r.id, action: 'retire' });
-                        }
-                      }}
-                      disabled={act.isPending}
-                      className="px-2 py-1 text-xs border border-oxblood/40 text-oxblood rounded hover:bg-oxblood/5 disabled:opacity-40"
-                    >
-                      Retire
-                    </button>
-                  )}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
+                <th className="py-2 pr-4">Strategy</th>
+                <th className="py-2 pr-4">Category</th>
+                <th className="py-2 pr-4">Risk</th>
+                <th className="py-2 pr-4">Type</th>
+                <th className="py-2 pr-4">Version</th>
+                <th className="py-2 pr-4">Status</th>
+                <th className="py-2 text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr
+                  key={r.id}
+                  className={`border-b border-ink/5 ${r.retired_at ? 'opacity-50' : ''}`}
+                >
+                  <td className="py-2 pr-4">
+                    <div className="font-medium">{r.name}</div>
+                    <div className="text-[11px] text-ink/40">{r.id}</div>
+                  </td>
+                  <td className="py-2 pr-4">{r.category ?? '—'}</td>
+                  <td className="py-2 pr-4 capitalize">{r.riskRating ?? '—'}</td>
+                  <td className="py-2 pr-4">{r.modeled ? 'Modeled' : 'Advisory'}</td>
+                  <td className="py-2 pr-4">{r.semver ?? '—'}</td>
+                  <td className="py-2 pr-4">
+                    {r.retired_at ? (
+                      <span className="text-oxblood">retired</span>
+                    ) : r.open_draft ? (
+                      <span className="text-gold">draft in review</span>
+                    ) : (
+                      <span className="text-moss">active</span>
+                    )}
+                  </td>
+                  <td className="py-2 text-right whitespace-nowrap">
+                    {!r.retired_at && (
+                      <button
+                        onClick={() => redraft.mutate(r.id)}
+                        disabled={redraft.isPending || r.open_draft}
+                        title={
+                          r.open_draft
+                            ? 'A draft is already open in the Review queue'
+                            : 'Queue a Claude redraft (needs an API key configured)'
+                        }
+                        className="px-2 py-1 text-xs border border-ink/20 rounded hover:bg-ink/5 disabled:opacity-40 mr-2"
+                      >
+                        Redraft
+                      </button>
+                    )}
+                    {r.retired_at ? (
+                      <button
+                        onClick={() => act.mutate({ id: r.id, action: 'reactivate' })}
+                        disabled={act.isPending}
+                        className="px-2 py-1 text-xs border border-ink/20 rounded hover:bg-ink/5 disabled:opacity-40"
+                      >
+                        Reactivate
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `Retire “${r.name}”? It disappears from the picker and suggestions; existing plans keep computing.`,
+                            )
+                          ) {
+                            act.mutate({ id: r.id, action: 'retire' });
+                          }
+                        }}
+                        disabled={act.isPending}
+                        className="px-2 py-1 text-xs border border-oxblood/40 text-oxblood rounded hover:bg-oxblood/5 disabled:opacity-40"
+                      >
+                        Retire
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

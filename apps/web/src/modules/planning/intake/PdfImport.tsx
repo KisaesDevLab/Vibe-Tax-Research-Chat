@@ -171,37 +171,39 @@ export function PdfImport({
             </ul>
           )}
 
-          <table className="w-full text-sm mb-3">
-            <thead>
-              <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
-                <th className="py-1 w-8"></th>
-                <th className="py-1 pr-3">Field</th>
-                <th className="py-1 pr-3 text-right">Parsed value</th>
-                <th className="py-1">Source</th>
-              </tr>
-            </thead>
-            <tbody>
-              {result.fields.map((f, i) => (
-                <tr key={i} className="border-b border-ink/5">
-                  <td className="py-1">
-                    <input
-                      type="checkbox"
-                      checked={accepted.has(i)}
-                      onChange={(e) => {
-                        const next = new Set(accepted);
-                        if (e.target.checked) next.add(i);
-                        else next.delete(i);
-                        setAccepted(next);
-                      }}
-                    />
-                  </td>
-                  <td className="py-1 pr-3 font-mono text-xs">{f.field}</td>
-                  <td className="py-1 pr-3 text-right font-mono">${f.value.toLocaleString()}</td>
-                  <td className="py-1 text-xs text-ink/40 truncate max-w-[220px]">{f.source}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm mb-3">
+              <thead>
+                <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
+                  <th className="py-1 w-8"></th>
+                  <th className="py-1 pr-3">Field</th>
+                  <th className="py-1 pr-3 text-right">Parsed value</th>
+                  <th className="py-1">Source</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {result.fields.map((f, i) => (
+                  <tr key={i} className="border-b border-ink/5">
+                    <td className="py-1">
+                      <input
+                        type="checkbox"
+                        checked={accepted.has(i)}
+                        onChange={(e) => {
+                          const next = new Set(accepted);
+                          if (e.target.checked) next.add(i);
+                          else next.delete(i);
+                          setAccepted(next);
+                        }}
+                      />
+                    </td>
+                    <td className="py-1 pr-3 font-mono text-xs">{f.field}</td>
+                    <td className="py-1 pr-3 text-right font-mono">${f.value.toLocaleString()}</td>
+                    <td className="py-1 text-xs text-ink/40 truncate max-w-[220px]">{f.source}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           {result.filingStatus && (
             <div className="text-sm text-ink/60 mb-3">
               Filing status inferred: <span className="font-medium">{result.filingStatus}</span>

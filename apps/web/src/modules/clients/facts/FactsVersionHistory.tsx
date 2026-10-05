@@ -131,23 +131,25 @@ export function FactsVersionHistory({
           {diff.length === 0 ? (
             <div className="text-ink/40 text-sm">No fact-level differences.</div>
           ) : (
-            <table className="w-full text-xs border-collapse">
-              <tbody>
-                {diff.map((row) => (
-                  <tr key={`${row.kind}:${row.path}`} className="border-b border-ink/5 align-top">
-                    <td className="py-1 pr-2 font-mono">{row.path}</td>
-                    <td className="py-1 pr-2">
-                      {row.kind !== 'added' && (
-                        <span className="text-oxblood line-through">{row.from}</span>
-                      )}
-                    </td>
-                    <td className="py-1">
-                      {row.kind !== 'removed' && <span className="text-moss">{row.to}</span>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border-collapse">
+                <tbody>
+                  {diff.map((row) => (
+                    <tr key={`${row.kind}:${row.path}`} className="border-b border-ink/5 align-top">
+                      <td className="py-1 pr-2 font-mono">{row.path}</td>
+                      <td className="py-1 pr-2">
+                        {row.kind !== 'added' && (
+                          <span className="text-oxblood line-through">{row.from}</span>
+                        )}
+                      </td>
+                      <td className="py-1">
+                        {row.kind !== 'removed' && <span className="text-moss">{row.to}</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}

@@ -240,41 +240,43 @@ export function AdminBackupPage() {
           <p className="text-sm text-ink/50">No archives yet. Create one above.</p>
         )}
         {Boolean(archives?.archives.length) && (
-          <table className="w-full text-sm">
-            <thead className="text-left text-xs uppercase tracking-wider text-ink/50">
-              <tr>
-                <th className="py-1 pr-4">Archive</th>
-                <th className="py-1 pr-4">Size</th>
-                <th className="py-1 pr-4">Created</th>
-                <th className="py-1" />
-              </tr>
-            </thead>
-            <tbody>
-              {archives!.archives.map((a) => (
-                <tr key={a.name} className="border-t border-ink/10">
-                  <td className="py-2 pr-4 font-mono text-xs">{a.name}</td>
-                  <td className="py-2 pr-4">{fmtBytes(a.size)}</td>
-                  <td className="py-2 pr-4">{new Date(a.createdAt).toLocaleString()}</td>
-                  <td className="py-2 text-right space-x-3 whitespace-nowrap">
-                    <a
-                      href={apiUrl(
-                        `/api/admin/backup/archives/${encodeURIComponent(a.name)}/download`,
-                      )}
-                      className="underline text-ink/70 hover:text-ink"
-                    >
-                      Download
-                    </a>
-                    <button
-                      onClick={() => void deleteArchive(a.name)}
-                      className="underline text-oxblood/80 hover:text-oxblood"
-                    >
-                      Delete
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-left text-xs uppercase tracking-wider text-ink/50">
+                <tr>
+                  <th className="py-1 pr-4">Archive</th>
+                  <th className="py-1 pr-4">Size</th>
+                  <th className="py-1 pr-4">Created</th>
+                  <th className="py-1" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {archives!.archives.map((a) => (
+                  <tr key={a.name} className="border-t border-ink/10">
+                    <td className="py-2 pr-4 font-mono text-xs">{a.name}</td>
+                    <td className="py-2 pr-4">{fmtBytes(a.size)}</td>
+                    <td className="py-2 pr-4">{new Date(a.createdAt).toLocaleString()}</td>
+                    <td className="py-2 text-right space-x-3 whitespace-nowrap">
+                      <a
+                        href={apiUrl(
+                          `/api/admin/backup/archives/${encodeURIComponent(a.name)}/download`,
+                        )}
+                        className="underline text-ink/70 hover:text-ink"
+                      >
+                        Download
+                      </a>
+                      <button
+                        onClick={() => void deleteArchive(a.name)}
+                        className="underline text-oxblood/80 hover:text-oxblood"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
         <p className="text-xs text-ink/50">
           Download moves an archive off this server — do that regularly; a backup that lives only on

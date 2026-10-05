@@ -61,50 +61,52 @@ export function DocumentsTab({ client }: { client: ClientDTO }) {
           No deliverables yet — render them from a plan once it's computed.
         </div>
       ) : (
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
-              <th className="py-2 pr-3">Kind</th>
-              <th className="py-2 pr-3">Plan</th>
-              <th className="py-2 pr-3">Status</th>
-              <th className="py-2 pr-3">Delivery</th>
-              <th className="py-2 pr-3">SHA-256</th>
-              <th className="py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((d) => (
-              <tr key={d.id} className="border-b border-ink/5">
-                <td className="py-2 pr-3">{d.kind}</td>
-                <td className="py-2 pr-3 text-ink/60">{d.plan_title}</td>
-                <td className="py-2 pr-3">
-                  <span
-                    className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                      d.status === 'ready'
-                        ? 'bg-moss/15 text-moss'
-                        : d.status === 'failed'
-                          ? 'bg-oxblood/10 text-oxblood'
-                          : 'bg-gold/15 text-ink/60'
-                    }`}
-                  >
-                    {d.status}
-                  </span>
-                </td>
-                <td className="py-2 pr-3 text-ink/60">{d.delivered_via ?? '—'}</td>
-                <td className="py-2 pr-3 font-mono text-[10px] text-ink/40">
-                  {d.sha256 ? `${d.sha256.slice(0, 16)}…` : '—'}
-                </td>
-                <td className="py-2 text-right">
-                  {d.status === 'ready' && (
-                    <button onClick={() => void download(d)} className="underline text-xs">
-                      Download
-                    </button>
-                  )}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
+                <th className="py-2 pr-3">Kind</th>
+                <th className="py-2 pr-3">Plan</th>
+                <th className="py-2 pr-3">Status</th>
+                <th className="py-2 pr-3">Delivery</th>
+                <th className="py-2 pr-3">SHA-256</th>
+                <th className="py-2"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((d) => (
+                <tr key={d.id} className="border-b border-ink/5">
+                  <td className="py-2 pr-3">{d.kind}</td>
+                  <td className="py-2 pr-3 text-ink/60">{d.plan_title}</td>
+                  <td className="py-2 pr-3">
+                    <span
+                      className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                        d.status === 'ready'
+                          ? 'bg-moss/15 text-moss'
+                          : d.status === 'failed'
+                            ? 'bg-oxblood/10 text-oxblood'
+                            : 'bg-gold/15 text-ink/60'
+                      }`}
+                    >
+                      {d.status}
+                    </span>
+                  </td>
+                  <td className="py-2 pr-3 text-ink/60">{d.delivered_via ?? '—'}</td>
+                  <td className="py-2 pr-3 font-mono text-[10px] text-ink/40">
+                    {d.sha256 ? `${d.sha256.slice(0, 16)}…` : '—'}
+                  </td>
+                  <td className="py-2 text-right">
+                    {d.status === 'ready' && (
+                      <button onClick={() => void download(d)} className="underline text-xs">
+                        Download
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

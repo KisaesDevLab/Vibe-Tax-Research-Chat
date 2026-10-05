@@ -81,3 +81,15 @@
     @apply text-ink/35 float-left h-0 pointer-events-none;
   }
 }
+
+/* Mobile: iOS Safari auto-zooms the page when a focused field's font size is
+   under 16px, which leaves the layout scrolled sideways after the keyboard
+   closes. Lift every text field to 16px on phones; utilities like text-sm
+   are class-level so this needs !important to win. Desktop is untouched. */
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: max(16px, 1em) !important;
+  }
+}

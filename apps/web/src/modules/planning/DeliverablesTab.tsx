@@ -169,72 +169,76 @@ export function DeliverablesTab({ detail }: { detail: PlanDetail }) {
           Nothing rendered yet. Client-facing kinds unlock at “presented”.
         </div>
       ) : (
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
-              <th className="py-2 pr-3">Kind</th>
-              <th className="py-2 pr-3">Status</th>
-              <th className="py-2 pr-3">SHA-256</th>
-              <th className="py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((d) => (
-              <tr key={d.id} className="border-b border-ink/5 align-top">
-                <td className="py-2 pr-3">{d.kind}</td>
-                <td className="py-2 pr-3">
-                  <span
-                    className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                      d.status === 'ready'
-                        ? 'bg-moss/15 text-moss'
-                        : d.status === 'failed'
-                          ? 'bg-oxblood/10 text-oxblood'
-                          : 'bg-gold/15 text-ink/60'
-                    }`}
-                    title={d.error ?? undefined}
-                  >
-                    {d.status}
-                  </span>
-                  {/* A failure reason hidden in a tooltip is a failure reason
-                      nobody reads — show it where the operator is looking. */}
-                  {d.status === 'failed' && d.error && (
-                    <div className="mt-1 text-[11px] text-oxblood/90 max-w-md whitespace-pre-wrap break-words">
-                      {d.error}
-                      {/rela(t|)ion .* does not exist|column .* does not exist/i.test(d.error) && (
-                        <div className="text-ink/50 mt-0.5">
-                          The database schema is behind this build — run migrations (
-                          <code>pnpm db:migrate</code>, or set <code>MIGRATIONS_AUTO=true</code>)
-                          and render again.
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </td>
-                <td className="py-2 pr-3 font-mono text-[10px] text-ink/40">
-                  {d.sha256 ? `${d.sha256.slice(0, 16)}…` : '—'}
-                </td>
-                <td className="py-2 text-right space-x-3">
-                  {d.status === 'ready' && (
-                    <>
-                      <button onClick={() => void download(d)} className="underline text-xs">
-                        Download
-                      </button>
-                      <button onClick={() => mintLink.mutate(d.id)} className="underline text-xs">
-                        Signed link
-                      </button>
-                      <button
-                        onClick={() => setLinksFor(linksFor === d.id ? null : d.id)}
-                        className="underline text-xs text-ink/50"
-                      >
-                        Links
-                      </button>
-                    </>
-                  )}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
+                <th className="py-2 pr-3">Kind</th>
+                <th className="py-2 pr-3">Status</th>
+                <th className="py-2 pr-3">SHA-256</th>
+                <th className="py-2"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((d) => (
+                <tr key={d.id} className="border-b border-ink/5 align-top">
+                  <td className="py-2 pr-3">{d.kind}</td>
+                  <td className="py-2 pr-3">
+                    <span
+                      className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                        d.status === 'ready'
+                          ? 'bg-moss/15 text-moss'
+                          : d.status === 'failed'
+                            ? 'bg-oxblood/10 text-oxblood'
+                            : 'bg-gold/15 text-ink/60'
+                      }`}
+                      title={d.error ?? undefined}
+                    >
+                      {d.status}
+                    </span>
+                    {/* A failure reason hidden in a tooltip is a failure reason
+                      nobody reads — show it where the operator is looking. */}
+                    {d.status === 'failed' && d.error && (
+                      <div className="mt-1 text-[11px] text-oxblood/90 max-w-md whitespace-pre-wrap break-words">
+                        {d.error}
+                        {/rela(t|)ion .* does not exist|column .* does not exist/i.test(
+                          d.error,
+                        ) && (
+                          <div className="text-ink/50 mt-0.5">
+                            The database schema is behind this build — run migrations (
+                            <code>pnpm db:migrate</code>, or set <code>MIGRATIONS_AUTO=true</code>)
+                            and render again.
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </td>
+                  <td className="py-2 pr-3 font-mono text-[10px] text-ink/40">
+                    {d.sha256 ? `${d.sha256.slice(0, 16)}…` : '—'}
+                  </td>
+                  <td className="py-2 text-right space-x-3">
+                    {d.status === 'ready' && (
+                      <>
+                        <button onClick={() => void download(d)} className="underline text-xs">
+                          Download
+                        </button>
+                        <button onClick={() => mintLink.mutate(d.id)} className="underline text-xs">
+                          Signed link
+                        </button>
+                        <button
+                          onClick={() => setLinksFor(linksFor === d.id ? null : d.id)}
+                          className="underline text-xs text-ink/50"
+                        >
+                          Links
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       {linksFor && <LinkList planId={plan.id} deliverableId={linksFor} />}
     </div>

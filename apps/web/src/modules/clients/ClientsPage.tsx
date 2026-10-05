@@ -34,7 +34,7 @@ export function ClientsPage() {
   const rows = data?.clients ?? [];
 
   return (
-    <div className="h-full overflow-y-auto p-6 md:p-8 max-w-4xl">
+    <div className="h-full overflow-y-auto p-4 sm:p-6 md:p-8 max-w-4xl">
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-display text-3xl">Clients</h1>
         <button
@@ -57,28 +57,32 @@ export function ClientsPage() {
           {debounced ? 'No clients match your search.' : 'No clients yet — create the first one.'}
         </div>
       ) : (
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
-              <th className="py-2 pr-4">Name</th>
-              <th className="py-2 pr-4">Entity type</th>
-              <th className="py-2">Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((c) => (
-              <tr key={c.id} className="border-b border-ink/5 hover:bg-ink/5">
-                <td className="py-2 pr-4">
-                  <Link to={`/clients/${c.id}`} className="hover:underline">
-                    {c.name}
-                  </Link>
-                </td>
-                <td className="py-2 pr-4 text-ink/60">{c.entity_type}</td>
-                <td className="py-2 text-ink/60">{new Date(c.created_at).toLocaleDateString()}</td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wider text-ink/40 border-b border-ink/10">
+                <th className="py-2 pr-4">Name</th>
+                <th className="py-2 pr-4">Entity type</th>
+                <th className="py-2">Created</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((c) => (
+                <tr key={c.id} className="border-b border-ink/5 hover:bg-ink/5">
+                  <td className="py-2 pr-4">
+                    <Link to={`/clients/${c.id}`} className="hover:underline">
+                      {c.name}
+                    </Link>
+                  </td>
+                  <td className="py-2 pr-4 text-ink/60">{c.entity_type}</td>
+                  <td className="py-2 text-ink/60">
+                    {new Date(c.created_at).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       {showNew && <NewClientDialog onClose={() => setShowNew(false)} />}
     </div>
