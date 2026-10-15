@@ -33,6 +33,7 @@ const navItems = [
   { to: '/admin/table-sets', label: 'Table sets' },
   { to: '/admin/strategies', label: 'Strategies' },
   { to: '/admin/review-queue', label: 'Review queue' },
+  { to: '/admin/client-errors', label: 'Client errors' },
   { to: '/admin/backup', label: 'Backup & restore' },
 ];
 

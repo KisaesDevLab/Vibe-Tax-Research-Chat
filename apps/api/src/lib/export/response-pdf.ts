@@ -17,6 +17,7 @@
 // risk of mis-rendering.
 
 import PDFDocument from 'pdfkit';
+import { complianceDisclosureForms, complianceText } from '@vibe/shared';
 import { stripSidecars } from '../parsing/sidecars-strip.js';
 import { sanitizeForHelvetica, stripInline } from './pdf-text.js';
 import { renderCodeBlock, renderTable, tryParseTable } from './pdf-blocks.js';
@@ -438,7 +439,8 @@ function normalizeRule(v: ComplianceRule): { state: 'pass' | 'na' | 'fail'; note
     if (v.toLowerCase().startsWith('n/a')) return { state: 'na', note: v };
     return { state: 'pass', note: v };
   }
-  if (typeof v === 'object') return { state: v.ok ? 'pass' : 'fail', note: v.note };
+  if (typeof v === 'object')
+    return { state: v.ok ? 'pass' : 'fail', note: complianceText(v.note) || undefined };
   return null;
 }
 
@@ -452,7 +454,7 @@ function renderCompliance(doc: PDFKit.PDFDocument, c: ComplianceCheckShape): voi
       .font('Helvetica')
       .fontSize(9)
       .fillColor('#2f4a30')
-      .text(sanitizeForHelvetica(c.confidence_band));
+      .text(sanitizeForHelvetica(complianceText(c.confidence_band)));
     doc.moveDown(0.3);
   }
   if (c.engagement_type) {
@@ -460,7 +462,7 @@ function renderCompliance(doc: PDFKit.PDFDocument, c: ComplianceCheckShape): voi
       .font('Helvetica-Bold')
       .fontSize(10)
       .fillColor('#1a1714')
-      .text(`Engagement: ${sanitizeForHelvetica(c.engagement_type)}`);
+      .text(`Engagement: ${sanitizeForHelvetica(complianceText(c.engagement_type))}`);
     doc.moveDown(0.3);
   }
   for (const row of RULE_ROWS) {
@@ -482,9 +484,7 @@ function renderCompliance(doc: PDFKit.PDFDocument, c: ComplianceCheckShape): voi
     }
     doc.moveDown(0.2);
   }
-  const forms = (c.disclosure_forms ?? c.form_disclosure_required ?? []).filter(
-    (f) => f && f.toLowerCase() !== 'none' && f.toLowerCase() !== 'n/a',
-  );
+  const forms = complianceDisclosureForms(c);
   if (forms.length > 0) {
     doc.moveDown(0.3);
     doc
@@ -499,7 +499,7 @@ function renderCompliance(doc: PDFKit.PDFDocument, c: ComplianceCheckShape): voi
       .font('Helvetica-Bold')
       .fontSize(10)
       .fillColor('#1a1714')
-      .text(`Notes: ${sanitizeForHelvetica(c.notes)}`);
+      .text(`Notes: ${sanitizeForHelvetica(complianceText(c.notes))}`);
   }
   if (c.loper_bright_caveat) {
     doc.moveDown(0.3);

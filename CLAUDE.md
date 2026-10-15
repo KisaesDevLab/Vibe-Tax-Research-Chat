@@ -547,6 +547,28 @@ hold the line, verified in headless Chrome at 320px and 390px:
   viewport. Run it from Git Bash with `MSYS_NO_PATHCONV=1` or every `/route` argument
   is rewritten to `C:/Program Files/Git/route`.
 
+### Sidecar JSON is untrusted at render time; render failures are reported
+
+Sidecars are model output persisted verbatim, so their declared TS types are a hope, not
+a guarantee. Live case: a compliance block carried `form_disclosure_required: false`,
+`CompliancePanel` called `.filter` on it, and — with no error boundary anywhere — React
+unmounted the whole SPA. The chat was a permanently blank page with the cause only in
+the user's DevTools console.
+
+- Read sidecar fields through tolerant helpers, never by declared type:
+  `complianceDisclosureForms` / `complianceText` (@vibe/shared `compliance.ts`) back the
+  web panel, the PDF exporter and the DOCX exporter alike. Anything rendered as a React
+  child must be a string — an object child throws the same way.
+- `PanelBoundary` wraps each sidecar panel in `Chat.tsx` (a failure shows a one-line
+  notice, the answer still renders); `AppErrorBoundary` in `main.tsx` replaces a blank
+  page with a recovery page. Any NEW sidecar panel goes inside a `PanelBoundary`.
+- Both boundaries, plus same-origin `window` errors, report to `POST /api/client-errors`
+  (auth required, IP-rate-limited) → `client_errors`, one row per server-computed
+  fingerprint (build + kind + panel + error + top frame + message/chat/route) with a
+  repeat `count`; rows unseen for 90 days are pruned on the next report. Admin →
+  Client errors lists, dismisses and clears them (both audited). Identifiers and error
+  text only — never chat or document content.
+
 ## Open architectural decisions
 
 See `QUESTIONS.md` for ambiguities resolved with applied defaults during the autonomous build.

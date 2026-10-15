@@ -40,6 +40,7 @@ import { clientDeliverablesRouter } from './routes/planning/deliverables.js';
 import { requirePlanning } from './middleware/planning-flag.js';
 import { webhooksRouter } from './routes/webhooks/index.js';
 import { setupRouter } from './routes/setup.js';
+import { clientErrorsRouter, adminClientErrorsRouter } from './routes/client-errors.js';
 import { mountBullBoard } from './routes/admin/bull-board.js';
 import { requireAuth, requireRole } from './middleware/auth.js';
 import { corsOptions } from './lib/cors.js';
@@ -128,6 +129,8 @@ export function createApp(): Express {
   app.use('/api/admin/table-sets', adminTableSetsRouter);
   app.use('/api/admin/review-queue', adminReviewQueueRouter);
   app.use('/api/admin/strategies', adminStrategyDraftRouter);
+  app.use('/api/admin/client-errors', adminClientErrorsRouter);
+  app.use('/api/client-errors', clientErrorsRouter);
   app.use('/api/chats', chatsRouter);
   app.use('/api/clients', clientsRouter);
   app.use('/api/archives', archivesRouter);

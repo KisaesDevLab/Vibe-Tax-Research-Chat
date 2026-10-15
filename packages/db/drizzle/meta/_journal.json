@@ -169,6 +169,13 @@
       "when": 1789954048117,
       "tag": "0023_sso_local_password",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792075498718,
+      "tag": "0024_client_errors",
+      "breakpoints": true
     }
   ]
 }
