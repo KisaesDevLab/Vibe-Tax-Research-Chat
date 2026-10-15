@@ -23,3 +23,4 @@ export * from './reference.js';
 export * from './authority-cache.js';
 export * from './client-facts.js';
 export * from './plan-pending-facts.js';
+export * from './client-errors.js';

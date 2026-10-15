@@ -8,6 +8,7 @@
 //     /api/auth/reset-password endpoint from token brute-forcing (the token
 //     itself is 256 bits so brute-force is intractable; the limiter is
 //     belt-and-braces against scripted attempts).
+//   clientErrorLimiter: 120 / 15 min / IP — browser error reports (see below).
 //   ssoLimiter: 100 / 15 min / IP — the browser-driven Vibe Auth steps
 //     (/auth/oidc/start|callback|exchange, /auth/settings/test and the
 //     product's /api/auth/sso/exchange hand-off). NOT the
@@ -67,4 +68,17 @@ export const ssoLimiter = rateLimit({
   legacyHeaders: false,
   store: new RedisStore({ sendCommand, prefix: 'rl:sso:' }),
   message: { error: 'too_many_sso_attempts', retry_after_seconds: 900 },
+});
+
+// clientErrorLimiter: 120 / 15 min / IP — browser error reports. Generous
+// because a whole office may share one address and reports are deduped into
+// one row per failure anyway; this only stops a looping client from turning
+// the endpoint into a write amplifier.
+export const clientErrorLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: new RedisStore({ sendCommand, prefix: 'rl:client-errors:' }),
+  message: { error: 'too_many_client_error_reports', retry_after_seconds: 900 },
 });

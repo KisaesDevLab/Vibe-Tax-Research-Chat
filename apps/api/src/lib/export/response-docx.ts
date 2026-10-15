@@ -32,6 +32,7 @@ import {
   TextRun,
   WidthType,
 } from 'docx';
+import { complianceDisclosureForms } from '@vibe/shared';
 import { stripSidecars } from '../parsing/sidecars-strip.js';
 
 interface MessageForExport {
@@ -747,10 +748,7 @@ function renderCompliance(c: ComplianceCheckShape, out: (Paragraph | Table)[]): 
       );
     }
   }
-  const formsRaw = (c.disclosure_forms ?? c.form_disclosure_required ?? []) as unknown[];
-  const forms = formsRaw
-    .map(toRenderString)
-    .filter((f) => f && f.toLowerCase() !== 'none' && f.toLowerCase() !== 'n/a');
+  const forms = complianceDisclosureForms(c);
   if (forms.length > 0) {
     out.push(
       new Paragraph({

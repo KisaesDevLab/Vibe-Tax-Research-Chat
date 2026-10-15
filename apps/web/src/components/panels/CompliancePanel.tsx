@@ -5,6 +5,7 @@
 // rule as one of: a boolean, a free-text string ("N/A — no estimates"),
 // null (rule not implicated), or a structured `{ok, note}`. We normalize
 // all four to a single status + optional note shape.
+import { complianceDisclosureForms, complianceText } from '@vibe/shared';
 import type { ComplianceCheck, ComplianceRule } from '@vibe/shared';
 
 interface RuleRow {
@@ -48,7 +49,7 @@ function normalize(v: ComplianceRule | undefined): NormalizedRule | null {
     return { state: 'pass', note: v };
   }
   if (typeof v === 'object') {
-    return { state: v.ok ? 'pass' : 'fail', note: v.note };
+    return { state: v.ok ? 'pass' : 'fail', note: complianceText(v.note) || undefined };
   }
   return null;
 }
@@ -68,15 +69,14 @@ function StateLabel({ state }: { state: NormalizedRule['state'] }) {
 }
 
 export function CompliancePanel({ check }: { check?: ComplianceCheck | null }) {
-  if (!check) return null;
+  if (!check || typeof check !== 'object') return null;
 
-  const disclosures =
-    check.disclosure_forms && check.disclosure_forms.length
-      ? check.disclosure_forms
-      : (check.form_disclosure_required ?? []);
-  const meaningfulForms = disclosures.filter(
-    (f) => f && f.toLowerCase() !== 'none' && f.toLowerCase() !== 'n/a',
-  );
+  // Sidecar JSON is model output persisted verbatim — read every field
+  // through the tolerant helpers, never by its declared type.
+  const meaningfulForms = complianceDisclosureForms(check);
+  const confidenceBand = complianceText(check.confidence_band);
+  const engagementType = complianceText(check.engagement_type);
+  const notes = complianceText(check.notes);
 
   const renderableRules = RULES.map((row) => {
     const v = check[row.pickKey] ?? (row.altKey ? check[row.altKey] : undefined);
@@ -95,16 +95,16 @@ export function CompliancePanel({ check }: { check?: ComplianceCheck | null }) {
         underneath.
       */}
       <h2 className="font-display text-xl mt-8 mb-1">Compliance</h2>
-      {check.confidence_band && (
+      {confidenceBand && (
         <p className="text-xs font-mono text-moss/80 leading-relaxed mb-3 break-words">
-          {check.confidence_band}
+          {confidenceBand}
         </p>
       )}
 
-      {check.engagement_type && (
+      {engagementType && (
         <p className="text-sm leading-relaxed text-ink/80 mb-3">
           <span className="text-xs uppercase tracking-wider text-ink/40 mr-2">Engagement</span>
-          {check.engagement_type}
+          {engagementType}
         </p>
       )}
 
@@ -152,10 +152,10 @@ export function CompliancePanel({ check }: { check?: ComplianceCheck | null }) {
         </p>
       )}
 
-      {check.notes && (
+      {notes && (
         <p className="text-sm leading-relaxed text-ink/80">
           <span className="text-xs uppercase tracking-wider text-ink/40 mr-2">Notes</span>
-          {check.notes}
+          {notes}
         </p>
       )}
     </section>

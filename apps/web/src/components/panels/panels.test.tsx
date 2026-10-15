@@ -36,6 +36,21 @@ describe('panels', () => {
     expect(screen.getByText(/estimate flag/)).toBeInTheDocument();
   });
 
+  it('survives non-array disclosure forms and object-valued text fields', () => {
+    // A persisted row with `form_disclosure_required: false` blanked a live chat.
+    const check = {
+      ssts_1_1: { ok: true, note: { detail: 'x' } },
+      form_disclosure_required: false,
+      disclosure_forms: 'None',
+      confidence_band: { level: 'HIGH' },
+      notes: 'see memo',
+    } as never;
+    render(<CompliancePanel check={check} />);
+    expect(screen.getByText(/SSTS § 1.1/)).toBeInTheDocument();
+    expect(screen.getByText('see memo')).toBeInTheDocument();
+    expect(screen.queryByText(/Disclosure forms/)).not.toBeInTheDocument();
+  });
+
   it('shows N of 8 slots used', () => {
     render(
       <SkillsPanel

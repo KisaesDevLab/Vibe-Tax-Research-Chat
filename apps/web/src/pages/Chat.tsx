@@ -18,6 +18,7 @@ import { ArchiveDialog } from '../components/ArchiveDialog';
 import { NudgeBanner } from '../components/NudgeBanner';
 import type { ChatDTO, ClarifyAnswer, DocCitation, MessageDTO } from '@vibe/shared';
 import { DocCitationsPanel } from '../components/panels/DocCitationsPanel';
+import { PanelBoundary } from '../components/panels/PanelBoundary';
 import { ClarifyAnswerLabel, ClarifyPanel } from '../components/panels/ClarifyPanel';
 
 interface AttachmentDTO {
@@ -838,34 +839,42 @@ function MessageBlock({
       </div>
       <div data-pdf-target="response" className="space-y-3">
         <Markdown>{stripSidecars(m.content)}</Markdown>
-        <AuthoritiesPanel authorities={(m.authorities as never) ?? []} />
-        <CompliancePanel check={m.compliance_check} />
-        <DocCitationsPanel
-          citations={m.doc_citations ?? []}
-          clientId={chat?.client_id ?? null}
-          onConfirm={
-            chat?.mode === 'plan' && onConfirmFact
-              ? (citation) => onConfirmFact(citation, m.id)
+        <PanelBoundary name="Authorities" chatId={m.chat_id} messageId={m.id}>
+          <AuthoritiesPanel authorities={(m.authorities as never) ?? []} />
+        </PanelBoundary>
+        <PanelBoundary name="Compliance" chatId={m.chat_id} messageId={m.id}>
+          <CompliancePanel check={m.compliance_check} />
+        </PanelBoundary>
+        <PanelBoundary name="Document citations" chatId={m.chat_id} messageId={m.id}>
+          <DocCitationsPanel
+            citations={m.doc_citations ?? []}
+            clientId={chat?.client_id ?? null}
+            onConfirm={
+              chat?.mode === 'plan' && onConfirmFact
+                ? (citation) => onConfirmFact(citation, m.id)
+                : undefined
+            }
+          />
+        </PanelBoundary>
+      </div>
+      <PanelBoundary name="Clarifying question" chatId={m.chat_id} messageId={m.id}>
+        <ClarifyPanel
+          clarification={m.clarification}
+          active={isLatestAssistant}
+          onAnswer={
+            onAnswer
+              ? (text, kind) =>
+                  onAnswer(text, {
+                    message_id: m.id,
+                    kind,
+                    ...(kind !== 'proceed' && m.clarification?.question
+                      ? { question: m.clarification.question }
+                      : {}),
+                  })
               : undefined
           }
         />
-      </div>
-      <ClarifyPanel
-        clarification={m.clarification}
-        active={isLatestAssistant}
-        onAnswer={
-          onAnswer
-            ? (text, kind) =>
-                onAnswer(text, {
-                  message_id: m.id,
-                  kind,
-                  ...(kind !== 'proceed' && m.clarification?.question
-                    ? { question: m.clarification.question }
-                    : {}),
-                })
-            : undefined
-        }
-      />
+      </PanelBoundary>
       <SkillsPanel skills={m.skills} />
       <CostLedger usage={m.usage} cost_usd={m.cost_usd} model_id={m.model_id} />
       {(() => {

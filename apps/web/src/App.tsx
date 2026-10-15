@@ -23,6 +23,7 @@ import { AdminBackupPage } from './pages/admin/Backup';
 import { AdminTableSetsPage } from './pages/admin/TableSets';
 import { AdminStrategiesPage } from './pages/admin/Strategies';
 import { AdminReviewQueuePage } from './pages/admin/ReviewQueue';
+import { AdminClientErrorsPage } from './pages/admin/ClientErrors';
 import { RequireAuth, RequireRole } from './components/RequireRole';
 import { RequirePlanning } from './components/RequirePlanning';
 import { AppShell } from './components/AppShell';
@@ -79,6 +80,7 @@ export function App() {
             <Route path="table-sets" element={<AdminTableSetsPage />} />
             <Route path="strategies" element={<AdminStrategiesPage />} />
             <Route path="review-queue" element={<AdminReviewQueuePage />} />
+            <Route path="client-errors" element={<AdminClientErrorsPage />} />
           </Route>
         </Route>
       </Route>
